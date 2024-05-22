@@ -1,0 +1,100 @@
+/**
+ * Gradle plugins
+ */
+plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'java'
+}
+
+/**
+ * Project Variables
+ */
+group = 'com.avrix'
+version = '0.0.1'
+
+/**
+ * Path to the compiled Jar file
+ */
+def buildPath = System.getenv('BUILD_PATH') ?: 'build';
+
+/**
+ * Repositories for project dependencies
+ */
+repositories {
+    mavenCentral()
+}
+
+/**
+ * Project Dependencies
+ */
+dependencies {
+    /**
+     * Project Zomboid
+     * Dependencies are created via the Gradle task 'createZombieJar'
+     */
+    compileOnly files("./libs/ProjectZomboid-core-41.78.16.jar")
+
+    /**
+     * Test
+     */
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+/**
+ * Project testing
+ */
+test {
+    useJUnitPlatform()
+}
+
+/**
+ * Creating a Jar file wrapper (core) to run a game server
+ */
+shadowJar {
+    archiveFileName.set("${rootProject.name}-Core-${version}.jar")
+    destinationDirectory.set(file(buildPath))
+
+    manifest {
+        attributes(
+                'Main-Class': 'com.avrix.Main',
+                'Implementation-Title': rootProject.name,
+                'Implementation-Version': version
+        )
+    }
+}
+
+/**
+ * Creating a Jar archive with Project Zomboid game byte files.
+ * The environment variables contain the full path to the zombie folder.
+ * For example: C:\Steam\steamapps\common\Project Zomboid Dedicated Server\java\zombie
+ *
+ * The created file is moved to the "libs" folder in the root directory of the project
+ */
+tasks.register('createZombieJar') {
+    doLast {
+        def zombieFolder = System.getenv("ZOMBIE_FOLDER_PATH")
+        def archiveName = 'ProjectZomboid-core-41.78.16.jar'
+
+        if (zombieFolder != null && !zombieFolder.isEmpty()) {
+            def tempDir = file('tempDir')
+            def tempDirZombie = file('tempDir/zombie')
+            copy {
+                from zombieFolder
+                into tempDirZombie
+            }
+
+            exec {
+                commandLine 'jar', 'cvf', archiveName, '-C', tempDir, '.'
+            }
+
+            def libsFolder = './libs'
+            file(libsFolder).mkdirs()
+            file(archiveName).renameTo(new File(libsFolder, archiveName))
+
+            delete tempDir
+        } else {
+            println "The ZOMBIE_FOLDER_PATH environment variable is not set or empty."
+        }
+    }
+}
