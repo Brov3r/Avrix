@@ -19,7 +19,7 @@ Provides the ability to load plugins and expand basic functionality.
 2) Create a Jar file of game dependencies through the Gradle task `createZombieJar`, after specifying the environment variable `ZOMBIE_FOLDER_PATH`
 3) Build the core using the `shadowJar` task
 4) Move the created Jar file to the root folder of the server
-5) Copy the launch script [`scripts/AvrixLauncher.bat`](./scripts/AvrixLauncher.bat`) to the root folder with the server
+5) Copy the launch script [`scripts/AvrixLauncher.bat`](./scripts/AvrixLauncher.bat) to the root folder with the server
 6) Run `AvrixLauncher.bat`
 
 # Disclaimer
