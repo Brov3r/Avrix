@@ -7,6 +7,7 @@ reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" 
 echo ======================= Avrix Launcher (Windows %osArchitecture%) =======================
 
 rem Setting up variables
+set "steamOption=-"
 set "classPath=java/;java/istack-commons-runtime.jar;java/jassimp.jar;java/javacord-2.0.17-shaded.jar;java/javax.activation-api.jar;java/jaxb-api.jar;java/jaxb-runtime.jar;java/lwjgl.jar;java/lwjgl-glfw.jar;java/lwjgl-jemalloc.jar;java/lwjgl-opengl.jar;java/lwjgl_util.jar;java/sqlite-jdbc-3.27.2.1.jar;java/trove-3.0.3.jar;java/uncommons-maths-1.2.3.jar;java/commons-compress-1.18.jar;"
 if "%osArchitecture%"=="x64" (
     set "javaExec=.\jre64\bin\java.exe"
