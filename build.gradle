@@ -38,18 +38,20 @@ dependencies {
      * Utils
      */
     implementation('org.yaml:snakeyaml:2.2')
+    implementation('org.javassist:javassist:3.30.2-GA')
 
     /**
      * Test
      */
     testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation('org.junit.jupiter:junit-jupiter')
 }
 
 /**
  * Project testing
  */
 test {
+    jvmArgs '-Djdk.attach.allowAttachSelf=true'
     useJUnitPlatform()
 }
 
@@ -62,19 +64,45 @@ shadowJar {
 
     manifest {
         attributes(
-                'Main-Class': 'com.avrix.Main',
                 'Implementation-Title': rootProject.name,
-                'Implementation-Version': version
+                'Implementation-Version': version,
+                'Agent-Class': 'com.avrix.agent.Agent',
+                'Can-Redefine-Classes': 'true',
+                'Can-Retransform-Classes': 'true'
         )
     }
 }
 
 /**
- * Creating a Jar archive with Project Zomboid game byte files.
- * The environment variables contain the full path to the zombie folder.
- * For example: C:\Steam\steamapps\common\Project Zomboid Dedicated Server\java\zombie
+ * Building a Jar archive with documentation
+ */
+tasks.register('buildJar') {
+    dependsOn generateJavaDoc
+    finalizedBy shadowJar
+}
+
+/**
+ * Generating JavaDoc for Jar archive
+ */
+tasks.register('generateJavaDoc', Javadoc) {
+    source = sourceSets.main.java.srcDirs
+    classpath = configurations.compileClasspath
+    destinationDir = file("docs/javadoc")
+}
+
+/**
+ * Task for creating a JAR file named 'ProjectZomboid-core-41.78.16.jar' from the contents of a specified folder.
+ * For example path: C:\Steam\steamapps\common\Project Zomboid Dedicated Server\java\zombie
  *
- * The created file is moved to the "libs" folder in the root directory of the project
+ * This Gradle task performs the following steps:
+ * 1. Retrieves the path to the source folder from the 'ZOMBIE_FOLDER_PATH' environment variable.
+ * 2. If the environment variable is set and not empty:
+ *    a. Creates a temporary directory 'tempDir/zombie' and copies the contents of the source folder into it.
+ *    b. Uses the 'jar' command to create a JAR file from the contents of the 'tempDir' directory.
+ *    c. Creates a 'libs' directory in the project root if it does not exist.
+ *    d. Moves the generated JAR file to the 'libs' directory.
+ *    e. Deletes the temporary directory 'tempDir'.
+ * 3. If the environment variable is not set or is empty, prints a message indicating that the variable is not set or empty.
  */
 tasks.register('createZombieJar') {
     doLast {

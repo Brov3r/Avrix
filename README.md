@@ -10,22 +10,34 @@
     <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/Brov3r/Avrix">
 </p>
 
-**Avrix** - this is a custom core wrapper for running the Project Zomboid game server with additional features.
+**Avrix** - a fundamentally new wrapper for running the Project Zomboid server with plugins.
 
-Provides the ability to load plugins and expand basic functionality.
+To run the server with this wrapper, you must first
+install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
 
 # How to use
+
 1) Clone the repository
-2) Create a Jar file of game dependencies through the Gradle task `createZombieJar`, after specifying the environment variable `ZOMBIE_FOLDER_PATH`
+2) Create a Jar file of game dependencies through the Gradle task `createZombieJar`, after specifying the environment
+   variable `ZOMBIE_FOLDER_PATH`
 3) Build the core using the `shadowJar` task
 4) Move the created Jar file to the root folder of the server
 5) Copy the launch script [`scripts/AvrixLauncher.bat`](./scripts/AvrixLauncher.bat) to the root folder of the server
 6) Run `AvrixLauncher.bat`
 
 # Disclaimer
-This software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement of third party rights. Neither the author of the software nor its contributors shall be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
 
-By using this software, you agree to these terms and release the author of the software and its contributors from any liability associated with the use of this software.
+This software is provided "as is", without warranty of any kind, express or implied, including but not limited to the
+warranties of merchantability, fitness for a particular purpose, and noninfringement of third party rights. Neither the
+author of the software nor its contributors shall be liable for any direct, indirect, incidental, special, exemplary, or
+consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or
+profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability,
+or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the
+possibility of such damage.
+
+By using this software, you agree to these terms and release the author of the software and its contributors from any
+liability associated with the use of this software.
 
 # License
+
 This project is licensed under [GNU GPLv3](./LICENSE).
