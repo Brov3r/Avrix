@@ -26,7 +26,7 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
    variable `ZOMBIE_FOLDER_PATH`
 3) Build the core using the `shadowJar` task
 4) Move the created Jar file to the root folder of the server
-5) Copy the launch script [`scripts/`](./scripts/AvrixLauncher-Server.bat) to the root folder of the
+5) Copy the launch script [`scripts/`](./scripts/) to the root folder of the
    client/server
 6) Run launch script
 
