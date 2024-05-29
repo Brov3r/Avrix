@@ -27,12 +27,12 @@ public class AgentManager {
     }
 
     /**
-     * Method for modifying a class.
+     * Transforming a class by its name using a new class as a byte array.
      *
      * @param className Name of the class to modify
      * @param newClass  Modified class file as a byte array
      */
-    public static void modifyClass(String className, byte[] newClass) {
+    public static void transformClass(String className, byte[] newClass) {
         try {
             Class<?> clazz = Class.forName(className);
 
@@ -44,12 +44,16 @@ public class AgentManager {
                 instrumentation.retransformClasses(clazz);
                 instrumentation.removeTransformer(agentTransformer);
             } else {
-                System.err.println("[!] Failed to modify class: " + className);
+                if (instrumentation == null) {
+                    System.err.println("[!] Failed to modify class: " + clazz.getCanonicalName() + " because instrumentation is null.");
+                } else if (!instrumentation.isModifiableClass(clazz)) {
+                    System.err.println("[!] Failed to modify class: " + clazz.getCanonicalName() + " because the class is not modifiable.");
+                } else {
+                    System.err.println("[!] Failed to modify class: " + clazz.getCanonicalName() + " due to unknown reasons.");
+                }
             }
-
         } catch (UnmodifiableClassException | ClassNotFoundException e) {
-            System.err.println("[!] Failed to modify class: " + className);
-            System.err.println("[!] Exception: " + e.getMessage());
+            System.err.printf("[!] Failed to modify class '%s'. Reason: %s%n", className, e.getMessage());
             e.printStackTrace();
         }
     }

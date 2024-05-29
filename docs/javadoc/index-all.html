@@ -49,7 +49,7 @@ loadScripts(document, 'script');</script>
 <div class="header">
 <h1>Index</h1>
 </div>
-<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:T">T</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a>
+<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a>
 <h2 class="title" id="I:A">A</h2>
 <dl class="index">
 <dt><a href="com/avrix/agent/Agent.html" class="type-name-link" title="class in com.avrix.agent">Agent</a> - Class in <a href="com/avrix/agent/package-summary.html">com.avrix.agent</a></dt>
@@ -80,27 +80,75 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/agent/AgentTransformer.html#%3Cinit%3E()" class="member-name-link">AgentTransformer()</a> - Constructor for class com.avrix.agent.<a href="com/avrix/agent/AgentTransformer.html" title="class in com.avrix.agent">AgentTransformer</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/avrix/agent/Patcher.html#applyPatch()" class="member-name-link">applyPatch()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/Patcher.html" title="class in com.avrix.agent">Patcher</a></dt>
+<dt><a href="com/avrix/agent/ClassModifier.html#applyModifications()" class="member-name-link">applyModifications()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.html" title="class in com.avrix.agent">ClassModifier</a></dt>
 <dd>
 <div class="block">Applying modifications to the class being modified.</div>
+</dd>
+<dt><a href="com/avrix/agent/ClassTransformer.html#applyModifications()" class="member-name-link">applyModifications()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent">ClassTransformer</a></dt>
+<dd>
+<div class="block">Applying modifications to the class being modified.</div>
+</dd>
+<dt><a href="com/avrix/utils/Constants.html#AVRIX_NAME" class="member-name-link">AVRIX_NAME</a> - Static variable in class com.avrix.utils.<a href="com/avrix/utils/Constants.html" title="class in com.avrix.utils">Constants</a></dt>
+<dd>
+<div class="block">Project name</div>
+</dd>
+<dt><a href="com/avrix/utils/Constants.html#AVRIX_VERSION" class="member-name-link">AVRIX_VERSION</a> - Static variable in class com.avrix.utils.<a href="com/avrix/utils/Constants.html" title="class in com.avrix.utils">Constants</a></dt>
+<dd>
+<div class="block">Project version</div>
 </dd>
 </dl>
 <h2 class="title" id="I:B">B</h2>
 <dl class="index">
-<dt><a href="com/avrix/agent/Patcher.PatcherBuilder.html#build()" class="member-name-link">build()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/Patcher.PatcherBuilder.html" title="class in com.avrix.agent">Patcher.PatcherBuilder</a></dt>
+<dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html#build()" class="member-name-link">build()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></dt>
 <dd>
-<div class="block">Creates a <a href="com/avrix/agent/Patcher.html" title="class in com.avrix.agent"><code>Patcher</code></a> object based on the current state of the builder.</div>
+<div class="block">Creates a <a href="com/avrix/agent/ClassModifier.html" title="class in com.avrix.agent"><code>ClassModifier</code></a> object based on the current state of the builder.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:C">C</h2>
 <dl class="index">
+<dt><a href="com/avrix/agent/ClassModifier.html" class="type-name-link" title="class in com.avrix.agent">ClassModifier</a> - Class in <a href="com/avrix/agent/package-summary.html">com.avrix.agent</a></dt>
+<dd>
+<div class="block">A class for modifying Java classes at runtime using the <a href="https://www.javassist.org/">Javassist library</a>.</div>
+</dd>
+<dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" class="type-name-link" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a> - Class in <a href="com/avrix/agent/package-summary.html">com.avrix.agent</a></dt>
+<dd>
+<div class="block">A class that implements the Builder pattern to create a <a href="com/avrix/agent/ClassModifier.html" title="class in com.avrix.agent"><code>ClassModifier</code></a> object</div>
+</dd>
+<dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html#%3Cinit%3E(java.lang.String)" class="member-name-link">ClassModifierBuilder(String)</a> - Constructor for class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></dt>
+<dd>
+<div class="block">Builder constructor for class <a href="com/avrix/agent/ClassModifier.html" title="class in com.avrix.agent"><code>ClassModifier</code></a></div>
+</dd>
+<dt><a href="com/avrix/agent/ClassTransformer.html" class="type-name-link" title="class in com.avrix.agent">ClassTransformer</a> - Class in <a href="com/avrix/agent/package-summary.html">com.avrix.agent</a></dt>
+<dd>
+<div class="block">A class for transforming Java classes at runtime.</div>
+</dd>
+<dt><a href="com/avrix/agent/ClassTransformer.html#%3Cinit%3E(java.lang.String)" class="member-name-link">ClassTransformer(String)</a> - Constructor for class com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent">ClassTransformer</a></dt>
+<dd>
+<div class="block">Constructor for creating a <a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent"><code>ClassTransformer</code></a> object.</div>
+</dd>
 <dt><a href="com/avrix/package-summary.html">com.avrix</a> - package com.avrix</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/agent/package-summary.html">com.avrix.agent</a> - package com.avrix.agent</dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/utils/package-summary.html">com.avrix.utils</a> - package com.avrix.utils</dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/avrix/utils/Constants.html" class="type-name-link" title="class in com.avrix.utils">Constants</a> - Class in <a href="com/avrix/utils/package-summary.html">com.avrix.utils</a></dt>
+<dd>
+<div class="block">Set of main avrix constants</div>
+</dd>
+<dt><a href="com/avrix/utils/Constants.html#%3Cinit%3E()" class="member-name-link">Constants()</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/Constants.html" title="class in com.avrix.utils">Constants</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:G">G</h2>
 <dl class="index">
+<dt><a href="com/avrix/agent/ClassTransformer.html#getClassName()" class="member-name-link">getClassName()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent">ClassTransformer</a></dt>
+<dd>
+<div class="block">Getting the full name of the class that needs to be modified.</div>
+</dd>
+<dt><a href="com/avrix/agent/ClassTransformer.html#getModifierBuilder()" class="member-name-link">getModifierBuilder()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent">ClassTransformer</a></dt>
+<dd>
+<div class="block">Gets the <a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent"><code>ClassModifier.ClassModifierBuilder</code></a> for building class modifiers.</div>
+</dd>
 <dt><a href="com/avrix/agent/AgentManager.html#getModifyClass(java.lang.String)" class="member-name-link">getModifyClass(String)</a> - Static method in class com.avrix.agent.<a href="com/avrix/agent/AgentManager.html" title="class in com.avrix.agent">AgentManager</a></dt>
 <dd>
 <div class="block">Method for getting a modified class by its name.</div>
@@ -136,32 +184,28 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">The main method is the entry point of the Java application.</div>
 </dd>
-<dt><a href="com/avrix/agent/AgentManager.html#modifyClass(java.lang.String,byte%5B%5D)" class="member-name-link">modifyClass(String, byte[])</a> - Static method in class com.avrix.agent.<a href="com/avrix/agent/AgentManager.html" title="class in com.avrix.agent">AgentManager</a></dt>
+<dt><a href="com/avrix/agent/ClassTransformer.html#modifyClass()" class="member-name-link">modifyClass()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent">ClassTransformer</a></dt>
 <dd>
-<div class="block">Method for modifying a class.</div>
+<div class="block">Method for performing class modification.</div>
+</dd>
+<dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html#modifyMethod(java.lang.String,java.lang.String,java.util.function.BiConsumer)" class="member-name-link">modifyMethod(String, String, BiConsumer&lt;CtClass, CtMethod&gt;)</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></dt>
+<dd>
+<div class="block">Applying modifications to a method by its name using a set of instructions.</div>
+</dd>
+<dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html#modifyMethod(java.lang.String,java.util.function.BiConsumer)" class="member-name-link">modifyMethod(String, BiConsumer&lt;CtClass, CtMethod&gt;)</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></dt>
+<dd>
+<div class="block">Applying modifications to a method by its name using a set of instructions.</div>
 </dd>
 </dl>
-<h2 class="title" id="I:P">P</h2>
+<h2 class="title" id="I:S">S</h2>
 <dl class="index">
-<dt><a href="com/avrix/agent/Patcher.html" class="type-name-link" title="class in com.avrix.agent">Patcher</a> - Class in <a href="com/avrix/agent/package-summary.html">com.avrix.agent</a></dt>
+<dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html#saveFile()" class="member-name-link">saveFile()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></dt>
 <dd>
-<div class="block">A class for modifying Java classes at runtime using the Javassist library.</div>
+<div class="block">Saving a modified class to the "debug" directory.</div>
 </dd>
-<dt><a href="com/avrix/agent/Patcher.PatcherBuilder.html" class="type-name-link" title="class in com.avrix.agent">Patcher.PatcherBuilder</a> - Class in <a href="com/avrix/agent/package-summary.html">com.avrix.agent</a></dt>
+<dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html#saveFile(java.nio.file.Path)" class="member-name-link">saveFile(Path)</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></dt>
 <dd>
-<div class="block">A class that implements the Builder pattern to create a <a href="com/avrix/agent/Patcher.html" title="class in com.avrix.agent"><code>Patcher</code></a> object</div>
-</dd>
-<dt><a href="com/avrix/agent/Patcher.PatcherBuilder.html#%3Cinit%3E(java.lang.String)" class="member-name-link">PatcherBuilder(String)</a> - Constructor for class com.avrix.agent.<a href="com/avrix/agent/Patcher.PatcherBuilder.html" title="class in com.avrix.agent">Patcher.PatcherBuilder</a></dt>
-<dd>
-<div class="block">Builder constructor.</div>
-</dd>
-<dt><a href="com/avrix/agent/Patcher.PatcherBuilder.html#patchMethod(java.lang.String,java.lang.String,java.lang.String,java.util.function.BiConsumer)" class="member-name-link">patchMethod(String, String, String, BiConsumer&lt;CtClass, CtMethod&gt;)</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/Patcher.PatcherBuilder.html" title="class in com.avrix.agent">Patcher.PatcherBuilder</a></dt>
-<dd>
-<div class="block">Applies a patch to the specified class method.</div>
-</dd>
-<dt><a href="com/avrix/agent/Patcher.PatcherBuilder.html#patchMethod(java.lang.String,java.util.function.BiConsumer)" class="member-name-link">patchMethod(String, BiConsumer&lt;CtClass, CtMethod&gt;)</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/Patcher.PatcherBuilder.html" title="class in com.avrix.agent">Patcher.PatcherBuilder</a></dt>
-<dd>
-<div class="block">Applies a patch to the specified class method.</div>
+<div class="block">Saving a modified class to the specified directory.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:T">T</h2>
@@ -170,8 +214,12 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">The transform method is called for each class that is loaded into the JVM.</div>
 </dd>
+<dt><a href="com/avrix/agent/AgentManager.html#transformClass(java.lang.String,byte%5B%5D)" class="member-name-link">transformClass(String, byte[])</a> - Static method in class com.avrix.agent.<a href="com/avrix/agent/AgentManager.html" title="class in com.avrix.agent">AgentManager</a></dt>
+<dd>
+<div class="block">Transforming a class by its name using a new class as a byte array.</div>
+</dd>
 </dl>
-<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:T">T</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a></main>
+<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a></main>
 </div>
 </div>
 </body>

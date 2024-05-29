@@ -78,7 +78,14 @@ if "%steamMode%"=="1" (
 rem Launching the application
 :launchApp
 for %%f in (./Avrix-Core-*.jar) do set "jarFile=%%~nf" & set "classPath=!classPath!%%f"
-set "javaArg=-Djava.awt.headless=true -Dzomboid.steam=%steamMode% -Dzomboid.znetlog=1 %javaOptions% -Djava.library.path=%libraryPath% -cp %classPath%"
+
+if "%jarFile%"=="" (
+    echo [Avrix-Launcher] The wrapper Jar file was not found! Place it next to the launcher!
+    pause
+    exit /b
+)
+
+set "javaArg=-Djava.awt.headless=true -Davrix.mode=server -Dzomboid.steam=%steamMode% -Dzomboid.znetlog=1 %javaOptions% -Djava.library.path=%libraryPath% -cp %classPath%"
 echo [Avrix-Launcher] Core: %jarFile% ^| OS: Win %osArchitecture% ^| JDK: %jdkVersion% ^| Steam mode: %steamOption%
 java -Djdk.attach.allowAttachSelf=true -XX:+EnableDynamicAgentLoading %javaArg% com.avrix.Launcher %1 %2
 

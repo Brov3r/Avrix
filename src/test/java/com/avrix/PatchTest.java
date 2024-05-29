@@ -1,13 +1,13 @@
 package com.avrix;
 
 import com.avrix.agent.AgentLoader;
-import com.avrix.agent.Patcher;
+import com.avrix.agent.ClassModifier;
 import javassist.CannotCompileException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * This class contains tests to validate the patching functionality of the {@link Patcher} class.
+ * This class contains tests to validate the patching functionality of the {@link ClassModifier} class.
  * It uses the Javassist library to dynamically modify bytecode of methods in the {@link ExampleClass}.
  */
 public class PatchTest {
@@ -26,8 +26,8 @@ public class PatchTest {
         AgentLoader.loadAgent(System.getenv("AGENT_JAR_PATH"));
 
         // Create a new patcher and define the patches to be applied
-        Patcher patch = new Patcher.PatcherBuilder("com.avrix.ExampleClass")
-                .patchMethod("getTest", (ctClass, ctMethod) -> {
+        ClassModifier patch = new ClassModifier.ClassModifierBuilder("com.avrix.ExampleClass")
+                .modifyMethod("getTest", (ctClass, ctMethod) -> {
                     try {
                         // Patch the method body to return true
                         ctMethod.setBody("{return true;}");
@@ -35,7 +35,7 @@ public class PatchTest {
                         throw new RuntimeException(e);
                     }
                 })
-                .patchMethod("getTest", (ctClass, ctMethod) -> {
+                .modifyMethod("getTest", (ctClass, ctMethod) -> {
                     try {
                         // Insert code to print "Hello world!" before the method body
                         ctMethod.insertBefore("{System.out.println(\"Hello world!\");}");
@@ -45,7 +45,7 @@ public class PatchTest {
                 }).build();
 
         // Apply the patches
-        patch.applyPatch();
+        patch.applyModifications();
 
         // Assert that the patched method returns true
         Assertions.assertTrue(ExampleClass.getTest(), "getTest should return true after patching");

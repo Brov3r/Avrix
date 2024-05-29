@@ -10,10 +10,14 @@
     <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/Brov3r/Avrix">
 </p>
 
-**Avrix** - a fundamentally new wrapper for running the Project Zomboid server with plugins.
+**Avrix** - a fundamentally new wrapper for running the Project Zomboid server and client with plugins (modifications).
 
-To run the server with this wrapper, you must first
+To run the client/server with this wrapper, you must first
 install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
+
+# Features
+
+- [JavaDoc](https://brov3r.github.io/Avrix/)
 
 # How to use
 
@@ -22,8 +26,9 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
    variable `ZOMBIE_FOLDER_PATH`
 3) Build the core using the `shadowJar` task
 4) Move the created Jar file to the root folder of the server
-5) Copy the launch script [`scripts/AvrixLauncher.bat`](./scripts/AvrixLauncher.bat) to the root folder of the server
-6) Run `AvrixLauncher.bat`
+5) Copy the launch script [`scripts/AvrixLauncher.bat`](./scripts/AvrixLauncher-Server.bat) to the root folder of the
+   client/server
+6) Run launch script
 
 # Disclaimer
 

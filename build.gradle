@@ -56,6 +56,18 @@ test {
 }
 
 /**
+ * Replacing data with current ones
+ */
+processResources {
+    filesMatching('**/avrix.properties') {
+        filter {
+            it.replace('%PROJECT_VERSION%', version)
+                    .replace('%PROJECT_NAME%', rootProject.name + " Loader")
+        }
+    }
+}
+
+/**
  * Creating a Jar file wrapper (core) to run a game server
  */
 shadowJar {
