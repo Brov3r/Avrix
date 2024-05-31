@@ -25,6 +25,22 @@ public class YamlFileTest {
     private YamlFile yamlFile;
 
     /**
+     * Test load from Jar
+     *
+     * @throws IOException If an I/O error occurs.
+     */
+    @Test
+    void testLoadFromJar() throws IOException, URISyntaxException {
+        String resourceUrl = new File(YamlFileTest.class.getClassLoader().getResource("yaml/testYamlJAR.jar").toURI()).getPath();
+        if (resourceUrl == null) {
+            throw new FileNotFoundException("testYamlJAR.jar not found in resources");
+        }
+        YamlFile yamlFile = new YamlFile(resourceUrl, "test.yml");
+
+        assertEquals("String Test", yamlFile.getString("test"));
+    }
+
+    /**
      * Test of saving and loading a YAML file
      *
      * @throws IOException If an I/O error occurs.
