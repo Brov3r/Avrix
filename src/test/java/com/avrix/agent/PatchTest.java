@@ -1,7 +1,5 @@
-package com.avrix;
+package com.avrix.agent;
 
-import com.avrix.agent.AgentLoader;
-import com.avrix.agent.ClassModifier;
 import javassist.CannotCompileException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -26,7 +24,7 @@ public class PatchTest {
         AgentLoader.loadAgent(System.getenv("AGENT_JAR_PATH"));
 
         // Create a new patcher and define the patches to be applied
-        ClassModifier patch = new ClassModifier.ClassModifierBuilder("com.avrix.ExampleClass")
+        ClassModifier patch = new ClassModifier.ClassModifierBuilder("com.avrix.agent.ExampleClass")
                 .modifyMethod("getTest", (ctClass, ctMethod) -> {
                     try {
                         // Patch the method body to return true

@@ -1,7 +1,9 @@
 package com.avrix.agent;
 
+import javassist.ByteArrayClassPath;
+import javassist.ClassPool;
+
 import java.lang.instrument.Instrumentation;
-import java.lang.instrument.UnmodifiableClassException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +36,10 @@ public class AgentManager {
      */
     public static void transformClass(String className, byte[] newClass) {
         try {
+            ClassPool pool = ClassPool.getDefault();
+            pool.removeClassPath(new ByteArrayClassPath(className, pool.get(className).toBytecode()));
+            pool.insertClassPath(new ByteArrayClassPath(className, newClass));
+
             Class<?> clazz = Class.forName(className);
 
             Instrumentation instrumentation = Agent.instrumentation;
@@ -52,7 +58,7 @@ public class AgentManager {
                     System.err.println("[!] Failed to modify class: " + clazz.getCanonicalName() + " due to unknown reasons.");
                 }
             }
-        } catch (UnmodifiableClassException | ClassNotFoundException e) {
+        } catch (Exception e) {
             System.err.printf("[!] Failed to modify class '%s'. Reason: %s%n", className, e.getMessage());
             e.printStackTrace();
         }

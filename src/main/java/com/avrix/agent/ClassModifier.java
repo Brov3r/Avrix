@@ -30,7 +30,6 @@ public class ClassModifier {
 
     /**
      * Applying modifications to the class being modified.
-     * After applying the changes, re-modification will occur from the original class.
      */
     public void applyModifications() {
         try {
@@ -65,8 +64,7 @@ public class ClassModifier {
          * @throws NotFoundException if the class is not found
          */
         private CtClass getCtClass(String className) throws NotFoundException {
-            ClassPool pool = ClassPool.getDefault();
-            return this.ctClass == null ? pool.get(className) : this.ctClass;
+            return this.ctClass == null ? ClassPool.getDefault().get(className) : this.ctClass;
         }
 
         /**

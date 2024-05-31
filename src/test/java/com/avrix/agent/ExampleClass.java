@@ -1,4 +1,4 @@
-package com.avrix;
+package com.avrix.agent;
 
 /**
  * Example class with a method that can be patched.
