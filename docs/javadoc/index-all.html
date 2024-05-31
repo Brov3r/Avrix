@@ -49,7 +49,7 @@ loadScripts(document, 'script');</script>
 <div class="header">
 <h1>Index</h1>
 </div>
-<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a>
+<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:Y">Y</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a>
 <h2 class="title" id="I:A">A</h2>
 <dl class="index">
 <dt><a href="com/avrix/agent/Agent.html" class="type-name-link" title="class in com.avrix.agent">Agent</a> - Class in <a href="com/avrix/agent/package-summary.html">com.avrix.agent</a></dt>
@@ -80,7 +80,7 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/agent/AgentTransformer.html#%3Cinit%3E()" class="member-name-link">AgentTransformer()</a> - Constructor for class com.avrix.agent.<a href="com/avrix/agent/AgentTransformer.html" title="class in com.avrix.agent">AgentTransformer</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/avrix/patches/PatchManager.html#applyDefaultPatches()" class="member-name-link">applyDefaultPatches()</a> - Static method in class com.avrix.patches.<a href="com/avrix/patches/PatchManager.html" title="class in com.avrix.patches">PatchManager</a></dt>
+<dt><a href="com/avrix/utils/PatchManager.html#applyDefaultPatches()" class="member-name-link">applyDefaultPatches()</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PatchManager.html" title="class in com.avrix.utils">PatchManager</a></dt>
 <dd>
 <div class="block">Applying default patches to game files.</div>
 </dd>
@@ -130,11 +130,17 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Constructor for creating a <a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent"><code>ClassTransformer</code></a> object.</div>
 </dd>
+<dt><a href="com/avrix/utils/YamlFile.html#clear()" class="member-name-link">clear()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Clears all the data in the YAML file.</div>
+</dd>
 <dt><a href="com/avrix/package-summary.html">com.avrix</a> - package com.avrix</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/agent/package-summary.html">com.avrix.agent</a> - package com.avrix.agent</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/patches/package-summary.html">com.avrix.patches</a> - package com.avrix.patches</dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/avrix/plugin/package-summary.html">com.avrix.plugin</a> - package com.avrix.plugin</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/utils/package-summary.html">com.avrix.utils</a> - package com.avrix.utils</dt>
 <dd>&nbsp;</dd>
@@ -144,12 +150,92 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/utils/Constants.html#%3Cinit%3E()" class="member-name-link">Constants()</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/Constants.html" title="class in com.avrix.utils">Constants</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#contains(java.lang.String)" class="member-name-link">contains(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Checks if a key exists in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#create(java.io.File)" class="member-name-link">create(File)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Creates a new YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#create(java.lang.String)" class="member-name-link">create(String)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Creates a new YAML file from a file path.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#create(java.nio.file.Path)" class="member-name-link">create(Path)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Creates a new YAML file from a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link"><code>Path</code></a>.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:G">G</h2>
 <dl class="index">
+<dt><a href="com/avrix/utils/YamlFile.html#getAll()" class="member-name-link">getAll()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Returns all the data in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getBoolean(java.lang.String)" class="member-name-link">getBoolean(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a boolean value from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getBooleanList(java.lang.String)" class="member-name-link">getBooleanList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a list of booleans from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getByte(java.lang.String)" class="member-name-link">getByte(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a byte value from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getByteList(java.lang.String)" class="member-name-link">getByteList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a list of bytes from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getChar(java.lang.String)" class="member-name-link">getChar(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a char value from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getCharacterList(java.lang.String)" class="member-name-link">getCharacterList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a list of characters from the YAML file.</div>
+</dd>
 <dt><a href="com/avrix/agent/ClassTransformer.html#getClassName()" class="member-name-link">getClassName()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent">ClassTransformer</a></dt>
 <dd>
 <div class="block">Getting the full name of the class that needs to be modified.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getDouble(java.lang.String)" class="member-name-link">getDouble(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a double value from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getDoubleList(java.lang.String)" class="member-name-link">getDoubleList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a list of doubles from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getFileName()" class="member-name-link">getFileName()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Returns the file name of the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getFilePath()" class="member-name-link">getFilePath()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Returns the file path of the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getInt(java.lang.String)" class="member-name-link">getInt(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets an integer value from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getIntegerList(java.lang.String)" class="member-name-link">getIntegerList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a list of integers from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getList(java.lang.String)" class="member-name-link">getList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a list of values from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getLong(java.lang.String)" class="member-name-link">getLong(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a long value from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getLongList(java.lang.String)" class="member-name-link">getLongList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a list of longs from the YAML file.</div>
 </dd>
 <dt><a href="com/avrix/agent/ClassTransformer.html#getModifierBuilder()" class="member-name-link">getModifierBuilder()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent">ClassTransformer</a></dt>
 <dd>
@@ -159,12 +245,44 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Method for getting a modified class by its name.</div>
 </dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getSectionKeys(java.lang.String)" class="member-name-link">getSectionKeys(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a set of keys from a section of the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getSectionValues(java.lang.String)" class="member-name-link">getSectionValues(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets the values of a section in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getShort(java.lang.String)" class="member-name-link">getShort(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a short value from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getShortList(java.lang.String)" class="member-name-link">getShortList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a list of shorts from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getString(java.lang.String)" class="member-name-link">getString(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a string value from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getStringList(java.lang.String)" class="member-name-link">getStringList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a list of strings from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getValue(java.lang.String)" class="member-name-link">getValue(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a value from the YAML file.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:I">I</h2>
 <dl class="index">
 <dt><a href="com/avrix/agent/Agent.html#instrumentation" class="member-name-link">instrumentation</a> - Static variable in class com.avrix.agent.<a href="com/avrix/agent/Agent.html" title="class in com.avrix.agent">Agent</a></dt>
 <dd>
 <div class="block">A <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.instrument/java/lang/instrument/Instrumentation.html" title="class or interface in java.lang.instrument" class="external-link"><code>Instrumentation</code></a> object used by the agent to access class data and load it into the JVM.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#isEmpty()" class="member-name-link">isEmpty()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Checks if the YAML file is empty.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:L">L</h2>
@@ -175,6 +293,18 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/Launcher.html#%3Cinit%3E()" class="member-name-link">Launcher()</a> - Constructor for class com.avrix.<a href="com/avrix/Launcher.html" title="class in com.avrix">Launcher</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#load(java.io.File)" class="member-name-link">load(File)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Loads a YAML file from a File.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#load(java.lang.String)" class="member-name-link">load(String)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Loads a YAML file from a file path.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#load(java.nio.file.Path)" class="member-name-link">load(Path)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Loads a YAML file from a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link"><code>Path</code></a>.</div>
+</dd>
 <dt><a href="com/avrix/agent/AgentLoader.html#loadAgent()" class="member-name-link">loadAgent()</a> - Static method in class com.avrix.agent.<a href="com/avrix/agent/AgentLoader.html" title="class in com.avrix.agent">AgentLoader</a></dt>
 <dd>
 <div class="block">The loadAgent method loads the agent into the current JVM if it is not already loaded.</div>
@@ -189,6 +319,14 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/Launcher.html#main(java.lang.String%5B%5D)" class="member-name-link">main(String[])</a> - Static method in class com.avrix.<a href="com/avrix/Launcher.html" title="class in com.avrix">Launcher</a></dt>
 <dd>
 <div class="block">The main method is the entry point of the Java application.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#merge(com.avrix.utils.YamlFile)" class="member-name-link">merge(YamlFile)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Merges another <a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils"><code>YamlFile</code></a> into this YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#merge(java.util.Map)" class="member-name-link">merge(Map&lt;String, Object&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Merges a map of data into the YAML file.</div>
 </dd>
 <dt><a href="com/avrix/agent/ClassTransformer.html#modifyClass()" class="member-name-link">modifyClass()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent">ClassTransformer</a></dt>
 <dd>
@@ -211,11 +349,20 @@ loadScripts(document, 'script');</script>
 <div class="block">Applying modifications to a method by its name using a set of instructions.</div>
 </dd>
 </dl>
+<h2 class="title" id="I:O">O</h2>
+<dl class="index">
+<dt><a href="com/avrix/plugin/Plugin.html#onInitialize()" class="member-name-link">onInitialize()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" title="class in com.avrix.plugin">Plugin</a></dt>
+<dd>
+<div class="block">Called when the plugin is initialized.</div>
+</dd>
+</dl>
 <h2 class="title" id="I:P">P</h2>
 <dl class="index">
-<dt><a href="com/avrix/patches/PatchManager.html" class="type-name-link" title="class in com.avrix.patches">PatchManager</a> - Class in <a href="com/avrix/patches/package-summary.html">com.avrix.patches</a></dt>
-<dd>&nbsp;</dd>
-<dt><a href="com/avrix/patches/PatchManager.html#%3Cinit%3E()" class="member-name-link">PatchManager()</a> - Constructor for class com.avrix.patches.<a href="com/avrix/patches/PatchManager.html" title="class in com.avrix.patches">PatchManager</a></dt>
+<dt><a href="com/avrix/utils/PatchManager.html" class="type-name-link" title="class in com.avrix.utils">PatchManager</a> - Class in <a href="com/avrix/utils/package-summary.html">com.avrix.utils</a></dt>
+<dd>
+<div class="block">Manager for making modifications to game files.</div>
+</dd>
+<dt><a href="com/avrix/utils/PatchManager.html#%3Cinit%3E()" class="member-name-link">PatchManager()</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/PatchManager.html" title="class in com.avrix.utils">PatchManager</a></dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/patches/PatchTest1.html" class="type-name-link" title="class in com.avrix.patches">PatchTest1</a> - Class in <a href="com/avrix/patches/package-summary.html">com.avrix.patches</a></dt>
 <dd>
@@ -233,9 +380,30 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Constructor for creating a <a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent"><code>ClassTransformer</code></a> object.</div>
 </dd>
+<dt><a href="com/avrix/plugin/Plugin.html" class="type-name-link" title="class in com.avrix.plugin">Plugin</a> - Class in <a href="com/avrix/plugin/package-summary.html">com.avrix.plugin</a></dt>
+<dd>
+<div class="block">Basic template for implementing the plugin entry point.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Plugin.html#%3Cinit%3E()" class="member-name-link">Plugin()</a> - Constructor for class com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" title="class in com.avrix.plugin">Plugin</a></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 class="title" id="I:R">R</h2>
+<dl class="index">
+<dt><a href="com/avrix/utils/YamlFile.html#remove(java.lang.String)" class="member-name-link">remove(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Removes a key from the YAML file.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:S">S</h2>
 <dl class="index">
+<dt><a href="com/avrix/utils/YamlFile.html#save()" class="member-name-link">save()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Saves the YAML file to its original file path.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#save(java.lang.String)" class="member-name-link">save(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Saves the YAML file to a specified file path.</div>
+</dd>
 <dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html#saveFile()" class="member-name-link">saveFile()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></dt>
 <dd>
 <div class="block">Saving a modified class to the "debug" directory.</div>
@@ -243,6 +411,78 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html#saveFile(java.nio.file.Path)" class="member-name-link">saveFile(Path)</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></dt>
 <dd>
 <div class="block">Saving a modified class to the specified directory.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setBoolean(java.lang.String,boolean)" class="member-name-link">setBoolean(String, boolean)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a boolean value in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setBooleanList(java.lang.String,java.util.List)" class="member-name-link">setBooleanList(String, List&lt;Boolean&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a list of booleans in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setByte(java.lang.String,byte)" class="member-name-link">setByte(String, byte)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a byte value in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setByteList(java.lang.String,java.util.List)" class="member-name-link">setByteList(String, List&lt;Byte&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a list of bytes in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setChar(java.lang.String,char)" class="member-name-link">setChar(String, char)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a char value in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setCharacterList(java.lang.String,java.util.List)" class="member-name-link">setCharacterList(String, List&lt;Character&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a list of characters in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setDouble(java.lang.String,double)" class="member-name-link">setDouble(String, double)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a double value in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setDoubleList(java.lang.String,java.util.List)" class="member-name-link">setDoubleList(String, List&lt;Double&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a list of doubles in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setInt(java.lang.String,int)" class="member-name-link">setInt(String, int)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets an integer value in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setIntegerList(java.lang.String,java.util.List)" class="member-name-link">setIntegerList(String, List&lt;Integer&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a list of integers in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setList(java.lang.String,java.util.List)" class="member-name-link">setList(String, List&lt;Object&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a list of values in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setLong(java.lang.String,long)" class="member-name-link">setLong(String, long)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a long value in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setLongList(java.lang.String,java.util.List)" class="member-name-link">setLongList(String, List&lt;Long&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a list of longs in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setShort(java.lang.String,short)" class="member-name-link">setShort(String, short)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a short value in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setShortList(java.lang.String,java.util.List)" class="member-name-link">setShortList(String, List&lt;Short&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a list of shorts in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setString(java.lang.String,java.lang.String)" class="member-name-link">setString(String, String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a string value in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setStringList(java.lang.String,java.util.List)" class="member-name-link">setStringList(String, List&lt;String&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a list of strings in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setValue(java.lang.String,java.lang.Object)" class="member-name-link">setValue(String, Object)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a value in the YAML file.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:T">T</h2>
@@ -256,7 +496,42 @@ loadScripts(document, 'script');</script>
 <div class="block">Transforming a class by its name using a new class as a byte array.</div>
 </dd>
 </dl>
-<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a></main>
+<h2 class="title" id="I:Y">Y</h2>
+<dl class="index">
+<dt><a href="com/avrix/utils/YamlFile.html" class="type-name-link" title="class in com.avrix.utils">YamlFile</a> - Class in <a href="com/avrix/utils/package-summary.html">com.avrix.utils</a></dt>
+<dd>
+<div class="block">This class represents a YAML file and provides methods to read, write, and manipulate its contents.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#%3Cinit%3E(java.io.File)" class="member-name-link">YamlFile(File)</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Constructor to load a YAML file from a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link"><code>File</code></a>.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#%3Cinit%3E(java.io.InputStream,java.nio.file.Path,java.lang.String)" class="member-name-link">YamlFile(InputStream, Path, String)</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Constructor to load a YAML file from an <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/InputStream.html" title="class or interface in java.io" class="external-link"><code>InputStream</code></a>.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#%3Cinit%3E(java.lang.String)" class="member-name-link">YamlFile(String)</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Constructor to load a YAML file from a file path.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#%3Cinit%3E(java.lang.String,java.lang.String)" class="member-name-link">YamlFile(String, String)</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Constructor to load a YAML file from a JAR file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#%3Cinit%3E(java.net.URI)" class="member-name-link">YamlFile(URI)</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Constructor to load a YAML file from a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/URI.html" title="class or interface in java.net" class="external-link"><code>URI</code></a>.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#%3Cinit%3E(java.net.URL)" class="member-name-link">YamlFile(URL)</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Constructor to load a YAML file from a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/URL.html" title="class or interface in java.net" class="external-link"><code>URL</code></a>.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#%3Cinit%3E(java.nio.file.Path)" class="member-name-link">YamlFile(Path)</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Constructor to load a YAML file from a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link"><code>Path</code></a>.</div>
+</dd>
+</dl>
+<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:Y">Y</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a></main>
 </div>
 </div>
 </body>

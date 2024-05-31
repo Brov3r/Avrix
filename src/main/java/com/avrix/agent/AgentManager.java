@@ -20,7 +20,7 @@ public class AgentManager {
      * @param className Class name
      * @return Modified class as a byte array
      */
-    public static byte[] getModifyClass(String className) {
+    public synchronized static byte[] getModifyClass(String className) {
         try {
             return modifyMap.remove(className);
         } catch (Exception e) {
@@ -34,7 +34,7 @@ public class AgentManager {
      * @param className Name of the class to modify
      * @param newClass  Modified class file as a byte array
      */
-    public static void transformClass(String className, byte[] newClass) {
+    public synchronized static void transformClass(String className, byte[] newClass) {
         try {
             ClassPool pool = ClassPool.getDefault();
             pool.removeClassPath(new ByteArrayClassPath(className, pool.get(className).toBytecode()));

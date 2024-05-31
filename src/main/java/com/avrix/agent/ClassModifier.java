@@ -63,7 +63,7 @@ public class ClassModifier {
          * @return the {@link CtClass} object
          * @throws NotFoundException if the class is not found
          */
-        private CtClass getCtClass(String className) throws NotFoundException {
+        private synchronized CtClass getCtClass(String className) throws NotFoundException {
             return this.ctClass == null ? ClassPool.getDefault().get(className) : this.ctClass;
         }
 

@@ -1,0 +1,113 @@
+# Example YAML file with various data types and lists, including negative values
+
+# Strings
+string: "This is a string"
+stringWithoutBrackets: This is a string
+stringMultiLine: |
+  First line
+  Second line
+
+# Integers
+integer: 123
+negativeInteger: -456
+
+# Floating point numbers
+float: 3.14
+negativeFloat: -2.718
+
+# Long
+long: 9223372036854775807
+negativeLong: -9223372036854775807
+
+# Double
+double: 1.7976931348623157E308
+negativeDouble: -1.7976931348623157E308
+
+# Short
+short: 32767
+negativeShort: -32767
+
+# Byte
+byte: 127
+negativeByte: -127
+
+# Char
+char: 'A'
+
+# Boolean values
+boolean_true: true
+boolean_false: false
+
+# Lists
+list:
+  - item1
+  - item2
+  - item3
+
+# Dictionaries
+dictionary:
+  key1: value1
+  key2: value2
+
+# Mixed data types
+mixed:
+  string: "String in a list"
+  integer: 456
+  boolean: true
+  list:
+    - subitem1
+    - subitem2
+
+# Nested data structures
+nested:
+  key1:
+    - "Nested string"
+  key2: 123
+
+# Integers list
+integers_list:
+  - 1
+  - -2
+  - 3
+
+# Floats list
+floats_list:
+  - 1.1
+  - -2.2
+  - 3.3
+
+# Longs list
+longs_list:
+  - 9223372036854775807
+  - -9223372036854775807
+  - 9223372036854775806
+
+# Doubles list
+doubles_list:
+  - 1.7976931348623157E308
+  - -1.7976931348623157E308
+  - 1.7976931348623156E308
+
+# Shorts list
+shorts_list:
+  - 32767
+  - -32767
+  - 32766
+
+# Bytes list
+bytes_list:
+  - 127
+  - -127
+  - 126
+
+# Chars list
+chars_list:
+  - 'A'
+  - 'B'
+  - 'C'
+
+# Booleans list
+booleans_list:
+  - true
+  - false
+  - true

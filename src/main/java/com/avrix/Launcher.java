@@ -1,7 +1,7 @@
 package com.avrix;
 
 import com.avrix.agent.AgentLoader;
-import com.avrix.patches.PatchManager;
+import com.avrix.utils.PatchManager;
 import zombie.ZomboidFileSystem;
 import zombie.gameStates.MainScreenState;
 import zombie.network.GameServer;

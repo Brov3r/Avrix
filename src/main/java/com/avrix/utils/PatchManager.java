@@ -1,4 +1,4 @@
-package com.avrix.patches;
+package com.avrix.utils;
 
 import com.avrix.Launcher;
 import com.avrix.agent.ClassTransformer;

@@ -19,7 +19,7 @@ public class AgentLoader {
      *
      * @param agentJarPath path to the Jar file with this agent
      */
-    public static void loadAgent(String agentJarPath) {
+    public synchronized static void loadAgent(String agentJarPath) {
         if (Agent.instrumentation != null) return;
 
         try {
@@ -42,7 +42,7 @@ public class AgentLoader {
      * The resulting path is passed to the loadAgent method of the {@link VirtualMachine} class to load the agent.
      * After the agent is loaded, the detach method is called to detach from the virtual machine.
      */
-    public static void loadAgent() {
+    public synchronized static void loadAgent() {
         try {
             loadAgent(new File(Agent.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath());
         } catch (Exception e) {
