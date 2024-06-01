@@ -552,18 +552,19 @@ public class YamlFile {
         setValue(key, String.valueOf(value));
     }
 
+
     /**
-     * Gets a set of keys from a section of the YAML file.
+     * Retrieves the keys of the map stored under the specified key in the YAML file.
      *
-     * @param sectionKey the key of the section to get the keys from
-     * @return a set of keys in the section, or null if the section does not exist or is not a map
+     * @param key the key of the map in the YAML file
+     * @return a set containing the keys of the map, or null if the key does not exist or does not contain a map
      */
     @SuppressWarnings("unchecked")
-    public final Set<String> getSectionKeys(String sectionKey) {
-        Object section = getValue(sectionKey);
+    public final Set<String> getMapKeys(String key) {
+        Object object = getValue(key);
 
-        if (section instanceof Map) {
-            Map<String, Object> map = (Map<String, Object>) section;
+        if (object instanceof Map) {
+            Map<String, Object> map = (Map<String, Object>) object;
             return map.keySet();
         }
 
@@ -571,18 +572,128 @@ public class YamlFile {
     }
 
     /**
-     * Gets the values of a section in the YAML file.
+     * Retrieves the values of the map stored under the specified key in the YAML file.
      *
-     * @param sectionKey the key of the section to get the values from
-     * @return the collection of values in the section, or null if the section is not a map or does not exist
+     * @param key the key of the map in the YAML file
+     * @return a collection containing the values of the map, or null if the key does not exist or does not contain a map
      */
     @SuppressWarnings("unchecked")
-    public final Collection<Object> getSectionValues(String sectionKey) {
-        Object section = getValue(sectionKey);
-        if (section instanceof Map) {
-            return ((Map<String, Object>) section).values();
+    public final Collection<Object> getMapValues(String key) {
+        Object object = getValue(key);
+        if (object instanceof Map) {
+            return ((Map<String, Object>) object).values();
         }
         return null;
+    }
+
+    /**
+     * Sets a map in the YAML file under the specified key.
+     *
+     * @param key the key where the map should be set
+     * @param map the map to set
+     */
+    public void setMap(String key, Map<String, Object> map) {
+        setValue(key, map);
+    }
+
+    /**
+     * Gets a map from the YAML file stored under the specified key.
+     *
+     * @param key the key of the map to retrieve
+     * @return the map stored under the specified key, or null if the key does not exist or does not contain a map
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getMap(String key) {
+        Object value = getValue(key);
+        return (value instanceof Map) ? (Map<String, Object>) value : null;
+    }
+
+    /**
+     * Sets a map of string values in the YAML file under the specified key.
+     *
+     * @param key the key where the map should be set
+     * @param map the map of string values to set
+     */
+    public void setStringMap(String key, Map<String, String> map) {
+        setValue(key, map);
+    }
+
+    /**
+     * Gets a map of string values from the YAML file stored under the specified key.
+     *
+     * @param key the key of the map to retrieve
+     * @return the map of string values stored under the specified key, or null if the key does not exist or does not contain a map
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, String> getStringMap(String key) {
+        Object value = getValue(key);
+        return (value instanceof Map) ? (Map<String, String>) value : null;
+    }
+
+    /**
+     * Sets a map of double values in the YAML file under the specified key.
+     *
+     * @param key the key where the map should be set
+     * @param map the map of double values to set
+     */
+    public void setDoubleMap(String key, Map<String, Double> map) {
+        setValue(key, map);
+    }
+
+    /**
+     * Gets a map of double values from the YAML file stored under the specified key.
+     *
+     * @param key the key of the map to retrieve
+     * @return the map of double values stored under the specified key, or null if the key does not exist or does not contain a map
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Double> getDoubleMap(String key) {
+        Object value = getValue(key);
+        return (value instanceof Map) ? (Map<String, Double>) value : null;
+    }
+
+    /**
+     * Sets a map of integer values in the YAML file under the specified key.
+     *
+     * @param key the key where the map should be set
+     * @param map the map of integer values to set
+     */
+    public void setIntMap(String key, Map<String, Integer> map) {
+        setValue(key, map);
+    }
+
+    /**
+     * Gets a map of integer values from the YAML file stored under the specified key.
+     *
+     * @param key the key of the map to retrieve
+     * @return the map of integer values stored under the specified key, or null if the key does not exist or does not contain a map
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Integer> getIntMap(String key) {
+        Object value = getValue(key);
+        return (value instanceof Map) ? (Map<String, Integer>) value : null;
+    }
+
+    /**
+     * Sets a map of boolean values in the YAML file under the specified key.
+     *
+     * @param key the key where the map should be set
+     * @param map the map of boolean values to set
+     */
+    public void setBooleanMap(String key, Map<String, Boolean> map) {
+        setValue(key, map);
+    }
+
+    /**
+     * Gets a map of boolean values from the YAML file stored under the specified key.
+     *
+     * @param key the key of the map to retrieve
+     * @return the map of boolean values stored under the specified key, or null if the key does not exist or does not contain a map
+     */
+    @SuppressWarnings("unchecked")
+    public Map<String, Boolean> getBooleanMap(String key) {
+        Object value = getValue(key);
+        return (value instanceof Map) ? (Map<String, Boolean>) value : null;
     }
 
     /**

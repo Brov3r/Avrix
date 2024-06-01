@@ -49,7 +49,7 @@ loadScripts(document, 'script');</script>
 <div class="header">
 <h1>Index</h1>
 </div>
-<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:Y">Y</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a>
+<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:V">V</a>&nbsp;<a href="#I:Y">Y</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a>
 <h2 class="title" id="I:A">A</h2>
 <dl class="index">
 <dt><a href="com/avrix/agent/Agent.html" class="type-name-link" title="class in com.avrix.agent">Agent</a> - Class in <a href="com/avrix/agent/package-summary.html">com.avrix.agent</a></dt>
@@ -92,6 +92,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Applying modifications to the class being modified.</div>
 </dd>
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#author(java.lang.String)" class="member-name-link">author(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Sets the author of the plugin.</div>
+</dd>
 <dt><a href="com/avrix/utils/Constants.html#AVRIX_NAME" class="member-name-link">AVRIX_NAME</a> - Static variable in class com.avrix.utils.<a href="com/avrix/utils/Constants.html" title="class in com.avrix.utils">Constants</a></dt>
 <dd>
 <div class="block">Project name</div>
@@ -106,6 +110,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html#build()" class="member-name-link">build()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></dt>
 <dd>
 <div class="block">Creates a <a href="com/avrix/agent/ClassModifier.html" title="class in com.avrix.agent"><code>ClassModifier</code></a> object based on the current state of the builder.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#build()" class="member-name-link">build()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Builds and returns the <a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin"><code>Metadata</code></a> instance.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:C">C</h2>
@@ -150,6 +158,10 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/utils/Constants.html#%3Cinit%3E()" class="member-name-link">Constants()</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/Constants.html" title="class in com.avrix.utils">Constants</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#contacts(java.lang.String)" class="member-name-link">contacts(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Sets the contact information for the plugin author.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#contains(java.lang.String)" class="member-name-link">contains(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Checks if a key exists in the YAML file.</div>
@@ -167,11 +179,33 @@ loadScripts(document, 'script');</script>
 <div class="block">Creates a new YAML file from a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link"><code>Path</code></a>.</div>
 </dd>
 </dl>
+<h2 class="title" id="I:D">D</h2>
+<dl class="index">
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#dependencies(java.util.Map)" class="member-name-link">dependencies(Map&lt;String, String&gt;)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Sets the map of dependencies for the plugin.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#description(java.lang.String)" class="member-name-link">description(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Sets the description of the plugin.</div>
+</dd>
+</dl>
+<h2 class="title" id="I:E">E</h2>
+<dl class="index">
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#entryPointsList(java.util.List)" class="member-name-link">entryPointsList(List&lt;String&gt;)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Sets the list of entry points for the plugin.</div>
+</dd>
+</dl>
 <h2 class="title" id="I:G">G</h2>
 <dl class="index">
 <dt><a href="com/avrix/utils/YamlFile.html#getAll()" class="member-name-link">getAll()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Returns all the data in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Metadata.html#getAuthor()" class="member-name-link">getAuthor()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
+<dd>
+<div class="block">Returns the author of the plugin.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getBoolean(java.lang.String)" class="member-name-link">getBoolean(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -180,6 +214,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/utils/YamlFile.html#getBooleanList(java.lang.String)" class="member-name-link">getBooleanList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Gets a list of booleans from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getBooleanMap(java.lang.String)" class="member-name-link">getBooleanMap(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a map of boolean values from the YAML file stored under the specified key.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getByte(java.lang.String)" class="member-name-link">getByte(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -201,6 +239,18 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Getting the full name of the class that needs to be modified.</div>
 </dd>
+<dt><a href="com/avrix/plugin/Metadata.html#getContacts()" class="member-name-link">getContacts()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
+<dd>
+<div class="block">Returns the contact information for the plugin author.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Metadata.html#getDependencies()" class="member-name-link">getDependencies()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
+<dd>
+<div class="block">Returns the map of dependencies for the plugin.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Metadata.html#getDescription()" class="member-name-link">getDescription()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
+<dd>
+<div class="block">Returns the description of the plugin.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getDouble(java.lang.String)" class="member-name-link">getDouble(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Gets a double value from the YAML file.</div>
@@ -208,6 +258,14 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/utils/YamlFile.html#getDoubleList(java.lang.String)" class="member-name-link">getDoubleList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Gets a list of doubles from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getDoubleMap(java.lang.String)" class="member-name-link">getDoubleMap(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a map of double values from the YAML file stored under the specified key.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Metadata.html#getEntryPointsList()" class="member-name-link">getEntryPointsList()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
+<dd>
+<div class="block">Returns the list of entry points for the plugin.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getFileName()" class="member-name-link">getFileName()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -217,6 +275,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Returns the file path of the YAML file.</div>
 </dd>
+<dt><a href="com/avrix/plugin/Metadata.html#getId()" class="member-name-link">getId()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
+<dd>
+<div class="block">Returns the ID of the plugin.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getInt(java.lang.String)" class="member-name-link">getInt(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Gets an integer value from the YAML file.</div>
@@ -224,6 +286,14 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/utils/YamlFile.html#getIntegerList(java.lang.String)" class="member-name-link">getIntegerList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Gets a list of integers from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getIntMap(java.lang.String)" class="member-name-link">getIntMap(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a map of integer values from the YAML file stored under the specified key.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Metadata.html#getLicense()" class="member-name-link">getLicense()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
+<dd>
+<div class="block">Returns the license of the plugin.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getList(java.lang.String)" class="member-name-link">getList(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -237,6 +307,18 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Gets a list of longs from the YAML file.</div>
 </dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getMap(java.lang.String)" class="member-name-link">getMap(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a map from the YAML file stored under the specified key.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getMapKeys(java.lang.String)" class="member-name-link">getMapKeys(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Retrieves the keys of the map stored under the specified key in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getMapValues(java.lang.String)" class="member-name-link">getMapValues(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Retrieves the values of the map stored under the specified key in the YAML file.</div>
+</dd>
 <dt><a href="com/avrix/agent/ClassTransformer.html#getModifierBuilder()" class="member-name-link">getModifierBuilder()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent">ClassTransformer</a></dt>
 <dd>
 <div class="block">Gets the <a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent"><code>ClassModifier.ClassModifierBuilder</code></a> for building class modifiers.</div>
@@ -245,13 +327,13 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Method for getting a modified class by its name.</div>
 </dd>
-<dt><a href="com/avrix/utils/YamlFile.html#getSectionKeys(java.lang.String)" class="member-name-link">getSectionKeys(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dt><a href="com/avrix/plugin/Metadata.html#getName()" class="member-name-link">getName()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
-<div class="block">Gets a set of keys from a section of the YAML file.</div>
+<div class="block">Returns the name of the plugin.</div>
 </dd>
-<dt><a href="com/avrix/utils/YamlFile.html#getSectionValues(java.lang.String)" class="member-name-link">getSectionValues(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dt><a href="com/avrix/plugin/Metadata.html#getPatchList()" class="member-name-link">getPatchList()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
-<div class="block">Gets the values of a section in the YAML file.</div>
+<div class="block">Returns the list of patches for the plugin.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getShort(java.lang.String)" class="member-name-link">getShort(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -269,13 +351,25 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Gets a list of strings from the YAML file.</div>
 </dd>
+<dt><a href="com/avrix/utils/YamlFile.html#getStringMap(java.lang.String)" class="member-name-link">getStringMap(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Gets a map of string values from the YAML file stored under the specified key.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getValue(java.lang.String)" class="member-name-link">getValue(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Gets a value from the YAML file.</div>
 </dd>
+<dt><a href="com/avrix/plugin/Metadata.html#getVersion()" class="member-name-link">getVersion()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
+<dd>
+<div class="block">Returns the version of the plugin.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:I">I</h2>
 <dl class="index">
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#id(java.lang.String)" class="member-name-link">id(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Sets the ID of the plugin.</div>
+</dd>
 <dt><a href="com/avrix/agent/Agent.html#instrumentation" class="member-name-link">instrumentation</a> - Static variable in class com.avrix.agent.<a href="com/avrix/agent/Agent.html" title="class in com.avrix.agent">Agent</a></dt>
 <dd>
 <div class="block">A <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.instrument/java/lang/instrument/Instrumentation.html" title="class or interface in java.lang.instrument" class="external-link"><code>Instrumentation</code></a> object used by the agent to access class data and load it into the JVM.</div>
@@ -293,6 +387,10 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/Launcher.html#%3Cinit%3E()" class="member-name-link">Launcher()</a> - Constructor for class com.avrix.<a href="com/avrix/Launcher.html" title="class in com.avrix">Launcher</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#license(java.lang.String)" class="member-name-link">license(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Sets the license of the plugin.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#load(java.io.File)" class="member-name-link">load(File)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Loads a YAML file from a File.</div>
@@ -328,6 +426,18 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Merges a map of data into the YAML file.</div>
 </dd>
+<dt><a href="com/avrix/plugin/Metadata.html" class="type-name-link" title="class in com.avrix.plugin">Metadata</a> - Class in <a href="com/avrix/plugin/package-summary.html">com.avrix.plugin</a></dt>
+<dd>
+<div class="block">Represents metadata for a plugin, including various details such as name, description, author, version, and dependencies.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html" class="type-name-link" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a> - Class in <a href="com/avrix/plugin/package-summary.html">com.avrix.plugin</a></dt>
+<dd>
+<div class="block">Builder class for constructing <a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin"><code>Metadata</code></a> instances.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#%3Cinit%3E()" class="member-name-link">MetadataBuilder()</a> - Constructor for class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Creates a new builder instance.</div>
+</dd>
 <dt><a href="com/avrix/agent/ClassTransformer.html#modifyClass()" class="member-name-link">modifyClass()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent">ClassTransformer</a></dt>
 <dd>
 <div class="block">Method for performing class modification.</div>
@@ -349,6 +459,13 @@ loadScripts(document, 'script');</script>
 <div class="block">Applying modifications to a method by its name using a set of instructions.</div>
 </dd>
 </dl>
+<h2 class="title" id="I:N">N</h2>
+<dl class="index">
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#name(java.lang.String)" class="member-name-link">name(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Sets the name of the plugin.</div>
+</dd>
+</dl>
 <h2 class="title" id="I:O">O</h2>
 <dl class="index">
 <dt><a href="com/avrix/plugin/Plugin.html#onInitialize()" class="member-name-link">onInitialize()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" title="class in com.avrix.plugin">Plugin</a></dt>
@@ -358,6 +475,10 @@ loadScripts(document, 'script');</script>
 </dl>
 <h2 class="title" id="I:P">P</h2>
 <dl class="index">
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#patchList(java.util.List)" class="member-name-link">patchList(List&lt;String&gt;)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Sets the list of patches for the plugin.</div>
+</dd>
 <dt><a href="com/avrix/utils/PatchManager.html" class="type-name-link" title="class in com.avrix.utils">PatchManager</a> - Class in <a href="com/avrix/utils/package-summary.html">com.avrix.utils</a></dt>
 <dd>
 <div class="block">Manager for making modifications to game files.</div>
@@ -420,6 +541,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Sets a list of booleans in the YAML file.</div>
 </dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setBooleanMap(java.lang.String,java.util.Map)" class="member-name-link">setBooleanMap(String, Map&lt;String, Boolean&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a map of boolean values in the YAML file under the specified key.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#setByte(java.lang.String,byte)" class="member-name-link">setByte(String, byte)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Sets a byte value in the YAML file.</div>
@@ -444,6 +569,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Sets a list of doubles in the YAML file.</div>
 </dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setDoubleMap(java.lang.String,java.util.Map)" class="member-name-link">setDoubleMap(String, Map&lt;String, Double&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a map of double values in the YAML file under the specified key.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#setInt(java.lang.String,int)" class="member-name-link">setInt(String, int)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Sets an integer value in the YAML file.</div>
@@ -451,6 +580,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/utils/YamlFile.html#setIntegerList(java.lang.String,java.util.List)" class="member-name-link">setIntegerList(String, List&lt;Integer&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Sets a list of integers in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setIntMap(java.lang.String,java.util.Map)" class="member-name-link">setIntMap(String, Map&lt;String, Integer&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a map of integer values in the YAML file under the specified key.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#setList(java.lang.String,java.util.List)" class="member-name-link">setList(String, List&lt;Object&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -463,6 +596,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/utils/YamlFile.html#setLongList(java.lang.String,java.util.List)" class="member-name-link">setLongList(String, List&lt;Long&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Sets a list of longs in the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setMap(java.lang.String,java.util.Map)" class="member-name-link">setMap(String, Map&lt;String, Object&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a map in the YAML file under the specified key.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#setShort(java.lang.String,short)" class="member-name-link">setShort(String, short)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -480,6 +617,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Sets a list of strings in the YAML file.</div>
 </dd>
+<dt><a href="com/avrix/utils/YamlFile.html#setStringMap(java.lang.String,java.util.Map)" class="member-name-link">setStringMap(String, Map&lt;String, String&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
+<dd>
+<div class="block">Sets a map of string values in the YAML file under the specified key.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#setValue(java.lang.String,java.lang.Object)" class="member-name-link">setValue(String, Object)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Sets a value in the YAML file.</div>
@@ -494,6 +635,13 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/agent/AgentManager.html#transformClass(java.lang.String,byte%5B%5D)" class="member-name-link">transformClass(String, byte[])</a> - Static method in class com.avrix.agent.<a href="com/avrix/agent/AgentManager.html" title="class in com.avrix.agent">AgentManager</a></dt>
 <dd>
 <div class="block">Transforming a class by its name using a new class as a byte array.</div>
+</dd>
+</dl>
+<h2 class="title" id="I:V">V</h2>
+<dl class="index">
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#version(java.lang.String)" class="member-name-link">version(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Sets the version of the plugin.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:Y">Y</h2>
@@ -531,7 +679,7 @@ loadScripts(document, 'script');</script>
 <div class="block">Constructor to load a YAML file from a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link"><code>Path</code></a>.</div>
 </dd>
 </dl>
-<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:Y">Y</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a></main>
+<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:V">V</a>&nbsp;<a href="#I:Y">Y</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a></main>
 </div>
 </div>
 </body>

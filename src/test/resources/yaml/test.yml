@@ -111,3 +111,46 @@ booleans_list:
   - true
   - false
   - true
+
+# Map
+map_list:
+  section1: "123"
+  section2: "1.2.3"
+  section3: "0-02"
+
+# Map of string values
+string_map:
+  key1: "value1"
+  key2: "value2"
+  key3: "value3"
+
+# Map of double values
+double_map:
+  key1: 1.23
+  key2: 4.56
+  key3: -7.89
+
+# Map of integer values
+int_map:
+  key1: 123
+  key2: -456
+
+# Map of byte values
+byte_map:
+  key1: 10
+  key2: -20
+
+# Map of short values
+short_map:
+  key1: 100
+  key2: -200
+
+# Map of char values (each char is represented as a string)
+char_map:
+  key1: "a"
+  key2: "b"
+
+# Map of boolean values
+boolean_map:
+  key1: true
+  key2: false

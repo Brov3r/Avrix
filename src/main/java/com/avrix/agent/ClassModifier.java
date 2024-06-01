@@ -9,23 +9,24 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 /**
  * A class for modifying Java classes at runtime using the <a href="https://www.javassist.org/">Javassist library</a>.
  */
 public class ClassModifier {
-    private final CtClass ctClass; // Represents a modifiable class
-    private final String className; // Path to class
+    private CtClass ctClass; // Represents a modifiable class
+    private String className; // Path to class
 
     /**
      * Constructor for creating a {@link ClassModifier} object.
      *
-     * @param builder the {@link ClassModifierBuilder} object used to build the {@link ClassModifier}.
+     * @param className the name of the class that needs to be modified
      */
-    private ClassModifier(ClassModifierBuilder builder) {
-        this.ctClass = builder.ctClass;
-        this.className = builder.className;
+    private ClassModifier(String className) {
+        this.className = className;
+        this.ctClass = null;
     }
 
     /**
@@ -44,8 +45,7 @@ public class ClassModifier {
      * A class that implements the Builder pattern to create a {@link ClassModifier} object
      */
     public static class ClassModifierBuilder {
-        private final String className; // Path to class
-        private CtClass ctClass; // Represents a modifiable class
+        private final ClassModifier classModifier; // {@link ClassModifier} object
 
         /**
          * Builder constructor for class {@link ClassModifier}
@@ -53,7 +53,7 @@ public class ClassModifier {
          * @param className the name of the class that needs to be modified
          */
         public ClassModifierBuilder(String className) {
-            this.className = className;
+            this.classModifier = new ClassModifier(className);
         }
 
         /**
@@ -64,7 +64,7 @@ public class ClassModifier {
          * @throws NotFoundException if the class is not found
          */
         private synchronized CtClass getCtClass(String className) throws NotFoundException {
-            return this.ctClass == null ? ClassPool.getDefault().get(className) : this.ctClass;
+            return this.classModifier.ctClass == null ? ClassPool.getDefault().get(className) : this.classModifier.ctClass;
         }
 
         /**
@@ -87,11 +87,11 @@ public class ClassModifier {
          * @return the {@link ClassModifierBuilder} instance for the call chain
          */
         public ClassModifierBuilder modifyMethod(String methodName, String methodSignature, BiConsumer<CtClass, CtMethod> methodModifier) {
-            System.out.printf("[#] Attempt to patch a class '%s' in method: '%s'%s%n", this.className, methodName,
+            System.out.printf("[#] Attempt to patch a class '%s' in method: '%s'%s%n", this.classModifier.className, methodName,
                     methodSignature != null ? "(" + methodSignature + " args)" : "");
 
             try {
-                CtClass modifyClass = getCtClass(this.className);
+                CtClass modifyClass = getCtClass(this.classModifier.className);
                 CtMethod ctMethod;
 
                 if (methodSignature == null) {
@@ -107,9 +107,9 @@ public class ClassModifier {
                 methodModifier.accept(modifyClass, ctMethod);
                 modifyClass.detach();
 
-                this.ctClass = modifyClass;
+                this.classModifier.ctClass = modifyClass;
             } catch (Exception e) {
-                System.out.printf("[!] An error occurred while patching class '%s'. Reason: %s%n", this.className, e.getMessage());
+                System.out.printf("[!] An error occurred while patching class '%s'. Reason: %s%n", this.classModifier.className, e.getMessage());
                 throw new RuntimeException(e);
             }
 
@@ -139,7 +139,8 @@ public class ClassModifier {
          * @return {@link ClassModifier} object
          */
         public ClassModifier build() {
-            return new ClassModifier(this);
+            Objects.requireNonNull(this.classModifier.ctClass, "[!] You must make modifications before building the ClassModifier!");
+            return this.classModifier;
         }
 
         /**
@@ -158,17 +159,17 @@ public class ClassModifier {
          * @param path path to the directory where the class will be saved
          */
         public void saveFile(Path path) {
-            System.out.printf("[#] Saving a modified class '%s' to directory: %s%n", this.className, path);
+            System.out.printf("[#] Saving a modified class '%s' to directory: %s%n", this.classModifier.className, path);
 
             try {
                 Files.createDirectories(path);
-                ctClass.writeFile(path.toString());
+                this.classModifier.ctClass.writeFile(path.toString());
 
-                System.out.printf("[#] Class '%s' successfully saved to directory: %s%n", this.className, path);
+                System.out.printf("[#] Class '%s' successfully saved to directory: %s%n", this.classModifier.className, path);
             } catch (IOException e) {
-                System.err.printf("[!] Failed to save class '%s' to directory '%s'. Reason: %s%n", this.className, path, e.getMessage());
+                System.err.printf("[!] Failed to save class '%s' to directory '%s'. Reason: %s%n", this.classModifier.className, path, e.getMessage());
             } catch (Exception e) {
-                System.err.printf("[!] An error occurred while saving class '%s' to directory '%s'. Reason: %s%n", this.className, path, e.getMessage());
+                System.err.printf("[!] An error occurred while saving class '%s' to directory '%s'. Reason: %s%n", this.classModifier.className, path, e.getMessage());
             }
         }
     }

@@ -11,7 +11,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -129,6 +129,155 @@ public class YamlFileTest {
             throw new FileNotFoundException("test.yml not found in resources");
         }
         yamlFile = new YamlFile(resourceUrl);
+    }
+
+    /**
+     * Tests the retrieval of keys from a map stored in the YAML file.
+     */
+    @Test
+    void testStringMap() {
+        Map<String, String> expectedStringMap = new HashMap<>();
+        expectedStringMap.put("key1", "value1");
+        expectedStringMap.put("key2", "value2");
+        expectedStringMap.put("key3", "value3");
+
+        Map<String, String> retrievedStringMap = yamlFile.getStringMap("string_map");
+
+        assertNotNull(retrievedStringMap);
+        assertEquals(expectedStringMap.size(), retrievedStringMap.size());
+        expectedStringMap.forEach((key, expectedValue) -> {
+            assertTrue(retrievedStringMap.containsKey(key));
+            assertEquals(expectedValue, retrievedStringMap.get(key));
+        });
+    }
+
+    /**
+     * Tests the retrieval of keys from a map stored in the YAML file.
+     */
+    @Test
+    void testDoubleMap() {
+        Map<String, Double> expectedDoubleMap = new HashMap<>();
+        expectedDoubleMap.put("key1", 1.23);
+        expectedDoubleMap.put("key2", 4.56);
+        expectedDoubleMap.put("key3", -7.89);
+
+        Map<String, Double> retrievedDoubleMap = yamlFile.getDoubleMap("double_map");
+
+        assertNotNull(retrievedDoubleMap);
+        assertEquals(expectedDoubleMap.size(), retrievedDoubleMap.size());
+        expectedDoubleMap.forEach((key, expectedValue) -> {
+            assertTrue(retrievedDoubleMap.containsKey(key));
+            assertEquals(expectedValue, retrievedDoubleMap.get(key));
+        });
+    }
+
+    /**
+     * Tests the retrieval of keys from a map stored in the YAML file.
+     */
+    @Test
+    void testIntMap() {
+        Map<String, Integer> expectedIntMap = new HashMap<>();
+        expectedIntMap.put("key1", 123);
+        expectedIntMap.put("key2", -456);
+
+        Map<String, Integer> retrievedIntMap = yamlFile.getIntMap("int_map");
+
+        assertNotNull(retrievedIntMap);
+        assertEquals(expectedIntMap.size(), retrievedIntMap.size());
+        expectedIntMap.forEach((key, expectedValue) -> {
+            assertTrue(retrievedIntMap.containsKey(key));
+            assertEquals(expectedValue, retrievedIntMap.get(key));
+        });
+    }
+
+    /**
+     * Tests the retrieval of keys from a map stored in the YAML file.
+     */
+    @Test
+    void testBooleanMap() {
+        Map<String, Boolean> expectedBooleanMap = new HashMap<>();
+        expectedBooleanMap.put("key1", true);
+        expectedBooleanMap.put("key2", false);
+
+        Map<String, Boolean> retrievedBooleanMap = yamlFile.getBooleanMap("boolean_map");
+
+        assertNotNull(retrievedBooleanMap);
+        assertEquals(expectedBooleanMap.size(), retrievedBooleanMap.size());
+        expectedBooleanMap.forEach((key, expectedValue) -> {
+            assertTrue(retrievedBooleanMap.containsKey(key));
+            assertEquals(expectedValue, retrievedBooleanMap.get(key));
+        });
+    }
+
+    /**
+     * Tests the retrieval of keys from a map stored in the YAML file.
+     */
+    @Test
+    void testGetMapKeys() {
+        Set<String> keys = yamlFile.getMapKeys("map_list");
+
+        assertNotNull(keys);
+        assertEquals(3, keys.size());
+        assertTrue(keys.contains("section1"));
+        assertTrue(keys.contains("section2"));
+        assertTrue(keys.contains("section3"));
+    }
+
+    /**
+     * Tests the retrieval of values from a map stored in the YAML file.
+     */
+    @Test
+    void testGetMapValues() {
+        Collection<Object> values = yamlFile.getMapValues("map_list");
+
+        assertNotNull(values);
+        assertEquals(3, values.size());
+        assertTrue(values.contains("123"));
+        assertTrue(values.contains("1.2.3"));
+        assertTrue(values.contains("0-02"));
+    }
+
+    /**
+     * Tests setting a map in the YAML file.
+     */
+    @Test
+    void testSetMap() {
+        String key = "new_map";
+        Map<String, Object> newMap = new LinkedHashMap<>();
+        newMap.put("key1", "value1");
+        newMap.put("key2", "value2");
+
+        yamlFile.setMap(key, newMap);
+        Set<String> keys = yamlFile.getMapKeys(key);
+        Collection<Object> values = yamlFile.getMapValues(key);
+
+        assertNotNull(keys);
+        assertNotNull(values);
+        assertEquals(2, keys.size());
+        assertEquals(2, values.size());
+        assertTrue(keys.contains("key1"));
+        assertTrue(keys.contains("key2"));
+        assertTrue(values.contains("value1"));
+        assertTrue(values.contains("value2"));
+    }
+
+    /**
+     * Tests getting a map from the YAML file.
+     */
+    @Test
+    void testGetMap() {
+        String key = "map_list";
+
+        Map<String, Object> map = yamlFile.getMap(key);
+
+        assertNotNull(map);
+        assertEquals(3, map.size());
+        assertTrue(map.containsKey("section1"));
+        assertTrue(map.containsKey("section2"));
+        assertTrue(map.containsKey("section3"));
+        assertTrue(map.containsValue("123"));
+        assertTrue(map.containsValue("1.2.3"));
+        assertTrue(map.containsValue("0-02"));
     }
 
     /**

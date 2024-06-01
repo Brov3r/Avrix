@@ -1,0 +1,17 @@
+name: "Test metadata"
+id: "test_meta"
+description: "Test metadata"
+author: "Test"
+version: "0.0.0"
+license: "MIT"
+contacts: "https://test.com"
+entrypoints:
+  - "test.class"
+  - "test.test.class"
+patches:
+  - "testPatch.class"
+  - "test.testPatch.class"
+dependencies:
+  test-core: "1.0.0"
+  test: "0.1"
+  test.2: "2.1.3"
