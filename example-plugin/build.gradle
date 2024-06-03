@@ -1,0 +1,61 @@
+/**
+ * Gradle plugins
+ */
+plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'java'
+}
+
+/**
+ * Project Variables
+ */
+group = 'com.avrix.example'
+version = '1.0'
+
+/**
+ * Path to the compiled Jar file
+ */
+def buildPath = System.getenv('BUILD_PATH') ?: 'build';
+
+/**
+ * Repositories for project dependencies
+ */
+repositories {
+    mavenCentral()
+}
+
+/**
+ * Project Dependencies
+ */
+dependencies {
+    /**
+     * Project Zomboid
+     * Dependencies are created via the Gradle task 'createZombieJar'
+     */
+    compileOnly files('../libs/ProjectZomboid-core-41.78.16.jar')
+
+    /**
+     * Utils
+     */
+    compileOnly('org.javassist:javassist:3.30.2-GA')
+
+    /**
+     * Avrix Loader
+     */
+    compileOnly project(":")
+}
+
+/**
+ * Creating a Jar file wrapper (core) to run a game server
+ */
+shadowJar {
+    archiveFileName.set("PluginExample-${version}.jar")
+    destinationDirectory.set(file(buildPath))
+
+    manifest {
+        attributes(
+                'Implementation-Title': "Plugin Example",
+                'Implementation-Version': version,
+        )
+    }
+}

@@ -1,0 +1,15 @@
+name: "Example Plugin"
+id: "example_plugin"
+description: "Example Plugin"
+author: "Brov3r"
+version: "1.0.0"
+environment: "both"
+license: "MIT"
+contacts: "https://github.com/brov3r/avrix"
+entrypoints:
+  - "com.avrix.example.Main"
+patches:
+  - "com.avrix.example.patches.PatchGameServer"
+dependencies:
+  pz-core: ">=41.78.16"
+  avrix-loader: ">=1.0"

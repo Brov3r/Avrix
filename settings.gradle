@@ -1,2 +1,3 @@
 rootProject.name = 'Avrix'
+include 'example-plugin'
 

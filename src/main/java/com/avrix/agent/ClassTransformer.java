@@ -3,7 +3,7 @@ package com.avrix.agent;
 /**
  * A class for transforming Java classes at runtime.
  */
-public class ClassTransformer {
+public abstract class ClassTransformer {
     private final String className; // Name of the class being modified
     private final ClassModifier.ClassModifierBuilder modifierBuilder; // Builder for ClassModifier objects
 
@@ -39,8 +39,7 @@ public class ClassTransformer {
      * Method for performing class modification.
      * The implementing method must contain the logic for modifying the target class.
      */
-    public void modifyClass() {
-    }
+    abstract public void modifyClass();
 
     /**
      * Applying modifications to the class being modified.

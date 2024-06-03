@@ -9,6 +9,16 @@ import java.util.Properties;
  */
 public class Constants {
     /**
+     * Folder name for plugins
+     */
+    public static final String PLUGINS_FOLDER_NAME = "plugins";
+
+    /**
+     * Plugin metadata file name
+     */
+    public static final String PLUGINS_METADATA_NAME = "metadata.yml";
+
+    /**
      * Project version
      */
     public static final String AVRIX_VERSION;

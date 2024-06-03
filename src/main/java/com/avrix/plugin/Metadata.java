@@ -1,5 +1,10 @@
 package com.avrix.plugin;
 
+import com.avrix.enums.PluginEnvironment;
+import com.avrix.utils.Constants;
+import com.avrix.utils.YamlFile;
+
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,6 +20,7 @@ public class Metadata {
     private String version; // Current version of the module (plugin)
     private String license; // License under which the code is distributed
     private String contacts; // Author's contact information
+    private PluginEnvironment environment; // Environment in which the plugin should run (client, server)
     private List<String> entryPointsList; // List of entry points as full class path
     private List<String> patchList; // List of classes that modify game code as a full class path
     private Map<String, String> dependenciesMap; // Dependency map, where the key is the identifier of the module (plugin), and the value is its version
@@ -30,10 +36,51 @@ public class Metadata {
         this.author = null;
         this.version = null;
         this.license = null;
+        this.environment = null;
         this.contacts = null;
         this.entryPointsList = null;
         this.dependenciesMap = null;
         this.patchList = null;
+    }
+
+    /**
+     * Creating metadata from a file inside a Jar archive
+     *
+     * @param jarFile          Jar archive in the form {@link File}
+     * @param metadataFileName full path to the YAML file with metadata in the form {@link String}
+     * @return if creation is successful - {@link Metadata} object, if an error occurs - null
+     */
+    public static Metadata createFromJar(File jarFile, String metadataFileName) {
+        try {
+            YamlFile yamlFile = new YamlFile(jarFile.getAbsolutePath(), metadataFileName);
+
+            return new Metadata.MetadataBuilder()
+                    .name(yamlFile.getString("name"))
+                    .id(yamlFile.getString("id"))
+                    .description(yamlFile.getString("description"))
+                    .author(yamlFile.getString("author"))
+                    .version(yamlFile.getString("version"))
+                    .license(yamlFile.getString("license"))
+                    .contacts(yamlFile.getString("contacts"))
+                    .environment(yamlFile.getString("environment"))
+                    .entryPointsList(yamlFile.getStringList("entrypoints"))
+                    .patchList(yamlFile.getStringList("patches"))
+                    .dependencies(yamlFile.getStringMap("dependencies"))
+                    .build();
+        } catch (Exception e) {
+            System.out.printf("[!] Failed to generate metadata '%s' due to: %s%n", jarFile.getName(), e.getMessage().replace("[!] ", ""));
+            return null;
+        }
+    }
+
+    /**
+     * Returns a {@link File} object representing the configuration directory for this plugin.
+     * The directory path is normalized to prevent problems with various file systems.
+     *
+     * @return A {@link File} object pointing to the normalized path to the plugin configuration directory.
+     */
+    public File getConfigFolder() {
+        return new File(Constants.PLUGINS_FOLDER_NAME, getId());
     }
 
     /**
@@ -43,6 +90,15 @@ public class Metadata {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Returns the {@link PluginEnvironment} of the plugin.
+     *
+     * @return the {@link PluginEnvironment} of the plugin
+     */
+    public PluginEnvironment getEnvironment() {
+        return environment;
     }
 
     /**
@@ -100,27 +156,27 @@ public class Metadata {
     }
 
     /**
-     * Returns the list of entry points for the plugin.
+     * Returns the {@link List} of entry points for the plugin.
      *
-     * @return the list of entry points for the plugin
+     * @return the {@link List} of entry points for the plugin
      */
-    public List<String> getEntryPointsList() {
+    public List<String> getEntryPoints() {
         return entryPointsList;
     }
 
     /**
-     * Returns the list of patches for the plugin.
+     * Returns the {@link List} of patches for the plugin.
      *
-     * @return the list of patches for the plugin
+     * @return the {@link List} of patches for the plugin
      */
     public List<String> getPatchList() {
         return patchList;
     }
 
     /**
-     * Returns the map of dependencies for the plugin.
+     * Returns the {@link Map} of dependencies for the plugin.
      *
-     * @return the map of dependencies for the plugin
+     * @return the {@link Map} of dependencies for the plugin
      */
     public Map<String, String> getDependencies() {
         return dependenciesMap;
@@ -184,6 +240,17 @@ public class Metadata {
         }
 
         /**
+         * Sets the environment of the plugin.
+         *
+         * @param environment the environment of the plugin
+         * @return the builder instance
+         */
+        public MetadataBuilder environment(String environment) {
+            metadata.environment = PluginEnvironment.fromString(environment);
+            return this;
+        }
+
+        /**
          * Sets the version of the plugin.
          *
          * @param version the version of the plugin
@@ -217,7 +284,7 @@ public class Metadata {
         }
 
         /**
-         * Sets the list of entry points for the plugin.
+         * Sets the {@link List} of entry points for the plugin.
          *
          * @param entryPointsList the list of entry points for the plugin
          * @return the builder instance
@@ -228,7 +295,7 @@ public class Metadata {
         }
 
         /**
-         * Sets the list of patches for the plugin.
+         * Sets the {@link List} of patches for the plugin.
          *
          * @param patchList the list of patches for the plugin
          * @return the builder instance
@@ -239,7 +306,7 @@ public class Metadata {
         }
 
         /**
-         * Sets the map of dependencies for the plugin.
+         * Sets the {@link Map} of dependencies for the plugin.
          *
          * @param dependencies the map of dependencies for the plugin
          * @return the builder instance
@@ -272,7 +339,7 @@ public class Metadata {
             Objects.requireNonNull(metadata.license, "[!] The required field 'license' is not specified in the metadata!");
             Objects.requireNonNull(metadata.author, "[!] The required field 'author' is not specified in the metadata!");
             Objects.requireNonNull(metadata.version, "[!] The required field 'version' is not specified in the metadata!");
-            Objects.requireNonNull(metadata.contacts, "[!] The required field 'contacts' is not specified in the metadata!");
+            Objects.requireNonNull(metadata.environment, "[!] The required field 'environment' is not specified in the metadata!");
             Objects.requireNonNull(metadata.entryPointsList, "[!] The required field 'entry points' is not specified in the metadata!");
         }
     }

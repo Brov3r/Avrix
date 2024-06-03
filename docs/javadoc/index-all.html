@@ -49,7 +49,7 @@ loadScripts(document, 'script');</script>
 <div class="header">
 <h1>Index</h1>
 </div>
-<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:V">V</a>&nbsp;<a href="#I:Y">Y</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a>
+<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:F">F</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:V">V</a>&nbsp;<a href="#I:Y">Y</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a><span class="vertical-separator">|</span><a href="constant-values.html">Constant&nbsp;Field&nbsp;Values</a>
 <h2 class="title" id="I:A">A</h2>
 <dl class="index">
 <dt><a href="com/avrix/agent/Agent.html" class="type-name-link" title="class in com.avrix.agent">Agent</a> - Class in <a href="com/avrix/agent/package-summary.html">com.avrix.agent</a></dt>
@@ -92,6 +92,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Applying modifications to the class being modified.</div>
 </dd>
+<dt><a href="com/avrix/utils/PatchManager.html#applyPluginPatches(java.util.List,java.lang.ClassLoader)" class="member-name-link">applyPluginPatches(List&lt;String&gt;, ClassLoader)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PatchManager.html" title="class in com.avrix.utils">PatchManager</a></dt>
+<dd>
+<div class="block">Applies a list of patches to classes specified by their fully qualified names.</div>
+</dd>
 <dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#author(java.lang.String)" class="member-name-link">author(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
 <dd>
 <div class="block">Sets the author of the plugin.</div>
@@ -107,6 +111,10 @@ loadScripts(document, 'script');</script>
 </dl>
 <h2 class="title" id="I:B">B</h2>
 <dl class="index">
+<dt><a href="com/avrix/enums/PluginEnvironment.html#BOTH" class="member-name-link">BOTH</a> - Enum constant in enum class com.avrix.enums.<a href="com/avrix/enums/PluginEnvironment.html" title="enum class in com.avrix.enums">PluginEnvironment</a></dt>
+<dd>
+<div class="block">Both client and server environments.</div>
+</dd>
 <dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html#build()" class="member-name-link">build()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></dt>
 <dd>
 <div class="block">Creates a <a href="com/avrix/agent/ClassModifier.html" title="class in com.avrix.agent"><code>ClassModifier</code></a> object based on the current state of the builder.</div>
@@ -142,9 +150,15 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Clears all the data in the YAML file.</div>
 </dd>
+<dt><a href="com/avrix/enums/PluginEnvironment.html#CLIENT" class="member-name-link">CLIENT</a> - Enum constant in enum class com.avrix.enums.<a href="com/avrix/enums/PluginEnvironment.html" title="enum class in com.avrix.enums">PluginEnvironment</a></dt>
+<dd>
+<div class="block">Client environment.</div>
+</dd>
 <dt><a href="com/avrix/package-summary.html">com.avrix</a> - package com.avrix</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/agent/package-summary.html">com.avrix.agent</a> - package com.avrix.agent</dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/avrix/enums/package-summary.html">com.avrix.enums</a> - package com.avrix.enums</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/patches/package-summary.html">com.avrix.patches</a> - package com.avrix.patches</dt>
 <dd>&nbsp;</dd>
@@ -178,12 +192,16 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Creates a new YAML file from a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link"><code>Path</code></a>.</div>
 </dd>
+<dt><a href="com/avrix/plugin/Metadata.html#createFromJar(java.io.File,java.lang.String)" class="member-name-link">createFromJar(File, String)</a> - Static method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
+<dd>
+<div class="block">Creating metadata from a file inside a Jar archive</div>
+</dd>
 </dl>
 <h2 class="title" id="I:D">D</h2>
 <dl class="index">
 <dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#dependencies(java.util.Map)" class="member-name-link">dependencies(Map&lt;String, String&gt;)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
 <dd>
-<div class="block">Sets the map of dependencies for the plugin.</div>
+<div class="block">Sets the <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link"><code>Map</code></a> of dependencies for the plugin.</div>
 </dd>
 <dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#description(java.lang.String)" class="member-name-link">description(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
 <dd>
@@ -194,7 +212,31 @@ loadScripts(document, 'script');</script>
 <dl class="index">
 <dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#entryPointsList(java.util.List)" class="member-name-link">entryPointsList(List&lt;String&gt;)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
 <dd>
-<div class="block">Sets the list of entry points for the plugin.</div>
+<div class="block">Sets the <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link"><code>List</code></a> of entry points for the plugin.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#environment(java.lang.String)" class="member-name-link">environment(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
+<dd>
+<div class="block">Sets the environment of the plugin.</div>
+</dd>
+</dl>
+<h2 class="title" id="I:F">F</h2>
+<dl class="index">
+<dt><a href="com/avrix/plugin/PluginClassLoader.html#findClass(java.lang.String)" class="member-name-link">findClass(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/PluginClassLoader.html" title="class in com.avrix.plugin">PluginClassLoader</a></dt>
+<dd>
+<div class="block">Finds and loads the class with the specified name from the <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/URL.html" title="class or interface in java.net" class="external-link"><code>URL</code></a> search
+ path.</div>
+</dd>
+<dt><a href="com/avrix/plugin/PluginClassLoader.html#findClass(java.lang.String,boolean)" class="member-name-link">findClass(String, boolean)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/PluginClassLoader.html" title="class in com.avrix.plugin">PluginClassLoader</a></dt>
+<dd>
+<div class="block">Finds a class by name, optionally performing a global search.</div>
+</dd>
+<dt><a href="com/avrix/plugin/PluginClassLoader.html#findLoaded(java.lang.String)" class="member-name-link">findLoaded(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/PluginClassLoader.html" title="class in com.avrix.plugin">PluginClassLoader</a></dt>
+<dd>
+<div class="block">Finds a loaded class by name.</div>
+</dd>
+<dt><a href="com/avrix/enums/PluginEnvironment.html#fromString(java.lang.String)" class="member-name-link">fromString(String)</a> - Static method in enum class com.avrix.enums.<a href="com/avrix/enums/PluginEnvironment.html" title="enum class in com.avrix.enums">PluginEnvironment</a></dt>
+<dd>
+<div class="block">Converts a string to the corresponding <code>PluginEnvironment</code> enum value.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:G">G</h2>
@@ -235,9 +277,21 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Gets a list of characters from the YAML file.</div>
 </dd>
+<dt><a href="com/avrix/plugin/PluginClassLoader.html#getClassByName(java.lang.String)" class="member-name-link">getClassByName(String)</a> - Static method in class com.avrix.plugin.<a href="com/avrix/plugin/PluginClassLoader.html" title="class in com.avrix.plugin">PluginClassLoader</a></dt>
+<dd>
+<div class="block">Retrieves the <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link"><code>Class</code></a> object for a given class name from the cache or loaders.</div>
+</dd>
+<dt><a href="com/avrix/plugin/PluginClassLoader.html#getClasses()" class="member-name-link">getClasses()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/PluginClassLoader.html" title="class in com.avrix.plugin">PluginClassLoader</a></dt>
+<dd>
+<div class="block">Retrieves the set of loaded class names.</div>
+</dd>
 <dt><a href="com/avrix/agent/ClassTransformer.html#getClassName()" class="member-name-link">getClassName()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent">ClassTransformer</a></dt>
 <dd>
 <div class="block">Getting the full name of the class that needs to be modified.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Metadata.html#getConfigFolder()" class="member-name-link">getConfigFolder()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
+<dd>
+<div class="block">Returns a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link"><code>File</code></a> object representing the configuration directory for this plugin.</div>
 </dd>
 <dt><a href="com/avrix/plugin/Metadata.html#getContacts()" class="member-name-link">getContacts()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
@@ -245,7 +299,7 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/plugin/Metadata.html#getDependencies()" class="member-name-link">getDependencies()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
-<div class="block">Returns the map of dependencies for the plugin.</div>
+<div class="block">Returns the <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link"><code>Map</code></a> of dependencies for the plugin.</div>
 </dd>
 <dt><a href="com/avrix/plugin/Metadata.html#getDescription()" class="member-name-link">getDescription()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
@@ -263,9 +317,13 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Gets a map of double values from the YAML file stored under the specified key.</div>
 </dd>
-<dt><a href="com/avrix/plugin/Metadata.html#getEntryPointsList()" class="member-name-link">getEntryPointsList()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
+<dt><a href="com/avrix/plugin/Metadata.html#getEntryPoints()" class="member-name-link">getEntryPoints()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
-<div class="block">Returns the list of entry points for the plugin.</div>
+<div class="block">Returns the <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link"><code>List</code></a> of entry points for the plugin.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Metadata.html#getEnvironment()" class="member-name-link">getEnvironment()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
+<dd>
+<div class="block">Returns the <a href="com/avrix/enums/PluginEnvironment.html" title="enum class in com.avrix.enums"><code>PluginEnvironment</code></a> of the plugin.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getFileName()" class="member-name-link">getFileName()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -319,6 +377,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Retrieves the values of the map stored under the specified key in the YAML file.</div>
 </dd>
+<dt><a href="com/avrix/plugin/Plugin.html#getMetadata()" class="member-name-link">getMetadata()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" title="class in com.avrix.plugin">Plugin</a></dt>
+<dd>
+<div class="block">Returns the <a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin"><code>Metadata</code></a> associated with this plugin.</div>
+</dd>
 <dt><a href="com/avrix/agent/ClassTransformer.html#getModifierBuilder()" class="member-name-link">getModifierBuilder()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent">ClassTransformer</a></dt>
 <dd>
 <div class="block">Gets the <a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent"><code>ClassModifier.ClassModifierBuilder</code></a> for building class modifiers.</div>
@@ -333,7 +395,7 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/plugin/Metadata.html#getPatchList()" class="member-name-link">getPatchList()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
-<div class="block">Returns the list of patches for the plugin.</div>
+<div class="block">Returns the <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link"><code>List</code></a> of patches for the plugin.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getShort(java.lang.String)" class="member-name-link">getShort(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -354,6 +416,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/utils/YamlFile.html#getStringMap(java.lang.String)" class="member-name-link">getStringMap(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Gets a map of string values from the YAML file stored under the specified key.</div>
+</dd>
+<dt><a href="com/avrix/enums/PluginEnvironment.html#getValue()" class="member-name-link">getValue()</a> - Method in enum class com.avrix.enums.<a href="com/avrix/enums/PluginEnvironment.html" title="enum class in com.avrix.enums">PluginEnvironment</a></dt>
+<dd>
+<div class="block">Gets the string representation of the environment.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getValue(java.lang.String)" class="member-name-link">getValue(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -377,6 +443,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/utils/YamlFile.html#isEmpty()" class="member-name-link">isEmpty()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Checks if the YAML file is empty.</div>
+</dd>
+<dt><a href="com/avrix/utils/VersionChecker.html#isVersionCompatible(java.lang.String,java.lang.String)" class="member-name-link">isVersionCompatible(String, String)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/VersionChecker.html" title="class in com.avrix.utils">VersionChecker</a></dt>
+<dd>
+<div class="block">Checks whether a version meets a given condition.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:L">L</h2>
@@ -410,6 +480,14 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/agent/AgentLoader.html#loadAgent(java.lang.String)" class="member-name-link">loadAgent(String)</a> - Static method in class com.avrix.agent.<a href="com/avrix/agent/AgentLoader.html" title="class in com.avrix.agent">AgentLoader</a></dt>
 <dd>
 <div class="block">The loadAgent method loads the agent into the current JVM if it is not already loaded.</div>
+</dd>
+<dt><a href="com/avrix/plugin/PluginManager.html#loadPlugin(java.util.List,com.avrix.plugin.Metadata,java.lang.ClassLoader)" class="member-name-link">loadPlugin(List&lt;String&gt;, Metadata, ClassLoader)</a> - Static method in class com.avrix.plugin.<a href="com/avrix/plugin/PluginManager.html" title="class in com.avrix.plugin">PluginManager</a></dt>
+<dd>
+<div class="block">Loads and initializes plugin entry points.</div>
+</dd>
+<dt><a href="com/avrix/plugin/PluginManager.html#loadPlugins()" class="member-name-link">loadPlugins()</a> - Static method in class com.avrix.plugin.<a href="com/avrix/plugin/PluginManager.html" title="class in com.avrix.plugin">PluginManager</a></dt>
+<dd>
+<div class="block">Loading plugins into the game context</div>
 </dd>
 </dl>
 <h2 class="title" id="I:M">M</h2>
@@ -477,7 +555,7 @@ loadScripts(document, 'script');</script>
 <dl class="index">
 <dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#patchList(java.util.List)" class="member-name-link">patchList(List&lt;String&gt;)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
 <dd>
-<div class="block">Sets the list of patches for the plugin.</div>
+<div class="block">Sets the <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link"><code>List</code></a> of patches for the plugin.</div>
 </dd>
 <dt><a href="com/avrix/utils/PatchManager.html" class="type-name-link" title="class in com.avrix.utils">PatchManager</a> - Class in <a href="com/avrix/utils/package-summary.html">com.avrix.utils</a></dt>
 <dd>
@@ -505,8 +583,40 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Basic template for implementing the plugin entry point.</div>
 </dd>
-<dt><a href="com/avrix/plugin/Plugin.html#%3Cinit%3E()" class="member-name-link">Plugin()</a> - Constructor for class com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" title="class in com.avrix.plugin">Plugin</a></dt>
+<dt><a href="com/avrix/plugin/Plugin.html#%3Cinit%3E(com.avrix.plugin.Metadata)" class="member-name-link">Plugin(Metadata)</a> - Constructor for class com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" title="class in com.avrix.plugin">Plugin</a></dt>
+<dd>
+<div class="block">Constructs a new <a href="com/avrix/plugin/Plugin.html" title="class in com.avrix.plugin"><code>Plugin</code></a> with the specified metadata.</div>
+</dd>
+<dt><a href="com/avrix/plugin/PluginClassLoader.html" class="type-name-link" title="class in com.avrix.plugin">PluginClassLoader</a> - Class in <a href="com/avrix/plugin/package-summary.html">com.avrix.plugin</a></dt>
+<dd>
+<div class="block">A custom class loader for loading plugin classes.</div>
+</dd>
+<dt><a href="com/avrix/plugin/PluginClassLoader.html#%3Cinit%3E(java.lang.String,java.net.URL%5B%5D)" class="member-name-link">PluginClassLoader(String, URL[])</a> - Constructor for class com.avrix.plugin.<a href="com/avrix/plugin/PluginClassLoader.html" title="class in com.avrix.plugin">PluginClassLoader</a></dt>
+<dd>
+<div class="block">Constructs a new <a href="com/avrix/plugin/PluginClassLoader.html" title="class in com.avrix.plugin"><code>PluginClassLoader</code></a> for the specified <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/net/URL.html" title="class or interface in java.net" class="external-link"><code>URL</code></a>s using the specified parent class loader.</div>
+</dd>
+<dt><a href="com/avrix/enums/PluginEnvironment.html" class="type-name-link" title="enum class in com.avrix.enums">PluginEnvironment</a> - Enum Class in <a href="com/avrix/enums/package-summary.html">com.avrix.enums</a></dt>
+<dd>
+<div class="block">Enum representing the environment in which a plugin can operate.</div>
+</dd>
+<dt><a href="com/avrix/plugin/PluginManager.html" class="type-name-link" title="class in com.avrix.plugin">PluginManager</a> - Class in <a href="com/avrix/plugin/package-summary.html">com.avrix.plugin</a></dt>
+<dd>
+<div class="block">The PluginManager class manages the loading, initialization, and handling of plugins within the application context.</div>
+</dd>
+<dt><a href="com/avrix/plugin/PluginManager.html#%3Cinit%3E()" class="member-name-link">PluginManager()</a> - Constructor for class com.avrix.plugin.<a href="com/avrix/plugin/PluginManager.html" title="class in com.avrix.plugin">PluginManager</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/utils/Constants.html#PLUGINS_FOLDER_NAME" class="member-name-link">PLUGINS_FOLDER_NAME</a> - Static variable in class com.avrix.utils.<a href="com/avrix/utils/Constants.html" title="class in com.avrix.utils">Constants</a></dt>
+<dd>
+<div class="block">Folder name for plugins</div>
+</dd>
+<dt><a href="com/avrix/utils/Constants.html#PLUGINS_METADATA_NAME" class="member-name-link">PLUGINS_METADATA_NAME</a> - Static variable in class com.avrix.utils.<a href="com/avrix/utils/Constants.html" title="class in com.avrix.utils">Constants</a></dt>
+<dd>
+<div class="block">Plugin metadata file name</div>
+</dd>
+<dt><a href="com/avrix/plugin/PluginManager.html#printLoadedPluginsInfo()" class="member-name-link">printLoadedPluginsInfo()</a> - Static method in class com.avrix.plugin.<a href="com/avrix/plugin/PluginManager.html" title="class in com.avrix.plugin">PluginManager</a></dt>
+<dd>
+<div class="block">Prints information about loaded plugins to the console.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:R">R</h2>
 <dl class="index">
@@ -532,6 +642,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html#saveFile(java.nio.file.Path)" class="member-name-link">saveFile(Path)</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></dt>
 <dd>
 <div class="block">Saving a modified class to the specified directory.</div>
+</dd>
+<dt><a href="com/avrix/enums/PluginEnvironment.html#SERVER" class="member-name-link">SERVER</a> - Enum constant in enum class com.avrix.enums.<a href="com/avrix/enums/PluginEnvironment.html" title="enum class in com.avrix.enums">PluginEnvironment</a></dt>
+<dd>
+<div class="block">Server environment.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#setBoolean(java.lang.String,boolean)" class="member-name-link">setBoolean(String, boolean)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -639,10 +753,25 @@ loadScripts(document, 'script');</script>
 </dl>
 <h2 class="title" id="I:V">V</h2>
 <dl class="index">
+<dt><a href="com/avrix/enums/PluginEnvironment.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class com.avrix.enums.<a href="com/avrix/enums/PluginEnvironment.html" title="enum class in com.avrix.enums">PluginEnvironment</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this class with the specified name.</div>
+</dd>
+<dt><a href="com/avrix/enums/PluginEnvironment.html#values()" class="member-name-link">values()</a> - Static method in enum class com.avrix.enums.<a href="com/avrix/enums/PluginEnvironment.html" title="enum class in com.avrix.enums">PluginEnvironment</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum class, in
+the order they are declared.</div>
+</dd>
 <dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#version(java.lang.String)" class="member-name-link">version(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
 <dd>
 <div class="block">Sets the version of the plugin.</div>
 </dd>
+<dt><a href="com/avrix/utils/VersionChecker.html" class="type-name-link" title="class in com.avrix.utils">VersionChecker</a> - Class in <a href="com/avrix/utils/package-summary.html">com.avrix.utils</a></dt>
+<dd>
+<div class="block">A set of tools for checking the compatibility of two versions.</div>
+</dd>
+<dt><a href="com/avrix/utils/VersionChecker.html#%3Cinit%3E()" class="member-name-link">VersionChecker()</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/VersionChecker.html" title="class in com.avrix.utils">VersionChecker</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:Y">Y</h2>
 <dl class="index">
@@ -679,7 +808,7 @@ loadScripts(document, 'script');</script>
 <div class="block">Constructor to load a YAML file from a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link"><code>Path</code></a>.</div>
 </dd>
 </dl>
-<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:V">V</a>&nbsp;<a href="#I:Y">Y</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a></main>
+<a href="#I:A">A</a>&nbsp;<a href="#I:B">B</a>&nbsp;<a href="#I:C">C</a>&nbsp;<a href="#I:D">D</a>&nbsp;<a href="#I:E">E</a>&nbsp;<a href="#I:F">F</a>&nbsp;<a href="#I:G">G</a>&nbsp;<a href="#I:I">I</a>&nbsp;<a href="#I:L">L</a>&nbsp;<a href="#I:M">M</a>&nbsp;<a href="#I:N">N</a>&nbsp;<a href="#I:O">O</a>&nbsp;<a href="#I:P">P</a>&nbsp;<a href="#I:R">R</a>&nbsp;<a href="#I:S">S</a>&nbsp;<a href="#I:T">T</a>&nbsp;<a href="#I:V">V</a>&nbsp;<a href="#I:Y">Y</a>&nbsp;<br><a href="allclasses-index.html">All&nbsp;Classes&nbsp;and&nbsp;Interfaces</a><span class="vertical-separator">|</span><a href="allpackages-index.html">All&nbsp;Packages</a><span class="vertical-separator">|</span><a href="constant-values.html">Constant&nbsp;Field&nbsp;Values</a></main>
 </div>
 </div>
 </body>

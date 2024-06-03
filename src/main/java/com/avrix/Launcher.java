@@ -1,6 +1,7 @@
 package com.avrix;
 
 import com.avrix.agent.AgentLoader;
+import com.avrix.plugin.PluginManager;
 import com.avrix.utils.PatchManager;
 import zombie.ZomboidFileSystem;
 import zombie.gameStates.MainScreenState;
@@ -22,6 +23,8 @@ public class Launcher {
         AgentLoader.loadAgent();
 
         PatchManager.applyDefaultPatches();
+
+        PluginManager.loadPlugins();
 
         ZomboidFileSystem.instance.setCacheDir(Paths.get("zomboid").toString());
 

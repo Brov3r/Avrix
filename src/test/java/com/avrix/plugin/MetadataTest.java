@@ -1,9 +1,11 @@
 package com.avrix.plugin;
 
+import com.avrix.enums.PluginEnvironment;
 import com.avrix.utils.YamlFile;
 import com.avrix.utils.YamlFileTest;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -23,6 +25,49 @@ public class MetadataTest {
      * Test of creating metadata from a YAML file
      */
     @Test
+    void testYamlInvalidMetadataFromJar() throws IOException, URISyntaxException {
+        URL resourceUrl = YamlFileTest.class.getClassLoader().getResource("yaml/testYamlJar.jar");
+        if (resourceUrl == null) {
+            throw new FileNotFoundException("test.yml not found in resources");
+        }
+        File jarFile = new File(resourceUrl.toURI());
+
+        Metadata metadata = Metadata.createFromJar(jarFile, "test.yml");
+
+        assertNull(metadata);
+    }
+
+    /**
+     * Test of creating metadata from a YAML file
+     */
+    @Test
+    void testYamlValidMetadataFromJar() throws IOException, URISyntaxException {
+        URL resourceUrl = YamlFileTest.class.getClassLoader().getResource("yaml/testYamlJarMetadata.jar");
+        if (resourceUrl == null) {
+            throw new FileNotFoundException("test.yml not found in resources");
+        }
+        File jarFile = new File(resourceUrl.toURI());
+
+        Metadata metadata = Metadata.createFromJar(jarFile, "test.yml");
+
+        assertNotNull(metadata);
+        assertEquals("Test metadata", metadata.getName());
+        assertEquals("test_meta", metadata.getId());
+        assertEquals("Test metadata", metadata.getDescription());
+        assertEquals("Test", metadata.getAuthor());
+        assertEquals("0.0.0", metadata.getVersion());
+        assertEquals(PluginEnvironment.CLIENT, metadata.getEnvironment());
+        assertEquals("MIT", metadata.getLicense());
+        assertEquals("https://test.com", metadata.getContacts());
+        assertEquals(Arrays.asList("test.class", "test.test.class"), metadata.getEntryPoints());
+        assertEquals(Arrays.asList("testPatch.class", "test.testPatch.class"), metadata.getPatchList());
+        assertEquals(Map.of("test-core", "1.0.0", "test", "0.1", "test.2", "2.1.3"), metadata.getDependencies());
+    }
+
+    /**
+     * Test of creating metadata from a YAML file
+     */
+    @Test
     void testYamlMetadata() throws IOException, URISyntaxException {
         URL resourceUrl = YamlFileTest.class.getClassLoader().getResource("yaml/metadataTest.yml");
         if (resourceUrl == null) {
@@ -33,6 +78,7 @@ public class MetadataTest {
         Metadata.MetadataBuilder metadataBuilder = new Metadata.MetadataBuilder()
                 .name(yamlFile.getString("name"))
                 .id(yamlFile.getString("id"))
+                .environment(yamlFile.getString("environment"))
                 .description(yamlFile.getString("description"))
                 .author(yamlFile.getString("author"))
                 .version(yamlFile.getString("version"))
@@ -50,9 +96,10 @@ public class MetadataTest {
         assertEquals("Test metadata", metadata.getDescription());
         assertEquals("Test", metadata.getAuthor());
         assertEquals("0.0.0", metadata.getVersion());
+        assertEquals(PluginEnvironment.CLIENT, metadata.getEnvironment());
         assertEquals("MIT", metadata.getLicense());
         assertEquals("https://test.com", metadata.getContacts());
-        assertEquals(Arrays.asList("test.class", "test.test.class"), metadata.getEntryPointsList());
+        assertEquals(Arrays.asList("test.class", "test.test.class"), metadata.getEntryPoints());
         assertEquals(Arrays.asList("testPatch.class", "test.testPatch.class"), metadata.getPatchList());
         assertEquals(Map.of("test-core", "1.0.0", "test", "0.1", "test.2", "2.1.3"), metadata.getDependencies());
     }
@@ -77,6 +124,7 @@ public class MetadataTest {
                 .license("MIT")
                 .contacts("author@example.com")
                 .entryPointsList(entryPoints)
+                .environment("client")
                 .patchList(patches)
                 .dependencies(dependencies)
                 .build();
@@ -87,8 +135,9 @@ public class MetadataTest {
         assertEquals("Author Name", metadata.getAuthor());
         assertEquals("1.0.0", metadata.getVersion());
         assertEquals("MIT", metadata.getLicense());
+        assertEquals(PluginEnvironment.CLIENT, metadata.getEnvironment());
         assertEquals("author@example.com", metadata.getContacts());
-        assertEquals(entryPoints, metadata.getEntryPointsList());
+        assertEquals(entryPoints, metadata.getEntryPoints());
         assertEquals(patches, metadata.getPatchList());
         assertEquals(dependencies, metadata.getDependencies());
     }
@@ -124,16 +173,16 @@ public class MetadataTest {
                 .author("Author Name")
                 .version("1.0.0")
                 .license("MIT")
-                .contacts("author@example.com")
+                .environment("server")
                 .entryPointsList(entryPoints)
                 .build();
 
         assertEquals("Test Plugin", metadata.getName());
         assertEquals("plugin123", metadata.getId());
         assertEquals("Author Name", metadata.getAuthor());
+        assertEquals(PluginEnvironment.SERVER, metadata.getEnvironment());
         assertEquals("1.0.0", metadata.getVersion());
         assertEquals("MIT", metadata.getLicense());
-        assertEquals("author@example.com", metadata.getContacts());
-        assertEquals(entryPoints, metadata.getEntryPointsList());
+        assertEquals(entryPoints, metadata.getEntryPoints());
     }
 }

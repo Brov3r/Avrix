@@ -3,6 +3,7 @@ id: "test_meta"
 description: "Test metadata"
 author: "Test"
 version: "0.0.0"
+environment: "client"
 license: "MIT"
 contacts: "https://test.com"
 entrypoints:
