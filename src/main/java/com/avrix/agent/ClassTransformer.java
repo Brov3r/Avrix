@@ -22,7 +22,7 @@ public abstract class ClassTransformer {
      *
      * @return the {@link ClassModifier.ClassModifierBuilder} instance.
      */
-    public ClassModifier.ClassModifierBuilder getModifierBuilder() {
+    public final ClassModifier.ClassModifierBuilder getModifierBuilder() {
         return modifierBuilder;
     }
 
@@ -31,7 +31,7 @@ public abstract class ClassTransformer {
      *
      * @return the full class name, e.g. 'zombie.GameWindow'
      */
-    public String getClassName() {
+    public final String getClassName() {
         return className;
     }
 
@@ -45,7 +45,7 @@ public abstract class ClassTransformer {
      * Applying modifications to the class being modified.
      * Called after the {@link #modifyClass()} method is called
      */
-    public void applyModifications() {
+    public final void applyModifications() {
         modifierBuilder.build().applyModifications();
     }
 }

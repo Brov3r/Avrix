@@ -15,9 +15,9 @@ import java.util.function.BiConsumer;
 /**
  * A class for modifying Java classes at runtime using the <a href="https://www.javassist.org/">Javassist library</a>.
  */
-public class ClassModifier {
+public final class ClassModifier {
+    private final String className; // Path to class
     private CtClass ctClass; // Represents a modifiable class
-    private String className; // Path to class
 
     /**
      * Constructor for creating a {@link ClassModifier} object.

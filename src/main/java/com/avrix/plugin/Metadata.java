@@ -12,7 +12,7 @@ import java.util.Objects;
 /**
  * Represents metadata for a plugin, including various details such as name, description, author, version, and dependencies.
  */
-public class Metadata {
+public final class Metadata {
     private String name; // Name of the module (plugin)
     private String description; // Description of the module (plugin)
     private String id; // Module (plugin) identifier
@@ -185,7 +185,7 @@ public class Metadata {
     /**
      * Builder class for constructing {@link Metadata} instances.
      */
-    public static class MetadataBuilder {
+    public final static class MetadataBuilder {
         private final Metadata metadata;
 
         /**

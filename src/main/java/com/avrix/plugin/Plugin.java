@@ -21,7 +21,7 @@ public abstract class Plugin {
      *
      * @return The {@link Metadata} of the plugin.
      */
-    public Metadata getMetadata() {
+    public final Metadata getMetadata() {
         return this.metadata;
     }
 
