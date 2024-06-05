@@ -12,4 +12,4 @@ patches:
   - "com.avrix.example.patches.PatchGameServer"
 dependencies:
   pz-core: ">=41.78.16"
-  avrix-loader: ">=1.0"
+  avrix-loader: ">=1.0.0"

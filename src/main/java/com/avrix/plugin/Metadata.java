@@ -5,9 +5,7 @@ import com.avrix.utils.Constants;
 import com.avrix.utils.YamlFile;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Represents metadata for a plugin, including various details such as name, description, author, version, and dependencies.
@@ -20,6 +18,7 @@ public final class Metadata {
     private String version; // Current version of the module (plugin)
     private String license; // License under which the code is distributed
     private String contacts; // Author's contact information
+    private File pluginFile; // Path to the plugin file (optional)
     private PluginEnvironment environment; // Environment in which the plugin should run (client, server)
     private List<String> entryPointsList; // List of entry points as full class path
     private List<String> patchList; // List of classes that modify game code as a full class path
@@ -36,11 +35,12 @@ public final class Metadata {
         this.author = null;
         this.version = null;
         this.license = null;
-        this.environment = null;
+        this.environment = PluginEnvironment.BOTH;
         this.contacts = null;
-        this.entryPointsList = null;
-        this.dependenciesMap = null;
-        this.patchList = null;
+        this.entryPointsList = new ArrayList<>();
+        this.dependenciesMap = new HashMap<>();
+        this.patchList = new ArrayList<>();
+        this.pluginFile = null;
     }
 
     /**
@@ -66,10 +66,88 @@ public final class Metadata {
                     .entryPointsList(yamlFile.getStringList("entrypoints"))
                     .patchList(yamlFile.getStringList("patches"))
                     .dependencies(yamlFile.getStringMap("dependencies"))
+                    .pluginFile(jarFile)
                     .build();
         } catch (Exception e) {
             System.out.printf("[!] Failed to generate metadata '%s' due to: %s%n", jarFile.getName(), e.getMessage().replace("[!] ", ""));
             return null;
+        }
+    }
+
+    /**
+     * Sorts a list of {@link Metadata} objects based on their dependencies using topological sort.
+     *
+     * @param metadataList the list of {@link Metadata} objects to be sorted
+     * @return a sorted list of {@link Metadata} objects where dependencies appear before the dependent objects
+     * @throws IllegalStateException    if a cyclic dependency is detected
+     * @throws IllegalArgumentException if a dependency is missing from the metadata list
+     */
+    public static List<Metadata> sortMetadata(List<Metadata> metadataList) {
+        // Create an ID map -> Metadata for quick access
+        Map<String, Metadata> metadataMap = new HashMap<>();
+        for (Metadata metadata : metadataList) {
+            metadataMap.put(metadata.getId(), metadata);
+        }
+
+        // List for storing sorted metadata
+        List<Metadata> sortedList = new ArrayList<>();
+        // Set for tracking visited nodes
+        Set<String> visited = new HashSet<>();
+        //A set to keep track of nodes on the current call stack (to detect cycles)
+        Set<String> stack = new HashSet<>();
+
+        // We crawl all metadata
+        for (Metadata metadata : metadataList) {
+            if (!visited.contains(metadata.getId())) {
+                topologicalSort(metadata, metadataMap, visited, stack, sortedList);
+            }
+        }
+
+        return sortedList;
+    }
+
+    /**
+     * Helper method for performing a topological sort on the {@link Metadata} objects.
+     *
+     * @param metadata    the current {@link Metadata} object being processed
+     * @param metadataMap a map of {@link Metadata} objects for quick access
+     * @param visited     a set of visited {@link Metadata} IDs
+     * @param stack       a set of {@link Metadata} IDs currently on the recursion stack
+     * @param sortedList  the list to store the sorted {@link Metadata} objects
+     * @throws IllegalStateException    if a cyclic dependency is detected
+     * @throws IllegalArgumentException if a dependency is missing from the {@link Metadata} map
+     */
+    private static void topologicalSort(Metadata metadata, Map<String, Metadata> metadataMap, Set<String> visited, Set<String> stack, List<Metadata> sortedList) {
+        if (stack.contains(metadata.getId())) {
+            throw new IllegalStateException(
+                    String.format("[!] Cycle detected in dependencies: Plugin ID %s (Plugin Name: %s, Version: %s)",
+                            metadata.getId(), metadata.getName(), metadata.getVersion()));
+        }
+
+        if (!visited.contains(metadata.getId())) {
+            stack.add(metadata.getId());
+
+            Map<String, String> dependencies = metadata.getDependencies();
+
+            if (dependencies == null) return;
+
+            for (Map.Entry<String, String> dependencyEntry : dependencies.entrySet()) {
+                String depId = dependencyEntry.getKey();
+                String depVersion = dependencyEntry.getValue();
+                Metadata dependency = metadataMap.get(depId);
+
+                if (dependency != null) {
+                    topologicalSort(dependency, metadataMap, visited, stack, sortedList);
+                } else {
+                    throw new IllegalArgumentException(
+                            String.format("[!] Missing dependency: Plugin ID %s (Version: %s) required by Plugin ID %s (Plugin Name: %s, Version: %s)",
+                                    depId, depVersion, metadata.getId(), metadata.getName(), metadata.getVersion()));
+                }
+            }
+
+            stack.remove(metadata.getId());
+            visited.add(metadata.getId());
+            sortedList.add(metadata);
         }
     }
 
@@ -100,6 +178,16 @@ public final class Metadata {
     public PluginEnvironment getEnvironment() {
         return environment;
     }
+
+    /**
+     * Returns the plugin {@link File}
+     *
+     * @return the {@link File} of the plugin
+     */
+    public File getPluginFile() {
+        return pluginFile;
+    }
+
 
     /**
      * Returns the ID of the plugin.
@@ -216,6 +304,18 @@ public final class Metadata {
             metadata.id = id;
             return this;
         }
+
+        /**
+         * Sets the file of the plugin.
+         *
+         * @param file plugin archive Jar object
+         * @return the builder instance
+         */
+        public MetadataBuilder pluginFile(File file) {
+            metadata.pluginFile = file;
+            return this;
+        }
+
 
         /**
          * Sets the description of the plugin.
@@ -339,7 +439,6 @@ public final class Metadata {
             Objects.requireNonNull(metadata.license, "[!] The required field 'license' is not specified in the metadata!");
             Objects.requireNonNull(metadata.author, "[!] The required field 'author' is not specified in the metadata!");
             Objects.requireNonNull(metadata.version, "[!] The required field 'version' is not specified in the metadata!");
-            Objects.requireNonNull(metadata.environment, "[!] The required field 'environment' is not specified in the metadata!");
             Objects.requireNonNull(metadata.entryPointsList, "[!] The required field 'entry points' is not specified in the metadata!");
         }
     }

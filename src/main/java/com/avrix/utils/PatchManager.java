@@ -2,6 +2,7 @@ package com.avrix.utils;
 
 import com.avrix.Launcher;
 import com.avrix.agent.ClassTransformer;
+import com.avrix.plugin.Metadata;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +12,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -22,20 +22,20 @@ public class PatchManager {
     /**
      * Applies a list of patches to classes specified by their fully qualified names.
      *
-     * @param patchList   A list of fully qualified class names to be patched.
-     * @param classLoader The {@link com.avrix.plugin.PluginClassLoader} to use for loading the patch classes.
+     * @param metadata    Plugin {@link Metadata}
+     * @param classLoader The {@link ClassLoader} to use for loading the patch classes.
      * @throws ClassNotFoundException    If a specified class cannot be found.
      * @throws NoSuchMethodException     If the no-argument constructor is not found.
      * @throws InvocationTargetException If the underlying constructor throws an exception.
      * @throws InstantiationException    If the class that declares the underlying constructor represents an abstract class.
      * @throws IllegalAccessException    If the constructor is inaccessible.
      */
-    public static void applyPluginPatches(List<String> patchList, ClassLoader classLoader) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        if (patchList == null || patchList.isEmpty()) {
+    public static void applyPluginPatches(Metadata metadata, ClassLoader classLoader) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        if (metadata.getPatchList() == null || metadata.getPatchList().isEmpty()) {
             return;
         }
 
-        for (String classPath : patchList) {
+        for (String classPath : metadata.getPatchList()) {
             Class<?> patchClass = Class.forName(classPath, true, classLoader);
             ClassTransformer patchInstance = (ClassTransformer) patchClass.getDeclaredConstructor().newInstance();
 
