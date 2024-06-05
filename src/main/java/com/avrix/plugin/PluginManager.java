@@ -1,6 +1,5 @@
 package com.avrix.plugin;
 
-import com.avrix.enums.PluginEnvironment;
 import com.avrix.utils.Constants;
 import com.avrix.utils.PatchManager;
 import zombie.core.Core;
@@ -27,8 +26,8 @@ public class PluginManager {
         StringBuilder sb = new StringBuilder("Loaded plugins:\n");
         for (Metadata plugin : pluginsList) {
             sb.append("    - ").append(plugin.getName())
-                    .append(" (").append(plugin.getId())
-                    .append(", ").append(plugin.getVersion())
+                    .append(" (ID: ").append(plugin.getId())
+                    .append(", Version: ").append(plugin.getVersion())
                     .append(")\n");
         }
         System.out.print(sb);

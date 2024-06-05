@@ -1,4 +1,4 @@
-package com.avrix.enums;
+package com.avrix.plugin;
 
 /**
  * Enum representing the environment in which a plugin can operate.

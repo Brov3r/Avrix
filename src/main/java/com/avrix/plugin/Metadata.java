@@ -1,6 +1,5 @@
 package com.avrix.plugin;
 
-import com.avrix.enums.PluginEnvironment;
 import com.avrix.utils.Constants;
 import com.avrix.utils.YamlFile;
 
@@ -37,9 +36,9 @@ public final class Metadata {
         this.license = null;
         this.environment = PluginEnvironment.BOTH;
         this.contacts = null;
-        this.entryPointsList = new ArrayList<>();
+        this.entryPointsList = Collections.emptyList();
         this.dependenciesMap = new HashMap<>();
-        this.patchList = new ArrayList<>();
+        this.patchList = Collections.emptyList();
         this.pluginFile = null;
     }
 

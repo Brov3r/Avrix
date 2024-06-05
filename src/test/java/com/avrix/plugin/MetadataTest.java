@@ -1,6 +1,5 @@
 package com.avrix.plugin;
 
-import com.avrix.enums.PluginEnvironment;
 import com.avrix.utils.YamlFile;
 import com.avrix.utils.YamlFileTest;
 import org.junit.jupiter.api.BeforeEach;
