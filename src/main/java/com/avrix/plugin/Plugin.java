@@ -82,7 +82,7 @@ public abstract class Plugin {
      * @param configPath path to the configuration file, relative to the plugin resources folder/root folder inside the Jar
      * @return returns a {@link YamlFile} object, which is a configuration file.
      */
-    public synchronized YamlFile loadConfig(String configPath) {
+    public final synchronized YamlFile loadConfig(String configPath) {
         File configFromFolder = getConfigFolder().toPath().resolve(configPath).toFile();
         try {
             configPath = configPath.trim();
