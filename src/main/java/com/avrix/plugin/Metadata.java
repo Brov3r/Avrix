@@ -1,5 +1,6 @@
 package com.avrix.plugin;
 
+import com.avrix.enums.Environment;
 import com.avrix.utils.Constants;
 import com.avrix.utils.YamlFile;
 
@@ -18,7 +19,7 @@ public final class Metadata {
     private String license; // License under which the code is distributed
     private String contacts; // Author's contact information
     private File pluginFile; // Path to the plugin file (optional)
-    private PluginEnvironment environment; // Environment in which the plugin should run (client, server)
+    private Environment environment; // Environment in which the plugin should run (client, server)
     private List<String> entryPointsList; // List of entry points as full class path
     private List<String> patchList; // List of classes that modify game code as a full class path
     private Map<String, String> dependenciesMap; // Dependency map, where the key is the identifier of the module (plugin), and the value is its version
@@ -34,7 +35,7 @@ public final class Metadata {
         this.author = null;
         this.version = null;
         this.license = null;
-        this.environment = PluginEnvironment.BOTH;
+        this.environment = Environment.BOTH;
         this.contacts = null;
         this.entryPointsList = Collections.emptyList();
         this.dependenciesMap = new HashMap<>();
@@ -170,11 +171,11 @@ public final class Metadata {
     }
 
     /**
-     * Returns the {@link PluginEnvironment} of the plugin.
+     * Returns the {@link Environment} of the plugin.
      *
-     * @return the {@link PluginEnvironment} of the plugin
+     * @return the {@link Environment} of the plugin
      */
-    public PluginEnvironment getEnvironment() {
+    public Environment getEnvironment() {
         return environment;
     }
 
@@ -345,7 +346,7 @@ public final class Metadata {
          * @return the builder instance
          */
         public MetadataBuilder environment(String environment) {
-            metadata.environment = PluginEnvironment.fromString(environment);
+            metadata.environment = Environment.fromString(environment);
             return this;
         }
 

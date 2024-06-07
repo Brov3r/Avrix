@@ -1,5 +1,6 @@
 package com.avrix.plugin;
 
+import com.avrix.enums.Environment;
 import com.avrix.utils.Constants;
 import com.avrix.utils.PatchManager;
 import zombie.core.Core;
@@ -64,7 +65,7 @@ public class PluginManager {
      */
     public static void loadPlugins() throws Exception {
         // Plugin loading mode (client, server)
-        PluginEnvironment loaderEnvironment = PluginEnvironment.fromString(System.getProperty("avrix.mode"));
+        Environment loaderEnvironment = Environment.fromString(System.getProperty("avrix.mode"));
 
         // Adding default modules (game, loader, etc.) to the list of plugins
         loadDefaultModules();
@@ -102,12 +103,12 @@ public class PluginManager {
 
             if (pluginFile == null) continue;
 
-            PluginEnvironment environment = metadata.getEnvironment();
+            Environment environment = metadata.getEnvironment();
 
             System.out.printf("[#] Loading plugin '%s' (ID: %s, Version: %s)...%n", metadata.getName(), metadata.getId(), metadata.getVersion());
 
             // Checking the environment
-            if (environment != loaderEnvironment && environment != PluginEnvironment.BOTH) {
+            if (environment != loaderEnvironment && environment != Environment.BOTH) {
                 continue;
             }
 

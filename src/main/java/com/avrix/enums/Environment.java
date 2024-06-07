@@ -1,9 +1,9 @@
-package com.avrix.plugin;
+package com.avrix.enums;
 
 /**
- * Enum representing the environment in which a plugin can operate.
+ * An enumeration representing the execution environment, such as server, client, etc.
  */
-public enum PluginEnvironment {
+public enum Environment {
     /**
      * Client environment.
      */
@@ -26,7 +26,7 @@ public enum PluginEnvironment {
      *
      * @param value the string representation of the environment
      */
-    PluginEnvironment(String value) {
+    Environment(String value) {
         this.value = value;
     }
 
@@ -40,14 +40,14 @@ public enum PluginEnvironment {
     }
 
     /**
-     * Converts a string to the corresponding {@code PluginEnvironment} enum value.
+     * Converts a string to the corresponding {@link Environment} enum value.
      *
      * @param text the string to convert
-     * @return the corresponding {@code PluginEnvironment} enum value
+     * @return the corresponding {@link Environment} enum value
      * @throws IllegalArgumentException if the string does not match any enum value
      */
-    public static PluginEnvironment fromString(String text) {
-        for (PluginEnvironment env : PluginEnvironment.values()) {
+    public static Environment fromString(String text) {
+        for (Environment env : Environment.values()) {
             if (env.value.equalsIgnoreCase(text)) {
                 return env;
             }

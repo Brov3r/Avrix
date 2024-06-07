@@ -1,6 +1,6 @@
 package com.avrix.plugin;
 
-import com.avrix.events.EventPriority;
+import com.avrix.enums.Priority;
 import com.avrix.events.TestEventHighPriorityImpl;
 import com.avrix.events.TestEventImpl;
 import com.avrix.events.TestEventWithExceptionImpl;
@@ -111,8 +111,8 @@ public class EventManagerTest {
      */
     @Test
     public void testEventPriority() {
-        EventManager.addListener(new TestEventImpl(), EventPriority.LOWEST);
-        EventManager.addListener(new TestEventHighPriorityImpl(), EventPriority.HIGHEST);
+        EventManager.addListener(new TestEventImpl(), Priority.LOWEST);
+        EventManager.addListener(new TestEventHighPriorityImpl(), Priority.HIGHEST);
 
         assertNotNull(EventManager.getAllListeners());
         assertNotNull(EventManager.getListenersForEvent("OnTestEvent"));

@@ -1,7 +1,7 @@
 package com.avrix.plugin;
 
+import com.avrix.enums.Priority;
 import com.avrix.events.Event;
-import com.avrix.events.EventPriority;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -58,9 +58,9 @@ public class EventManager {
      * Registers a listener object for a specific event.
      *
      * @param listener {@link Event} listener. Must have a handleEvent method with a signature corresponding to the event.
-     * @param priority {@link EventPriority}, events with lower priority are called last
+     * @param priority {@link Priority}, events with lower priority are called last
      */
-    public static synchronized void addListener(Event listener, EventPriority priority) {
+    public static synchronized void addListener(Event listener, Priority priority) {
         String eventName = listener.getEventName();
         listeners.computeIfAbsent(eventName, k -> new ArrayList<>()).add(new EventListener(listener, priority));
     }
@@ -72,7 +72,7 @@ public class EventManager {
      */
     public static synchronized void addListener(Event listener) {
         String eventName = listener.getEventName();
-        listeners.computeIfAbsent(eventName, k -> new ArrayList<>()).add(new EventListener(listener, EventPriority.NORMAL));
+        listeners.computeIfAbsent(eventName, k -> new ArrayList<>()).add(new EventListener(listener, Priority.NORMAL));
     }
 
     /**
@@ -163,6 +163,6 @@ public class EventManager {
      * @param handler  Handler object for this event
      * @param priority Processing priority, according to the EventPriority enumeration
      */
-    public record EventListener(Event handler, EventPriority priority) {
+    public record EventListener(Event handler, Priority priority) {
     }
 }

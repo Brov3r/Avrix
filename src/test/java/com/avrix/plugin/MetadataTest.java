@@ -1,5 +1,6 @@
 package com.avrix.plugin;
 
+import com.avrix.enums.Environment;
 import com.avrix.utils.YamlFile;
 import com.avrix.utils.YamlFileTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -186,7 +187,7 @@ public class MetadataTest {
         assertEquals("Test metadata", metadata.getDescription());
         assertEquals("Test", metadata.getAuthor());
         assertEquals("0.0.0", metadata.getVersion());
-        assertEquals(PluginEnvironment.CLIENT, metadata.getEnvironment());
+        assertEquals(Environment.CLIENT, metadata.getEnvironment());
         assertEquals("MIT", metadata.getLicense());
         assertEquals("https://test.com", metadata.getContacts());
         assertEquals(Arrays.asList("test.class", "test.test.class"), metadata.getEntryPoints());
@@ -227,7 +228,7 @@ public class MetadataTest {
         assertEquals("Test metadata", metadata.getDescription());
         assertEquals("Test", metadata.getAuthor());
         assertEquals("0.0.0", metadata.getVersion());
-        assertEquals(PluginEnvironment.CLIENT, metadata.getEnvironment());
+        assertEquals(Environment.CLIENT, metadata.getEnvironment());
         assertEquals("MIT", metadata.getLicense());
         assertEquals("https://test.com", metadata.getContacts());
         assertEquals(Arrays.asList("test.class", "test.test.class"), metadata.getEntryPoints());
@@ -267,7 +268,7 @@ public class MetadataTest {
         assertEquals("Author Name", metadata.getAuthor());
         assertEquals("1.0.0", metadata.getVersion());
         assertEquals("MIT", metadata.getLicense());
-        assertEquals(PluginEnvironment.CLIENT, metadata.getEnvironment());
+        assertEquals(Environment.CLIENT, metadata.getEnvironment());
         assertEquals("author@example.com", metadata.getContacts());
         assertEquals(entryPoints, metadata.getEntryPoints());
         assertEquals(patches, metadata.getPatchList());

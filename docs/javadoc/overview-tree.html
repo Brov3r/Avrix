@@ -52,6 +52,9 @@ loadScripts(document, 'script');</script>
 <ul class="horizontal">
 <li><a href="com/avrix/package-tree.html">com.avrix</a>, </li>
 <li><a href="com/avrix/agent/package-tree.html">com.avrix.agent</a>, </li>
+<li><a href="com/avrix/api/package-tree.html">com.avrix.api</a>, </li>
+<li><a href="com/avrix/commands/package-tree.html">com.avrix.commands</a>, </li>
+<li><a href="com/avrix/enums/package-tree.html">com.avrix.enums</a>, </li>
 <li><a href="com/avrix/events/package-tree.html">com.avrix.events</a>, </li>
 <li><a href="com/avrix/patches/package-tree.html">com.avrix.patches</a>, </li>
 <li><a href="com/avrix/plugin/package-tree.html">com.avrix.plugin</a>, </li>
@@ -67,6 +70,7 @@ loadScripts(document, 'script');</script>
 <li class="circle">com.avrix.agent.<a href="com/avrix/agent/AgentLoader.html" class="type-name-link" title="class in com.avrix.agent">AgentLoader</a></li>
 <li class="circle">com.avrix.agent.<a href="com/avrix/agent/AgentManager.html" class="type-name-link" title="class in com.avrix.agent">AgentManager</a></li>
 <li class="circle">com.avrix.agent.<a href="com/avrix/agent/AgentTransformer.html" class="type-name-link" title="class in com.avrix.agent">AgentTransformer</a> (implements java.lang.instrument.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.instrument/java/lang/instrument/ClassFileTransformer.html" title="class or interface in java.lang.instrument" class="external-link">ClassFileTransformer</a>)</li>
+<li class="circle">com.avrix.api.<a href="com/avrix/api/ChatUtils.html" class="type-name-link" title="class in com.avrix.api">ChatUtils</a></li>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/ClassLoader.html" class="type-name-link external-link" title="class or interface in java.lang">ClassLoader</a>
 <ul>
 <li class="circle">java.security.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/security/SecureClassLoader.html" class="type-name-link external-link" title="class or interface in java.security">SecureClassLoader</a>
@@ -84,10 +88,22 @@ loadScripts(document, 'script');</script>
 <li class="circle">com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" class="type-name-link" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></li>
 <li class="circle">com.avrix.agent.<a href="com/avrix/agent/ClassTransformer.html" class="type-name-link" title="class in com.avrix.agent">ClassTransformer</a>
 <ul>
-<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchTest1.html" class="type-name-link" title="class in com.avrix.patches">PatchTest1</a></li>
-<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchTest2.html" class="type-name-link" title="class in com.avrix.patches">PatchTest2</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchBanSteamIDCommand.html" class="type-name-link" title="class in com.avrix.patches">PatchBanSteamIDCommand</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchBanUserCommand.html" class="type-name-link" title="class in com.avrix.patches">PatchBanUserCommand</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchChatServer.html" class="type-name-link" title="class in com.avrix.patches">PatchChatServer</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchGameServer.html" class="type-name-link" title="class in com.avrix.patches">PatchGameServer</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchGameWindow.html" class="type-name-link" title="class in com.avrix.patches">PatchGameWindow</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchKickUserCommand.html" class="type-name-link" title="class in com.avrix.patches">PatchKickUserCommand</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchLuaEventManager.html" class="type-name-link" title="class in com.avrix.patches">PatchLuaEventManager</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchLuaManager.html" class="type-name-link" title="class in com.avrix.patches">PatchLuaManager</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchQuitCommand.html" class="type-name-link" title="class in com.avrix.patches">PatchQuitCommand</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchSpriteRenderer.html" class="type-name-link" title="class in com.avrix.patches">PatchSpriteRenderer</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchTranslator.html" class="type-name-link" title="class in com.avrix.patches">PatchTranslator</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchUnbanSteamIDCommand.html" class="type-name-link" title="class in com.avrix.patches">PatchUnbanSteamIDCommand</a></li>
+<li class="circle">com.avrix.patches.<a href="com/avrix/patches/PatchUnbanUserCommand.html" class="type-name-link" title="class in com.avrix.patches">PatchUnbanUserCommand</a></li>
 </ul>
 </li>
+<li class="circle">com.avrix.commands.<a href="com/avrix/commands/CommandsManager.html" class="type-name-link" title="class in com.avrix.commands">CommandsManager</a></li>
 <li class="circle">com.avrix.utils.<a href="com/avrix/utils/Constants.html" class="type-name-link" title="class in com.avrix.utils">Constants</a></li>
 <li class="circle">com.avrix.events.<a href="com/avrix/events/Event.html" class="type-name-link" title="class in com.avrix.events">Event</a>
 <ul>
@@ -313,10 +329,12 @@ loadScripts(document, 'script');</script>
 </ul>
 </li>
 <li class="circle">com.avrix.plugin.<a href="com/avrix/plugin/EventManager.html" class="type-name-link" title="class in com.avrix.plugin">EventManager</a></li>
+<li class="circle">com.avrix.api.<a href="com/avrix/api/IsoObjectUtils.html" class="type-name-link" title="class in com.avrix.api">IsoObjectUtils</a></li>
 <li class="circle">com.avrix.<a href="com/avrix/Launcher.html" class="type-name-link" title="class in com.avrix">Launcher</a></li>
 <li class="circle">com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" class="type-name-link" title="class in com.avrix.plugin">Metadata</a></li>
 <li class="circle">com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" class="type-name-link" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></li>
 <li class="circle">com.avrix.utils.<a href="com/avrix/utils/PatchManager.html" class="type-name-link" title="class in com.avrix.utils">PatchManager</a></li>
+<li class="circle">com.avrix.api.<a href="com/avrix/api/PlayerUtils.html" class="type-name-link" title="class in com.avrix.api">PlayerUtils</a></li>
 <li class="circle">com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" class="type-name-link" title="class in com.avrix.plugin">Plugin</a></li>
 <li class="circle">com.avrix.plugin.<a href="com/avrix/plugin/PluginManager.html" class="type-name-link" title="class in com.avrix.plugin">PluginManager</a></li>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Record.html" class="type-name-link external-link" title="class or interface in java.lang">Record</a>
@@ -325,10 +343,27 @@ loadScripts(document, 'script');</script>
 </ul>
 </li>
 <li class="circle">com.avrix.plugin.<a href="com/avrix/plugin/ServiceManager.html" class="type-name-link" title="class in com.avrix.plugin">ServiceManager</a></li>
+<li class="circle">com.avrix.api.<a href="com/avrix/api/TextUtils.html" class="type-name-link" title="class in com.avrix.api">TextUtils</a></li>
 <li class="circle">com.avrix.utils.<a href="com/avrix/utils/VersionChecker.html" class="type-name-link" title="class in com.avrix.utils">VersionChecker</a></li>
+<li class="circle">com.avrix.api.<a href="com/avrix/api/WindowUtils.html" class="type-name-link" title="class in com.avrix.api">WindowUtils</a></li>
 <li class="circle">com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" class="type-name-link" title="class in com.avrix.utils">YamlFile</a></li>
 </ul>
 </li>
+</ul>
+</section>
+<section class="hierarchy">
+<h2 title="Interface Hierarchy">Interface Hierarchy</h2>
+<ul>
+<li class="circle">com.avrix.commands.<a href="com/avrix/commands/Command.html" class="type-name-link" title="interface in com.avrix.commands">Command</a></li>
+</ul>
+</section>
+<section class="hierarchy">
+<h2 title="Annotation Interface Hierarchy">Annotation Interface Hierarchy</h2>
+<ul>
+<li class="circle">com.avrix.commands.<a href="com/avrix/commands/CommandAccessLevel.html" class="type-name-link" title="annotation interface in com.avrix.commands">CommandAccessLevel</a> (implements java.lang.annotation.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/Annotation.html" title="class or interface in java.lang.annotation" class="external-link">Annotation</a>)</li>
+<li class="circle">com.avrix.commands.<a href="com/avrix/commands/CommandChatReturn.html" class="type-name-link" title="annotation interface in com.avrix.commands">CommandChatReturn</a> (implements java.lang.annotation.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/Annotation.html" title="class or interface in java.lang.annotation" class="external-link">Annotation</a>)</li>
+<li class="circle">com.avrix.commands.<a href="com/avrix/commands/CommandExecutionScope.html" class="type-name-link" title="annotation interface in com.avrix.commands">CommandExecutionScope</a> (implements java.lang.annotation.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/Annotation.html" title="class or interface in java.lang.annotation" class="external-link">Annotation</a>)</li>
+<li class="circle">com.avrix.commands.<a href="com/avrix/commands/CommandName.html" class="type-name-link" title="annotation interface in com.avrix.commands">CommandName</a> (implements java.lang.annotation.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/annotation/Annotation.html" title="class or interface in java.lang.annotation" class="external-link">Annotation</a>)</li>
 </ul>
 </section>
 <section class="hierarchy">
@@ -338,8 +373,10 @@ loadScripts(document, 'script');</script>
 <ul>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Enum.html" class="type-name-link external-link" title="class or interface in java.lang">Enum</a>&lt;E&gt; (implements java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Comparable.html" title="class or interface in java.lang" class="external-link">Comparable</a>&lt;T&gt;, java.lang.constant.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/constant/Constable.html" title="class or interface in java.lang.constant" class="external-link">Constable</a>, java.io.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/Serializable.html" title="class or interface in java.io" class="external-link">Serializable</a>)
 <ul>
-<li class="circle">com.avrix.events.<a href="com/avrix/events/EventPriority.html" class="type-name-link" title="enum class in com.avrix.events">EventPriority</a></li>
-<li class="circle">com.avrix.plugin.<a href="com/avrix/plugin/PluginEnvironment.html" class="type-name-link" title="enum class in com.avrix.plugin">PluginEnvironment</a></li>
+<li class="circle">com.avrix.enums.<a href="com/avrix/enums/AccessLevel.html" class="type-name-link" title="enum class in com.avrix.enums">AccessLevel</a></li>
+<li class="circle">com.avrix.enums.<a href="com/avrix/enums/CommandScope.html" class="type-name-link" title="enum class in com.avrix.enums">CommandScope</a></li>
+<li class="circle">com.avrix.enums.<a href="com/avrix/enums/Environment.html" class="type-name-link" title="enum class in com.avrix.enums">Environment</a></li>
+<li class="circle">com.avrix.enums.<a href="com/avrix/enums/Priority.html" class="type-name-link" title="enum class in com.avrix.enums">Priority</a></li>
 </ul>
 </li>
 </ul>
