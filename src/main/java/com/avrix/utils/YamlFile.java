@@ -139,9 +139,18 @@ public class YamlFile {
     /**
      * Saves the YAML file to a specified file path.
      *
-     * @param filePath the path to save the YAML file to
+     * @param path the path to save the YAML file to
      */
-    public synchronized void save(String filePath) {
+    public synchronized void save(String path) {
+        File filePath = new File(path);
+
+        if (filePath.getParentFile() != null && !filePath.getParentFile().exists()) {
+            if (!filePath.getParentFile().mkdirs()) {
+                System.err.println("[!] Failed to create directories for the path: " + path);
+                return;
+            }
+        }
+
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setProcessComments(true);

@@ -107,10 +107,30 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getConfigFolder()" class="member-name-link">getConfigFolder</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link"><code>File</code></a> object representing the configuration directory for this plugin.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="../utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getDefaultConfig()" class="member-name-link">getDefaultConfig</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the default configuration file.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="Metadata.html" title="class in com.avrix.plugin">Metadata</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMetadata()" class="member-name-link">getMetadata</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the <a href="Metadata.html" title="class in com.avrix.plugin"><code>Metadata</code></a> associated with this plugin.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#loadConfig(java.lang.String)" class="member-name-link">loadConfig</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;configPath)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Loading the configuration file.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#loadDefaultConfig()" class="member-name-link">loadDefaultConfig</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Loading the default configuration file.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onInitialize()" class="member-name-link">onInitialize</a>()</code></div>
@@ -155,6 +175,29 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
+<section class="detail" id="getDefaultConfig()">
+<h3>getDefaultConfig</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="../utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></span>&nbsp;<span class="element-name">getDefaultConfig</span>()</div>
+<div class="block">Returns the default configuration file.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>a <a href="../utils/YamlFile.html" title="class in com.avrix.utils"><code>YamlFile</code></a> object, or <code>null</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getConfigFolder()">
+<h3>getConfigFolder</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link">File</a></span>&nbsp;<span class="element-name">getConfigFolder</span>()</div>
+<div class="block">Returns a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link"><code>File</code></a> object representing the configuration directory for this plugin.
+ The directory path is normalized to prevent problems with various file systems.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>A <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link"><code>File</code></a> object pointing to the normalized path to the plugin configuration directory.</dd>
+</dl>
+</section>
+</li>
+<li>
 <section class="detail" id="getMetadata()">
 <h3>getMetadata</h3>
 <div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="Metadata.html" title="class in com.avrix.plugin">Metadata</a></span>&nbsp;<span class="element-name">getMetadata</span>()</div>
@@ -162,6 +205,32 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>The <a href="Metadata.html" title="class in com.avrix.plugin"><code>Metadata</code></a> of the plugin.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="loadDefaultConfig()">
+<h3>loadDefaultConfig</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">loadDefaultConfig</span>()</div>
+<div class="block">Loading the default configuration file.
+ If there is no config in the plugin resources folder, it is saved from the Jar archive and then loaded.
+ <p>
+ If the configuration file cannot be loaded (for example, it is not in the Jar folder), then a new empty config is created.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="loadConfig(java.lang.String)">
+<h3>loadConfig</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="../utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></span>&nbsp;<span class="element-name">loadConfig</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;configPath)</span></div>
+<div class="block">Loading the configuration file.
+ If there is no config in the plugin resources folder, it is saved from the Jar archive and then loaded.
+ <p>
+ If the configuration file cannot be loaded (for example, it is not in the Jar folder), then a new empty config is created.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>configPath</code> - path to the configuration file, relative to the plugin resources folder/root folder inside the Jar</dd>
+<dt>Returns:</dt>
+<dd>returns a <a href="../utils/YamlFile.html" title="class in com.avrix.utils"><code>YamlFile</code></a> object, which is a configuration file.</dd>
 </dl>
 </section>
 </li>

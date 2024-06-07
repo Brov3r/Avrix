@@ -443,9 +443,17 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Returns a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link"><code>File</code></a> object representing the configuration directory for this plugin.</div>
 </dd>
+<dt><a href="com/avrix/plugin/Plugin.html#getConfigFolder()" class="member-name-link">getConfigFolder()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" title="class in com.avrix.plugin">Plugin</a></dt>
+<dd>
+<div class="block">Returns a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link"><code>File</code></a> object representing the configuration directory for this plugin.</div>
+</dd>
 <dt><a href="com/avrix/plugin/Metadata.html#getContacts()" class="member-name-link">getContacts()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
 <div class="block">Returns the contact information for the plugin author.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Plugin.html#getDefaultConfig()" class="member-name-link">getDefaultConfig()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" title="class in com.avrix.plugin">Plugin</a></dt>
+<dd>
+<div class="block">Returns the default configuration file.</div>
 </dd>
 <dt><a href="com/avrix/plugin/Metadata.html#getDependencies()" class="member-name-link">getDependencies()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
@@ -2535,6 +2543,14 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">The loadAgent method loads the agent into the current JVM if it is not already loaded.</div>
 </dd>
+<dt><a href="com/avrix/plugin/Plugin.html#loadConfig(java.lang.String)" class="member-name-link">loadConfig(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" title="class in com.avrix.plugin">Plugin</a></dt>
+<dd>
+<div class="block">Loading the configuration file.</div>
+</dd>
+<dt><a href="com/avrix/plugin/Plugin.html#loadDefaultConfig()" class="member-name-link">loadDefaultConfig()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" title="class in com.avrix.plugin">Plugin</a></dt>
+<dd>
+<div class="block">Loading the default configuration file.</div>
+</dd>
 <dt><a href="com/avrix/plugin/PluginManager.html#loadPlugin(com.avrix.plugin.Metadata,java.lang.ClassLoader)" class="member-name-link">loadPlugin(Metadata, ClassLoader)</a> - Static method in class com.avrix.plugin.<a href="com/avrix/plugin/PluginManager.html" title="class in com.avrix.plugin">PluginManager</a></dt>
 <dd>
 <div class="block">Loads and initializes plugin entry points.</div>
@@ -4145,6 +4161,10 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/plugin/PluginManager.html#%3Cinit%3E()" class="member-name-link">PluginManager()</a> - Constructor for class com.avrix.plugin.<a href="com/avrix/plugin/PluginManager.html" title="class in com.avrix.plugin">PluginManager</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/utils/Constants.html#PLUGINS_DEFAULT_CONFIG_NAME" class="member-name-link">PLUGINS_DEFAULT_CONFIG_NAME</a> - Static variable in class com.avrix.utils.<a href="com/avrix/utils/Constants.html" title="class in com.avrix.utils">Constants</a></dt>
+<dd>
+<div class="block">Name of the default plugin config</div>
+</dd>
 <dt><a href="com/avrix/utils/Constants.html#PLUGINS_FOLDER_NAME" class="member-name-link">PLUGINS_FOLDER_NAME</a> - Static variable in class com.avrix.utils.<a href="com/avrix/utils/Constants.html" title="class in com.avrix.utils">Constants</a></dt>
 <dd>
 <div class="block">Folder name for plugins</div>

@@ -19,6 +19,11 @@ public class Constants {
     public static final String PLUGINS_METADATA_NAME = "metadata.yml";
 
     /**
+     * Name of the default plugin config
+     */
+    public static final String PLUGINS_DEFAULT_CONFIG_NAME = "config.yml";
+    
+    /**
      * Project version
      */
     public static final String AVRIX_VERSION;
