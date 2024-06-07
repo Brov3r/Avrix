@@ -31,9 +31,9 @@ public class PatchManager {
      * @throws IllegalAccessException    If the constructor is inaccessible.
      */
     public static void applyPluginPatches(Metadata metadata, ClassLoader classLoader) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
-        if (metadata.getPatchList() == null || metadata.getPatchList().isEmpty()) {
-            return;
-        }
+        if (metadata.getPatchList() == null || metadata.getPatchList().isEmpty()) return;
+
+        System.out.printf("[#] Applying patches from the '%s' (ID: %s, Version: %s)...%n", metadata.getName(), metadata.getId(), metadata.getVersion());
 
         for (String classPath : metadata.getPatchList()) {
             Class<?> patchClass = Class.forName(classPath, true, classLoader);
@@ -53,6 +53,8 @@ public class PatchManager {
      * @throws URISyntaxException if a string could not be parsed as a URI reference.
      */
     public static void applyDefaultPatches() throws IOException, URISyntaxException {
+        System.out.println("[#] Applying default patches...");
+
         File jarFile = new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         URL jarUrl = jarFile.toURI().toURL();
 

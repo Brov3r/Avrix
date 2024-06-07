@@ -60,8 +60,7 @@ public abstract class Plugin {
         File configFromFolder = getConfigFolder().toPath().resolve(Constants.PLUGINS_DEFAULT_CONFIG_NAME).toFile();
         try {
             File jarPath = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
-
-            System.out.println(jarPath);
+            
             if (!configFromFolder.exists()) {
                 config = new YamlFile(jarPath.getAbsolutePath(), Constants.PLUGINS_DEFAULT_CONFIG_NAME);
                 config.save(configFromFolder.getAbsolutePath());

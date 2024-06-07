@@ -87,9 +87,6 @@ public final class ClassModifier {
          * @return the {@link ClassModifierBuilder} instance for the call chain
          */
         public ClassModifierBuilder modifyMethod(String methodName, String methodSignature, BiConsumer<CtClass, CtMethod> methodModifier) {
-            System.out.printf("[#] Attempt to patch a class '%s' in method: '%s'%s%n", this.classModifier.className, methodName,
-                    methodSignature != null ? "(" + methodSignature + " args)" : "");
-
             try {
                 CtClass modifyClass = getCtClass(this.classModifier.className);
                 CtMethod ctMethod;

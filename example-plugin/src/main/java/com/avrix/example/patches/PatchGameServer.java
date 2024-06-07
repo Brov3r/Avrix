@@ -1,6 +1,7 @@
 package com.avrix.example.patches;
 
 import com.avrix.agent.ClassTransformer;
+import javassist.CannotCompileException;
 
 /**
  * Game file patch class main entry point
@@ -23,8 +24,8 @@ public class PatchGameServer extends ClassTransformer {
         getModifierBuilder().modifyMethod("main", (ctClass, ctMethod) -> {
             try {
                 ctMethod.insertBefore("{System.out.println(\"Inject from example plugin!\");}");
-            } catch (Exception e) {
-
+            } catch (CannotCompileException e) {
+                throw new RuntimeException(e);
             }
         });
     }

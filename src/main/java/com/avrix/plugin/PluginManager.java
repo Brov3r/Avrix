@@ -105,12 +105,9 @@ public class PluginManager {
 
             Environment environment = metadata.getEnvironment();
 
-            System.out.printf("[#] Loading plugin '%s' (ID: %s, Version: %s)...%n", metadata.getName(), metadata.getId(), metadata.getVersion());
 
             // Checking the environment
-            if (environment != loaderEnvironment && environment != Environment.BOTH) {
-                continue;
-            }
+            if (environment != loaderEnvironment && environment != Environment.BOTH) continue;
 
             // Creating a URL for the plugin
             URL pluginUrl = pluginFile.toURI().toURL();
@@ -121,6 +118,7 @@ public class PluginManager {
             PatchManager.applyPluginPatches(metadata, classLoader);
 
             // Loading the plugin
+            System.out.printf("[#] Loading plugin '%s' (ID: %s, Version: %s)...%n", metadata.getName(), metadata.getId(), metadata.getVersion());
             loadPlugin(metadata, classLoader);
         }
 

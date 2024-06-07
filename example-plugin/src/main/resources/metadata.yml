@@ -3,7 +3,7 @@ id: "example_plugin"
 description: "Example Plugin"
 author: "Brov3r"
 version: "1.0.0"
-environment: "both"
+environment: "server"
 license: "MIT"
 contacts: "https://github.com/brov3r/avrix"
 entrypoints:

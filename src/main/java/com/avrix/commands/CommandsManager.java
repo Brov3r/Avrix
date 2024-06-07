@@ -6,9 +6,9 @@ import com.avrix.enums.CommandScope;
 import zombie.characters.IsoPlayer;
 import zombie.core.raknet.UdpConnection;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A set of tools for handling custom commands
@@ -20,84 +20,71 @@ public class CommandsManager {
     private static final Map<String, Command> commandsMap = new HashMap<>();
 
     /**
-     * Checking the command name for emptiness and treating extra characters ('/' and '!') as prefixes
+     * Adding a command to the system
      *
-     * @param command command class instance
-     * @return processed and verified command name as string
-     * @throws NullPointerException in case the command name is empty
+     * @param command chat command instance
      */
-    private static String validateCommandName(Command command) throws NullPointerException {
-        CommandName commandNameAnnotation = command.getClass().getAnnotation(CommandName.class);
+    public static void addCommand(Command command) {
+        Class<? extends Command> commandClass = command.getClass();
+
+        CommandName commandNameAnnotation = commandClass.getAnnotation(CommandName.class);
+        CommandAccessLevel accessLevelAnnotation = commandClass.getAnnotation(CommandAccessLevel.class);
+        CommandExecutionScope executionScopeAnnotation = commandClass.getAnnotation(CommandExecutionScope.class);
+        CommandChatReturn chatReturnAnnotation = commandClass.getAnnotation(CommandChatReturn.class);
+
         if (commandNameAnnotation == null || commandNameAnnotation.command().isEmpty()) {
-            throw new NullPointerException("[!] There is no name specified for the custom command: " + command.getClass());
+            System.out.printf("[!] Command '%s' is missing the @CommandName annotation or does not contain a value!%n", commandClass);
+            return;
         }
 
-        String commandName = commandNameAnnotation.command();
+        if (accessLevelAnnotation == null || accessLevelAnnotation.accessLevel() == null) {
+            System.out.printf("[!] Command '%s' is missing the @CommandAccessLevel annotation or does not contain a value!%n", commandClass);
+            return;
+        }
+
+        if (executionScopeAnnotation == null || executionScopeAnnotation.scope() == null) {
+            System.out.printf("[!] Command '%s' is missing the @CommandExecutionScope annotation or does not contain a value!%n", commandClass);
+            return;
+        }
+
+        if (chatReturnAnnotation == null || chatReturnAnnotation.text() == null) {
+            System.out.printf("[!] Command '%s' is missing the @CommandChatReturn annotation or does not contain a value!%n", commandClass);
+            return;
+        }
+
+        String commandName = commandNameAnnotation.command().toLowerCase();
 
         if (commandName.startsWith("!") || commandName.startsWith("/")) {
             commandName = commandName.substring(1);
         }
-        return commandName;
-    }
-
-    /**
-     * Adding a command to the repository
-     *
-     * @param command chat command instance
-     * @throws Exception in case an attempt is made to re-register a command (duplicate names) or missing annotations
-     */
-    public static void addCommand(Command command) throws Exception {
-        if (!command.getClass().isAnnotationPresent(CommandName.class)) {
-            throw new Exception("[!] The command must be annotated with @CommandName.");
-        }
-
-        if (!command.getClass().isAnnotationPresent(CommandAccessLevel.class)) {
-            throw new Exception("[!] The command must be annotated with @UserAccessLevel.");
-        }
-
-        if (!command.getClass().isAnnotationPresent(CommandChatReturn.class)) {
-            throw new Exception("[!] The command must be annotated with @CommandChatReturn.");
-        }
-
-        if (!command.getClass().isAnnotationPresent(CommandExecutionScope.class)) {
-            throw new Exception("[!] The command must be annotated with @CommandExecutionScope.");
-        }
-
-        String commandName = validateCommandName(command).toLowerCase();
 
         if (commandsMap.containsKey(commandName)) {
-            throw new Exception(String.format("The '%s' command is already registered in the system!", commandName));
+            System.out.printf("[!] The '%s' command is already registered in the system!%n", commandName);
+            return;
         }
 
         System.out.printf("[#] Added new custom command: '%s'%n", commandName);
-
         commandsMap.put(commandName, command);
     }
 
     /**
      * Checks if the execution of a specified command is allowed in a given scope.
      *
-     * @param chatCommand The name of the command to be checked.
+     * @param commandName The name of the command to be checked.
      * @param scopeType   The scope (CHAT, CONSOLE, or BOTH) in which to check the command's allowance.
      * @return true if the command is allowed in the specified scope, false otherwise.
      */
-    private static boolean isCommandAllowed(String chatCommand, CommandScope scopeType) {
-        Command command = commandsMap.get(chatCommand);
-        if (command == null) {
-            return false;
-        }
+    private static boolean isCommandAllowed(String commandName, CommandScope scopeType) {
+        Command command = commandsMap.get(commandName);
+
+        if (command == null) return false;
 
         CommandExecutionScope executionScope = command.getClass().getAnnotation(CommandExecutionScope.class);
-        if (executionScope == null) {
-            return false;
-        }
 
-        // Getting the value of the scope attribute of the CommandExecutionScope annotation
         CommandScope scope = executionScope.scope();
 
         return scope == scopeType || scope == CommandScope.BOTH;
     }
-
 
     /**
      * Processing custom chat and console commands.
@@ -107,15 +94,11 @@ public class CommandsManager {
      * @return output text to chat when calling a command or null if there is no such command.
      */
     public static String handleCustomCommand(UdpConnection playerConnection, String chatCommand) {
-        String[] commandArgs = parseAndValidateCommand(chatCommand);
-        if (commandArgs == null) {
-            return null;
-        }
+        String[] commandArgs = getCommandArgs(chatCommand);
+        if (commandArgs == null) return null;
 
         Command command = commandsMap.get(commandArgs[0].toLowerCase());
-        if (command == null) {
-            return null;
-        }
+        if (command == null) return null;
 
         boolean isConsole = playerConnection == null;
 
@@ -125,18 +108,16 @@ public class CommandsManager {
 
         if (!isConsole) {
             IsoPlayer player = PlayerUtils.getPlayerByUsername(playerConnection.username);
-            if (player == null) {
-                return "Could not check your access level! Please try later...";
-            }
+            if (player == null) return "Could not check your access level! Please try later...";
 
             CommandAccessLevel accessLevelAnnotation = command.getClass().getAnnotation(CommandAccessLevel.class);
-            if (accessLevelAnnotation != null) {
-                AccessLevel requiredAccessLevel = accessLevelAnnotation.accessLevel();
-                AccessLevel userAccessLevel = AccessLevel.fromString(player.accessLevel.toLowerCase());
-                if (requiredAccessLevel.getPriority() > userAccessLevel.getPriority()) {
-                    return "You do not have permission to execute this command.";
-                }
+
+            AccessLevel requiredAccessLevel = accessLevelAnnotation.accessLevel();
+            AccessLevel userAccessLevel = AccessLevel.fromString(player.accessLevel.toLowerCase());
+            if (requiredAccessLevel.getPriority() > userAccessLevel.getPriority()) {
+                return "You do not have permission to execute this command.";
             }
+
         }
 
         String[] commandArgsToInvoke = Arrays.copyOfRange(commandArgs, 1, commandArgs.length);
@@ -145,41 +126,43 @@ public class CommandsManager {
         command.onInvoke(playerConnection, commandArgsToInvoke);
 
         CommandChatReturn chatReturnAnnotation = command.getClass().getAnnotation(CommandChatReturn.class);
-        if (chatReturnAnnotation != null && chatReturnAnnotation.text() != null) {
-            return chatReturnAnnotation.text();
-        }
-
-        return "";
+        return chatReturnAnnotation.text();
     }
 
     /**
-     * Parses the given chat command string and validates its structure.
-     * Splits the chat command into arguments and removes any command prefixes
-     * like '!' or '/' from the first argument, which is typically the command name.
+     * Parses a chat command string and extracts command arguments.
      *
-     * @param chatCommand The chat command string to be parsed and validated.
-     * @return An array of strings, where the first element is the command name
-     * (without prefixes) and the remaining elements are the arguments.
-     * Returns null if the command is invalid, empty, or cannot be parsed.
+     * @param chatCommand the input chat command string
+     * @return an array of strings containing the command name and its arguments,
+     * or null if the input is null, empty, or contains only whitespace
      */
-    private static String[] parseAndValidateCommand(String chatCommand) {
-        if (chatCommand == null || chatCommand.isEmpty()) {
-            return null;
+    public static String[] getCommandArgs(String chatCommand) {
+        if (chatCommand == null || chatCommand.trim().isEmpty()) return null;
+
+        List<String> commandArgsList = new ArrayList<>();
+        Matcher matcher = Pattern.compile("\"([^\"]*)\"|\\S+").matcher(chatCommand.trim());
+        while (matcher.find()) {
+            String arg = matcher.group(1);
+            if (arg == null) {
+                arg = matcher.group();
+            }
+
+            commandArgsList.add(arg.trim());
         }
 
-        String[] commandArgs = chatCommand.split("\\s+");
-        if (commandArgs.length == 0 || commandArgs[0].isEmpty()) {
-            return null;
-        }
+        if (commandArgsList.isEmpty()) return null;
+
+        commandArgsList.removeIf(arg -> arg.isEmpty() && !arg.equals(commandArgsList.get(0)));
+
+        String[] commandArgs = new String[commandArgsList.size()];
+        commandArgs = commandArgsList.toArray(commandArgs);
 
         String commandName = commandArgs[0];
         if (commandName.startsWith("!") || commandName.startsWith("/")) {
             commandName = commandName.substring(1);
         }
 
-        if (commandName.isEmpty()) {
-            return null;
-        }
+        if (commandName.isEmpty()) return null;
 
         commandArgs[0] = commandName.toLowerCase();
 
