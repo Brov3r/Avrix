@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.avrix"},{"l":"com.avrix.agent"},{"l":"com.avrix.patches"},{"l":"com.avrix.plugin"},{"l":"com.avrix.utils"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.avrix"},{"l":"com.avrix.agent"},{"l":"com.avrix.events"},{"l":"com.avrix.patches"},{"l":"com.avrix.plugin"},{"l":"com.avrix.utils"}];updateSearchResults();

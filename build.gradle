@@ -33,6 +33,7 @@ dependencies {
      * Dependencies are created via the Gradle task 'createZombieJar'
      */
     compileOnly files('/libs/ProjectZomboid-core-41.78.16.jar')
+    compileOnly files('/libs/ProjectZomboid-libs-41.78.16.jar')
 
     /**
      * Utils
@@ -94,6 +95,16 @@ tasks.register('buildJar') {
 }
 
 /**
+ * Generating Jar Files of Project Zomboid File Dependencies
+ * Required environment variables:
+ * 1) ZOMBIE_FOLDER_PATH (For example: C:\Steam\steamapps\common\Project Zomboid Dedicated Server\java\zombie)
+ * 2) GAME_FOLDER_PATH (For example: C:\Steam\steamapps\common\Project Zomboid Dedicated Server\java)
+ */
+tasks.register('buildZomboidDependencies') {
+    dependsOn createZombieLibsJar, createZombieJar
+}
+
+/**
  * Generating JavaDoc for Jar archive
  */
 tasks.register('generateJavaDoc', Javadoc) {
@@ -104,28 +115,20 @@ tasks.register('generateJavaDoc', Javadoc) {
 
 /**
  * Task for creating a JAR file named 'ProjectZomboid-core-41.78.16.jar' from the contents of a specified folder.
- * For example path: C:\Steam\steamapps\common\Project Zomboid Dedicated Server\java\zombie
- *
- * This Gradle task performs the following steps:
- * 1. Retrieves the path to the source folder from the 'ZOMBIE_FOLDER_PATH' environment variable.
- * 2. If the environment variable is set and not empty:
- *    a. Creates a temporary directory 'tempDir/zombie' and copies the contents of the source folder into it.
- *    b. Uses the 'jar' command to create a JAR file from the contents of the 'tempDir' directory.
- *    c. Creates a 'libs' directory in the project root if it does not exist.
- *    d. Moves the generated JAR file to the 'libs' directory.
- *    e. Deletes the temporary directory 'tempDir'.
- * 3. If the environment variable is not set or is empty, prints a message indicating that the variable is not set or empty.
+ * For example ZOMBIE_FOLDER_PATH: C:\Steam\steamapps\common\Project Zomboid Dedicated Server\java\zombie
  */
 tasks.register('createZombieJar') {
     doLast {
-        def zombieFolder = System.getenv("ZOMBIE_FOLDER_PATH")
+        def zombieFolderPath = System.getenv("ZOMBIE_FOLDER_PATH")
         def archiveName = 'ProjectZomboid-core-41.78.16.jar'
 
-        if (zombieFolder != null && !zombieFolder.isEmpty()) {
+        if (zombieFolderPath != null && !zombieFolderPath.isEmpty()) {
             def tempDir = file('tempDir')
             def tempDirZombie = file('tempDir/zombie')
+            tempDir.mkdirs()
+
             copy {
-                from zombieFolder
+                from zombieFolderPath
                 into tempDirZombie
             }
 
@@ -133,13 +136,79 @@ tasks.register('createZombieJar') {
                 commandLine 'jar', 'cvf', archiveName, '-C', tempDir, '.'
             }
 
-            def libsFolder = './libs'
-            file(libsFolder).mkdirs()
-            file(archiveName).renameTo(new File(libsFolder, archiveName))
+            def libsFolder = file('libs')
+            libsFolder.mkdirs()
+            def targetFile = file("${libsFolder}/${archiveName}")
+            if (targetFile.exists()) {
+                targetFile.delete()
+            }
+            file(archiveName).renameTo(targetFile)
 
             delete tempDir
         } else {
-            println "The ZOMBIE_FOLDER_PATH environment variable is not set or empty."
+            println "The ZOMBIE_FOLDER_PATH environment variable is not set or is empty."
+        }
+    }
+}
+
+/**
+ * Task for creating a JAR file named 'ProjectZomboid-libs-41.78.16.jar' from the contents of a specified folder.
+ * For example GAME_FOLDER_PATH: C:\Steam\steamapps\common\Project Zomboid Dedicated Server\java
+ */
+tasks.register('createZombieLibsJar') {
+    doLast {
+        def gameFolderPath = System.getenv('GAME_FOLDER_PATH')
+        def archiveName = 'ProjectZomboid-libs-41.78.16.jar'
+
+        if (gameFolderPath != null && !gameFolderPath.isEmpty()) {
+            def tempDir = file('temps')
+            tempDir.mkdirs()
+
+            def jarFiles = file(gameFolderPath).listFiles().findAll { it.isFile() && it.name.endsWith('.jar') && !it.name.contains(rootProject.name) }
+
+            def excludedFolders = ['zombie', 'jre', 'jre64', 'launcher', 'media',
+                                   'license', 'mods', 'win32', 'win64', 'workshop']
+            def includedFolders = file(gameFolderPath).listFiles().findAll { it.isDirectory() && !excludedFolders.contains(it.name.toLowerCase()) }
+
+            includedFolders.each { dir ->
+                copy {
+                    from dir
+                    into file("${tempDir}/${dir.name}")
+                }
+            }
+
+            jarFiles.each { jarFile ->
+                copy {
+                    from jarFile
+                    into tempDir
+                }
+            }
+
+            def tempJarFiles = tempDir.listFiles().findAll { it.isFile() && it.name.endsWith('.jar') }
+
+            tempJarFiles.each { jarFile ->
+                exec {
+                    workingDir tempDir
+                    commandLine 'jar', 'xf', jarFile.absolutePath
+                }
+                jarFile.delete()
+            }
+
+            exec {
+                commandLine 'jar', 'cvf', archiveName, '-C', tempDir, '.'
+            }
+
+            def libsFolder = file('libs')
+            libsFolder.mkdirs()
+            def targetFile = file("${libsFolder}/${archiveName}")
+            if (targetFile.exists()) {
+                targetFile.delete()
+            }
+            file(archiveName).renameTo(file("${libsFolder}/${archiveName}"))
+
+            delete tempDir
+        } else {
+            println('The GAME_FOLDER_PATH environment variable is not set or is empty.')
         }
     }
 }
