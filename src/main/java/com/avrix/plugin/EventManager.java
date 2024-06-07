@@ -1,4 +1,7 @@
-package com.avrix.events;
+package com.avrix.plugin;
+
+import com.avrix.events.Event;
+import com.avrix.events.EventPriority;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
