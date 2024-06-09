@@ -70,7 +70,9 @@ public class PlayerUtils {
 
             for (int playerIndex = 0; playerIndex < 4; ++playerIndex) {
                 IsoPlayer player = connection.players[playerIndex];
-                if (player != null && (player.getDisplayName().equals(username) || player.getUsername().equals(username))) {
+                if (player == null) continue;
+
+                if (player.getDisplayName().equals(username) || player.getUsername().equals(username)) {
                     return player;
                 }
             }
@@ -90,12 +92,13 @@ public class PlayerUtils {
 
             for (int playerIndex = 0; playerIndex < 4; ++playerIndex) {
                 IsoPlayer player = connection.players[playerIndex];
-                if (player != null) {
-                    String displayNameLower = player.getDisplayName().toLowerCase();
-                    String userNameLower = userName.toLowerCase();
-                    if (displayNameLower.equals(userNameLower) || displayNameLower.startsWith(userNameLower)) {
-                        return player;
-                    }
+
+                if (player == null) continue;
+
+                String displayNameLower = player.getDisplayName().toLowerCase();
+                String userNameLower = userName.toLowerCase();
+                if (displayNameLower.equals(userNameLower) || displayNameLower.startsWith(userNameLower)) {
+                    return player;
                 }
             }
         }
@@ -112,19 +115,18 @@ public class PlayerUtils {
     public static void kickPlayer(IsoPlayer player, String reason) {
         if (player == null) return;
 
-        EventManager.invokeEvent("onPlayerKick", player, "Console", reason);
-
         UdpConnection playerConnection = getUdpConnectionByPlayer(player);
 
         if (playerConnection == null) return;
 
-        String kickMessage = String.format("You have been kicked from this server by `%s`", reason);
+        EventManager.invokeEvent("onPlayerKick", player, "Console", reason);
+
+        String kickMessage = String.format("[!] You have been kicked from this server by `%s`", reason);
         GameServer.kick(playerConnection, kickMessage, null);
         playerConnection.forceDisconnect("command-kick");
 
-        String logMessage = String.format("[!] Player `%s` (IP: %s | SteamID: %s) was kicked from this server for the following reason: `%s`",
+        System.out.printf("[!] Player `%s` (IP: %s, SteamID: %s) was kicked from this server for the following reason: `%s`%n",
                 player.getDisplayName(), playerConnection.ip, player.getSteamID(), reason);
-        System.out.println(logMessage);
     }
 
     /**
@@ -138,11 +140,11 @@ public class PlayerUtils {
     public static void banPlayer(IsoPlayer player, String reason, boolean banIP, boolean banSteamID) {
         if (player == null) return;
 
-        EventManager.invokeEvent("onPlayerBan", player, "Console", reason);
-
         UdpConnection playerConnection = getUdpConnectionByPlayer(player);
 
         if (playerConnection == null) return;
+
+        EventManager.invokeEvent("onPlayerBan", player, "Console", reason);
 
         ServerWorldDatabase.instance.addUserlog(player.getUsername(), Userlog.UserlogType.Banned, reason, "Server", 1);
 
@@ -152,13 +154,12 @@ public class PlayerUtils {
 
         if (banIP) banByIP(playerConnection, player, reason);
 
-        String kickMessage = String.format("You have been banned from this server for the following reason: `%s`", reason);
+        String kickMessage = String.format("[!] You have been banned from this server for the following reason: `%s`", reason);
         GameServer.kick(playerConnection, kickMessage, null);
         playerConnection.forceDisconnect("command-ban-ip");
 
-        String logMessage = String.format("[!] Player `%s` (IP: %s | SteamID: %s) was banned from this server for the following reason: `%s`",
+        System.out.printf("[!] Player `%s` (IP: %s, SteamID: %s) was banned from this server for the following reason: `%s`%n",
                 player.getDisplayName(), playerConnection.ip, player.getSteamID(), reason);
-        System.out.println(logMessage);
     }
 
     /**
@@ -172,8 +173,7 @@ public class PlayerUtils {
         try {
             ServerWorldDatabase.instance.banSteamID(steamID, reason, true);
         } catch (SQLException e) {
-            String errorMessage = String.format("[!] Error while ban SteamID: '%s', error: %s", steamID, e);
-            System.out.println(errorMessage);
+            System.out.printf("[!] Error while ban SteamID: '%s', error: %s%n", steamID, e);
         }
     }
 
@@ -188,8 +188,7 @@ public class PlayerUtils {
         try {
             ServerWorldDatabase.instance.banIp(playerConnection.ip, player.getUsername(), reason, true);
         } catch (SQLException e) {
-            String errorMessage = String.format("[!] Error while ban IP: '%s', error: %s", playerConnection.ip, e);
-            System.out.println(errorMessage);
+            System.out.printf("[!] Error while ban IP: '%s', error: %s%n", playerConnection.ip, e);
         }
     }
 
@@ -202,8 +201,7 @@ public class PlayerUtils {
         try {
             ServerWorldDatabase.instance.banUser(player.getUsername(), true);
         } catch (SQLException e) {
-            String errorMessage = String.format("[!] Error while ban user: '%s', error: %s", player.getUsername(), e);
-            System.out.println(errorMessage);
+            System.out.printf("[!] Error while ban user: '%s', error: %s%n", player.getUsername(), e);
         }
     }
 }
