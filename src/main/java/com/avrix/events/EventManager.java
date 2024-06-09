@@ -1,7 +1,6 @@
-package com.avrix.plugin;
+package com.avrix.events;
 
 import com.avrix.enums.Priority;
-import com.avrix.events.Event;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -83,7 +82,7 @@ public class EventManager {
      * @param eventName The name of the event to raise. The event name is case insensitive.
      * @param args      Arguments to be passed to the event listener's handleEvent method. The type and number of arguments must match the expected parameters of the handleEvent method.
      */
-    public static void invokeEvent(String eventName, Object... args) {
+    public static synchronized void invokeEvent(String eventName, Object... args) {
         List<EventListener> eventListeners = getListenersForEvent(eventName);
 
         if (eventListeners == null || eventListeners.isEmpty()) return;
@@ -122,7 +121,7 @@ public class EventManager {
      * @param args     Arguments passed to the listener's handleEvent method.
      * @throws NoSuchMethodException if a handleEvent method with matching arguments is not found.
      */
-    private static void invokeHandleEvent(Event listener, Object... args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    private static synchronized void invokeHandleEvent(Event listener, Object... args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         Method[] methods = listener.getClass().getMethods();
 
         for (Method method : methods) {

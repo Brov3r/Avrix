@@ -10,10 +10,10 @@ import java.util.Arrays;
 /**
  * Test Command
  */
-@CommandAccessLevel(accessLevel = AccessLevel.ADMIN)
-@CommandChatReturn(text = "Return text")
-@CommandExecutionScope(scope = CommandScope.BOTH)
-@CommandName(command = "test")
+@CommandName("test")
+@CommandAccessLevel(AccessLevel.ADMIN)
+@CommandExecutionScope(CommandScope.BOTH)
+@CommandChatReturn("Return text")
 public class TestCommand implements Command {
     /**
      * Performing a chat command action

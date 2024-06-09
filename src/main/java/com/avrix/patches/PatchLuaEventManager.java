@@ -1,7 +1,7 @@
 package com.avrix.patches;
 
 import com.avrix.agent.ClassTransformer;
-import com.avrix.plugin.EventManager;
+import com.avrix.events.EventManager;
 import javassist.CannotCompileException;
 import javassist.NotFoundException;
 

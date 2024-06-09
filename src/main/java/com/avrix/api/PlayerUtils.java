@@ -1,6 +1,6 @@
 package com.avrix.api;
 
-import com.avrix.plugin.EventManager;
+import com.avrix.events.EventManager;
 import zombie.characters.IsoPlayer;
 import zombie.core.raknet.UdpConnection;
 import zombie.core.znet.SteamUtils;

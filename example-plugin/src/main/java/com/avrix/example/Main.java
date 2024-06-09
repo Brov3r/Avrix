@@ -1,7 +1,7 @@
 package com.avrix.example;
 
 import com.avrix.commands.CommandsManager;
-import com.avrix.plugin.EventManager;
+import com.avrix.events.EventManager;
 import com.avrix.plugin.Metadata;
 import com.avrix.plugin.Plugin;
 import com.avrix.utils.YamlFile;

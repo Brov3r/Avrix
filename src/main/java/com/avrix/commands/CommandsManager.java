@@ -32,27 +32,27 @@ public class CommandsManager {
         CommandExecutionScope executionScopeAnnotation = commandClass.getAnnotation(CommandExecutionScope.class);
         CommandChatReturn chatReturnAnnotation = commandClass.getAnnotation(CommandChatReturn.class);
 
-        if (commandNameAnnotation == null || commandNameAnnotation.command().isEmpty()) {
+        if (commandNameAnnotation == null || commandNameAnnotation.value().isEmpty()) {
             System.out.printf("[!] Command '%s' is missing the @CommandName annotation or does not contain a value!%n", commandClass);
             return;
         }
 
-        if (accessLevelAnnotation == null || accessLevelAnnotation.accessLevel() == null) {
-            System.out.printf("[!] Command '%s' is missing the @CommandAccessLevel annotation or does not contain a value!%n", commandClass);
+        if (accessLevelAnnotation == null) {
+            System.out.printf("[!] Command '%s' is missing the @CommandAccessLevel annotation!%n", commandClass);
             return;
         }
 
-        if (executionScopeAnnotation == null || executionScopeAnnotation.scope() == null) {
-            System.out.printf("[!] Command '%s' is missing the @CommandExecutionScope annotation or does not contain a value!%n", commandClass);
+        if (executionScopeAnnotation == null) {
+            System.out.printf("[!] Command '%s' is missing the @CommandExecutionScope annotation!%n", commandClass);
             return;
         }
 
-        if (chatReturnAnnotation == null || chatReturnAnnotation.text() == null) {
-            System.out.printf("[!] Command '%s' is missing the @CommandChatReturn annotation or does not contain a value!%n", commandClass);
+        if (chatReturnAnnotation == null) {
+            System.out.printf("[!] Command '%s' is missing the @CommandChatReturn annotation!%n", commandClass);
             return;
         }
 
-        String commandName = commandNameAnnotation.command().toLowerCase();
+        String commandName = commandNameAnnotation.value().toLowerCase();
 
         if (commandName.startsWith("!") || commandName.startsWith("/")) {
             commandName = commandName.substring(1);
@@ -81,7 +81,7 @@ public class CommandsManager {
 
         CommandExecutionScope executionScope = command.getClass().getAnnotation(CommandExecutionScope.class);
 
-        CommandScope scope = executionScope.scope();
+        CommandScope scope = executionScope.value();
 
         return scope == scopeType || scope == CommandScope.BOTH;
     }
@@ -103,7 +103,7 @@ public class CommandsManager {
         boolean isConsole = playerConnection == null;
 
         if (!isCommandAllowed(commandArgs[0], isConsole ? CommandScope.CONSOLE : CommandScope.CHAT)) {
-            return "This command is not allowed here.";
+            return "[!] This command is not allowed here.";
         }
 
         if (!isConsole) {
@@ -112,10 +112,10 @@ public class CommandsManager {
 
             CommandAccessLevel accessLevelAnnotation = command.getClass().getAnnotation(CommandAccessLevel.class);
 
-            AccessLevel requiredAccessLevel = accessLevelAnnotation.accessLevel();
+            AccessLevel requiredAccessLevel = accessLevelAnnotation.value();
             AccessLevel userAccessLevel = AccessLevel.fromString(player.accessLevel.toLowerCase());
             if (requiredAccessLevel.getPriority() > userAccessLevel.getPriority()) {
-                return "You do not have permission to execute this command.";
+                return "[!] You do not have permission to execute this command.";
             }
 
         }
@@ -126,7 +126,7 @@ public class CommandsManager {
         command.onInvoke(playerConnection, commandArgsToInvoke);
 
         CommandChatReturn chatReturnAnnotation = command.getClass().getAnnotation(CommandChatReturn.class);
-        return chatReturnAnnotation.text();
+        return chatReturnAnnotation.value();
     }
 
     /**

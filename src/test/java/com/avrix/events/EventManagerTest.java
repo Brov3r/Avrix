@@ -1,9 +1,6 @@
-package com.avrix.plugin;
+package com.avrix.events;
 
 import com.avrix.enums.Priority;
-import com.avrix.events.TestEventHighPriorityImpl;
-import com.avrix.events.TestEventImpl;
-import com.avrix.events.TestEventWithExceptionImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

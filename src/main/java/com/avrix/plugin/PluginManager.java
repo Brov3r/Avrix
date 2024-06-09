@@ -23,7 +23,7 @@ public class PluginManager {
      * Prints information about loaded plugins to the console.
      * The information includes plugin names, IDs, and versions.
      */
-    public static void printLoadedPluginsInfo() {
+    private static void printLoadedPluginsInfo() {
         StringBuilder sb = new StringBuilder("Loaded plugins:\n");
         for (Metadata plugin : pluginsList) {
             sb.append("    - ").append(plugin.getName())
@@ -137,7 +137,7 @@ public class PluginManager {
      * @throws InstantiationException    If the class that declares the underlying constructor represents an abstract class.
      * @throws IllegalAccessException    If the constructor is inaccessible.
      */
-    public static void loadPlugin(Metadata metadata, ClassLoader classLoader) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private static void loadPlugin(Metadata metadata, ClassLoader classLoader) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (metadata.getEntryPoints() == null || metadata.getEntryPoints().isEmpty()) {
             return;
         }
