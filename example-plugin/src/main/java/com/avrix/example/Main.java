@@ -31,15 +31,12 @@ public class Main extends Plugin {
     @Override
     public void onInitialize() {
         ServiceManager.register(Example.class, new ExampleService());
-        
+
         loadDefaultConfig();
 
         EventManager.addListener(new OnServerInitHandler());
 
-        try {
-            CommandsManager.addCommand(new TestCommand());
-        } catch (Exception ignore) {
-        }
+        CommandsManager.addCommand(new TestCommand());
 
         YamlFile test = loadConfig("test/test.yml");
         YamlFile test2 = loadConfig("test/test2.yml"); // The file will be created
