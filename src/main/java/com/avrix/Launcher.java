@@ -2,7 +2,7 @@ package com.avrix;
 
 import com.avrix.agent.AgentLoader;
 import com.avrix.plugin.PluginManager;
-import com.avrix.utils.PatchManager;
+import com.avrix.utils.PatchUtils;
 import zombie.gameStates.MainScreenState;
 import zombie.network.GameServer;
 
@@ -19,7 +19,7 @@ public class Launcher {
     public static void main(String[] args) throws Exception {
         AgentLoader.loadAgent();
 
-        PatchManager.applyDefaultPatches();
+        PatchUtils.applyDefaultPatches();
 
         PluginManager.loadPlugins();
 

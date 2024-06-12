@@ -1,8 +1,8 @@
 package com.avrix.patches;
 
 import com.avrix.agent.ClassTransformer;
-import com.avrix.api.PlayerUtils;
 import com.avrix.events.EventManager;
+import com.avrix.utils.PlayerUtils;
 import javassist.CannotCompileException;
 import javassist.expr.ExprEditor;
 import javassist.expr.MethodCall;

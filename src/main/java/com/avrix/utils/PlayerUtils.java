@@ -1,4 +1,4 @@
-package com.avrix.api;
+package com.avrix.utils;
 
 import com.avrix.events.EventManager;
 import zombie.characters.IsoPlayer;
@@ -70,6 +70,7 @@ public class PlayerUtils {
 
             for (int playerIndex = 0; playerIndex < 4; ++playerIndex) {
                 IsoPlayer player = connection.players[playerIndex];
+
                 if (player == null) continue;
 
                 if (player.getDisplayName().equals(username) || player.getUsername().equals(username)) {

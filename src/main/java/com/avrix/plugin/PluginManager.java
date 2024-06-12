@@ -2,7 +2,7 @@ package com.avrix.plugin;
 
 import com.avrix.enums.Environment;
 import com.avrix.utils.Constants;
-import com.avrix.utils.PatchManager;
+import com.avrix.utils.PatchUtils;
 import zombie.core.Core;
 
 import java.io.File;
@@ -104,8 +104,7 @@ public class PluginManager {
             if (pluginFile == null) continue;
 
             Environment environment = metadata.getEnvironment();
-
-
+            
             // Checking the environment
             if (environment != loaderEnvironment && environment != Environment.BOTH) continue;
 
@@ -115,7 +114,7 @@ public class PluginManager {
             PluginClassLoader classLoader = new PluginClassLoader(metadata.getId(), new URL[]{pluginUrl});
 
             // Applying patches
-            PatchManager.applyPluginPatches(metadata, classLoader);
+            PatchUtils.applyPluginPatches(metadata, classLoader);
 
             // Loading the plugin
             System.out.printf("[#] Loading plugin '%s' (ID: %s, Version: %s)...%n", metadata.getName(), metadata.getId(), metadata.getVersion());

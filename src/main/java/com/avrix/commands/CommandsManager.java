@@ -1,8 +1,8 @@
 package com.avrix.commands;
 
-import com.avrix.api.PlayerUtils;
 import com.avrix.enums.AccessLevel;
 import com.avrix.enums.CommandScope;
+import com.avrix.utils.PlayerUtils;
 import zombie.characters.IsoPlayer;
 import zombie.core.raknet.UdpConnection;
 

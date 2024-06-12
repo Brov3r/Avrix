@@ -18,7 +18,7 @@ import java.util.jar.JarFile;
 /**
  * Manager for making modifications to game files.
  */
-public class PatchManager {
+public class PatchUtils {
     /**
      * Applies a list of patches to classes specified by their fully qualified names.
      *
