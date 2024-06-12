@@ -52,7 +52,7 @@ public class PlayerUtils {
      * @return Player's SteamID or null if Steam mode is disabled or SteamID not found.
      */
     public static String getPlayerSteamID(IsoPlayer player) {
-        if (SteamUtils.isSteamModeEnabled()) return null;
+        if (!SteamUtils.isSteamModeEnabled()) return null;
 
         return String.valueOf(player.getSteamID());
     }
