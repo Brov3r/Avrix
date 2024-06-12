@@ -2,8 +2,11 @@ package com.avrix.example;
 
 import com.avrix.commands.CommandsManager;
 import com.avrix.events.EventManager;
+import com.avrix.example.services.Example;
+import com.avrix.example.services.ExampleService;
 import com.avrix.plugin.Metadata;
 import com.avrix.plugin.Plugin;
+import com.avrix.plugin.ServiceManager;
 import com.avrix.utils.YamlFile;
 
 /**
@@ -27,6 +30,8 @@ public class Main extends Plugin {
      */
     @Override
     public void onInitialize() {
+        ServiceManager.register(Example.class, new ExampleService());
+        
         loadDefaultConfig();
 
         EventManager.addListener(new OnServerInitHandler());
