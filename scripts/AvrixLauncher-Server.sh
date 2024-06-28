@@ -19,24 +19,24 @@ if ! java -version &> /dev/null; then
 fi
 
 # Checking the JDK version
-jdkVersion=$(java -fullversion 2>&1 | awk -F '"' '/version/ {print $2}')
-if [[ -z "$jdkVersion" || $(echo "$jdkVersion < 17" | bc) -eq 1 ]]; then
+jdkVersion=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | awk '{print $1}')
+jdkMajorVersion=$(echo "$jdkVersion" | awk -F. '{print $1}')
+
+if [[ "$jdkMajorVersion" -lt 17 ]]; then
     echo "[Avrix-Launcher] Requires Java 17 or higher. Current version: $jdkVersion."
     echo "[Avrix-Launcher] Download link: https://www.oracle.com/java/technologies/downloads/."
     exit 1
 fi
 
 # Setting Variables
-classPath="java/:java/istack-commons-runtime.jar:java/jassimp.jar:java/javacord-2.0.17-shaded.jar:java/javax.activation-api.jar:java/jaxb-api.jar:java/jaxb-runtime.jar:java/lwjgl.jar:java/lwjgl-glfw.jar:java/lwjgl-jemalloc.jar:java/lwjgl-opengl.jar:java/lwjgl_util.jar:java/sqlite-jdbc-3.27.2.1.jar:java/trove-3.0.3.jar:java/uncommons-maths-1.2.3.jar:java/commons-compress-1.18.jar"
+classPath="java/.:java/istack-commons-runtime.jar:java/jassimp.jar:java/javacord-2.0.17-shaded.jar:java/javax.activation-api.jar:java/jaxb-api.jar:java/jaxb-runtime.jar:java/lwjgl.jar:java/lwjgl-natives-linux.jar:java/lwjgl-glfw.jar:java/lwjgl-glfw-natives-linux.jar:java/lwjgl-jemalloc.jar:java/lwjgl-jemalloc-natives-linux.jar:java/lwjgl-opengl.jar:java/lwjgl-opengl-natives-linux.jar:java/lwjgl_util.jar:java/sqlite-jdbc-3.27.2.1.jar:java/trove-3.0.3.jar:java/uncommons-maths-1.2.3.jar:java/commons-compress-1.18.jar"
 
 if [ "$osArchitecture" = "x64" ]; then
-    libraryPath="natives/:natives/linux64/:."
-    javaOptions="-XX:+UseZGC -Xms16g -Xmx16g"
-    classPath="$classPath:java/lwjgl-natives-linux.jar:java/lwjgl-glfw-natives-linux.jar:java/lwjgl-jemalloc-natives-linux.jar:java/lwjgl-opengl-natives-linux.jar"
+    libraryPath="linux64/:natives/"
+    javaOptions="-XX:+UseZGC -Xms8g -Xmx8g"
 else
-    libraryPath="natives/:natives/linux32/:./"
+    libraryPath="linux32/:natives/"
     javaOptions="-XX:+UseG1GC -Xms768m -Xmx768m"
-    classPath="$classPath:java/lwjgl-natives-linux-x86.jar:java/lwjgl-glfw-natives-linux-x86.jar:java/lwjgl-jemalloc-natives-linux-x86.jar:java/lwjgl-opengl-natives-linux-x86.jar"
 fi
 
 # Checking the presence of the necessary directories
@@ -70,6 +70,7 @@ if [ -z "$jarFile" ]; then
     exit 1
 fi
 
-javaArg="-Djava.awt.headless=true -Davrix.mode=server -Dzomboid.steam=$steamMode -Dzomboid.znetlog=1 $javaOptions -Djava.library.path=$libraryPath -cp $classPath"
+classPath="$classPath:$jarFile"
+javaArgs="-Djava.security.egd=file:/dev/urandom -Djava.awt.headless=true -Davrix.mode=server -Dzomboid.steam=$steamMode -Dzomboid.znetlog=1 $javaOptions -Djava.library.path=$libraryPath -cp $classPath"
 echo "[Avrix-Launcher] Core: $(basename "$jarFile") | OS: Linux $osArchitecture | JDK: $jdkVersion | Steam mode: $steamOption"
-java -Djdk.attach.allowAttachSelf=true -XX:+EnableDynamicAgentLoading $javaArg com.avrix.Launcher "$@"
+java -Djdk.attach.allowAttachSelf=true -XX:+EnableDynamicAgentLoading $javaArgs com.avrix.Launcher "$@"
