@@ -30,6 +30,7 @@ fi
 
 # Setting Variables
 classPath="java/.:java/istack-commons-runtime.jar:java/jassimp.jar:java/javacord-2.0.17-shaded.jar:java/javax.activation-api.jar:java/jaxb-api.jar:java/jaxb-runtime.jar:java/lwjgl.jar:java/lwjgl-natives-linux.jar:java/lwjgl-glfw.jar:java/lwjgl-glfw-natives-linux.jar:java/lwjgl-jemalloc.jar:java/lwjgl-jemalloc-natives-linux.jar:java/lwjgl-opengl.jar:java/lwjgl-opengl-natives-linux.jar:java/lwjgl_util.jar:java/sqlite-jdbc-3.27.2.1.jar:java/trove-3.0.3.jar:java/uncommons-maths-1.2.3.jar:java/commons-compress-1.18.jar"
+JSIG="libjsig.so"
 
 if [ "$osArchitecture" = "x64" ]; then
     libraryPath="linux64/:natives/"
@@ -73,4 +74,4 @@ fi
 classPath="$classPath:$jarFile"
 javaArgs="-Djava.security.egd=file:/dev/urandom -Djava.awt.headless=true -Davrix.mode=server -Dzomboid.steam=$steamMode -Dzomboid.znetlog=1 $javaOptions -Djava.library.path=$libraryPath -cp $classPath"
 echo "[Avrix-Launcher] Core: $(basename "$jarFile") | OS: Linux $osArchitecture | JDK: $jdkVersion | Steam mode: $steamOption"
-java -Djdk.attach.allowAttachSelf=true -XX:+EnableDynamicAgentLoading $javaArgs com.avrix.Launcher "$@"
+LD_PRELOAD="${LD_PRELOAD}:${JSIG}" java -Djdk.attach.allowAttachSelf=true -XX:+EnableDynamicAgentLoading $javaArgs com.avrix.Launcher "$@"
