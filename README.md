@@ -17,10 +17,23 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
 
 # Features
 
-- [JavaDoc](https://brov3r.github.io/Avrix/)
+- Availability of [JavaDoc](https://brov3r.github.io/Avrix/);
+- Example of a [plugin](https://github.com/Brov3r/Avrix/tree/main/example-plugin)
+- More than 200 standard and custom events (with documentation) that you can easily subscribe to;
+- Working with the client and server side;
+- Custom documented tools for working with game methods;
+- Creating plugins for Avrix is very similar to creating plugins from Minecraft mod loaders (Paper, Fabric, Bukkit, etc.);
+- The ability to easily add plugins by moving the Jar file to the plugins folder.
+- The ability to make changes to the bytecode of the game in runtime (similar to Minecraft Mixin)
 
 # How to use
 
+## Assembled core
+1) Download the executable core file and the necessary startup script from the [releases page](https://github.com/Brov3r/Avrix/releases )
+2) Move the downloaded files to the root folder of the client/server
+3) Run the script and follow the instructions displayed
+
+## Self-assembly
 1) Clone the repository
 2) Create a Jar file of game dependencies through the Gradle task `createZombieJar`, after specifying the environment
    variable `ZOMBIE_FOLDER_PATH`
