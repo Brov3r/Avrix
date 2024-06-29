@@ -153,6 +153,7 @@ public class YamlFile {
 
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
         options.setProcessComments(true);
 
         Yaml yaml = new Yaml(options);

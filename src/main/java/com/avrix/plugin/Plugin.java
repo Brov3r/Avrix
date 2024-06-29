@@ -3,7 +3,7 @@ package com.avrix.plugin;
 import com.avrix.utils.Constants;
 import com.avrix.utils.YamlFile;
 
-import java.io.File;
+import java.io.*;
 
 /**
  * Basic template for implementing the plugin entry point.
@@ -59,16 +59,37 @@ public abstract class Plugin {
     public final synchronized void loadDefaultConfig() {
         File configFromFolder = getConfigFolder().toPath().resolve(Constants.PLUGINS_DEFAULT_CONFIG_NAME).toFile();
         try {
-            File jarPath = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
-            
             if (!configFromFolder.exists()) {
-                config = new YamlFile(jarPath.getAbsolutePath(), Constants.PLUGINS_DEFAULT_CONFIG_NAME);
-                config.save(configFromFolder.getAbsolutePath());
+                copyConfigFromJar(Constants.PLUGINS_DEFAULT_CONFIG_NAME, configFromFolder);
             }
-
             config = new YamlFile(configFromFolder);
         } catch (Exception e) {
             config = YamlFile.create(configFromFolder);
+        }
+    }
+
+    /**
+     * Copies a configuration file from the jar archive to the specified destination.
+     *
+     * @param fileName    the name of the configuration file to be copied
+     * @param destination the destination file where the configuration will be copied
+     */
+    private void copyConfigFromJar(String fileName, File destination) {
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(fileName);
+             FileOutputStream out = new FileOutputStream(destination)) {
+
+            if (in == null) {
+                throw new FileNotFoundException("[!] Resource not found: " + fileName);
+            }
+
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+        } catch (IOException e) {
+            System.out.printf("[!] Error when copying config '%s' from plugin Jar archive: '%s'. Error: %s%n",
+                    fileName, getClass().getSimpleName(), e.getMessage());
         }
     }
 
@@ -90,12 +111,8 @@ public abstract class Plugin {
                 configPath += ".yml";
             }
 
-            File jarPath = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
-
-
             if (!configFromFolder.exists()) {
-                YamlFile config = new YamlFile(jarPath.getAbsolutePath(), configPath);
-                config.save(configFromFolder.getAbsolutePath());
+                copyConfigFromJar(configPath, configFromFolder);
             }
 
             return new YamlFile(configFromFolder);
@@ -110,5 +127,4 @@ public abstract class Plugin {
      * Implementing classes should override this method to provide the initialization logic.
      */
     public abstract void onInitialize();
-
 }
