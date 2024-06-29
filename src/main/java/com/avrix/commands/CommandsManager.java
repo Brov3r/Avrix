@@ -20,6 +20,15 @@ public class CommandsManager {
     private static final Map<String, Command> commandsMap = new HashMap<>();
 
     /**
+     * Getting a map of registered user commands
+     *
+     * @return {@link Map} of registered commands. Key - command name, value - command instance
+     */
+    public static Map<String, Command> getRegisteredCommands() {
+        return commandsMap;
+    }
+
+    /**
      * Adding a command to the system
      *
      * @param command chat command instance
