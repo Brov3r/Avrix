@@ -18,6 +18,17 @@ version = '1.0'
 def buildPath = System.getenv('BUILD_PATH') ?: 'build';
 
 /**
+ * Replacing data with current ones
+ */
+processResources {
+    filesMatching('**/metadata.yml') {
+        filter {
+            it.replace('%PROJECT_VERSION%', version)
+        }
+    }
+}
+
+/**
  * Repositories for project dependencies
  */
 repositories {
@@ -49,12 +60,12 @@ dependencies {
  * Creating a Jar file wrapper (core) to run a game server
  */
 shadowJar {
-    archiveFileName.set("PluginExample-${version}.jar")
+    archiveFileName.set("${rootProject.name}-${version}.jar")
     destinationDirectory.set(file(buildPath))
 
     manifest {
         attributes(
-                'Implementation-Title': "Plugin Example",
+                'Implementation-Title': rootProject.name,
                 'Implementation-Version': version,
         )
     }
