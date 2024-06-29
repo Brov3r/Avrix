@@ -40,9 +40,15 @@ public class CommandsManager {
         CommandAccessLevel accessLevelAnnotation = commandClass.getAnnotation(CommandAccessLevel.class);
         CommandExecutionScope executionScopeAnnotation = commandClass.getAnnotation(CommandExecutionScope.class);
         CommandChatReturn chatReturnAnnotation = commandClass.getAnnotation(CommandChatReturn.class);
+        CommandDescription commandDescription = commandClass.getAnnotation(CommandDescription.class);
 
         if (commandNameAnnotation == null || commandNameAnnotation.value().isEmpty()) {
             System.out.printf("[!] Command '%s' is missing the @CommandName annotation or does not contain a value!%n", commandClass);
+            return;
+        }
+
+        if (commandDescription == null || commandDescription.value().isEmpty()) {
+            System.out.printf("[!] Command '%s' is missing the @CommandDescription annotation or does not contain a value!%n", commandClass);
             return;
         }
 
