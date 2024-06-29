@@ -6,6 +6,7 @@
 - Added methods for getting values from command annotations
 - Fixed plugin example
 - Fixed copying configs from the plugin
+- Fixed plugin dependency version checking
 
 # AvrixLoader v1.0.0
 

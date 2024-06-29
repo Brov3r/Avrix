@@ -2,6 +2,7 @@ package com.avrix.plugin;
 
 import com.avrix.enums.Environment;
 import com.avrix.utils.Constants;
+import com.avrix.utils.VersionChecker;
 import com.avrix.utils.YamlFile;
 
 import java.io.File;
@@ -137,6 +138,11 @@ public final class Metadata {
                 Metadata dependency = metadataMap.get(depId);
 
                 if (dependency != null) {
+                    if (!VersionChecker.isVersionCompatible(dependency.getVersion(), depVersion)) {
+                        throw new IllegalArgumentException(
+                                String.format("[!] Incompatible dependency version: Plugin '%s' requires '%s' version '%s' but found '%s'",
+                                        metadata.getId(), depId, depVersion, dependency.getVersion()));
+                    }
                     topologicalSort(dependency, metadataMap, visited, stack, sortedList);
                 } else {
                     throw new IllegalArgumentException(
