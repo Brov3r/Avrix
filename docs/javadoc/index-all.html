@@ -216,10 +216,12 @@ loadScripts(document, 'script');</script>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/utils/package-summary.html">com.avrix.utils</a> - package com.avrix.utils</dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/avrix/commands/Command.html" class="type-name-link" title="interface in com.avrix.commands">Command</a> - Interface in <a href="com/avrix/commands/package-summary.html">com.avrix.commands</a></dt>
+<dt><a href="com/avrix/commands/Command.html" class="type-name-link" title="class in com.avrix.commands">Command</a> - Class in <a href="com/avrix/commands/package-summary.html">com.avrix.commands</a></dt>
 <dd>
 <div class="block">Interface for implementing a new command.</div>
 </dd>
+<dt><a href="com/avrix/commands/Command.html#%3Cinit%3E()" class="member-name-link">Command()</a> - Constructor for class com.avrix.commands.<a href="com/avrix/commands/Command.html" title="class in com.avrix.commands">Command</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/avrix/commands/CommandAccessLevel.html" class="type-name-link" title="annotation interface in com.avrix.commands">CommandAccessLevel</a> - Annotation Interface in <a href="com/avrix/commands/package-summary.html">com.avrix.commands</a></dt>
 <dd>
 <div class="block">An annotation that indicates the required access level for a user.</div>
@@ -227,6 +229,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/commands/CommandChatReturn.html" class="type-name-link" title="annotation interface in com.avrix.commands">CommandChatReturn</a> - Annotation Interface in <a href="com/avrix/commands/package-summary.html">com.avrix.commands</a></dt>
 <dd>
 <div class="block">An annotation that provides the text to be output to chat when the command is used</div>
+</dd>
+<dt><a href="com/avrix/commands/CommandDescription.html" class="type-name-link" title="annotation interface in com.avrix.commands">CommandDescription</a> - Annotation Interface in <a href="com/avrix/commands/package-summary.html">com.avrix.commands</a></dt>
+<dd>
+<div class="block">Annotation to provide a description for command classes.</div>
 </dd>
 <dt><a href="com/avrix/commands/CommandExecutionScope.html" class="type-name-link" title="annotation interface in com.avrix.commands">CommandExecutionScope</a> - Annotation Interface in <a href="com/avrix/commands/package-summary.html">com.avrix.commands</a></dt>
 <dd>
@@ -365,6 +371,10 @@ loadScripts(document, 'script');</script>
 </dl>
 <h2 class="title" id="I:G">G</h2>
 <dl class="index">
+<dt><a href="com/avrix/commands/Command.html#getAccessLevel()" class="member-name-link">getAccessLevel()</a> - Method in class com.avrix.commands.<a href="com/avrix/commands/Command.html" title="class in com.avrix.commands">Command</a></dt>
+<dd>
+<div class="block">Retrieves the access level required for the command from the <a href="com/avrix/commands/CommandAccessLevel.html" title="annotation interface in com.avrix.commands"><code>CommandAccessLevel</code></a> annotation.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getAll()" class="member-name-link">getAll()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Returns all the data in the YAML file.</div>
@@ -405,6 +415,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Gets a list of characters from the YAML file.</div>
 </dd>
+<dt><a href="com/avrix/commands/Command.html#getChatReturnText()" class="member-name-link">getChatReturnText()</a> - Method in class com.avrix.commands.<a href="com/avrix/commands/Command.html" title="class in com.avrix.commands">Command</a></dt>
+<dd>
+<div class="block">Retrieves the chat return message from the <a href="com/avrix/commands/CommandChatReturn.html" title="annotation interface in com.avrix.commands"><code>CommandChatReturn</code></a> annotation.</div>
+</dd>
 <dt><a href="com/avrix/plugin/PluginClassLoader.html#getClassByName(java.lang.String)" class="member-name-link">getClassByName(String)</a> - Static method in class com.avrix.plugin.<a href="com/avrix/plugin/PluginClassLoader.html" title="class in com.avrix.plugin">PluginClassLoader</a></dt>
 <dd>
 <div class="block">Retrieves the <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Class.html" title="class or interface in java.lang" class="external-link"><code>Class</code></a> object for a given class name from the cache or loaders.</div>
@@ -433,6 +447,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Parses a chat command string and extracts command arguments.</div>
 </dd>
+<dt><a href="com/avrix/commands/Command.html#getCommandName()" class="member-name-link">getCommandName()</a> - Method in class com.avrix.commands.<a href="com/avrix/commands/Command.html" title="class in com.avrix.commands">Command</a></dt>
+<dd>
+<div class="block">Retrieves the command name from the <a href="com/avrix/commands/CommandName.html" title="annotation interface in com.avrix.commands"><code>CommandName</code></a> annotation.</div>
+</dd>
 <dt><a href="com/avrix/plugin/Metadata.html#getConfigFolder()" class="member-name-link">getConfigFolder()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
 <div class="block">Returns a <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/File.html" title="class or interface in java.io" class="external-link"><code>File</code></a> object representing the configuration directory for this plugin.</div>
@@ -452,6 +470,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/plugin/Metadata.html#getDependencies()" class="member-name-link">getDependencies()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
 <div class="block">Returns the <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Map.html" title="class or interface in java.util" class="external-link"><code>Map</code></a> of dependencies for the plugin.</div>
+</dd>
+<dt><a href="com/avrix/commands/Command.html#getDescription()" class="member-name-link">getDescription()</a> - Method in class com.avrix.commands.<a href="com/avrix/commands/Command.html" title="class in com.avrix.commands">Command</a></dt>
+<dd>
+<div class="block">Retrieves the command description from the <a href="com/avrix/commands/CommandDescription.html" title="annotation interface in com.avrix.commands"><code>CommandDescription</code></a> annotation.</div>
 </dd>
 <dt><a href="com/avrix/plugin/Metadata.html#getDescription()" class="member-name-link">getDescription()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
@@ -1360,6 +1382,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/events/OnZombieUpdateEvent.html#getEventName()" class="member-name-link">getEventName()</a> - Method in class com.avrix.events.<a href="com/avrix/events/OnZombieUpdateEvent.html" title="class in com.avrix.events">OnZombieUpdateEvent</a></dt>
 <dd>
 <div class="block">Getting the event name</div>
+</dd>
+<dt><a href="com/avrix/commands/Command.html#getExecutionScope()" class="member-name-link">getExecutionScope()</a> - Method in class com.avrix.commands.<a href="com/avrix/commands/Command.html" title="class in com.avrix.commands">Command</a></dt>
+<dd>
+<div class="block">Retrieves the execution scope of the command from the <a href="com/avrix/commands/CommandExecutionScope.html" title="annotation interface in com.avrix.commands"><code>CommandExecutionScope</code></a> annotation.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getFileName()" class="member-name-link">getFileName()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -3145,10 +3171,6 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/events/OnInitWorldEvent.html#%3Cinit%3E()" class="member-name-link">OnInitWorldEvent()</a> - Constructor for class com.avrix.events.<a href="com/avrix/events/OnInitWorldEvent.html" title="class in com.avrix.events">OnInitWorldEvent</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/avrix/commands/Command.html#onInvoke(zombie.core.raknet.UdpConnection,java.lang.String%5B%5D)" class="member-name-link">onInvoke(UdpConnection, String[])</a> - Method in interface com.avrix.commands.<a href="com/avrix/commands/Command.html" title="interface in com.avrix.commands">Command</a></dt>
-<dd>
-<div class="block">Performing a chat command action</div>
-</dd>
 <dt><a href="com/avrix/events/OnItemFallEvent.html" class="type-name-link" title="class in com.avrix.events">OnItemFallEvent</a> - Class in <a href="com/avrix/events/package-summary.html">com.avrix.events</a></dt>
 <dd>
 <div class="block">Triggered when an item is being dropped on the ground.</div>
@@ -4361,6 +4383,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/commands/CommandChatReturn.html#value()" class="member-name-link">value()</a> - Element in annotation interface com.avrix.commands.<a href="com/avrix/commands/CommandChatReturn.html" title="annotation interface in com.avrix.commands">CommandChatReturn</a></dt>
 <dd>
 <div class="block">Text that will be displayed when using the command</div>
+</dd>
+<dt><a href="com/avrix/commands/CommandDescription.html#value()" class="member-name-link">value()</a> - Element in annotation interface com.avrix.commands.<a href="com/avrix/commands/CommandDescription.html" title="annotation interface in com.avrix.commands">CommandDescription</a></dt>
+<dd>
+<div class="block">The description of the command.</div>
 </dd>
 <dt><a href="com/avrix/commands/CommandExecutionScope.html#value()" class="member-name-link">value()</a> - Element in annotation interface com.avrix.commands.<a href="com/avrix/commands/CommandExecutionScope.html" title="annotation interface in com.avrix.commands">CommandExecutionScope</a></dt>
 <dd>

@@ -18,7 +18,7 @@ public @interface CommandAccessLevel {
      * Specifies the required access level.
      *
      * @return The access level required for the functionality.
-     * The default is AccessLevel.NONE, meaning no specific access level is required.
+     * The default is {@link AccessLevel}.NONE, meaning no specific access level is required.
      */
     AccessLevel value() default AccessLevel.NONE;
 }

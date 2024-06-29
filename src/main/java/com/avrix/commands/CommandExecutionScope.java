@@ -16,7 +16,7 @@ public @interface CommandExecutionScope {
     /**
      * The scope of the command.
      *
-     * @return The specified command scope.
+     * @return The specified {@link CommandScope}.
      */
     CommandScope value() default CommandScope.BOTH;
 }

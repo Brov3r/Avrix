@@ -44,6 +44,7 @@ public enum AccessLevel {
      * Role name
      */
     private final String roleName;
+    
     /**
      * Access Level Priority
      */
