@@ -104,14 +104,14 @@ public class PluginManager {
             if (pluginFile == null) continue;
 
             Environment environment = metadata.getEnvironment();
-            
+
             // Checking the environment
             if (environment != loaderEnvironment && environment != Environment.BOTH) continue;
 
             // Creating a URL for the plugin
             URL pluginUrl = pluginFile.toURI().toURL();
 
-            PluginClassLoader classLoader = new PluginClassLoader(metadata.getId(), new URL[]{pluginUrl});
+            ClassLoader classLoader = new PluginClassLoader(metadata.getId(), new URL[]{pluginUrl});
 
             // Applying patches
             PatchUtils.applyPluginPatches(metadata, classLoader);
