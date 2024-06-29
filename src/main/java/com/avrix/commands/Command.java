@@ -19,7 +19,7 @@ public abstract class Command {
      * @param playerConnection {@link UdpConnection}, if called from the console, the connection will return as {@code null}
      * @param args             arguments of the received command
      */
-    abstract void onInvoke(UdpConnection playerConnection, String[] args);
+    public abstract void onInvoke(UdpConnection playerConnection, String[] args);
 
     /**
      * Retrieves the command name from the {@link CommandName} annotation.
