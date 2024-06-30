@@ -1,3 +1,7 @@
+# AvrixLoader v1.1.1
+
+- Fixed adding Jar plugins to classpath
+
 # AvrixLoader v1.1.0
 
 - Minor code refactoring

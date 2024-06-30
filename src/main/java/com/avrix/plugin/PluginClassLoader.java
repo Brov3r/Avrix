@@ -22,11 +22,12 @@ public class PluginClassLoader extends URLClassLoader {
     /**
      * Constructs a new {@link PluginClassLoader} for the specified {@link URL}s using the specified parent class loader.
      *
-     * @param pluginId ID of the plugin being loaded, according to data from {@link Metadata}
-     * @param urls     The {@link URL}s from which to load classes and resources.
+     * @param pluginId    ID of the plugin being loaded, according to data from {@link Metadata}.
+     * @param urls        The {@link URL}s from which to load classes and resources.
+     * @param classLoader parent {@link ClassLoader}.
      */
-    public PluginClassLoader(String pluginId, URL[] urls) {
-        super(urls);
+    public PluginClassLoader(String pluginId, URL[] urls, ClassLoader classLoader) {
+        super(urls, classLoader);
         pluginLoaders.put(pluginId, this);
     }
 

@@ -1,5 +1,6 @@
 package com.avrix.plugin;
 
+import com.avrix.agent.Agent;
 import com.avrix.enums.Environment;
 import com.avrix.utils.Constants;
 import com.avrix.utils.PatchUtils;
@@ -113,7 +114,10 @@ public class PluginManager {
             // Creating a URL for the plugin
             URL pluginUrl = pluginFile.toURI().toURL();
 
-            ClassLoader classLoader = new PluginClassLoader(metadata.getId(), new URL[]{pluginUrl});
+            // Adding jar file to classpath
+            Agent.addClassPath(pluginFile);
+
+            ClassLoader classLoader = new PluginClassLoader(metadata.getId(), new URL[]{pluginUrl}, ClassLoader.getSystemClassLoader());
 
             // Extending ClassPoll with a new ClassLoader
             ClassPool classPool = ClassPool.getDefault();
