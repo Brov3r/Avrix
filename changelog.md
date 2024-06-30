@@ -4,6 +4,7 @@
 - Added the ability to get a map of registered commands
 - Added command description annotation
 - Added methods for getting values from command annotations
+- Added new launch scripts
 - Fixed plugin example
 - Fixed copying configs from the plugin
 - Fixed plugin dependency version checking
