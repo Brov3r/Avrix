@@ -51,14 +51,14 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
 
 We welcome any help in the development of this project! How can you help:
 
-1) **Test** - install the loader and just play. Mods are not necessary to install, so you will help find hidden bugs. If
-   something turns up, please report it to (Issue)[https://github.com/Brov3r/Avrix/issues] so that other developers know
-   what needs to be fixed.
-2) **Create plugins** - is a good way to develop our community and bring new functionality to the game.
-3) **Take part in the development** - you can always create a fork and make corrections by sending them for acceptance (
-   pull request)[https://github.com/Brov3r/Avrix/pulls].
-4) **Join our community at (Discord)[https://discord.gg/PdYtyJMTZN]** - we want to create a healthy community of
-   enthusiastic developers where everyone can learn something and find new friends.
+- **Test** - install the loader and just play. Mods are not necessary to install, so you will help find hidden bugs. If
+  something turns up, please report it to (Issue)[https://github.com/Brov3r/Avrix/issues] so that other developers know
+  what needs to be fixed.
+- **Create plugins** - is a good way to develop our community and bring new functionality to the game.
+- **Take part in the development** - you can always create a fork and make corrections by sending them for acceptance (
+  pull request)[https://github.com/Brov3r/Avrix/pulls].
+- **Join our community at (Discord)[https://discord.gg/PdYtyJMTZN]** - we want to create a healthy community of
+  enthusiastic developers where everyone can learn something and find new friends.
 
 # Disclaimer
 
