@@ -7,6 +7,7 @@
 - Fixed plugin example
 - Fixed copying configs from the plugin
 - Fixed plugin dependency version checking
+- Fixed the visibility area of the default ClassPoll
 
 # AvrixLoader v1.0.0
 

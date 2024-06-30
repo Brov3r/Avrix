@@ -3,6 +3,8 @@ package com.avrix.plugin;
 import com.avrix.enums.Environment;
 import com.avrix.utils.Constants;
 import com.avrix.utils.PatchUtils;
+import javassist.ClassPool;
+import javassist.LoaderClassPath;
 import zombie.core.Core;
 
 import java.io.File;
@@ -112,6 +114,10 @@ public class PluginManager {
             URL pluginUrl = pluginFile.toURI().toURL();
 
             ClassLoader classLoader = new PluginClassLoader(metadata.getId(), new URL[]{pluginUrl});
+
+            // Extending ClassPoll with a new ClassLoader
+            ClassPool classPool = ClassPool.getDefault();
+            classPool.appendClassPath(new LoaderClassPath(classLoader));
 
             // Applying patches
             PatchUtils.applyPluginPatches(metadata, classLoader);
