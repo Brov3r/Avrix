@@ -23,18 +23,22 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
 - More than 200 standard and custom events (with documentation) that you can easily subscribe to;
 - Working with the client and server side;
 - Custom documented tools for working with game methods;
-- Creating plugins for Avrix is very similar to creating plugins from Minecraft mod loaders (Paper, Fabric, Bukkit, etc.);
+- Creating plugins for Avrix is very similar to creating plugins from Minecraft mod loaders (Paper, Fabric, Bukkit,
+  etc.);
 - The ability to easily add plugins by moving the Jar file to the plugins folder.
 - The ability to make changes to the bytecode of the game in runtime (similar to Minecraft Mixin)
 
 # How to use
 
 ## Assembled core
-1) Download the executable core file and the necessary startup script from the [releases page](https://github.com/Brov3r/Avrix/releases )
+
+1) Download the executable core file and the necessary startup script from
+   the [releases page](https://github.com/Brov3r/Avrix/releases )
 2) Move the downloaded files to the root folder of the client/server
 3) Run the script and follow the instructions displayed
 
 ## Self-assembly
+
 1) Clone the repository
 2) Create a Jar file of game dependencies through the Gradle task `createZombieJar`, after specifying the environment
    variable `ZOMBIE_FOLDER_PATH`
@@ -42,6 +46,19 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
 4) Move the created Jar file to the root folder of the server
 5) Copy the [`launch script`](./scripts) to the root folder of the client/server
 6) Run launch script
+
+# Contribute
+
+We welcome any help in the development of this project! How can you help:
+
+**Test** - install the loader and just play. Mods are not necessary to install, so you will help find hidden bugs. If
+something turns up, please report it to (Issue)[https://github.com/Brov3r/Avrix/issues] so that other developers know
+what needs to be fixed.
+**Create plugins** - is a good way to develop our community and bring new functionality to the game.
+**Take part in the development** - you can always create a fork and make corrections by sending them for acceptance (
+pull request)[https://github.com/Brov3r/Avrix/pulls].
+**Join our community at (Discord)[https://discord.gg/PdYtyJMTZN]** - we want to create a healthy community of
+enthusiastic developers where everyone can learn something and find new friends.
 
 # Disclaimer
 
