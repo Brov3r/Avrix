@@ -3,11 +3,14 @@ package com.avrix.utils;
 import com.avrix.enums.AccessLevel;
 import com.avrix.events.EventManager;
 import zombie.characters.IsoPlayer;
+import zombie.commands.PlayerType;
+import zombie.core.logger.LoggerManager;
 import zombie.core.raknet.UdpConnection;
 import zombie.core.znet.SteamUtils;
 import zombie.network.GameServer;
 import zombie.network.ServerWorldDatabase;
 import zombie.network.Userlog;
+import zombie.network.chat.ChatServer;
 
 import java.sql.SQLException;
 
@@ -15,6 +18,77 @@ import java.sql.SQLException;
  * A set of tools for player management, monitoring and analysis
  */
 public class PlayerUtils {
+    /**
+     * Sets the access level of a player by their username.
+     *
+     * @param playerName  the username of the player
+     * @param accessLevel the new access level to set
+     */
+    public static void setPlayerAccessLevel(String playerName, AccessLevel accessLevel) {
+        setPlayerAccessLevel(getPlayerByPartialUsername(playerName), accessLevel);
+    }
+
+    /**
+     * Sets the access level of a player.
+     *
+     * @param player      the IsoPlayer object representing the player
+     * @param accessLevel the new access level to set
+     */
+    public static void setPlayerAccessLevel(IsoPlayer player, AccessLevel accessLevel) {
+        setPlayerAccessLevel(getUdpConnectionByPlayer(player), accessLevel);
+    }
+
+    /**
+     * Sets the access level of a player.
+     *
+     * @param player      the UdpConnection object representing the player's connection
+     * @param accessLevel the new access level to set
+     */
+    public static void setPlayerAccessLevel(UdpConnection player, AccessLevel accessLevel) {
+        if (player == null) return;
+
+        IsoPlayer isoPlayer = getPlayerByUdpConnection(player);
+        if (isoPlayer == null) return;
+
+        if (!ServerWorldDatabase.instance.containsUser(player.username)) {
+            System.out.printf("[!] Player '%s' is not in the whitelist!%n", player.username);
+            return;
+        }
+
+        if (isoPlayer.networkAI != null) {
+            isoPlayer.networkAI.setCheckAccessLevelDelay(5000L);
+        }
+
+        boolean isAdmin = accessLevel.equals(AccessLevel.ADMIN);
+
+        if (isAdmin) {
+            ChatServer.getInstance().joinAdminChat(isoPlayer.OnlineID);
+        } else {
+            ChatServer.getInstance().leaveAdminChat(isoPlayer.OnlineID);
+        }
+
+        isoPlayer.setGodMod(isAdmin);
+        isoPlayer.setGhostMode(isAdmin);
+        isoPlayer.setInvisible(isAdmin);
+        isoPlayer.setNoClip(isAdmin);
+        isoPlayer.setShowAdminTag(isAdmin);
+
+        isoPlayer.accessLevel = accessLevel.getRoleName();
+        player.accessLevel = PlayerType.fromString(accessLevel.getRoleName());
+
+        GameServer.sendPlayerExtraInfo(isoPlayer, null);
+
+        try {
+            ServerWorldDatabase.instance.setAccessLevel(player.username, accessLevel.getRoleName());
+        } catch (Exception e) {
+            System.out.printf("[!] Failed to update access level for player '%s' to '%s' in database: %s%n", player.username, accessLevel.getRoleName(), e.getMessage());
+        }
+
+        System.out.printf("[#] Console granted '%s' access level on '%s'", accessLevel.getRoleName(), player.username);
+        LoggerManager.getLogger("admin").write(String.format("Console granted '%s' access level on '%s'", accessLevel.getRoleName(), player.username));
+        ChatUtils.sendMessageToPlayer(player, String.format("[#] Your access level is set to '%s'", accessLevel.getRoleName()));
+    }
+
     /**
      * Retrieves the access level of a player based on their {@link UdpConnection}.
      *
@@ -34,7 +108,7 @@ public class PlayerUtils {
     public static AccessLevel getPlayerAccessLevel(IsoPlayer player) {
         return AccessLevel.fromString(player.accessLevel);
     }
-    
+
     /**
      * Getting a player's instance on his connection
      *

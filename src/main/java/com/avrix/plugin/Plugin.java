@@ -104,7 +104,15 @@ public abstract class Plugin {
      */
     public final synchronized YamlFile loadConfig(String configPath) {
         File configFromFolder = getConfigFolder().toPath().resolve(configPath).toFile();
+
         try {
+            File parentDir = configFromFolder.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                if (!parentDir.mkdirs()) {
+                    throw new IOException("[!] Failed to create directories for: " + configFromFolder.getAbsolutePath());
+                }
+            }
+
             configPath = configPath.trim();
 
             if (!configPath.endsWith(".yml")) {

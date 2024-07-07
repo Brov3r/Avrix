@@ -41,6 +41,8 @@ public class Main extends Plugin {
         YamlFile test = loadConfig("test/test.yml");
         YamlFile test2 = loadConfig("test/test2.yml"); // The file will be created
 
+        test2.save();
+
         System.out.println("[#] Hello world from " + getMetadata().getName());
         System.out.println("[$] Test.yml: " + test.getString("test"));
         System.out.println("[$] config.yml: " + getDefaultConfig().getString("config"));

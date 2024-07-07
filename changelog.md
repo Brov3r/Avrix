@@ -4,6 +4,10 @@
 - Added `getCommandArgs` method for different prefixes
 - Added `sendMessageToAdmins` method
 - Added tools for working with Lua
+- Added `setPlayerAccessLevel` method
+- Added `getRoleName` method in `AccessLevel` class
+- Fixed creation of folders when copying nested configs
+- Updated plugin example
 
 # AvrixLoader v1.1.1
 

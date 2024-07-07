@@ -44,7 +44,7 @@ public enum AccessLevel {
      * Role name
      */
     private final String roleName;
-    
+
     /**
      * Access Level Priority
      */
@@ -68,6 +68,15 @@ public enum AccessLevel {
      */
     public int getPriority() {
         return this.priority;
+    }
+
+    /**
+     * Returns the name of this access level.
+     *
+     * @return access level name
+     */
+    public String getRoleName() {
+        return this.roleName;
     }
 
     /**
