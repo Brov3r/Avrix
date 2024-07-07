@@ -10,7 +10,7 @@ plugins {
  * Project Variables
  */
 group = 'com.avrix'
-version = '1.1.1'
+version = '1.2.0'
 
 /**
  * Path to the compiled Jar file

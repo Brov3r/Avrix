@@ -1,3 +1,7 @@
+# AvrixLoader v1.2.0
+
+- Added `getPlayerAccessLevel` method
+
 # AvrixLoader v1.1.1
 
 - Fixed adding Jar plugins to classpath

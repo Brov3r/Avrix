@@ -1,5 +1,6 @@
 package com.avrix.utils;
 
+import com.avrix.enums.AccessLevel;
 import com.avrix.events.EventManager;
 import zombie.characters.IsoPlayer;
 import zombie.core.raknet.UdpConnection;
@@ -14,6 +15,26 @@ import java.sql.SQLException;
  * A set of tools for player management, monitoring and analysis
  */
 public class PlayerUtils {
+    /**
+     * Retrieves the access level of a player based on their {@link UdpConnection}.
+     *
+     * @param connection the {@link UdpConnection} of the player
+     * @return the access level of the player as an {@link AccessLevel} enumeration
+     */
+    public static AccessLevel getPlayerAccessLevel(UdpConnection connection) {
+        return AccessLevel.fromString(getPlayerByUdpConnection(connection).accessLevel);
+    }
+
+    /**
+     * Retrieves the access level of a player.
+     *
+     * @param player the {@link IsoPlayer} whose access level is to be retrieved
+     * @return the access level of the player as an {@link AccessLevel} enumeration
+     */
+    public static AccessLevel getPlayerAccessLevel(IsoPlayer player) {
+        return AccessLevel.fromString(player.accessLevel);
+    }
+    
     /**
      * Getting a player's instance on his connection
      *
