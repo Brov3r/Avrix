@@ -41,60 +41,60 @@ public class PlayerUtils {
     /**
      * Sets the access level of a player.
      *
-     * @param player      the UdpConnection object representing the player's connection
+     * @param connection  the UdpConnection object representing the player's connection
      * @param accessLevel the new access level to set
      */
-    public static void setAccessLevel(UdpConnection player, AccessLevel accessLevel) {
-        if (player == null) {
+    public static void setAccessLevel(UdpConnection connection, AccessLevel accessLevel) {
+        if (connection == null) {
             System.out.println("[!] UdpConnection is null. Unable to set access level.");
             return;
         }
 
-        IsoPlayer isoPlayer = getPlayerByUdpConnection(player);
-        if (isoPlayer == null) {
-            System.out.printf("[!] IsoPlayer not found for UdpConnection: %s%n", player.username);
+        IsoPlayer player = getPlayerByUdpConnection(connection);
+        if (player == null) {
+            System.out.printf("[!] IsoPlayer not found for UdpConnection: %s%n", connection.username);
             return;
         }
 
-        if (!ServerWorldDatabase.instance.containsUser(player.username)) {
-            System.out.printf("[!] Player '%s' is not in the whitelist!%n", player.username);
+        if (!ServerWorldDatabase.instance.containsUser(connection.username)) {
+            System.out.printf("[!] Player '%s' is not in the whitelist!%n", connection.username);
             return;
         }
 
-        if (isoPlayer.networkAI != null) {
-            isoPlayer.networkAI.setCheckAccessLevelDelay(5000L);
+        if (player.networkAI != null) {
+            player.networkAI.setCheckAccessLevelDelay(5000L);
         }
 
         boolean isAdmin = accessLevel.equals(AccessLevel.ADMIN);
 
         if (isAdmin) {
-            ChatServer.getInstance().joinAdminChat(isoPlayer.OnlineID);
+            ChatServer.getInstance().joinAdminChat(player.OnlineID);
         } else {
-            ChatServer.getInstance().leaveAdminChat(isoPlayer.OnlineID);
+            ChatServer.getInstance().leaveAdminChat(player.OnlineID);
         }
 
-        isoPlayer.setGodMod(isAdmin);
-        isoPlayer.setGhostMode(isAdmin);
-        isoPlayer.setInvisible(isAdmin);
-        isoPlayer.setNoClip(isAdmin);
-        isoPlayer.setShowAdminTag(isAdmin);
+        player.setGodMod(isAdmin);
+        player.setGhostMode(isAdmin);
+        player.setInvisible(isAdmin);
+        player.setNoClip(isAdmin);
+        player.setShowAdminTag(isAdmin);
 
-        isoPlayer.accessLevel = accessLevel.getRoleName();
-        player.accessLevel = PlayerType.fromString(accessLevel.getRoleName());
+        player.accessLevel = accessLevel.getRoleName();
+        connection.accessLevel = PlayerType.fromString(accessLevel.getRoleName());
 
-        GameServer.sendPlayerExtraInfo(isoPlayer, null);
+        GameServer.sendPlayerExtraInfo(player, null);
 
         try {
-            ServerWorldDatabase.instance.setAccessLevel(player.username, accessLevel.getRoleName());
+            ServerWorldDatabase.instance.setAccessLevel(connection.username, accessLevel.getRoleName());
         } catch (Exception e) {
-            System.out.printf("[!] Failed to update access level for player '%s' to '%s' in database: %s%n", player.username, accessLevel.getRoleName(), e.getMessage());
-            LoggerManager.getLogger("admin").write(String.format("[!] Failed to update access level for player '%s' to '%s' in database: %s", player.username, accessLevel.getRoleName(), e.getMessage()));
+            System.out.printf("[!] Failed to update access level for player '%s' to '%s' in database: %s%n", connection.username, accessLevel.getRoleName(), e.getMessage());
+            LoggerManager.getLogger("admin").write(String.format("[!] Failed to update access level for player '%s' to '%s' in database: %s", connection.username, accessLevel.getRoleName(), e.getMessage()));
             return;
         }
 
-        System.out.printf("[#] Console granted '%s' access level on '%s'%n", accessLevel.getRoleName(), player.username);
-        LoggerManager.getLogger("admin").write(String.format("Console granted '%s' access level on '%s'", accessLevel.getRoleName(), player.username));
-        ChatUtils.sendMessageToPlayer(player, String.format("[#] Your access level is set to '%s'", accessLevel.getRoleName()));
+        System.out.printf("[#] Console granted '%s' access level on '%s'%n", accessLevel.getRoleName(), connection.username);
+        LoggerManager.getLogger("admin").write(String.format("Console granted '%s' access level on '%s'", accessLevel.getRoleName(), connection.username));
+        ChatUtils.sendMessageToPlayer(connection, String.format("[#] Your access level is set to '%s'", accessLevel.getRoleName()));
     }
 
     /**
