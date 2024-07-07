@@ -19,14 +19,15 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
 # Features
 
 - Availability of [JavaDoc](https://brov3r.github.io/Avrix/);
-- Example of a [plugin](https://github.com/Brov3r/Avrix/tree/main/example-plugin)
-- More than 200 standard and custom events (with documentation) that you can easily subscribe to;
+- Example of a [plugin](https://github.com/Brov3r/Avrix/tree/main/example-plugin);
 - Working with the client and server side;
+- Availability of tools for loading and working with Lua scripts;
+- The ability to easily add plugins by moving the Jar file to the plugins folder;
+- The ability to make changes to the bytecode of the game in runtime (similar to Minecraft Mixin);
+- More than 200 standard and custom events (with documentation) that you can easily subscribe to;
 - Custom documented tools for working with game methods;
 - Creating plugins for Avrix is very similar to creating plugins from Minecraft mod loaders (Paper, Fabric, Bukkit,
   etc.);
-- The ability to easily add plugins by moving the Jar file to the plugins folder.
-- The ability to make changes to the bytecode of the game in runtime (similar to Minecraft Mixin)
 
 # How to use
 
