@@ -3,6 +3,7 @@
 - Added `getPlayerAccessLevel` method
 - Added `getCommandArgs` method for different prefixes
 - Added `sendMessageToAdmins` method
+- Added tools for working with Lua
 
 # AvrixLoader v1.1.1
 

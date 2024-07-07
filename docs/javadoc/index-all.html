@@ -64,6 +64,14 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Adding a command to the system</div>
 </dd>
+<dt><a href="com/avrix/lua/LuaExposer.html#addExposedClass(java.lang.Class)" class="member-name-link">addExposedClass(Class&lt;?&gt;)</a> - Static method in class com.avrix.lua.<a href="com/avrix/lua/LuaExposer.html" title="class in com.avrix.lua">LuaExposer</a></dt>
+<dd>
+<div class="block">Method for exposing the class.</div>
+</dd>
+<dt><a href="com/avrix/lua/LuaExposer.html#addExposedGlobalObject(java.lang.Object)" class="member-name-link">addExposedGlobalObject(Object)</a> - Static method in class com.avrix.lua.<a href="com/avrix/lua/LuaExposer.html" title="class in com.avrix.lua">LuaExposer</a></dt>
+<dd>
+<div class="block">Method for exposing a global object, which contain methods with annotation <code>LuaMethod</code>.</div>
+</dd>
 <dt><a href="com/avrix/events/EventManager.html#addListener(com.avrix.events.Event)" class="member-name-link">addListener(Event)</a> - Static method in class com.avrix.events.<a href="com/avrix/events/EventManager.html" title="class in com.avrix.events">EventManager</a></dt>
 <dd>
 <div class="block">Registers a listener object for a specific event.</div>
@@ -71,6 +79,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/events/EventManager.html#addListener(com.avrix.events.Event,com.avrix.enums.Priority)" class="member-name-link">addListener(Event, Priority)</a> - Static method in class com.avrix.events.<a href="com/avrix/events/EventManager.html" title="class in com.avrix.events">EventManager</a></dt>
 <dd>
 <div class="block">Registers a listener object for a specific event.</div>
+</dd>
+<dt><a href="com/avrix/lua/LuaManager.html#addLuaActiveFolder(java.io.File)" class="member-name-link">addLuaActiveFolder(File)</a> - Static method in class com.avrix.lua.<a href="com/avrix/lua/LuaManager.html" title="class in com.avrix.lua">LuaManager</a></dt>
+<dd>
+<div class="block">Adds the specified folder to the active Lua path.</div>
 </dd>
 <dt><a href="com/avrix/enums/AccessLevel.html#ADMIN" class="member-name-link">ADMIN</a> - Enum constant in enum class com.avrix.enums.<a href="com/avrix/enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a></dt>
 <dd>
@@ -213,6 +225,8 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/enums/package-summary.html">com.avrix.enums</a> - package com.avrix.enums</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/events/package-summary.html">com.avrix.events</a> - package com.avrix.events</dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/avrix/lua/package-summary.html">com.avrix.lua</a> - package com.avrix.lua</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/patches/package-summary.html">com.avrix.patches</a> - package com.avrix.patches</dt>
 <dd>&nbsp;</dd>
@@ -1394,6 +1408,14 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/commands/Command.html#getExecutionScope()" class="member-name-link">getExecutionScope()</a> - Method in class com.avrix.commands.<a href="com/avrix/commands/Command.html" title="class in com.avrix.commands">Command</a></dt>
 <dd>
 <div class="block">Retrieves the execution scope of the command from the <a href="com/avrix/commands/CommandExecutionScope.html" title="annotation interface in com.avrix.commands"><code>CommandExecutionScope</code></a> annotation.</div>
+</dd>
+<dt><a href="com/avrix/lua/LuaExposer.html#getExposedClasses()" class="member-name-link">getExposedClasses()</a> - Static method in class com.avrix.lua.<a href="com/avrix/lua/LuaExposer.html" title="class in com.avrix.lua">LuaExposer</a></dt>
+<dd>
+<div class="block">Method for getting a collection of exposed classes.</div>
+</dd>
+<dt><a href="com/avrix/lua/LuaExposer.html#getExposedGlobalObjects()" class="member-name-link">getExposedGlobalObjects()</a> - Static method in class com.avrix.lua.<a href="com/avrix/lua/LuaExposer.html" title="class in com.avrix.lua">LuaExposer</a></dt>
+<dd>
+<div class="block">Method for getting a collection of exposed global objects.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getFileName()" class="member-name-link">getFileName()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -2591,6 +2613,11 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Loading the default configuration file.</div>
 </dd>
+<dt><a href="com/avrix/lua/LuaManager.html#loadLuaFromFolder(java.lang.String,boolean)" class="member-name-link">loadLuaFromFolder(String, boolean)</a> - Static method in class com.avrix.lua.<a href="com/avrix/lua/LuaManager.html" title="class in com.avrix.lua">LuaManager</a></dt>
+<dd>
+<div class="block">Searches for Lua files recursively in the specified folder and its subfolders,
+ adds them to the paths collection, and then runs each Lua file.</div>
+</dd>
 <dt><a href="com/avrix/plugin/PluginManager.html#loadPlugins()" class="member-name-link">loadPlugins()</a> - Static method in class com.avrix.plugin.<a href="com/avrix/plugin/PluginManager.html" title="class in com.avrix.plugin">PluginManager</a></dt>
 <dd>
 <div class="block">Loading plugins into the game context</div>
@@ -2603,6 +2630,18 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Lowest priority.</div>
 </dd>
+<dt><a href="com/avrix/lua/LuaExposer.html" class="type-name-link" title="class in com.avrix.lua">LuaExposer</a> - Class in <a href="com/avrix/lua/package-summary.html">com.avrix.lua</a></dt>
+<dd>
+<div class="block">A utility class for exposing classes and global objects for use in Lua scripts.</div>
+</dd>
+<dt><a href="com/avrix/lua/LuaExposer.html#%3Cinit%3E()" class="member-name-link">LuaExposer()</a> - Constructor for class com.avrix.lua.<a href="com/avrix/lua/LuaExposer.html" title="class in com.avrix.lua">LuaExposer</a></dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/avrix/lua/LuaManager.html" class="type-name-link" title="class in com.avrix.lua">LuaManager</a> - Class in <a href="com/avrix/lua/package-summary.html">com.avrix.lua</a></dt>
+<dd>
+<div class="block">Provides utility methods for managing Lua scripts.</div>
+</dd>
+<dt><a href="com/avrix/lua/LuaManager.html#%3Cinit%3E()" class="member-name-link">LuaManager()</a> - Constructor for class com.avrix.lua.<a href="com/avrix/lua/LuaManager.html" title="class in com.avrix.lua">LuaManager</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <h2 class="title" id="I:M">M</h2>
 <dl class="index">
@@ -2667,6 +2706,10 @@ loadScripts(document, 'script');</script>
 <div class="block">Method for performing class modification.</div>
 </dd>
 <dt><a href="com/avrix/patches/PatchLuaManager.html#modifyClass()" class="member-name-link">modifyClass()</a> - Method in class com.avrix.patches.<a href="com/avrix/patches/PatchLuaManager.html" title="class in com.avrix.patches">PatchLuaManager</a></dt>
+<dd>
+<div class="block">Method for performing class modification.</div>
+</dd>
+<dt><a href="com/avrix/patches/PatchLuaManagerExposer.html#modifyClass()" class="member-name-link">modifyClass()</a> - Method in class com.avrix.patches.<a href="com/avrix/patches/PatchLuaManagerExposer.html" title="class in com.avrix.patches">PatchLuaManagerExposer</a></dt>
 <dd>
 <div class="block">Method for performing class modification.</div>
 </dd>
@@ -4119,6 +4162,14 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Constructor for creating a <a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent"><code>ClassTransformer</code></a> object.</div>
 </dd>
+<dt><a href="com/avrix/patches/PatchLuaManagerExposer.html" class="type-name-link" title="class in com.avrix.patches">PatchLuaManagerExposer</a> - Class in <a href="com/avrix/patches/package-summary.html">com.avrix.patches</a></dt>
+<dd>
+<div class="block">LuaManager$Exposer patcher</div>
+</dd>
+<dt><a href="com/avrix/patches/PatchLuaManagerExposer.html#%3Cinit%3E()" class="member-name-link">PatchLuaManagerExposer()</a> - Constructor for class com.avrix.patches.<a href="com/avrix/patches/PatchLuaManagerExposer.html" title="class in com.avrix.patches">PatchLuaManagerExposer</a></dt>
+<dd>
+<div class="block">Constructor for creating a <a href="com/avrix/agent/ClassTransformer.html" title="class in com.avrix.agent"><code>ClassTransformer</code></a> object.</div>
+</dd>
 <dt><a href="com/avrix/patches/PatchQuitCommand.html" class="type-name-link" title="class in com.avrix.patches">PatchQuitCommand</a> - Class in <a href="com/avrix/patches/package-summary.html">com.avrix.patches</a></dt>
 <dd>
 <div class="block">QuitCommand patcher</div>
@@ -4227,6 +4278,18 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/utils/YamlFile.html#remove(java.lang.String)" class="member-name-link">remove(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Removes a key from the YAML file.</div>
+</dd>
+<dt><a href="com/avrix/lua/LuaExposer.html#removeExposedClass(java.lang.Class)" class="member-name-link">removeExposedClass(Class&lt;?&gt;)</a> - Static method in class com.avrix.lua.<a href="com/avrix/lua/LuaExposer.html" title="class in com.avrix.lua">LuaExposer</a></dt>
+<dd>
+<div class="block">Method for removing a class from the collection of exposed classes.</div>
+</dd>
+<dt><a href="com/avrix/lua/LuaExposer.html#removeExposedGlobalObject(java.lang.Object)" class="member-name-link">removeExposedGlobalObject(Object)</a> - Static method in class com.avrix.lua.<a href="com/avrix/lua/LuaExposer.html" title="class in com.avrix.lua">LuaExposer</a></dt>
+<dd>
+<div class="block">Method for removing a global object from the collection of exposed global objects.</div>
+</dd>
+<dt><a href="com/avrix/lua/LuaManager.html#runLua(java.lang.String,boolean)" class="member-name-link">runLua(String, boolean)</a> - Static method in class com.avrix.lua.<a href="com/avrix/lua/LuaManager.html" title="class in com.avrix.lua">LuaManager</a></dt>
+<dd>
+<div class="block">Executes a Lua script located at the specified path.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:S">S</h2>
