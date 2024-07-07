@@ -19,30 +19,30 @@ import java.sql.SQLException;
  */
 public class PlayerUtils {
     /**
-     * Sets the access level of a player by their username.
+     * Sets the {@link AccessLevel} of a player by their username.
      *
      * @param playerName  the username of the player
-     * @param accessLevel the new access level to set
+     * @param accessLevel the new {@link AccessLevel} to set
      */
     public static void setAccessLevel(String playerName, AccessLevel accessLevel) {
         setAccessLevel(getPlayerByPartialUsername(playerName), accessLevel);
     }
 
     /**
-     * Sets the access level of a player.
+     * Sets the {@link AccessLevel} of a player.
      *
-     * @param player      the IsoPlayer object representing the player
-     * @param accessLevel the new access level to set
+     * @param player      the {@link IsoPlayer} object representing the player
+     * @param accessLevel the new {@link AccessLevel} to set
      */
     public static void setAccessLevel(IsoPlayer player, AccessLevel accessLevel) {
         setAccessLevel(getUdpConnectionByPlayer(player), accessLevel);
     }
 
     /**
-     * Sets the access level of a player.
+     * Sets the {@link AccessLevel} of a player.
      *
-     * @param connection  the UdpConnection object representing the player's connection
-     * @param accessLevel the new access level to set
+     * @param connection  the {@link UdpConnection} object representing the player's connection
+     * @param accessLevel the new {@link AccessLevel} to set
      */
     public static void setAccessLevel(UdpConnection connection, AccessLevel accessLevel) {
         if (connection == null) {
