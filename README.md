@@ -38,9 +38,9 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
 
 # How to use
 
-## Assembled core
+## Assembled Jar
 
-1) Download the executable core file and the necessary startup script from
+1) Download the executable Jar file and the necessary startup script from
    the [releases page](https://github.com/Brov3r/Avrix/releases )
 2) Move the downloaded files to the root folder of the client/server
 3) Run the script and follow the instructions displayed
@@ -50,7 +50,7 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
 1) Clone the repository
 2) Create a Jar file of game dependencies through the Gradle task `buildZomboidDependencies`, after specifying the
    environment variables `ZOMBIE_FOLDER_PATH` and `GAME_FOLDER_PATH`
-3) Build the core using the `buildJar` task
+3) Build the Jar file using the `buildJar` task
 4) Move the created Jar file to the root folder of the server
 5) Copy the [`launch script`](./scripts) to the root folder of the client/server
 6) Run launch script
