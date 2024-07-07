@@ -45,10 +45,16 @@ public class PlayerUtils {
      * @param accessLevel the new access level to set
      */
     public static void setPlayerAccessLevel(UdpConnection player, AccessLevel accessLevel) {
-        if (player == null) return;
+        if (player == null) {
+            System.out.println("[!] UdpConnection is null. Unable to set access level.");
+            return;
+        }
 
         IsoPlayer isoPlayer = getPlayerByUdpConnection(player);
-        if (isoPlayer == null) return;
+        if (isoPlayer == null) {
+            System.out.printf("[!] IsoPlayer not found for UdpConnection: %s%n", player.username);
+            return;
+        }
 
         if (!ServerWorldDatabase.instance.containsUser(player.username)) {
             System.out.printf("[!] Player '%s' is not in the whitelist!%n", player.username);
@@ -82,9 +88,11 @@ public class PlayerUtils {
             ServerWorldDatabase.instance.setAccessLevel(player.username, accessLevel.getRoleName());
         } catch (Exception e) {
             System.out.printf("[!] Failed to update access level for player '%s' to '%s' in database: %s%n", player.username, accessLevel.getRoleName(), e.getMessage());
+            LoggerManager.getLogger("admin").write(String.format("[!] Failed to update access level for player '%s' to '%s' in database: %s", player.username, accessLevel.getRoleName(), e.getMessage()));
+            return;
         }
 
-        System.out.printf("[#] Console granted '%s' access level on '%s'", accessLevel.getRoleName(), player.username);
+        System.out.printf("[#] Console granted '%s' access level on '%s'%n", accessLevel.getRoleName(), player.username);
         LoggerManager.getLogger("admin").write(String.format("Console granted '%s' access level on '%s'", accessLevel.getRoleName(), player.username));
         ChatUtils.sendMessageToPlayer(player, String.format("[#] Your access level is set to '%s'", accessLevel.getRoleName()));
     }
