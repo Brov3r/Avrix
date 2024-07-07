@@ -1,6 +1,7 @@
 # AvrixLoader v1.2.0
 
 - Added `getPlayerAccessLevel` method
+- Added `getCommandArgs` method for different prefixes
 
 # AvrixLoader v1.1.1
 

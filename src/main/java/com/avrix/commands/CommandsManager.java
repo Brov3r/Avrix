@@ -123,7 +123,7 @@ public class CommandsManager {
 
         if (!isConsole) {
             IsoPlayer player = PlayerUtils.getPlayerByUsername(playerConnection.username);
-            if (player == null) return "Could not check your access level! Please try later...";
+            if (player == null) return "[!] Could not check your access level! Please try later...";
 
             CommandAccessLevel accessLevelAnnotation = command.getClass().getAnnotation(CommandAccessLevel.class);
 
@@ -145,13 +145,34 @@ public class CommandsManager {
     }
 
     /**
-     * Parses a chat command string and extracts command arguments.
+     * Extracts command arguments from the given chat command with a specified prefix.
      *
-     * @param chatCommand the input chat command string
-     * @return an array of strings containing the command name and its arguments,
-     * or null if the input is null, empty, or contains only whitespace
+     * @param commandPrefix the prefix of the command (e.g., '!', '/', etc.)
+     * @param chatCommand   the full chat command string
+     * @return an array of command arguments, or {@code null} if the command is invalid
+     */
+    public static String[] getCommandArgs(String commandPrefix, String chatCommand) {
+        return extractCommandArgs(chatCommand, commandPrefix);
+    }
+
+    /**
+     * Extracts command arguments from the given chat command.
+     *
+     * @param chatCommand the full chat command string
+     * @return an array of command arguments, or {@code null} if the command is invalid
      */
     public static String[] getCommandArgs(String chatCommand) {
+        return extractCommandArgs(chatCommand, null);
+    }
+
+    /**
+     * Extracts command arguments from the given chat command with an optional prefix.
+     *
+     * @param chatCommand   the full chat command string
+     * @param commandPrefix the prefix of the command, or {@code null} if no prefix is used
+     * @return an array of command arguments, or {@code null} if the command is invalid
+     */
+    private static String[] extractCommandArgs(String chatCommand, String commandPrefix) {
         if (chatCommand == null || chatCommand.trim().isEmpty()) return null;
 
         List<String> commandArgsList = new ArrayList<>();
@@ -173,7 +194,9 @@ public class CommandsManager {
         commandArgs = commandArgsList.toArray(commandArgs);
 
         String commandName = commandArgs[0];
-        if (commandName.startsWith("!") || commandName.startsWith("/")) {
+        if (commandPrefix != null && commandName.startsWith(commandPrefix)) {
+            commandName = commandName.substring(commandPrefix.length());
+        } else if (commandPrefix == null && (commandName.startsWith("!") || commandName.startsWith("/"))) {
             commandName = commandName.substring(1);
         }
 

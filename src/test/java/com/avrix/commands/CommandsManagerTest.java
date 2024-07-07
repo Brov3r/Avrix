@@ -62,4 +62,20 @@ public class CommandsManagerTest {
         String[] expected10 = {"test", "arg1"};
         assertArrayEquals(expected10, result10);
     }
+
+    /**
+     * Test the {@link CommandsManager#getCommandArgs(String, String)} method with custom prefixes.
+     */
+    @Test
+    public void testGetCommandArgsWithCustomPrefix() {
+        // Test with normal arguments without quotes and custom prefix
+        String[] result1 = CommandsManager.getCommandArgs("#", "#test arg1 arg2 arg3");
+        String[] expected1 = {"test", "arg1", "arg2", "arg3"};
+        assertArrayEquals(expected1, result1);
+
+        // Test with arguments in double quotes and custom prefix
+        String[] result2 = CommandsManager.getCommandArgs("$", "$test \"arg1 with spaces\" \"arg2\"");
+        String[] expected2 = {"test", "arg1 with spaces", "arg2"};
+        assertArrayEquals(expected2, result2);
+    }
 }
