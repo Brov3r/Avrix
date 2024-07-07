@@ -2,6 +2,7 @@
 
 - Added `getPlayerAccessLevel` method
 - Added `getCommandArgs` method for different prefixes
+- Added `sendMessageToAdmins` method
 
 # AvrixLoader v1.1.1
 

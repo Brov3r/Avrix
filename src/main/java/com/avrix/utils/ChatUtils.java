@@ -2,6 +2,7 @@ package com.avrix.utils;
 
 import zombie.core.Color;
 import zombie.core.raknet.UdpConnection;
+import zombie.network.GameServer;
 import zombie.network.chat.ChatServer;
 
 /**
@@ -67,5 +68,14 @@ public class ChatUtils {
      */
     public static void sendMessageToPlayer(UdpConnection playerConnection, String text) {
         ChatServer.getInstance().sendMessageToServerChat(playerConnection, text);
+    }
+
+    /**
+     * Sending a chat message to administrators
+     *
+     * @param text Message text
+     */
+    public static void sendMessageToAdmins(String text) {
+        GameServer.sendAdminMessage(text, -1, -1, -1);
     }
 }

@@ -142,14 +142,19 @@ loadScripts(document, 'script');</script>
 <div class="block">Getting the color code for coloring a chat message</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#sendMessageToAll(java.lang.String)" class="member-name-link">sendMessageToAll</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#sendMessageToAdmins(java.lang.String)" class="member-name-link">sendMessageToAdmins</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Sending a message to a general chat for all users</div>
+<div class="block">Sending a chat message to administrators</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#sendMessageToPlayer(zombie.core.raknet.UdpConnection,java.lang.String)" class="member-name-link">sendMessageToPlayer</a><wbr>(zombie.core.raknet.UdpConnection&nbsp;playerConnection,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#sendMessageToAll(java.lang.String)" class="member-name-link">sendMessageToAll</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Sending a message to a general chat for all users</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#sendMessageToPlayer(zombie.core.raknet.UdpConnection,java.lang.String)" class="member-name-link">sendMessageToPlayer</a><wbr>(zombie.core.raknet.UdpConnection&nbsp;playerConnection,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Sending a chat message to a specific user</div>
 </div>
 </div>
@@ -273,6 +278,17 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>playerConnection</code> - player connection</dd>
+<dd><code>text</code> - Message text</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="sendMessageToAdmins(java.lang.String)">
+<h3>sendMessageToAdmins</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">sendMessageToAdmins</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text)</span></div>
+<div class="block">Sending a chat message to administrators</div>
+<dl class="notes">
+<dt>Parameters:</dt>
 <dd><code>text</code> - Message text</dd>
 </dl>
 </section>
