@@ -7,6 +7,7 @@
 - Added `setPlayerAccessLevel` method
 - Added `getRoleName` method in `AccessLevel` class
 - Fixed creation of folders when copying nested configs
+- Fixed log output when creating a new config
 - Updated plugin example
 
 # AvrixLoader v1.1.1

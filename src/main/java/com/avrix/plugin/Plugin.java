@@ -3,7 +3,10 @@ package com.avrix.plugin;
 import com.avrix.utils.Constants;
 import com.avrix.utils.YamlFile;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Basic template for implementing the plugin entry point.
@@ -79,7 +82,8 @@ public abstract class Plugin {
              FileOutputStream out = new FileOutputStream(destination)) {
 
             if (in == null) {
-                throw new FileNotFoundException("[!] Resource not found: " + fileName);
+                System.out.printf("[#] Creating a new config file '%s'%n", destination.getName());
+                return;
             }
 
             byte[] buffer = new byte[1024];
@@ -87,7 +91,7 @@ public abstract class Plugin {
             while ((bytesRead = in.read(buffer)) != -1) {
                 out.write(buffer, 0, bytesRead);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.printf("[!] Error when copying config '%s' from plugin Jar archive: '%s'. Error: %s%n",
                     fileName, getClass().getSimpleName(), e.getMessage());
         }
