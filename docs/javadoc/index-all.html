@@ -393,6 +393,14 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Retrieves the access level required for the command from the <a href="com/avrix/commands/CommandAccessLevel.html" title="annotation interface in com.avrix.commands"><code>CommandAccessLevel</code></a> annotation.</div>
 </dd>
+<dt><a href="com/avrix/utils/PlayerUtils.html#getAccessLevel(zombie.characters.IsoPlayer)" class="member-name-link">getAccessLevel(IsoPlayer)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" title="class in com.avrix.utils">PlayerUtils</a></dt>
+<dd>
+<div class="block">Retrieves the access level of a player.</div>
+</dd>
+<dt><a href="com/avrix/utils/PlayerUtils.html#getAccessLevel(zombie.core.raknet.UdpConnection)" class="member-name-link">getAccessLevel(UdpConnection)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" title="class in com.avrix.utils">PlayerUtils</a></dt>
+<dd>
+<div class="block">Retrieves the access level of a player based on their <code>UdpConnection</code>.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#getAll()" class="member-name-link">getAll()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Returns all the data in the YAML file.</div>
@@ -1496,14 +1504,6 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/plugin/Metadata.html#getPatchList()" class="member-name-link">getPatchList()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" title="class in com.avrix.plugin">Metadata</a></dt>
 <dd>
 <div class="block">Returns the <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link"><code>List</code></a> of patches for the plugin.</div>
-</dd>
-<dt><a href="com/avrix/utils/PlayerUtils.html#getPlayerAccessLevel(zombie.characters.IsoPlayer)" class="member-name-link">getPlayerAccessLevel(IsoPlayer)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" title="class in com.avrix.utils">PlayerUtils</a></dt>
-<dd>
-<div class="block">Retrieves the access level of a player.</div>
-</dd>
-<dt><a href="com/avrix/utils/PlayerUtils.html#getPlayerAccessLevel(zombie.core.raknet.UdpConnection)" class="member-name-link">getPlayerAccessLevel(UdpConnection)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" title="class in com.avrix.utils">PlayerUtils</a></dt>
-<dd>
-<div class="block">Retrieves the access level of a player based on their <code>UdpConnection</code>.</div>
 </dd>
 <dt><a href="com/avrix/utils/PlayerUtils.html#getPlayerByPartialUsername(java.lang.String)" class="member-name-link">getPlayerByPartialUsername(String)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" title="class in com.avrix.utils">PlayerUtils</a></dt>
 <dd>
@@ -4336,6 +4336,18 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/plugin/ServiceManager.html#%3Cinit%3E()" class="member-name-link">ServiceManager()</a> - Constructor for class com.avrix.plugin.<a href="com/avrix/plugin/ServiceManager.html" title="class in com.avrix.plugin">ServiceManager</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/utils/PlayerUtils.html#setAccessLevel(java.lang.String,com.avrix.enums.AccessLevel)" class="member-name-link">setAccessLevel(String, AccessLevel)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" title="class in com.avrix.utils">PlayerUtils</a></dt>
+<dd>
+<div class="block">Sets the access level of a player by their username.</div>
+</dd>
+<dt><a href="com/avrix/utils/PlayerUtils.html#setAccessLevel(zombie.characters.IsoPlayer,com.avrix.enums.AccessLevel)" class="member-name-link">setAccessLevel(IsoPlayer, AccessLevel)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" title="class in com.avrix.utils">PlayerUtils</a></dt>
+<dd>
+<div class="block">Sets the access level of a player.</div>
+</dd>
+<dt><a href="com/avrix/utils/PlayerUtils.html#setAccessLevel(zombie.core.raknet.UdpConnection,com.avrix.enums.AccessLevel)" class="member-name-link">setAccessLevel(UdpConnection, AccessLevel)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" title="class in com.avrix.utils">PlayerUtils</a></dt>
+<dd>
+<div class="block">Sets the access level of a player.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#setBoolean(java.lang.String,boolean)" class="member-name-link">setBoolean(String, boolean)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Sets a boolean value in the YAML file.</div>
@@ -4403,18 +4415,6 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/utils/YamlFile.html#setMap(java.lang.String,java.util.Map)" class="member-name-link">setMap(String, Map&lt;String, Object&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Sets a map in the YAML file under the specified key.</div>
-</dd>
-<dt><a href="com/avrix/utils/PlayerUtils.html#setPlayerAccessLevel(java.lang.String,com.avrix.enums.AccessLevel)" class="member-name-link">setPlayerAccessLevel(String, AccessLevel)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" title="class in com.avrix.utils">PlayerUtils</a></dt>
-<dd>
-<div class="block">Sets the access level of a player by their username.</div>
-</dd>
-<dt><a href="com/avrix/utils/PlayerUtils.html#setPlayerAccessLevel(zombie.characters.IsoPlayer,com.avrix.enums.AccessLevel)" class="member-name-link">setPlayerAccessLevel(IsoPlayer, AccessLevel)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" title="class in com.avrix.utils">PlayerUtils</a></dt>
-<dd>
-<div class="block">Sets the access level of a player.</div>
-</dd>
-<dt><a href="com/avrix/utils/PlayerUtils.html#setPlayerAccessLevel(zombie.core.raknet.UdpConnection,com.avrix.enums.AccessLevel)" class="member-name-link">setPlayerAccessLevel(UdpConnection, AccessLevel)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" title="class in com.avrix.utils">PlayerUtils</a></dt>
-<dd>
-<div class="block">Sets the access level of a player.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#setShort(java.lang.String,short)" class="member-name-link">setShort(String, short)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>

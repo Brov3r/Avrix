@@ -24,8 +24,8 @@ public class PlayerUtils {
      * @param playerName  the username of the player
      * @param accessLevel the new access level to set
      */
-    public static void setPlayerAccessLevel(String playerName, AccessLevel accessLevel) {
-        setPlayerAccessLevel(getPlayerByPartialUsername(playerName), accessLevel);
+    public static void setAccessLevel(String playerName, AccessLevel accessLevel) {
+        setAccessLevel(getPlayerByPartialUsername(playerName), accessLevel);
     }
 
     /**
@@ -34,8 +34,8 @@ public class PlayerUtils {
      * @param player      the IsoPlayer object representing the player
      * @param accessLevel the new access level to set
      */
-    public static void setPlayerAccessLevel(IsoPlayer player, AccessLevel accessLevel) {
-        setPlayerAccessLevel(getUdpConnectionByPlayer(player), accessLevel);
+    public static void setAccessLevel(IsoPlayer player, AccessLevel accessLevel) {
+        setAccessLevel(getUdpConnectionByPlayer(player), accessLevel);
     }
 
     /**
@@ -44,7 +44,7 @@ public class PlayerUtils {
      * @param player      the UdpConnection object representing the player's connection
      * @param accessLevel the new access level to set
      */
-    public static void setPlayerAccessLevel(UdpConnection player, AccessLevel accessLevel) {
+    public static void setAccessLevel(UdpConnection player, AccessLevel accessLevel) {
         if (player == null) {
             System.out.println("[!] UdpConnection is null. Unable to set access level.");
             return;
@@ -103,7 +103,7 @@ public class PlayerUtils {
      * @param connection the {@link UdpConnection} of the player
      * @return the access level of the player as an {@link AccessLevel} enumeration
      */
-    public static AccessLevel getPlayerAccessLevel(UdpConnection connection) {
+    public static AccessLevel getAccessLevel(UdpConnection connection) {
         return AccessLevel.fromString(getPlayerByUdpConnection(connection).accessLevel);
     }
 
@@ -113,7 +113,7 @@ public class PlayerUtils {
      * @param player the {@link IsoPlayer} whose access level is to be retrieved
      * @return the access level of the player as an {@link AccessLevel} enumeration
      */
-    public static AccessLevel getPlayerAccessLevel(IsoPlayer player) {
+    public static AccessLevel getAccessLevel(IsoPlayer player) {
         return AccessLevel.fromString(player.accessLevel);
     }
 

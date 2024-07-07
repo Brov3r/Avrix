@@ -114,12 +114,12 @@ loadScripts(document, 'script');</script>
 <div class="block">Blocking a user by nickname, IP and/or SteamID</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getPlayerAccessLevel(zombie.characters.IsoPlayer)" class="member-name-link">getPlayerAccessLevel</a><wbr>(zombie.characters.IsoPlayer&nbsp;player)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getAccessLevel(zombie.characters.IsoPlayer)" class="member-name-link">getAccessLevel</a><wbr>(zombie.characters.IsoPlayer&nbsp;player)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Retrieves the access level of a player.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getPlayerAccessLevel(zombie.core.raknet.UdpConnection)" class="member-name-link">getPlayerAccessLevel</a><wbr>(zombie.core.raknet.UdpConnection&nbsp;connection)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getAccessLevel(zombie.core.raknet.UdpConnection)" class="member-name-link">getAccessLevel</a><wbr>(zombie.core.raknet.UdpConnection&nbsp;connection)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Retrieves the access level of a player based on their <code>UdpConnection</code>.</div>
 </div>
@@ -160,19 +160,19 @@ loadScripts(document, 'script');</script>
 <div class="block">Kick a player from the server</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setPlayerAccessLevel(java.lang.String,com.avrix.enums.AccessLevel)" class="member-name-link">setPlayerAccessLevel</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;playerName,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setAccessLevel(java.lang.String,com.avrix.enums.AccessLevel)" class="member-name-link">setAccessLevel</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;playerName,
  <a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a>&nbsp;accessLevel)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Sets the access level of a player by their username.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setPlayerAccessLevel(zombie.characters.IsoPlayer,com.avrix.enums.AccessLevel)" class="member-name-link">setPlayerAccessLevel</a><wbr>(zombie.characters.IsoPlayer&nbsp;player,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setAccessLevel(zombie.characters.IsoPlayer,com.avrix.enums.AccessLevel)" class="member-name-link">setAccessLevel</a><wbr>(zombie.characters.IsoPlayer&nbsp;player,
  <a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a>&nbsp;accessLevel)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Sets the access level of a player.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setPlayerAccessLevel(zombie.core.raknet.UdpConnection,com.avrix.enums.AccessLevel)" class="member-name-link">setPlayerAccessLevel</a><wbr>(zombie.core.raknet.UdpConnection&nbsp;player,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setAccessLevel(zombie.core.raknet.UdpConnection,com.avrix.enums.AccessLevel)" class="member-name-link">setAccessLevel</a><wbr>(zombie.core.raknet.UdpConnection&nbsp;player,
  <a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a>&nbsp;accessLevel)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Sets the access level of a player.</div>
@@ -209,9 +209,9 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="setPlayerAccessLevel(java.lang.String,com.avrix.enums.AccessLevel)">
-<h3>setPlayerAccessLevel</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setPlayerAccessLevel</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;playerName,
+<section class="detail" id="setAccessLevel(java.lang.String,com.avrix.enums.AccessLevel)">
+<h3>setAccessLevel</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setAccessLevel</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;playerName,
  <a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a>&nbsp;accessLevel)</span></div>
 <div class="block">Sets the access level of a player by their username.</div>
 <dl class="notes">
@@ -222,9 +222,9 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="setPlayerAccessLevel(zombie.characters.IsoPlayer,com.avrix.enums.AccessLevel)">
-<h3>setPlayerAccessLevel</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setPlayerAccessLevel</span><wbr><span class="parameters">(zombie.characters.IsoPlayer&nbsp;player,
+<section class="detail" id="setAccessLevel(zombie.characters.IsoPlayer,com.avrix.enums.AccessLevel)">
+<h3>setAccessLevel</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setAccessLevel</span><wbr><span class="parameters">(zombie.characters.IsoPlayer&nbsp;player,
  <a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a>&nbsp;accessLevel)</span></div>
 <div class="block">Sets the access level of a player.</div>
 <dl class="notes">
@@ -235,9 +235,9 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="setPlayerAccessLevel(zombie.core.raknet.UdpConnection,com.avrix.enums.AccessLevel)">
-<h3>setPlayerAccessLevel</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setPlayerAccessLevel</span><wbr><span class="parameters">(zombie.core.raknet.UdpConnection&nbsp;player,
+<section class="detail" id="setAccessLevel(zombie.core.raknet.UdpConnection,com.avrix.enums.AccessLevel)">
+<h3>setAccessLevel</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setAccessLevel</span><wbr><span class="parameters">(zombie.core.raknet.UdpConnection&nbsp;player,
  <a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a>&nbsp;accessLevel)</span></div>
 <div class="block">Sets the access level of a player.</div>
 <dl class="notes">
@@ -248,9 +248,9 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="getPlayerAccessLevel(zombie.core.raknet.UdpConnection)">
-<h3>getPlayerAccessLevel</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a></span>&nbsp;<span class="element-name">getPlayerAccessLevel</span><wbr><span class="parameters">(zombie.core.raknet.UdpConnection&nbsp;connection)</span></div>
+<section class="detail" id="getAccessLevel(zombie.core.raknet.UdpConnection)">
+<h3>getAccessLevel</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a></span>&nbsp;<span class="element-name">getAccessLevel</span><wbr><span class="parameters">(zombie.core.raknet.UdpConnection&nbsp;connection)</span></div>
 <div class="block">Retrieves the access level of a player based on their <code>UdpConnection</code>.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -261,9 +261,9 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="getPlayerAccessLevel(zombie.characters.IsoPlayer)">
-<h3>getPlayerAccessLevel</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a></span>&nbsp;<span class="element-name">getPlayerAccessLevel</span><wbr><span class="parameters">(zombie.characters.IsoPlayer&nbsp;player)</span></div>
+<section class="detail" id="getAccessLevel(zombie.characters.IsoPlayer)">
+<h3>getAccessLevel</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a></span>&nbsp;<span class="element-name">getAccessLevel</span><wbr><span class="parameters">(zombie.characters.IsoPlayer&nbsp;player)</span></div>
 <div class="block">Retrieves the access level of a player.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
