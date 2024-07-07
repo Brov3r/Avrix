@@ -5,10 +5,13 @@
 <p align="center">
     <img alt="PZ Version" src="https://img.shields.io/badge/Project_Zomboid-41.78.16-blue">
     <img alt="Java version" src="https://img.shields.io/badge/Java-17-orange">
+    <img alt="Avrix Environment" src="https://img.shields.io/badge/Environment-client/server-green">
     <img alt="GitHub License" src="https://img.shields.io/github/license/Brov3r/Avrix">
     <img alt="GitHub issues" src="https://img.shields.io/github/issues-raw/Brov3r/Avrix">
     <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/Brov3r/Avrix">
+    <img alt="GitHub Release" src="https://img.shields.io/github/v/release/brov3r/Avrix">
     <img alt="CodeQL" src="https://github.com/Brov3r/Avrix/actions/workflows/codeql.yml/badge.svg">
+
 </p>
 
 **Avrix** - a fundamentally new wrapper for running the Project Zomboid server and client with plugins (modifications).
@@ -21,10 +24,14 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
 - Availability of [JavaDoc](https://brov3r.github.io/Avrix/);
 - Example of a [plugin](https://github.com/Brov3r/Avrix/tree/main/example-plugin);
 - Working with the client and server side;
-- Availability of tools for loading and working with Lua scripts;
+- Availability of tools for loading and working
+  with [Lua scripts](https://brov3r.github.io/Avrix/com/avrix/lua/package-summary.html);
 - The ability to easily add plugins by moving the Jar file to the plugins folder;
-- The ability to make changes to the bytecode of the game in runtime (similar to Minecraft Mixin);
-- More than 200 standard and custom events (with documentation) that you can easily subscribe to;
+- The
+  ability [to make changes to the bytecode](https://github.com/Brov3r/Avrix/blob/main/example-plugin/src/main/java/com/avrix/example/patches/PatchGameServer.java)
+  of the game in runtime (similar to Minecraft Mixin);
+- More than 200 standard and custom [events](https://brov3r.github.io/Avrix/com/avrix/events/package-summary.html) (with
+  documentation) that you can easily subscribe to;
 - Custom documented tools for working with game methods;
 - Creating plugins for Avrix is very similar to creating plugins from Minecraft mod loaders (Paper, Fabric, Bukkit,
   etc.);
@@ -41,9 +48,9 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
 ## Self-assembly
 
 1) Clone the repository
-2) Create a Jar file of game dependencies through the Gradle task `createZombieJar`, after specifying the environment
-   variable `ZOMBIE_FOLDER_PATH`
-3) Build the core using the `shadowJar` task
+2) Create a Jar file of game dependencies through the Gradle task `buildZomboidDependencies`, after specifying the
+   environment variables `ZOMBIE_FOLDER_PATH` and `GAME_FOLDER_PATH`
+3) Build the core using the `buildJar` task
 4) Move the created Jar file to the root folder of the server
 5) Copy the [`launch script`](./scripts) to the root folder of the client/server
 6) Run launch script
