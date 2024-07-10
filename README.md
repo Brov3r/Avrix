@@ -6,12 +6,12 @@
     <img alt="PZ Version" src="https://img.shields.io/badge/Project_Zomboid-41.78.16-blue">
     <img alt="Java version" src="https://img.shields.io/badge/Java-17-orange">
     <img alt="Avrix Environment" src="https://img.shields.io/badge/Environment-client/server-green">
+    <a href="https://discord.com/invite/PdYtyJMTZN"><img alt="Discord" src="https://img.shields.io/discord/1248698287997976656"></a>
     <img alt="GitHub License" src="https://img.shields.io/github/license/Brov3r/Avrix">
     <img alt="GitHub issues" src="https://img.shields.io/github/issues-raw/Brov3r/Avrix">
     <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/Brov3r/Avrix">
     <img alt="GitHub Release" src="https://img.shields.io/github/v/release/brov3r/Avrix">
     <img alt="CodeQL" src="https://github.com/Brov3r/Avrix/actions/workflows/codeql.yml/badge.svg">
-
 </p>
 
 **Avrix** - a fundamentally new wrapper for running the Project Zomboid server and client with plugins (modifications).
