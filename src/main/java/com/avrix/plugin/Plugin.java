@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Basic template for implementing the plugin entry point.
@@ -77,23 +79,29 @@ public abstract class Plugin {
      * @param fileName    the name of the configuration file to be copied
      * @param destination the destination file where the configuration will be copied
      */
-    private void copyConfigFromJar(String fileName, File destination) {
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream(fileName);
-             FileOutputStream out = new FileOutputStream(destination)) {
-
-            if (in == null) {
+    public void copyConfigFromJar(String fileName, File destination) {
+        File jarFile = getMetadata().getPluginFile();
+        try (JarFile jar = new JarFile(jarFile)) {
+            JarEntry entry = jar.getJarEntry(fileName);
+            if (entry == null) {
                 System.out.printf("[#] Creating a new config file '%s'%n", destination.getName());
                 return;
             }
 
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                out.write(buffer, 0, bytesRead);
+            try (InputStream in = jar.getInputStream(entry);
+                 FileOutputStream out = new FileOutputStream(destination)) {
+
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+            } catch (IOException e) {
+                System.out.printf("[!] Error when copying config '%s' from plugin JAR archive: %s%n",
+                        fileName, e.getMessage());
             }
-        } catch (Exception e) {
-            System.out.printf("[!] Error when copying config '%s' from plugin Jar archive: '%s'. Error: %s%n",
-                    fileName, getClass().getSimpleName(), e.getMessage());
+        } catch (IOException e) {
+            System.out.printf("[!] Error accessing plugin JAR file: %s%n", e.getMessage());
         }
     }
 
