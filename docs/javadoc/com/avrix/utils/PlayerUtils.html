@@ -106,6 +106,20 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#addItem(zombie.characters.IsoPlayer,java.lang.String,int)" class="member-name-link">addItem</a><wbr>(zombie.characters.IsoPlayer&nbsp;player,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;itemType,
+ int&nbsp;amount)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Adds a specified amount of an item to a player's inventory by its type.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#addItem(zombie.characters.IsoPlayer,zombie.inventory.InventoryItem,int)" class="member-name-link">addItem</a><wbr>(zombie.characters.IsoPlayer&nbsp;player,
+ zombie.inventory.InventoryItem&nbsp;item,
+ int&nbsp;amount)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Adds a specified amount of an item to a player's inventory by its <code>InventoryItem</code>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#addItem(zombie.core.raknet.UdpConnection,java.lang.String,int)" class="member-name-link">addItem</a><wbr>(zombie.core.raknet.UdpConnection&nbsp;connection,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;itemType,
  int&nbsp;amount)</code></div>
@@ -400,6 +414,36 @@ loadScripts(document, 'script');</script>
 <dd><code>userName</code> - The full or partial name of the player to search for.</dd>
 <dt>Returns:</dt>
 <dd>The first <code>IsoPlayer</code> object that matches the given username, or null if no match is found.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="addItem(zombie.characters.IsoPlayer,zombie.inventory.InventoryItem,int)">
+<h3>addItem</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addItem</span><wbr><span class="parameters">(zombie.characters.IsoPlayer&nbsp;player,
+ zombie.inventory.InventoryItem&nbsp;item,
+ int&nbsp;amount)</span></div>
+<div class="block">Adds a specified amount of an item to a player's inventory by its <code>InventoryItem</code>.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>player</code> - the <code>IsoPlayer</code> to add the item to</dd>
+<dd><code>item</code> - the <code>InventoryItem</code> to add</dd>
+<dd><code>amount</code> - the amount of the item to add</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="addItem(zombie.characters.IsoPlayer,java.lang.String,int)">
+<h3>addItem</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addItem</span><wbr><span class="parameters">(zombie.characters.IsoPlayer&nbsp;player,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;itemType,
+ int&nbsp;amount)</span></div>
+<div class="block">Adds a specified amount of an item to a player's inventory by its type.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>player</code> - the <code>IsoPlayer</code> to add the item to</dd>
+<dd><code>itemType</code> - the type of the item to add</dd>
+<dd><code>amount</code> - the amount of the item to add</dd>
 </dl>
 </section>
 </li>

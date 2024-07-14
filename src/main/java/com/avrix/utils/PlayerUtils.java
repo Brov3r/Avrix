@@ -217,6 +217,32 @@ public class PlayerUtils {
     /**
      * Adds a specified amount of an item to a player's inventory by its {@link InventoryItem}.
      *
+     * @param player the {@link IsoPlayer} to add the item to
+     * @param item   the {@link InventoryItem} to add
+     * @param amount the amount of the item to add
+     */
+    public static void addItem(IsoPlayer player, InventoryItem item, int amount) {
+        if (player == null) return;
+        
+        addItem(getUdpConnectionByPlayer(player), item, amount);
+    }
+
+    /**
+     * Adds a specified amount of an item to a player's inventory by its type.
+     *
+     * @param player   the {@link IsoPlayer} to add the item to
+     * @param itemType the type of the item to add
+     * @param amount   the amount of the item to add
+     */
+    public static void addItem(IsoPlayer player, String itemType, int amount) {
+        if (player == null) return;
+
+        addItem(getUdpConnectionByPlayer(player), itemType, amount);
+    }
+
+    /**
+     * Adds a specified amount of an item to a player's inventory by its {@link InventoryItem}.
+     *
      * @param connection the player's connection
      * @param item       the {@link InventoryItem} to add
      * @param amount     the amount of the item to add
