@@ -422,6 +422,9 @@ public class PlayerUtils {
 
         EventManager.invokeEvent("onPlayerBan", connection, "Console", reason);
 
+        System.out.printf("[!] Player `%s` (IP: %s, SteamID: %s) was banned from this server for the following reason: `%s`%n",
+                connection.username, connection.ip, connection.steamID, reason);
+        
         ServerWorldDatabase.instance.addUserlog(connection.username, Userlog.UserlogType.Banned, reason, "Server", 1);
 
         banByName(connection);
@@ -431,9 +434,6 @@ public class PlayerUtils {
         if (banIP) banByIP(connection, reason);
 
         String kickMessage = String.format("[!] You have been banned from this server for the following reason: `%s`", reason);
-        
-        System.out.printf("[!] Player `%s` (IP: %s, SteamID: %s) was banned from this server for the following reason: `%s`%n",
-                connection.username, connection.ip, connection.steamID, reason);
 
         GameServer.kick(connection, kickMessage, null);
         connection.forceDisconnect("command-ban-ip");
