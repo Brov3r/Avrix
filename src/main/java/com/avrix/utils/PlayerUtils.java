@@ -223,7 +223,7 @@ public class PlayerUtils {
      */
     public static void addItem(IsoPlayer player, InventoryItem item, int amount) {
         if (player == null) return;
-        
+
         addItem(getUdpConnectionByPlayer(player), item, amount);
     }
 
@@ -305,6 +305,28 @@ public class PlayerUtils {
         if (player == null) return;
 
         removeItem(getUdpConnectionByPlayer(player), itemId);
+    }
+
+    /**
+     * Removes the specified item from a player's inventory.
+     *
+     * @param player the {@link IsoPlayer} from whom the item is to be removed
+     * @param item   the {@link InventoryItem} to be removed
+     */
+    public static void removeItem(IsoPlayer player, InventoryItem item) {
+        if (player == null) return;
+        removeItem(player, item.getFullType());
+    }
+
+    /**
+     * Removes the specified item from a player's inventory.
+     *
+     * @param connection the {@link UdpConnection} of the player from whom the item is to be removed
+     * @param item       the {@link InventoryItem} to be removed
+     */
+    public static void removeItem(UdpConnection connection, InventoryItem item) {
+        if (connection == null) return;
+        removeItem(connection, item.getFullType());
     }
 
     /**
