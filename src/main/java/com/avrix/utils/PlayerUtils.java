@@ -254,9 +254,9 @@ public class PlayerUtils {
         PacketTypes.PacketType.AddItemInInventory.send(connection);
 
         System.out.printf("[#] The item '%s' has been added to '%s' inventory in the amount of '%s'%n", player.getUsername(), itemType, amount);
-        LoggerManager.getLogger("admin").write("Console added item " + itemType + " in " + player.getUsername() + "'s inventory");
+        LoggerManager.getLogger("admin").write("Console added item " + itemType + " in " + player.getUsername() + "'s inventory in the amount of " + amount);
     }
-    
+
     /**
      * Removes an item from a player's inventory by its type.
      *
