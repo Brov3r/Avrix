@@ -387,11 +387,12 @@ public class PlayerUtils {
         EventManager.invokeEvent("onPlayerKick", connection, "Console", reason);
 
         String kickMessage = String.format("[!] You have been kicked from this server by `%s`", reason);
-        GameServer.kick(connection, kickMessage, null);
-        connection.forceDisconnect("command-kick");
 
         System.out.printf("[!] Player `%s` (IP: %s, SteamID: %s) was kicked from this server for the following reason: `%s`%n",
                 connection.steamID, connection.ip, connection.steamID, reason);
+
+        GameServer.kick(connection, kickMessage, null);
+        connection.forceDisconnect("command-kick");
     }
 
     /**
@@ -430,11 +431,12 @@ public class PlayerUtils {
         if (banIP) banByIP(connection, reason);
 
         String kickMessage = String.format("[!] You have been banned from this server for the following reason: `%s`", reason);
-        GameServer.kick(connection, kickMessage, null);
-        connection.forceDisconnect("command-ban-ip");
-
+        
         System.out.printf("[!] Player `%s` (IP: %s, SteamID: %s) was banned from this server for the following reason: `%s`%n",
                 connection.username, connection.ip, connection.steamID, reason);
+
+        GameServer.kick(connection, kickMessage, null);
+        connection.forceDisconnect("command-ban-ip");
     }
 
     /**
