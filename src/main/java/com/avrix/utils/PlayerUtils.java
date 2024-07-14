@@ -8,11 +8,14 @@ import zombie.core.logger.LoggerManager;
 import zombie.core.network.ByteBufferWriter;
 import zombie.core.raknet.UdpConnection;
 import zombie.core.znet.SteamUtils;
+import zombie.inventory.InventoryItem;
 import zombie.network.GameServer;
 import zombie.network.PacketTypes;
 import zombie.network.ServerWorldDatabase;
 import zombie.network.Userlog;
 import zombie.network.chat.ChatServer;
+import zombie.scripting.ScriptManager;
+import zombie.scripting.objects.Item;
 
 import java.sql.SQLException;
 
@@ -212,6 +215,49 @@ public class PlayerUtils {
     }
 
     /**
+     * Adds a specified amount of an item to a player's inventory by its {@link InventoryItem}.
+     *
+     * @param connection the player's connection
+     * @param item       the {@link InventoryItem} to add
+     * @param amount     the amount of the item to add
+     */
+    public static void addItem(UdpConnection connection, InventoryItem item, int amount) {
+        addItem(connection, item.getFullType(), amount);
+    }
+
+    /**
+     * Adds a specified amount of an item to a player's inventory by its type.
+     *
+     * @param connection the player's {@link UdpConnection}
+     * @param itemType   the type of the item to add
+     * @param amount     the amount of the item to add
+     */
+    public static void addItem(UdpConnection connection, String itemType, int amount) {
+        if (connection == null) return;
+
+        IsoPlayer player = getPlayerByUdpConnection(connection);
+
+        if (player == null) return;
+
+        Item item = ScriptManager.instance.FindItem(itemType);
+
+        if (item == null) {
+            System.out.printf("[!] Cannot add item for player '%s' because ID '%s' does not exist!%n", connection.username, itemType);
+            return;
+        }
+
+        ByteBufferWriter byteBufferWriter = connection.startPacket();
+        PacketTypes.PacketType.AddItemInInventory.doPacket(byteBufferWriter);
+        byteBufferWriter.putShort(player.OnlineID);
+        byteBufferWriter.putUTF(itemType);
+        byteBufferWriter.putInt(amount);
+        PacketTypes.PacketType.AddItemInInventory.send(connection);
+
+        System.out.printf("[#] The item '%s' has been added to '%s' inventory in the amount of '%s'%n", player.getUsername(), itemType, amount);
+        LoggerManager.getLogger("admin").write("Console added item " + itemType + " in " + player.getUsername() + "'s inventory");
+    }
+    
+    /**
      * Removes an item from a player's inventory by its type.
      *
      * @param player   the {@link IsoPlayer} instance
@@ -351,7 +397,7 @@ public class PlayerUtils {
      */
     private static void banBySteamID(UdpConnection connection, String reason) {
         String steamID = SteamUtils.convertSteamIDToString(connection.steamID);
-        
+
         try {
             ServerWorldDatabase.instance.banSteamID(steamID, reason, true);
         } catch (SQLException e) {

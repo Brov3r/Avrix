@@ -3,6 +3,7 @@
 - Updated player ban and kick events
 - Added new methods for banning and kicking players
 - Added methods for removing items from players' inventories
+- Added a method to add items to the player's inventory
 
 # AvrixLoader v1.2.1
 
