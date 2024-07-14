@@ -1,3 +1,9 @@
+# AvrixLoader v1.3.0
+
+- Updated player ban and kick events
+- Added new methods for banning and kicking players
+- Added methods for removing items from players' inventories
+
 # AvrixLoader v1.2.1
 
 - Fixed copying configs from the plugin archive

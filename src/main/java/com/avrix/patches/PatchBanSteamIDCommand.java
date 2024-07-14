@@ -2,7 +2,6 @@ package com.avrix.patches;
 
 import com.avrix.agent.ClassTransformer;
 import com.avrix.events.EventManager;
-import com.avrix.utils.PlayerUtils;
 import javassist.CannotCompileException;
 import javassist.expr.ExprEditor;
 import javassist.expr.MethodCall;
@@ -30,11 +29,8 @@ public class PatchBanSteamIDCommand extends ClassTransformer {
                     public void edit(MethodCall m) throws CannotCompileException {
                         if (m.getClassName().equals("zombie.core.raknet.UdpConnection") && m.getMethodName().equals("forceDisconnect")) {
                             String code = "{ "
-                                    + "zombie.characters.IsoPlayer player = " + PlayerUtils.class.getName() + ".getPlayerByUdpConnection($0);"
                                     + "java.lang.String adminName = this.getExecutorUsername().isEmpty() ? \"Console\" : this.getExecutorUsername();"
-                                    + "if (player != null) {"
-                                    + EventManager.class.getName() + ".invokeEvent(\"onPlayerBan\", new Object[]{player, adminName, \"\"});"
-                                    + "}"
+                                    + EventManager.class.getName() + ".invokeEvent(\"onPlayerBan\", new Object[]{$0, adminName, \"\"});"
                                     + "$proceed($$);"
                                     + "}";
                             m.replace(code);

@@ -1,6 +1,6 @@
 package com.avrix.events;
 
-import zombie.characters.IsoPlayer;
+import zombie.core.raknet.UdpConnection;
 
 /**
  * Triggered when the player ban command is called.
@@ -19,9 +19,9 @@ public abstract class OnPlayerBanEvent extends Event {
     /**
      * Called Event Handling Method
      *
-     * @param player    An object of the player who was banned.
-     * @param adminName Nickname of the administrator who banned the player
-     * @param reason    Reason for blocking the player.
+     * @param connection Connecting a player who has been banned.
+     * @param adminName  Nickname of the administrator who banned the player
+     * @param reason     Reason for blocking the player.
      */
-    public abstract void handleEvent(IsoPlayer player, String adminName, String reason);
+    public abstract void handleEvent(UdpConnection connection, String adminName, String reason);
 }

@@ -5,9 +5,11 @@ import com.avrix.events.EventManager;
 import zombie.characters.IsoPlayer;
 import zombie.commands.PlayerType;
 import zombie.core.logger.LoggerManager;
+import zombie.core.network.ByteBufferWriter;
 import zombie.core.raknet.UdpConnection;
 import zombie.core.znet.SteamUtils;
 import zombie.network.GameServer;
+import zombie.network.PacketTypes;
 import zombie.network.ServerWorldDatabase;
 import zombie.network.Userlog;
 import zombie.network.chat.ChatServer;
@@ -121,7 +123,7 @@ public class PlayerUtils {
      * Getting a player's instance on his connection
      *
      * @param udpConnection player connection
-     * @return player instance or null if player not found
+     * @return {@link IsoPlayer} instance or null if player not found
      */
     public static IsoPlayer getPlayerByUdpConnection(UdpConnection udpConnection) {
         return getPlayerByUsername(udpConnection.username);
@@ -131,7 +133,7 @@ public class PlayerUtils {
      * Getting a player's connection based on his character
      *
      * @param player player instance
-     * @return the player's connection, or null if there is none
+     * @return the player's {@link UdpConnection}, or null if there is none
      */
     public static UdpConnection getUdpConnectionByPlayer(IsoPlayer player) {
         return GameServer.getConnectionFromPlayer(player);
@@ -164,7 +166,7 @@ public class PlayerUtils {
      * Getting a player instance by nickname
      *
      * @param username player nickname
-     * @return IsoPlayer instance, or null if not found
+     * @return {@link IsoPlayer}  instance, or null if not found
      */
     public static IsoPlayer getPlayerByUsername(String username) {
         for (int connectionIndex = 0; connectionIndex < GameServer.udpEngine.connections.size(); ++connectionIndex) {
@@ -187,7 +189,7 @@ public class PlayerUtils {
      * Searches for a player by a full or partial username.
      *
      * @param userName The full or partial name of the player to search for.
-     * @return The first IsoPlayer object that matches the given username, or null if no match is found.
+     * @return The first {@link IsoPlayer} object that matches the given username, or null if no match is found.
      */
     public static IsoPlayer getPlayerByPartialUsername(String userName) {
         for (int connectionIndex = 0; connectionIndex < GameServer.udpEngine.connections.size(); ++connectionIndex) {
@@ -210,69 +212,146 @@ public class PlayerUtils {
     }
 
     /**
-     * Kick a player from the server
+     * Removes an item from a player's inventory by its type.
      *
-     * @param player Player instance
-     * @param reason kick reason
+     * @param player   the {@link IsoPlayer} instance
+     * @param itemType the type of item to remove
+     */
+    public static void removeItem(IsoPlayer player, String itemType) {
+        if (player == null) return;
+
+        removeItem(getUdpConnectionByPlayer(player), itemType);
+    }
+
+    /**
+     * Removes an item from a player's inventory by its ID.
+     *
+     * @param player the {@link IsoPlayer} instance
+     * @param itemId the ID of the item to remove
+     */
+    public static void removeItem(IsoPlayer player, int itemId) {
+        if (player == null) return;
+
+        removeItem(getUdpConnectionByPlayer(player), itemId);
+    }
+
+    /**
+     * Removes an item from a player's inventory by its type.
+     *
+     * @param connection the player's {@link UdpConnection}
+     * @param itemType   the type of item to remove
+     */
+    public static void removeItem(UdpConnection connection, String itemType) {
+        if (connection == null) return;
+
+        ByteBufferWriter byteBufferWriter = connection.startPacket();
+        PacketTypes.PacketType.InvMngReqItem.doPacket(byteBufferWriter);
+        byteBufferWriter.putByte((byte) 1);
+        byteBufferWriter.putUTF(itemType);
+        byteBufferWriter.putShort((byte) -1);
+        PacketTypes.PacketType.InvMngReqItem.send(connection);
+    }
+
+    /**
+     * Removes an item from a player's inventory by its ID.
+     *
+     * @param connection the player's {@link UdpConnection}
+     * @param itemId     the ID of the item to remove
+     */
+    public static void removeItem(UdpConnection connection, int itemId) {
+        if (connection == null) return;
+
+        ByteBufferWriter byteBufferWriter = connection.startPacket();
+        PacketTypes.PacketType.InvMngReqItem.doPacket(byteBufferWriter);
+        byteBufferWriter.putByte((byte) 0);
+        byteBufferWriter.putInt(itemId);
+        byteBufferWriter.putShort((byte) -1);
+        PacketTypes.PacketType.InvMngReqItem.send(connection);
+    }
+
+    /**
+     * Kicks a player from the server.
+     *
+     * @param player the {@link IsoPlayer} instance
+     * @param reason the reason for kicking the player
      */
     public static void kickPlayer(IsoPlayer player, String reason) {
         if (player == null) return;
 
-        UdpConnection playerConnection = getUdpConnectionByPlayer(player);
-
-        if (playerConnection == null) return;
-
-        EventManager.invokeEvent("onPlayerKick", player, "Console", reason);
-
-        String kickMessage = String.format("[!] You have been kicked from this server by `%s`", reason);
-        GameServer.kick(playerConnection, kickMessage, null);
-        playerConnection.forceDisconnect("command-kick");
-
-        System.out.printf("[!] Player `%s` (IP: %s, SteamID: %s) was kicked from this server for the following reason: `%s`%n",
-                player.getDisplayName(), playerConnection.ip, player.getSteamID(), reason);
+        kickPlayer(getUdpConnectionByPlayer(player), reason);
     }
 
     /**
-     * Blocking a user by nickname, IP and/or SteamID
+     * Kicks a player from the server.
      *
-     * @param player     Player instance
-     * @param reason     Reason for blocking
-     * @param banIP      flag whether to block by IP
-     * @param banSteamID flag whether to block by SteamID
+     * @param connection the player's {@link UdpConnection}
+     * @param reason     the reason for kicking the player
+     */
+    public static void kickPlayer(UdpConnection connection, String reason) {
+        if (connection == null) return;
+
+        EventManager.invokeEvent("onPlayerKick", connection, "Console", reason);
+
+        String kickMessage = String.format("[!] You have been kicked from this server by `%s`", reason);
+        GameServer.kick(connection, kickMessage, null);
+        connection.forceDisconnect("command-kick");
+
+        System.out.printf("[!] Player `%s` (IP: %s, SteamID: %s) was kicked from this server for the following reason: `%s`%n",
+                connection.steamID, connection.ip, connection.steamID, reason);
+    }
+
+    /**
+     * Bans a player from the server.
+     *
+     * @param player     the {@link IsoPlayer} instance
+     * @param reason     the reason for banning the player
+     * @param banIP      whether to ban the player's IP address
+     * @param banSteamID whether to ban the player's SteamID
      */
     public static void banPlayer(IsoPlayer player, String reason, boolean banIP, boolean banSteamID) {
         if (player == null) return;
 
-        UdpConnection playerConnection = getUdpConnectionByPlayer(player);
-
-        if (playerConnection == null) return;
-
-        EventManager.invokeEvent("onPlayerBan", player, "Console", reason);
-
-        ServerWorldDatabase.instance.addUserlog(player.getUsername(), Userlog.UserlogType.Banned, reason, "Server", 1);
-
-        banByName(player);
-
-        if (SteamUtils.isSteamModeEnabled() && banSteamID) banBySteamID(player, reason);
-
-        if (banIP) banByIP(playerConnection, player, reason);
-
-        String kickMessage = String.format("[!] You have been banned from this server for the following reason: `%s`", reason);
-        GameServer.kick(playerConnection, kickMessage, null);
-        playerConnection.forceDisconnect("command-ban-ip");
-
-        System.out.printf("[!] Player `%s` (IP: %s, SteamID: %s) was banned from this server for the following reason: `%s`%n",
-                player.getDisplayName(), playerConnection.ip, player.getSteamID(), reason);
+        banPlayer(getUdpConnectionByPlayer(player), reason, banIP, banSteamID);
     }
 
     /**
-     * Blocks a player by SteamID
+     * Bans a player from the server.
      *
-     * @param player Player to block
-     * @param reason Reason for blocking
+     * @param connection the player's {@link UdpConnection}
+     * @param reason     the reason for banning the player
+     * @param banIP      whether to ban the player's IP address
+     * @param banSteamID whether to ban the player's SteamID
      */
-    private static void banBySteamID(IsoPlayer player, String reason) {
-        String steamID = SteamUtils.convertSteamIDToString(player.getSteamID());
+    public static void banPlayer(UdpConnection connection, String reason, boolean banIP, boolean banSteamID) {
+        if (connection == null) return;
+
+        EventManager.invokeEvent("onPlayerBan", connection, "Console", reason);
+
+        ServerWorldDatabase.instance.addUserlog(connection.username, Userlog.UserlogType.Banned, reason, "Server", 1);
+
+        banByName(connection);
+
+        if (SteamUtils.isSteamModeEnabled() && banSteamID) banBySteamID(connection, reason);
+
+        if (banIP) banByIP(connection, reason);
+
+        String kickMessage = String.format("[!] You have been banned from this server for the following reason: `%s`", reason);
+        GameServer.kick(connection, kickMessage, null);
+        connection.forceDisconnect("command-ban-ip");
+
+        System.out.printf("[!] Player `%s` (IP: %s, SteamID: %s) was banned from this server for the following reason: `%s`%n",
+                connection.username, connection.ip, connection.steamID, reason);
+    }
+
+    /**
+     * Bans a player by their SteamID.
+     *
+     * @param connection the player's {@link UdpConnection}
+     * @param reason     the reason for banning the player
+     */
+    private static void banBySteamID(UdpConnection connection, String reason) {
+        String steamID = SteamUtils.convertSteamIDToString(connection.steamID);
+        
         try {
             ServerWorldDatabase.instance.banSteamID(steamID, reason, true);
         } catch (SQLException e) {
@@ -283,28 +362,27 @@ public class PlayerUtils {
     /**
      * Blocks a player by IP address.
      *
-     * @param playerConnection Connecting the player to the server.
-     * @param player           The player to block.
-     * @param reason           Reason for blocking.
+     * @param playerConnection the player's {@link UdpConnection} to the server
+     * @param reason           the reason for blocking the player
      */
-    private static void banByIP(UdpConnection playerConnection, IsoPlayer player, String reason) {
+    private static void banByIP(UdpConnection playerConnection, String reason) {
         try {
-            ServerWorldDatabase.instance.banIp(playerConnection.ip, player.getUsername(), reason, true);
+            ServerWorldDatabase.instance.banIp(playerConnection.ip, playerConnection.username, reason, true);
         } catch (SQLException e) {
             System.out.printf("[!] Error while ban IP: '%s', error: %s%n", playerConnection.ip, e);
         }
     }
 
     /**
-     * Blocks a player by username.
+     * Bans a player by their username.
      *
-     * @param player The player to block.
+     * @param connection the player's {@link UdpConnection}
      */
-    private static void banByName(IsoPlayer player) {
+    private static void banByName(UdpConnection connection) {
         try {
-            ServerWorldDatabase.instance.banUser(player.getUsername(), true);
+            ServerWorldDatabase.instance.banUser(connection.username, true);
         } catch (SQLException e) {
-            System.out.printf("[!] Error while ban user: '%s', error: %s%n", player.getUsername(), e);
+            System.out.printf("[!] Error while ban user: '%s', error: %s%n", connection.username, e);
         }
     }
 }
