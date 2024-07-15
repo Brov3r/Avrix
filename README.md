@@ -21,7 +21,7 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
 
 # Features
 
-- Availability of [JavaDoc](https://brov3r.github.io/Avrix/);
+- Availability of [JavaDoc](https://brov3r.github.io/Avrix/), [Wiki](https://github.com/Brov3r/Avrix/wiki);
 - Example of a [plugin](https://github.com/Brov3r/Avrix/tree/main/example-plugin);
 - Working with the client and server side;
 - Availability of tools for loading and working
