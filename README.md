@@ -51,7 +51,7 @@ install [JDK 17 or higher](https://www.oracle.com/java/technologies/downloads/).
 2) Create a Jar file of game dependencies through the Gradle task `buildZomboidDependencies`, after specifying the
    environment variables `ZOMBIE_FOLDER_PATH` and `GAME_FOLDER_PATH`
 3) Build the Jar file using the `buildJar` task
-4) Move the created Jar file to the root folder of the server
+4) Move the created Jar file to the root folder of the client/server
 5) Copy the [`launch script`](./scripts) to the root folder of the client/server
 6) Run launch script
 
