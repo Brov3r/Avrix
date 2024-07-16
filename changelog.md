@@ -1,3 +1,8 @@
+# AvrixLoader v1.4.0
+
+- Launch scripts updated
+- Added `.exe` executable files for Windows, allowing launch from Steam
+
 # AvrixLoader v1.3.0
 
 - Updated player ban and kick events

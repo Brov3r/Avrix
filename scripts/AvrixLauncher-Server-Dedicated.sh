@@ -34,10 +34,10 @@ JSIG="libjsig.so"
 
 if [ "$osArchitecture" = "x64" ]; then
     libraryPath="linux64/:natives/"
-    javaOptions="-XX:+UseZGC -Xms8g -Xmx8g"
+    javaOptions="-XX:+UseZGC -Xmx16g"
 else
     libraryPath="linux32/:natives/"
-    javaOptions="-XX:+UseG1GC -Xms768m -Xmx768m"
+    javaOptions="-XX:+UseG1GC -Xmx1200m"
 fi
 
 # Checking the presence of the necessary directories

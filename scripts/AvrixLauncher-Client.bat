@@ -48,24 +48,23 @@ if "%osArchitecture%"=="x64" (
 :checkingFolders
 rem Check the availability of the necessary folders
 echo [Avrix-Launcher] Checking the client directory...
-if not exist "win32" goto clientNotFound
-if not exist "win64" goto clientNotFound
-if not exist "jre" goto clientNotFound
-if not exist "jre64" goto clientNotFound
 if not exist "zombie" goto clientNotFound
+if not exist "se" goto clientNotFound
+if not exist "fmod" goto clientNotFound
+if not exist "javax" goto clientNotFound
 
 echo [Avrix-Launcher] The client directory has been confirmed.
 goto chooseSteam
 
 :clientNotFound
 echo [Avrix-Launcher] The necessary folders were not found!
-echo [Avrix-Launcher] Move core jar file and this script to the root folder of your server and try again.
+echo [Avrix-Launcher] Move core jar file and this script to the root folder of your game and try again.
 pause
 exit /b
 
 rem Choosing the Steam mode
 :chooseSteam
-set /p steamMode="[Avrix-Launcher] Use Steam mode (0 - without Steam; 1 - with Steam): "
+set /p steamMode="[Avrix-Launcher] Use Steam mode? (0 - without Steam; 1 - with Steam): "
 if "%steamMode%"=="1" (
     set "steamOption=yes"
 ) else if "%steamMode%"=="0" (

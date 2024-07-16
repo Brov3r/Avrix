@@ -48,18 +48,17 @@ if "%osArchitecture%"=="x64" (
 :checkingFolders
 rem Check the availability of the necessary folders
 echo [Avrix-Launcher] Checking the client directory...
-if not exist "win32" goto clientNotFound
-if not exist "win64" goto clientNotFound
-if not exist "jre" goto clientNotFound
-if not exist "jre64" goto clientNotFound
 if not exist "zombie" goto clientNotFound
+if not exist "se" goto clientNotFound
+if not exist "fmod" goto clientNotFound
+if not exist "javax" goto clientNotFound
 
 echo [Avrix-Launcher] The client directory has been confirmed.
 goto launchApp
 
 :clientNotFound
 echo [Avrix-Launcher] The necessary folders were not found!
-echo [Avrix-Launcher] Move core jar file and this script to the root folder of your server and try again.
+echo [Avrix-Launcher] Move core jar file and this script to the root folder of your game and try again.
 pause
 exit /b
 
