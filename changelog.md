@@ -2,6 +2,7 @@
 
 - Launch scripts updated
 - Added `.exe` executable files for Windows, allowing launch from Steam
+- Added new logging system `TinyLog2`
 
 # AvrixLoader v1.3.0
 

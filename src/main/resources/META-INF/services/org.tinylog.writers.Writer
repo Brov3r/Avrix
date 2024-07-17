@@ -1,0 +1,2 @@
+com.avrix.logs.IsolatedConsoleWriter
+org.tinylog.writers.RollingFileWriter

@@ -55,6 +55,7 @@ loadScripts(document, 'script');</script>
 <li><a href="com/avrix/commands/package-tree.html">com.avrix.commands</a>, </li>
 <li><a href="com/avrix/enums/package-tree.html">com.avrix.enums</a>, </li>
 <li><a href="com/avrix/events/package-tree.html">com.avrix.events</a>, </li>
+<li><a href="com/avrix/logs/package-tree.html">com.avrix.logs</a>, </li>
 <li><a href="com/avrix/lua/package-tree.html">com.avrix.lua</a>, </li>
 <li><a href="com/avrix/patches/package-tree.html">com.avrix.patches</a>, </li>
 <li><a href="com/avrix/plugin/package-tree.html">com.avrix.plugin</a>, </li>
@@ -66,6 +67,19 @@ loadScripts(document, 'script');</script>
 <ul>
 <li class="circle">java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" class="type-name-link external-link" title="class or interface in java.lang">Object</a>
 <ul>
+<li class="circle">org.tinylog.writers.AbstractWriter (implements org.tinylog.writers.Writer)
+<ul>
+<li class="circle">org.tinylog.writers.AbstractFileBasedWriter
+<ul>
+<li class="circle">org.tinylog.writers.AbstractFormatPatternWriter
+<ul>
+<li class="circle">com.avrix.logs.<a href="com/avrix/logs/IsolatedConsoleWriter.html" class="type-name-link" title="class in com.avrix.logs">IsolatedConsoleWriter</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="circle">com.avrix.agent.<a href="com/avrix/agent/Agent.html" class="type-name-link" title="class in com.avrix.agent">Agent</a></li>
 <li class="circle">com.avrix.agent.<a href="com/avrix/agent/AgentLoader.html" class="type-name-link" title="class in com.avrix.agent">AgentLoader</a></li>
 <li class="circle">com.avrix.agent.<a href="com/avrix/agent/AgentManager.html" class="type-name-link" title="class in com.avrix.agent">AgentManager</a></li>
@@ -337,6 +351,11 @@ loadScripts(document, 'script');</script>
 <li class="circle">com.avrix.lua.<a href="com/avrix/lua/LuaManager.html" class="type-name-link" title="class in com.avrix.lua">LuaManager</a></li>
 <li class="circle">com.avrix.plugin.<a href="com/avrix/plugin/Metadata.html" class="type-name-link" title="class in com.avrix.plugin">Metadata</a></li>
 <li class="circle">com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" class="type-name-link" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></li>
+<li class="circle">java.io.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/OutputStream.html" class="type-name-link external-link" title="class or interface in java.io">OutputStream</a> (implements java.io.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/Closeable.html" title="class or interface in java.io" class="external-link">Closeable</a>, java.io.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/Flushable.html" title="class or interface in java.io" class="external-link">Flushable</a>)
+<ul>
+<li class="circle">com.avrix.logs.<a href="com/avrix/logs/LineReadingOutputStream.html" class="type-name-link" title="class in com.avrix.logs">LineReadingOutputStream</a></li>
+</ul>
+</li>
 <li class="circle">com.avrix.utils.<a href="com/avrix/utils/PatchUtils.html" class="type-name-link" title="class in com.avrix.utils">PatchUtils</a></li>
 <li class="circle">com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" class="type-name-link" title="class in com.avrix.utils">PlayerUtils</a></li>
 <li class="circle">com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" class="type-name-link" title="class in com.avrix.plugin">Plugin</a></li>

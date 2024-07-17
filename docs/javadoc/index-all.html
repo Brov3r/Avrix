@@ -236,6 +236,14 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Client environment.</div>
 </dd>
+<dt><a href="com/avrix/logs/IsolatedConsoleWriter.html#close()" class="member-name-link">close()</a> - Method in class com.avrix.logs.<a href="com/avrix/logs/IsolatedConsoleWriter.html" title="class in com.avrix.logs">IsolatedConsoleWriter</a></dt>
+<dd>
+<div class="block">Closes both the standard output and error streams.</div>
+</dd>
+<dt><a href="com/avrix/logs/LineReadingOutputStream.html#close()" class="member-name-link">close()</a> - Method in class com.avrix.logs.<a href="com/avrix/logs/LineReadingOutputStream.html" title="class in com.avrix.logs">LineReadingOutputStream</a></dt>
+<dd>
+<div class="block">Closes this output stream and flushes any accumulated data if present.</div>
+</dd>
 <dt><a href="com/avrix/package-summary.html">com.avrix</a> - package com.avrix</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/agent/package-summary.html">com.avrix.agent</a> - package com.avrix.agent</dt>
@@ -245,6 +253,8 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/enums/package-summary.html">com.avrix.enums</a> - package com.avrix.enums</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/events/package-summary.html">com.avrix.events</a> - package com.avrix.events</dt>
+<dd>&nbsp;</dd>
+<dt><a href="com/avrix/logs/package-summary.html">com.avrix.logs</a> - package com.avrix.logs</dt>
 <dd>&nbsp;</dd>
 <dt><a href="com/avrix/lua/package-summary.html">com.avrix.lua</a> - package com.avrix.lua</dt>
 <dd>&nbsp;</dd>
@@ -401,6 +411,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/plugin/PluginClassLoader.html#findLoaded(java.lang.String)" class="member-name-link">findLoaded(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/PluginClassLoader.html" title="class in com.avrix.plugin">PluginClassLoader</a></dt>
 <dd>
 <div class="block">Finds a loaded class by name.</div>
+</dd>
+<dt><a href="com/avrix/logs/IsolatedConsoleWriter.html#flush()" class="member-name-link">flush()</a> - Method in class com.avrix.logs.<a href="com/avrix/logs/IsolatedConsoleWriter.html" title="class in com.avrix.logs">IsolatedConsoleWriter</a></dt>
+<dd>
+<div class="block">Flushes both the standard output and error streams.</div>
 </dd>
 <dt><a href="com/avrix/enums/AccessLevel.html#fromString(java.lang.String)" class="member-name-link">fromString(String)</a> - Static method in enum class com.avrix.enums.<a href="com/avrix/enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a></dt>
 <dd>
@@ -1561,6 +1575,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Getting a map of registered user commands</div>
 </dd>
+<dt><a href="com/avrix/logs/IsolatedConsoleWriter.html#getRequiredLogEntryValues()" class="member-name-link">getRequiredLogEntryValues()</a> - Method in class com.avrix.logs.<a href="com/avrix/logs/IsolatedConsoleWriter.html" title="class in com.avrix.logs">IsolatedConsoleWriter</a></dt>
+<dd>
+<div class="block">Returns the collection of log entry values required by this writer.</div>
+</dd>
 <dt><a href="com/avrix/enums/AccessLevel.html#getRoleName()" class="member-name-link">getRoleName()</a> - Method in enum class com.avrix.enums.<a href="com/avrix/enums/AccessLevel.html" title="enum class in com.avrix.enums">AccessLevel</a></dt>
 <dd>
 <div class="block">Returns the name of this access level.</div>
@@ -2583,6 +2601,18 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Checks if the YAML file is empty.</div>
 </dd>
+<dt><a href="com/avrix/logs/IsolatedConsoleWriter.html" class="type-name-link" title="class in com.avrix.logs">IsolatedConsoleWriter</a> - Class in <a href="com/avrix/logs/package-summary.html">com.avrix.logs</a></dt>
+<dd>
+<div class="block">Console writer for Tinylog that redirects logging to isolated streams.</div>
+</dd>
+<dt><a href="com/avrix/logs/IsolatedConsoleWriter.html#%3Cinit%3E()" class="member-name-link">IsolatedConsoleWriter()</a> - Constructor for class com.avrix.logs.<a href="com/avrix/logs/IsolatedConsoleWriter.html" title="class in com.avrix.logs">IsolatedConsoleWriter</a></dt>
+<dd>
+<div class="block">Constructs a new IsolatedConsoleWriter with default properties.</div>
+</dd>
+<dt><a href="com/avrix/logs/IsolatedConsoleWriter.html#%3Cinit%3E(java.util.Map)" class="member-name-link">IsolatedConsoleWriter(Map&lt;String, String&gt;)</a> - Constructor for class com.avrix.logs.<a href="com/avrix/logs/IsolatedConsoleWriter.html" title="class in com.avrix.logs">IsolatedConsoleWriter</a></dt>
+<dd>
+<div class="block">Constructs a new IsolatedConsoleWriter with custom properties.</div>
+</dd>
 <dt><a href="com/avrix/utils/IsoObjectUtils.html" class="type-name-link" title="class in com.avrix.utils">IsoObjectUtils</a> - Class in <a href="com/avrix/utils/package-summary.html">com.avrix.utils</a></dt>
 <dd>
 <div class="block">A set of tools for working with isometric objects</div>
@@ -2616,6 +2646,15 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#license(java.lang.String)" class="member-name-link">license(String)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
 <dd>
 <div class="block">Sets the license of the plugin.</div>
+</dd>
+<dt><a href="com/avrix/logs/LineReadingOutputStream.html" class="type-name-link" title="class in com.avrix.logs">LineReadingOutputStream</a> - Class in <a href="com/avrix/logs/package-summary.html">com.avrix.logs</a></dt>
+<dd>
+<div class="block">An OutputStream implementation that reads byte arrays, interprets them as lines of text,
+ and processes each line based on specific rules for logging or consumption.</div>
+</dd>
+<dt><a href="com/avrix/logs/LineReadingOutputStream.html#%3Cinit%3E(java.util.function.Consumer)" class="member-name-link">LineReadingOutputStream(Consumer&lt;String&gt;)</a> - Constructor for class com.avrix.logs.<a href="com/avrix/logs/LineReadingOutputStream.html" title="class in com.avrix.logs">LineReadingOutputStream</a></dt>
+<dd>
+<div class="block">Constructs a LineReadingOutputStream with the specified consumer.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#load(java.io.File)" class="member-name-link">load(File)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -4606,6 +4645,18 @@ the order they are declared.</div>
 </dd>
 <dt><a href="com/avrix/utils/WindowUtils.html#%3Cinit%3E()" class="member-name-link">WindowUtils()</a> - Constructor for class com.avrix.utils.<a href="com/avrix/utils/WindowUtils.html" title="class in com.avrix.utils">WindowUtils</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/logs/LineReadingOutputStream.html#write(byte%5B%5D,int,int)" class="member-name-link">write(byte[], int, int)</a> - Method in class com.avrix.logs.<a href="com/avrix/logs/LineReadingOutputStream.html" title="class in com.avrix.logs">LineReadingOutputStream</a></dt>
+<dd>
+<div class="block">Writes a portion of a byte array to this output stream.</div>
+</dd>
+<dt><a href="com/avrix/logs/LineReadingOutputStream.html#write(int)" class="member-name-link">write(int)</a> - Method in class com.avrix.logs.<a href="com/avrix/logs/LineReadingOutputStream.html" title="class in com.avrix.logs">LineReadingOutputStream</a></dt>
+<dd>
+<div class="block">Writes a single byte to this output stream.</div>
+</dd>
+<dt><a href="com/avrix/logs/IsolatedConsoleWriter.html#write(org.tinylog.core.LogEntry)" class="member-name-link">write(LogEntry)</a> - Method in class com.avrix.logs.<a href="com/avrix/logs/IsolatedConsoleWriter.html" title="class in com.avrix.logs">IsolatedConsoleWriter</a></dt>
+<dd>
+<div class="block">Writes the log entry to the appropriate output stream based on the log entry's level.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:Y">Y</h2>
 <dl class="index">

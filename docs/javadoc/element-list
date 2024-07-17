@@ -3,6 +3,7 @@ com.avrix.agent
 com.avrix.commands
 com.avrix.enums
 com.avrix.events
+com.avrix.logs
 com.avrix.lua
 com.avrix.patches
 com.avrix.plugin
