@@ -156,7 +156,7 @@ public class LineReadingOutputStream extends OutputStream {
             String message = matcherToUse.group(2);
 
             message = message.replaceAll("\\[.*?\\]\\s*>\\s*", "").trim();
-            message = message.replaceAll("^\\d*", "").trim();
+            message = message.replaceAll("^\\d*\\s", "").trim();
             message = message.replaceAll("\\s*>\\s*", " > ").trim();
             message = capitalizeFirstLetter(message);
 
