@@ -136,52 +136,17 @@ public class LineReadingOutputStream extends OutputStream {
 
         if (text.isEmpty()) return;
 
-        // Regular expression to capture the first word and message after '>'
-        Pattern pattern1 = Pattern.compile("^(\\w+).*?>.*?>\\s(.*)$");
-        Matcher matcher1 = pattern1.matcher(text);
-
-        // Regular expression to capture the first word and message after '>'
-        Pattern pattern2 = Pattern.compile("^(\\w+).*?>\\s(.*)$");
-        Matcher matcher2 = pattern2.matcher(text);
-
-        Matcher matcherToUse = null;
-        if (matcher1.find()) {
-            matcherToUse = matcher1;
-        } else if (matcher2.find()) {
-            matcherToUse = matcher2;
-        }
+        Matcher matcherToUse = getMatcher(text);
 
         if (matcherToUse != null) {
             String firstWord = matcherToUse.group(1);
             String message = matcherToUse.group(2);
 
-            message = message.replaceAll("\\[.*?\\]\\s*>\\s*", "").trim();
-            message = message.replaceAll("^\\d*\\s", "").trim();
-            message = message.replaceAll("\\s*>\\s*", " > ").trim();
-            message = capitalizeFirstLetter(message);
+            message = getFormatedMessage(message);
 
             if (message.isEmpty()) return;
 
-            Pattern specialPattern = Pattern.compile("^\\[(.)\\]\\s*(.*)$");
-            Matcher specialMatcher = specialPattern.matcher(message);
-
-            if (specialMatcher.find()) {
-                char specialChar = specialMatcher.group(1).charAt(0);
-                String messageFormated = specialMatcher.group(2).trim();
-
-                switch (specialChar) {
-                    case '!':
-                        Logger.error(messageFormated);
-                        break;
-                    case '?':
-                        Logger.warn(messageFormated);
-                        break;
-                    default:
-                        Logger.info(messageFormated);
-                        break;
-                }
-                return;
-            }
+            if (isCustomLogLevel(message)) return;
 
             switch (firstWord) {
                 case "DEBUG":
@@ -212,28 +177,90 @@ public class LineReadingOutputStream extends OutputStream {
             }
         } else {
             // Handle special cases based on first characters in square brackets
-            Pattern specialPattern = Pattern.compile("^\\[(.)\\]\\s*(.*)$");
-            Matcher specialMatcher = specialPattern.matcher(text);
-            if (specialMatcher.find()) {
-                char specialChar = specialMatcher.group(1).charAt(0);
-                String message = specialMatcher.group(2).trim();
+            if (isCustomLogLevel(text)) return;
 
-                switch (specialChar) {
-                    case '!':
-                        Logger.error(message);
-                        break;
-                    case '?':
-                        Logger.warn(message);
-                        break;
-                    default:
-                        Logger.info(message);
-                        break;
-                }
-                return;
-            }
+            String message = getFormatedMessage(text);
 
-            this.consumer.accept(capitalizeFirstLetter(text));
+            this.consumer.accept(capitalizeFirstLetter(message));
         }
+    }
+
+    /**
+     * Formats the input message by applying several transformations:
+     * 1. Removes text enclosed in square brackets followed by '>'.
+     * 2. Trims leading digits and whitespace.
+     * 3. Replaces multiple occurrences of '>' with a single occurrence surrounded by spaces.
+     * 4. Capitalizes the first letter of the resulting message.
+     *
+     * @param message The input message to be formatted.
+     * @return The formatted message.
+     */
+    private String getFormatedMessage(String message) {
+        message = message.replaceAll("\\[.*?\\]\\s*>\\s*", "").trim();
+        message = message.replaceAll("^\\d*\\s", "").trim();
+        message = message.replaceAll("\\s*>\\s*", " > ").trim();
+        message = capitalizeFirstLetter(message);
+        return message;
+    }
+
+    /**
+     * Checks if the input message matches a custom log level pattern.
+     * If it matches, logs the message with the appropriate log level based on the character in square brackets:
+     * '!' logs as error, '?' logs as warning, and any other character logs as info.
+     *
+     * @param message The input message to check.
+     * @return {@code true} if the message matches a custom log level pattern and was logged; {@code false} otherwise.
+     */
+    private static boolean isCustomLogLevel(String message) {
+        Pattern specialPattern = Pattern.compile("^\\[(.)\\]\\s*(.*)$");
+        Matcher specialMatcher = specialPattern.matcher(message);
+
+        if (specialMatcher.find()) {
+            char specialChar = specialMatcher.group(1).charAt(0);
+            String messageFormated = specialMatcher.group(2).trim();
+
+            switch (specialChar) {
+                case '!':
+                    Logger.error(messageFormated);
+                    break;
+                case '?':
+                    Logger.warn(messageFormated);
+                    break;
+                default:
+                    Logger.info(messageFormated);
+                    break;
+            }
+            return true;
+        }
+        return false;
+    }
+
+
+    /**
+     * Returns a matcher for the input text based on two regular expression patterns:
+     * 1. Captures the first word and the message after two occurrences of '>'.
+     * 2. Captures the first word and the message after a single occurrence of '>'.
+     * If the first pattern matches, its matcher is returned. Otherwise, if the second pattern matches, its matcher is returned.
+     *
+     * @param text The input text to be matched.
+     * @return The matcher that matches the input text, or {@code null} if neither pattern matches.
+     */
+    private static Matcher getMatcher(String text) {
+        // Regular expression to capture the first word and message after '>'
+        Pattern pattern1 = Pattern.compile("^(\\w+).*?>.*?>\\s(.*)$");
+        Matcher matcher1 = pattern1.matcher(text);
+
+        // Regular expression to capture the first word and message after '>'
+        Pattern pattern2 = Pattern.compile("^(\\w+).*?>\\s(.*)$");
+        Matcher matcher2 = pattern2.matcher(text);
+
+        Matcher matcherToUse = null;
+        if (matcher1.find()) {
+            matcherToUse = matcher1;
+        } else if (matcher2.find()) {
+            matcherToUse = matcher2;
+        }
+        return matcherToUse;
     }
 
     /**
