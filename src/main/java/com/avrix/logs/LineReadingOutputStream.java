@@ -31,7 +31,7 @@ public class LineReadingOutputStream extends OutputStream {
      * @throws NullPointerException if the consumer is null.
      */
     public LineReadingOutputStream(final Consumer<String> consumer) {
-        this.consumer = Objects.requireNonNull(consumer, "Consumer must not be null");
+        this.consumer = Objects.requireNonNull(consumer, "[!] Consumer must not be null");
     }
 
     /**
@@ -56,14 +56,14 @@ public class LineReadingOutputStream extends OutputStream {
     @Override
     public void write(final byte[] b, int start, final int len) {
         if (b == null) {
-            throw new NullPointerException("Byte array must not be null");
+            throw new NullPointerException("[!] Byte array must not be null");
         }
         if (len < 0) {
-            throw new IllegalArgumentException("Length must not be negative");
+            throw new IllegalArgumentException("[!] Length must not be negative");
         }
         final int end = start + len;
         if ((start < 0) || (start > b.length) || (end < 0) || (end > b.length)) {
-            throw new IndexOutOfBoundsException("Invalid start or end index");
+            throw new IndexOutOfBoundsException("[!] Invalid start or end index");
         }
 
         // Handle Carriage Return and Line Feed scenarios
@@ -117,7 +117,7 @@ public class LineReadingOutputStream extends OutputStream {
      */
     private static String asString(final byte[] b, final int start, final int end) {
         if (start > end) {
-            throw new IllegalArgumentException("Start index must be <= end index");
+            throw new IllegalArgumentException("[!] Start index must be <= end index");
         }
         if (start == end) {
             return "";
@@ -134,21 +134,37 @@ public class LineReadingOutputStream extends OutputStream {
         String text = this.stringBuilder.toString();
         this.stringBuilder.setLength(0);
 
+        if (text.isEmpty()) return;
+
         // Regular expression to capture the first word and message after '>'
-        Pattern pattern = Pattern.compile("^(\\w+).*?>.*?>\\s*(.*)$");
-        Matcher matcher = pattern.matcher(text);
+        Pattern pattern1 = Pattern.compile("^(\\w+).*?>.*?>\\s(.*)$");
+        Matcher matcher1 = pattern1.matcher(text);
 
+        // Regular expression to capture the first word and message after '>'
+        Pattern pattern2 = Pattern.compile("^(\\w+).*?>\\s(.*)$");
+        Matcher matcher2 = pattern2.matcher(text);
 
-        if (matcher.find()) {
-            String firstWord = matcher.group(1);
-            String message = matcher.group(2);
+        Matcher matcherToUse = null;
+        if (matcher1.find()) {
+            matcherToUse = matcher1;
+        } else if (matcher2.find()) {
+            matcherToUse = matcher2;
+        }
 
-            message = message.replaceAll("\\[.*?\\]\\s*>\\s*", "");
-            message = message.replaceAll("\\s*>\\s*", " > ");
+        if (matcherToUse != null) {
+            String firstWord = matcherToUse.group(1);
+            String message = matcherToUse.group(2);
+
+            message = message.replaceAll("\\[.*?\\]\\s*>\\s*", "").trim();
+            message = message.replaceAll("^\\d*", "").trim();
+            message = message.replaceAll("\\s*>\\s*", " > ").trim();
             message = capitalizeFirstLetter(message);
+
+            if (message.isEmpty()) return;
 
             Pattern specialPattern = Pattern.compile("^\\[(.)\\]\\s*(.*)$");
             Matcher specialMatcher = specialPattern.matcher(message);
+
             if (specialMatcher.find()) {
                 char specialChar = specialMatcher.group(1).charAt(0);
                 String messageFormated = specialMatcher.group(2).trim();

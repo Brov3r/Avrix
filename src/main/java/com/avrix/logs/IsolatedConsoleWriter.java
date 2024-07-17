@@ -51,7 +51,7 @@ public class IsolatedConsoleWriter extends AbstractFormatPatternWriter {
             if (streams.length == 2) {
                 levelStream = ConfigurationParser.parse(streams[1], levelStream);
                 if (!streams[0].equals("err")) {
-                    InternalLogger.log(Level.ERROR, "Stream with level must be \"err\", \"" + streams[0] + "\" is an invalid name");
+                    InternalLogger.log(Level.ERROR, "[!] Stream with level must be \"err\", \"" + streams[0] + "\" is an invalid name");
                 }
                 stream = null;
             }
@@ -64,7 +64,7 @@ public class IsolatedConsoleWriter extends AbstractFormatPatternWriter {
         } else if ("out".equalsIgnoreCase(stream)) {
             errorLevel = Level.OFF;
         } else {
-            InternalLogger.log(Level.ERROR, "Stream must be \"out\" or \"err\", \"" + stream + "\" is an invalid stream name");
+            InternalLogger.log(Level.ERROR, "[!] Stream must be \"out\" or \"err\", \"" + stream + "\" is an invalid stream name");
             errorLevel = levelStream;
         }
 

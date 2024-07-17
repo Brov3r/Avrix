@@ -78,12 +78,12 @@ public class PluginManager {
             Metadata metadata = Metadata.createFromJar(plugin, Constants.PLUGINS_METADATA_NAME);
 
             if (metadata == null) {
-                System.out.printf("[!] No metadata found for potential plugin '%s'. Skipping...%n", plugin.getName());
+                System.out.printf("[!] No metadata found for the potential plugin '%s'. Skipping...%n", plugin.getName());
                 continue;
             }
 
             if (!metadata.getPluginFile().exists()) {
-                System.out.printf("[!] Could not access plugin file '%s'. Skipping...%n", plugin.getName());
+                System.out.printf("[!] Could not access the plugin file for '%s'. Skipping...%n", plugin.getName());
                 continue;
             }
 
@@ -170,7 +170,7 @@ public class PluginManager {
 
         if (!folder.exists()) {
             if (!folder.mkdir()) {
-                System.out.println("[!] Failed to create plugins folder...");
+                System.out.println("[!] Failed to create the plugins folder.");
             }
         }
 

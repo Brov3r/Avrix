@@ -140,13 +140,13 @@ public final class Metadata {
                 if (dependency != null) {
                     if (!VersionChecker.isVersionCompatible(dependency.getVersion(), depVersion)) {
                         throw new IllegalArgumentException(
-                                String.format("[!] Incompatible dependency version: Plugin '%s' requires '%s' version '%s' but found '%s'",
-                                        metadata.getId(), depId, depVersion, dependency.getVersion()));
+                                String.format("[!] Incompatible dependency version: Plugin '%s' requires version '%s' of '%s', but found version '%s'.",
+                                        metadata.getId(), depVersion, depId, dependency.getVersion()));
                     }
                     topologicalSort(dependency, metadataMap, visited, stack, sortedList);
                 } else {
                     throw new IllegalArgumentException(
-                            String.format("[!] Missing dependency: Plugin ID %s (Version: %s) required by Plugin ID %s (Plugin Name: %s, Version: %s)",
+                            String.format("[!] Missing dependency: Plugin '%s' (required version: %s) is needed by plugin '%s' (Name: %s, Version: %s).",
                                     depId, depVersion, metadata.getId(), metadata.getName(), metadata.getVersion()));
                 }
             }
@@ -440,12 +440,12 @@ public final class Metadata {
          * @throws NullPointerException if any required field is not set
          */
         private void validate() {
-            Objects.requireNonNull(metadata.name, "[!] The required field 'name' is not specified in the metadata!");
-            Objects.requireNonNull(metadata.id, "[!] The required field 'id' is not specified in the metadata!");
-            Objects.requireNonNull(metadata.license, "[!] The required field 'license' is not specified in the metadata!");
-            Objects.requireNonNull(metadata.author, "[!] The required field 'author' is not specified in the metadata!");
-            Objects.requireNonNull(metadata.version, "[!] The required field 'version' is not specified in the metadata!");
-            Objects.requireNonNull(metadata.entryPointsList, "[!] The required field 'entry points' is not specified in the metadata!");
+            Objects.requireNonNull(metadata.name, "[!] The required field 'name' is not specified in the metadata.");
+            Objects.requireNonNull(metadata.id, "[!] The required field 'id' is not specified in the metadata.");
+            Objects.requireNonNull(metadata.license, "[!] The required field 'license' is not specified in the metadata.");
+            Objects.requireNonNull(metadata.author, "[!] The required field 'author' is not specified in the metadata.");
+            Objects.requireNonNull(metadata.version, "[!] The required field 'version' is not specified in the metadata.");
+            Objects.requireNonNull(metadata.entryPointsList, "[!] The required field 'entry points' is not specified in the metadata.");
         }
     }
 }
