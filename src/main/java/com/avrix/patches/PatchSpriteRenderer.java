@@ -2,6 +2,7 @@ package com.avrix.patches;
 
 import com.avrix.agent.ClassTransformer;
 import com.avrix.events.EventManager;
+import com.avrix.ui.WidgetManager;
 import javassist.CannotCompileException;
 
 /**
@@ -23,6 +24,7 @@ public class PatchSpriteRenderer extends ClassTransformer {
     public void modifyClass() {
         getModifierBuilder().modifyMethod("postRender", (ctClass, ctMethod) -> {
             try {
+                ctMethod.insertAfter(WidgetManager.class.getName() + ".onRender();");
                 ctMethod.insertAfter(EventManager.class.getName() + ".invokeEvent(\"onPostTickRenderThread\", new Object[0]);");
             } catch (CannotCompileException e) {
                 throw new RuntimeException(e);

@@ -3,6 +3,9 @@
 - Launch scripts updated
 - Added `.exe` executable files for Windows, allowing launch from Steam
 - Added new logging system `TinyLog2`
+- Added `onWidgetManagerInitialized` event
+- Added default fonts: `Arial-Regular`, `Roboto-Regular`, `Montserrat-Regular`, `FontAwesome`
+- Implemented a GUI system based on `NanoVG`
 
 # AvrixLoader v1.3.0
 
