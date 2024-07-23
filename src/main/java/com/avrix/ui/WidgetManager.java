@@ -3,6 +3,7 @@ package com.avrix.ui;
 import com.avrix.Launcher;
 import com.avrix.enums.KeyEventType;
 import com.avrix.events.EventManager;
+import com.avrix.ui.widgets.Widget;
 import com.avrix.utils.WindowUtils;
 import zombie.input.Mouse;
 

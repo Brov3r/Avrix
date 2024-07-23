@@ -1,5 +1,6 @@
-package com.avrix.ui;
+package com.avrix.ui.widgets;
 
+import com.avrix.ui.UIColor;
 import zombie.input.Mouse;
 
 /**

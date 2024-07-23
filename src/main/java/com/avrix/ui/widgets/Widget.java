@@ -1,5 +1,8 @@
-package com.avrix.ui;
+package com.avrix.ui.widgets;
 
+import com.avrix.ui.UIColor;
+import com.avrix.ui.UIContext;
+import com.avrix.ui.WidgetManager;
 import org.lwjgl.nanovg.NVGPaint;
 import zombie.input.Mouse;
 

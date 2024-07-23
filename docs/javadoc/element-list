@@ -8,4 +8,5 @@ com.avrix.lua
 com.avrix.patches
 com.avrix.plugin
 com.avrix.ui
+com.avrix.ui.widgets
 com.avrix.utils

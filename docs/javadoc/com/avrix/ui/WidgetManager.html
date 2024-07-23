@@ -77,7 +77,7 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">WidgetManager</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
-<div class="block">Manages a collection of <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> instances, handling rendering, input events, and updates.
+<div class="block">Manages a collection of <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> instances, handling rendering, input events, and updates.
  Provides static methods to interact with the widget list and process user input.</div>
 </section>
 <section class="summary">
@@ -107,12 +107,12 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#addWidget(com.avrix.ui.Widget)" class="member-name-link">addWidget</a><wbr>(<a href="Widget.html" title="class in com.avrix.ui">Widget</a>&nbsp;widget)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#addWidget(com.avrix.ui.widgets.Widget)" class="member-name-link">addWidget</a><wbr>(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Adds a widget to the list of widgets to be managed and displayed.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#bringWidgetToTop(com.avrix.ui.Widget)" class="member-name-link">bringWidgetToTop</a><wbr>(<a href="Widget.html" title="class in com.avrix.ui">Widget</a>&nbsp;widget)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#bringWidgetToTop(com.avrix.ui.widgets.Widget)" class="member-name-link">bringWidgetToTop</a><wbr>(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Moves the specified widget to the front of the rendering order, ensuring it is drawn above other widgets.</div>
 </div>
@@ -150,7 +150,7 @@ loadScripts(document, 'script');</script>
 <div class="block">Renders all widgets and processes input events.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#removeWidget(com.avrix.ui.Widget)" class="member-name-link">removeWidget</a><wbr>(<a href="Widget.html" title="class in com.avrix.ui">Widget</a>&nbsp;widget)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#removeWidget(com.avrix.ui.widgets.Widget)" class="member-name-link">removeWidget</a><wbr>(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Removes a widget from the list of widgets to be managed and displayed.</div>
 </div>
@@ -226,9 +226,9 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="bringWidgetToTop(com.avrix.ui.Widget)">
+<section class="detail" id="bringWidgetToTop(com.avrix.ui.widgets.Widget)">
 <h3>bringWidgetToTop</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">bringWidgetToTop</span><wbr><span class="parameters">(<a href="Widget.html" title="class in com.avrix.ui">Widget</a>&nbsp;widget)</span></div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">bringWidgetToTop</span><wbr><span class="parameters">(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</span></div>
 <div class="block">Moves the specified widget to the front of the rendering order, ensuring it is drawn above other widgets.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -237,9 +237,9 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="addWidget(com.avrix.ui.Widget)">
+<section class="detail" id="addWidget(com.avrix.ui.widgets.Widget)">
 <h3>addWidget</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addWidget</span><wbr><span class="parameters">(<a href="Widget.html" title="class in com.avrix.ui">Widget</a>&nbsp;widget)</span></div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addWidget</span><wbr><span class="parameters">(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</span></div>
 <div class="block">Adds a widget to the list of widgets to be managed and displayed.
  The widget is added only if it is not already present in the list.</div>
 <dl class="notes">
@@ -249,9 +249,9 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="removeWidget(com.avrix.ui.Widget)">
+<section class="detail" id="removeWidget(com.avrix.ui.widgets.Widget)">
 <h3>removeWidget</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">removeWidget</span><wbr><span class="parameters">(<a href="Widget.html" title="class in com.avrix.ui">Widget</a>&nbsp;widget)</span></div>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">removeWidget</span><wbr><span class="parameters">(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</span></div>
 <div class="block">Removes a widget from the list of widgets to be managed and displayed.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
