@@ -7,23 +7,87 @@ import zombie.input.Mouse;
  * Represents a panel {@link Widget} with optional rounded corners, borders, and drag functionality.
  */
 public class PanelWidget extends Widget {
-    private UIColor backgroundColor = UIColor.LIGHT_BLACK;
-    private UIColor borderColor = UIColor.WHITE_SMOKE;
+    /**
+     * The background color of the panel.
+     */
+    protected UIColor backgroundColor = UIColor.LIGHT_BLACK;
 
-    private int borderRadius = 0;
-    private int borderWidth = 2;
-    private int dragOffsetX, dragOffsetY = 0;
+    /**
+     * The border color of the panel.
+     */
+    protected UIColor borderColor = UIColor.WHITE_SMOKE;
 
-    private boolean dragging = false;
-    private boolean drawBorder = true;
-    private boolean draggable = false;
+    /**
+     * The radius of the panel's border corners.
+     */
+    protected int borderRadius = 0;
+
+    /**
+     * The width of the panel's border.
+     */
+    protected int borderWidth = 2;
+
+    /**
+     * The x-coordinate offset for dragging the panel.
+     */
+    protected int dragOffsetX = 0;
+
+    /**
+     * The y-coordinate offset for dragging the panel.
+     */
+    protected int dragOffsetY = 0;
+
+    /**
+     * Indicates whether the panel is currently being dragged.
+     */
+    protected boolean dragging = false;
+
+    /**
+     * Indicates whether the panel's border should be drawn.
+     */
+    protected boolean drawBorder = true;
+
+    /**
+     * Indicates whether the panel is draggable.
+     */
+    protected boolean draggable = false;
+
+    /**
+     * Constructs a new {@link Widget} with the specified position and size.
+     *
+     * @param x      the x-coordinate of the {@link Widget}'s position
+     * @param y      the y-coordinate of the {@link Widget}'s position
+     * @param width  the width of the {@link Widget}
+     * @param height the height of the {@link Widget}
+     */
+    public PanelWidget(int x, int y, int width, int height) {
+        super(x, y, width, height);
+    }
+
+    /**
+     * Constructs a new {@link PanelWidget} with the specified position, size, border radius,
+     * and background color.
+     *
+     * @param x               the X-coordinate of the {@link Widget}'s position
+     * @param y               the Y-coordinate of the {@link Widget}'s position
+     * @param width           the width of the widget
+     * @param height          the height of the widget
+     * @param borderRadius    the radius of the corner rounding in pixels
+     * @param backgroundColor the background color of the widget, specified in {@link UIColor}
+     */
+    public PanelWidget(int x, int y, int width, int height, int borderRadius, UIColor backgroundColor) {
+        super(x, y, width, height);
+
+        this.backgroundColor = backgroundColor;
+        this.borderRadius = borderRadius;
+    }
 
     /**
      * Sets whether the {@link Widget} is draggable.
      *
      * @param draggable true if the {@link Widget} is draggable; otherwise false
      */
-    public void setDraggable(boolean draggable) {
+    public final void setDraggable(boolean draggable) {
         this.draggable = draggable;
     }
 
@@ -32,7 +96,7 @@ public class PanelWidget extends Widget {
      *
      * @return true if the {@link Widget} is draggable; otherwise false
      */
-    public boolean isDraggable() {
+    public final boolean isDraggable() {
         return this.draggable;
     }
 
@@ -41,7 +105,7 @@ public class PanelWidget extends Widget {
      *
      * @param color the background color, specified in {@link UIColor}
      */
-    public void setBackgroundColor(UIColor color) {
+    public final void setBackgroundColor(UIColor color) {
         this.backgroundColor = color;
     }
 
@@ -50,7 +114,7 @@ public class PanelWidget extends Widget {
      *
      * @param color the border color, specified in {@link UIColor}
      */
-    public void setBorderColor(UIColor color) {
+    public final void setBorderColor(UIColor color) {
         this.borderColor = color;
     }
 
@@ -59,7 +123,7 @@ public class PanelWidget extends Widget {
      *
      * @param borderWidth the border width in pixels
      */
-    public void setBorderWidth(int borderWidth) {
+    public final void setBorderWidth(int borderWidth) {
         this.borderWidth = borderWidth;
     }
 
@@ -68,7 +132,7 @@ public class PanelWidget extends Widget {
      *
      * @param drawBorder true if the border should be drawn; otherwise false
      */
-    public void setDrawBorder(boolean drawBorder) {
+    public final void setDrawBorder(boolean drawBorder) {
         this.drawBorder = drawBorder;
     }
 
@@ -77,7 +141,7 @@ public class PanelWidget extends Widget {
      *
      * @param radius the radius of the corner rounding in pixels
      */
-    public void setBorderRadius(int radius) {
+    public final void setBorderRadius(int radius) {
         this.borderRadius = radius;
     }
 
@@ -117,15 +181,24 @@ public class PanelWidget extends Widget {
     public void onLeftMouseDown(int x, int y) {
         super.onLeftMouseDown(x, y);
 
+        boolean canDrag = true;
+
+        for (Widget child : children) {
+            if (child.isPointOver(x, y)) {
+                canDrag = false;
+                break;
+            }
+        }
+
         if (draggable) {
-            dragging = true;
+            dragging = canDrag;
             dragOffsetX = x;
             dragOffsetY = y;
         }
     }
 
     /**
-     * Updates the {@link Widget} with the given context.
+     * Updates the {@link Widget}
      */
     @Override
     public void update() {
@@ -140,49 +213,27 @@ public class PanelWidget extends Widget {
     }
 
     /**
-     * Constructs a new {@link Widget} with the specified position and size.
-     *
-     * @param x      the x-coordinate of the {@link Widget}'s position
-     * @param y      the y-coordinate of the {@link Widget}'s position
-     * @param width  the width of the {@link Widget}
-     * @param height the height of the {@link Widget}
-     */
-    public PanelWidget(int x, int y, int width, int height) {
-        super(x, y, width, height);
-    }
-
-    /**
-     * Constructs a new {@link PanelWidget} with the specified position, size, border radius,
-     * and background color.
-     *
-     * @param x               the X-coordinate of the {@link Widget}'s position
-     * @param y               the Y-coordinate of the {@link Widget}'s position
-     * @param width           the width of the widget
-     * @param height          the height of the widget
-     * @param borderRadius    the radius of the corner rounding in pixels
-     * @param backgroundColor the background color of the widget, specified in {@link UIColor}
-     */
-    public PanelWidget(int x, int y, int width, int height, int borderRadius, UIColor backgroundColor) {
-        super(x, y, width, height);
-
-        this.backgroundColor = backgroundColor;
-        this.borderRadius = borderRadius;
-    }
-
-    /**
-     * Renders the {@link Widget} with the given context.
+     * Renders the {@link Widget}
      */
     @Override
     public void render() {
-        if (borderRadius != 0) {
-            drawRoundedRect(getX(), getY(), getWidth(), getHeight(), this.borderRadius, this.backgroundColor);
-            if (drawBorder) {
-                drawRoundedRectOutline(getX(), getY(), getWidth(), getHeight(), borderRadius, borderWidth, borderColor);
-            }
+        if (this.borderRadius != 0) {
+            drawRoundedRect(0, 0, getWidth(), getHeight(), this.borderRadius, this.backgroundColor);
         } else {
-            drawRect(getX(), getY(), getWidth(), getHeight(), this.backgroundColor);
-            if (drawBorder) {
-                drawRectOutline(getX(), getY(), getWidth(), getHeight(), borderWidth, borderColor);
+            drawRect(0, 0, getWidth(), getHeight(), this.backgroundColor);
+        }
+    }
+
+    /**
+     * Final rendering, after the main render and rendering of child elements
+     */
+    @Override
+    public void postRender() {
+        if (this.drawBorder) {
+            if (this.borderRadius != 0) {
+                drawRoundedRectOutline(0, 0, getWidth(), getHeight(), this.borderRadius, this.borderWidth, this.borderColor);
+            } else {
+                drawRectOutline(0, 0, getWidth(), getHeight(), this.borderWidth, this.borderColor);
             }
         }
     }

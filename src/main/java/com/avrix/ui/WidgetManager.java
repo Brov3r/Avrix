@@ -28,7 +28,6 @@ public class WidgetManager {
     private static UIContext uiContext;
     private static final List<Widget> widgetList = new ArrayList<>();
     private static final List<Widget> renderWidgetList = new ArrayList<>();
-
     private static boolean isInitialized = false;
     private static int lastMouseX, lastMouseY = 0;
 
@@ -45,6 +44,45 @@ public class WidgetManager {
         EventManager.invokeEvent("onWidgetManagerInitialized", uiContext);
 
         isInitialized = true;
+    }
+
+    /**
+     * Renders all widgets and processes input events.
+     * Initializes the UI context if it is not already set.
+     * Updates mouse events and renders each visible widget.
+     */
+    public static void onRender() {
+        if (!isInitialized) init();
+
+        widgetList.sort(Comparator.comparing(Widget::isAlwaysOnTop));
+
+        renderWidgetList.clear();
+        renderWidgetList.addAll(widgetList);
+
+        updateMouseEvent();
+
+        uiContext.beginFrame(WindowUtils.getWindowWidth(), WindowUtils.getWindowHeight(), 1);
+
+        for (Widget widget : renderWidgetList) {
+            if (widget.getContext() == null) widget.setContext(uiContext);
+
+            if (!widget.isVisible()) continue;
+
+            widget.saveRenderState();
+            widget.intersectScissor(widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight());
+
+            widget.preRender();
+
+            widget.update();
+            widget.render();
+            widget.renderChildren();
+
+            widget.postRender();
+
+            widget.restoreRenderState();
+        }
+
+        uiContext.endFrame();
     }
 
     /**
@@ -100,39 +138,6 @@ public class WidgetManager {
         if (fontId == -1) {
             System.out.printf("[!] Failed to load font '%s' at path: '%s'%n", fontName, fontPath);
         }
-    }
-
-    /**
-     * Renders all widgets and processes input events.
-     * Initializes the UI context if it is not already set.
-     * Updates mouse events and renders each visible widget.
-     */
-    public static void onRender() {
-        if (!isInitialized) init();
-
-        widgetList.sort(Comparator.comparing(Widget::isAlwaysOnTop));
-
-        renderWidgetList.clear();
-        renderWidgetList.addAll(widgetList);
-
-        updateMouseEvent();
-
-        uiContext.beginFrame(WindowUtils.getWindowWidth(), WindowUtils.getWindowHeight(), 1);
-
-        for (Widget widget : renderWidgetList) {
-            if (widget.getContext() == null) widget.setContext(uiContext);
-
-            if (!widget.isVisible()) continue;
-
-            widget.startScissor(widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight());
-
-            widget.update();
-            widget.render();
-
-            widget.endScissor();
-        }
-
-        uiContext.endFrame();
     }
 
     /**
@@ -250,8 +255,18 @@ public class WidgetManager {
             if (mouseMoved) {
                 if (isPointOverTop) {
                     widget.onMouseMove(relativeX, relativeY);
+
+                    if (!widget.hovered) {
+                        widget.onMouseEnter(mouseX, mouseY);
+                        widget.hovered = true;
+                    }
                 } else {
                     widget.onMouseMoveOutside(mouseX, mouseY);
+
+                    if (widget.hovered) {
+                        widget.onMouseExit(mouseX, mouseY);
+                        widget.hovered = false;
+                    }
                 }
             }
 
