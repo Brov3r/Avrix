@@ -1,6 +1,7 @@
 package com.avrix.ui;
 
 import com.avrix.Launcher;
+import com.avrix.enums.KeyEventType;
 import com.avrix.events.EventManager;
 import com.avrix.utils.WindowUtils;
 import zombie.input.Mouse;
@@ -13,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.lwjgl.nanovg.NanoVG.nvgCreateFont;
@@ -24,6 +26,8 @@ import static org.lwjgl.nanovg.NanoVG.nvgCreateFont;
 public class WidgetManager {
     private static UIContext uiContext;
     private static final List<Widget> widgetList = new ArrayList<>();
+    private static final List<Widget> renderWidgetList = new ArrayList<>();
+
     private static boolean isInitialized = false;
     private static int lastMouseX, lastMouseY = 0;
 
@@ -35,7 +39,17 @@ public class WidgetManager {
             uiContext = new UIContext();
         }
 
-        // Load custom fonts
+        loadDefaultFonts();
+
+        EventManager.invokeEvent("onWidgetManagerInitialized", uiContext);
+
+        isInitialized = true;
+    }
+
+    /**
+     * Loading custom default fonts
+     */
+    private static void loadDefaultFonts() {
         try {
             File coreJarFile = new File(Launcher.class.getProtectionDomain().getCodeSource().getLocation().toURI());
             createFont("Montserrat-Regular", coreJarFile.getPath(), "media/fonts/Montserrat-Regular.ttf");
@@ -45,10 +59,6 @@ public class WidgetManager {
         } catch (Exception e) {
             System.out.println("[!] Failed to load custom fonts: " + e.getMessage());
         }
-
-        EventManager.invokeEvent("onWidgetManagerInitialized", uiContext);
-
-        isInitialized = true;
     }
 
     /**
@@ -99,20 +109,40 @@ public class WidgetManager {
     public static void onRender() {
         if (!isInitialized) init();
 
+        widgetList.sort(Comparator.comparing(Widget::isAlwaysOnTop));
+
+        renderWidgetList.clear();
+        renderWidgetList.addAll(widgetList);
+
         updateMouseEvent();
 
         uiContext.beginFrame(WindowUtils.getWindowWidth(), WindowUtils.getWindowHeight(), 1);
 
-        for (Widget widget : widgetList) {
+        for (Widget widget : renderWidgetList) {
             if (widget.getContext() == null) widget.setContext(uiContext);
 
-            if (widget.isVisible()) {
-                widget.update();
-                widget.render();
-            }
+            if (!widget.isVisible()) continue;
+
+            widget.startScissor(widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight());
+
+            widget.update();
+            widget.render();
+
+            widget.endScissor();
         }
 
         uiContext.endFrame();
+    }
+
+    /**
+     * Moves the specified widget to the front of the rendering order, ensuring it is drawn above other widgets.
+     *
+     * @param widget the widget to bring to the front
+     */
+    public static void bringWidgetToTop(Widget widget) {
+        if (widgetList.remove(widget)) {
+            widgetList.add(widget);
+        }
     }
 
     /**
@@ -142,11 +172,7 @@ public class WidgetManager {
      * @param key the code of the key that was pressed
      */
     public static void onKeyPress(int key) {
-        for (Widget widget : widgetList) {
-            if (widget.isVisible()) {
-                widget.onKeyPress(uiContext, key);
-            }
-        }
+        handleKeyEvent(key, KeyEventType.PRESS);
     }
 
     /**
@@ -155,11 +181,7 @@ public class WidgetManager {
      * @param key the code of the key that is being repeatedly pressed
      */
     public static void onKeyRepeat(int key) {
-        for (Widget widget : widgetList) {
-            if (widget.isVisible()) {
-                widget.onKeyRepeat(uiContext, key);
-            }
-        }
+        handleKeyEvent(key, KeyEventType.REPEAT);
     }
 
     /**
@@ -168,9 +190,29 @@ public class WidgetManager {
      * @param key the code of the key that was released
      */
     public static void onKeyRelease(int key) {
-        for (Widget widget : widgetList) {
-            if (widget.isVisible()) {
-                widget.onKeyRelease(uiContext, key);
+        handleKeyEvent(key, KeyEventType.RELEASE);
+    }
+
+    /**
+     * Handles keyboard events for all visible widgets.
+     *
+     * @param key       the code of the key
+     * @param eventType the type of the keyboard event (press, repeat, release)
+     */
+    private static void handleKeyEvent(int key, KeyEventType eventType) {
+        for (Widget widget : renderWidgetList) {
+            if (!widget.isVisible()) continue;
+
+            switch (eventType) {
+                case PRESS:
+                    widget.onKeyPress(key);
+                    break;
+                case REPEAT:
+                    widget.onKeyRepeat(key);
+                    break;
+                case RELEASE:
+                    widget.onKeyRelease(key);
+                    break;
             }
         }
     }
@@ -182,58 +224,73 @@ public class WidgetManager {
     private static void updateMouseEvent() {
         int mouseX = Mouse.getXA();
         int mouseY = Mouse.getYA();
-
-        if (mouseX != lastMouseX || mouseY != lastMouseY) {
-            for (Widget widget : widgetList) {
-                if (widget.isVisible() && widget.isPointOver(mouseX, mouseY)) {
-                    widget.onMouseMove(uiContext, (float) (mouseX - widget.getX()), (float) (mouseY - widget.getY()));
-                    break;
-                }
-            }
-        }
-
-        if (Mouse.isLeftPressed()) {
-            for (Widget widget : widgetList) {
-                if (widget.isVisible() && widget.isPointOver(mouseX, mouseY)) {
-                    widget.onLeftMouseDown(uiContext, (float) (mouseX - widget.getX()), (float) (mouseY - widget.getY()));
-                    break;
-                }
-            }
-        }
-
-        if (Mouse.isLeftReleased()) {
-            for (Widget widget : widgetList) {
-                if (widget.isVisible() && widget.isPointOver(mouseX, mouseY)) {
-                    widget.onLeftMouseUp(uiContext, (float) (mouseX - widget.getX()), (float) (mouseY - widget.getY()));
-                    break;
-                }
-            }
-        }
-
-        if (Mouse.isRightPressed()) {
-            for (Widget widget : widgetList) {
-                if (widget.isVisible() && widget.isPointOver(mouseX, mouseY)) {
-                    widget.onRightMouseDown(uiContext, (float) (mouseX - widget.getX()), (float) (mouseY - widget.getY()));
-                    break;
-                }
-            }
-        }
-
-        if (Mouse.isRightReleased()) {
-            for (Widget widget : widgetList) {
-                if (widget.isVisible() && widget.isPointOver(mouseX, mouseY)) {
-                    widget.onRightMouseUp(uiContext, (float) (mouseX - widget.getX()), (float) (mouseY - widget.getY()));
-                    break;
-                }
-            }
-        }
-
         int currentWheel = Mouse.getWheelState();
-        if (currentWheel != 0) {
-            for (Widget widget : widgetList) {
-                if (widget.isVisible() && widget.isPointOver(mouseX, mouseY)) {
-                    widget.onMouseWheel(uiContext, (float) (mouseX - widget.getX()), (float) (mouseY - widget.getY()), currentWheel);
-                    break;
+
+        boolean mouseMoved = mouseX != lastMouseX || mouseY != lastMouseY;
+
+        Widget topWidget = null;
+
+        for (int i = renderWidgetList.size() - 1; i >= 0; i--) {
+            Widget widget = renderWidgetList.get(i);
+
+            if (!widget.isVisible()) continue;
+
+            boolean isPointOver = widget.isPointOver(mouseX, mouseY);
+
+            if (topWidget == null && isPointOver) {
+                topWidget = widget;
+            }
+
+            int relativeX = mouseX - widget.getX();
+            int relativeY = mouseY - widget.getY();
+
+            boolean isPointOverTop = isPointOver && widget.equals(topWidget);
+
+            if (mouseMoved) {
+                if (isPointOverTop) {
+                    widget.onMouseMove(relativeX, relativeY);
+                } else {
+                    widget.onMouseMoveOutside(mouseX, mouseY);
+                }
+            }
+
+            if (Mouse.isLeftPressed()) {
+                if (isPointOverTop) {
+                    widget.onLeftMouseDown(relativeX, relativeY);
+                } else {
+                    widget.onLeftMouseDownOutside(mouseX, mouseY);
+                }
+            }
+
+            if (Mouse.isLeftReleased()) {
+                if (isPointOverTop) {
+                    widget.onLeftMouseUp(relativeX, relativeY);
+                } else {
+                    widget.onLeftMouseUpOutside(mouseX, mouseY);
+                }
+            }
+
+            if (Mouse.isRightPressed()) {
+                if (isPointOverTop) {
+                    widget.onRightMouseDown(relativeX, relativeY);
+                } else {
+                    widget.onRightMouseDownOutside(mouseX, mouseY);
+                }
+            }
+
+            if (Mouse.isRightReleased()) {
+                if (isPointOverTop) {
+                    widget.onRightMouseUp(relativeX, relativeY);
+                } else {
+                    widget.onRightMouseUpOutside(mouseX, mouseY);
+                }
+            }
+
+            if (currentWheel != 0) {
+                if (isPointOverTop) {
+                    widget.onMouseWheel(relativeX, relativeY, currentWheel);
+                } else {
+                    widget.onMouseWheelOutside(mouseX, mouseY, currentWheel);
                 }
             }
         }

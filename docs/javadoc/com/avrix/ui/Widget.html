@@ -74,6 +74,10 @@ loadScripts(document, 'script');</script>
 <div class="inheritance">com.avrix.ui.Widget</div>
 </div>
 <section class="class-description" id="class-description">
+<dl class="notes">
+<dt>Direct Known Subclasses:</dt>
+<dd><code><a href="PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></code></dd>
+</dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">Widget</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
@@ -111,51 +115,65 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#addToScreen()" class="member-name-link">addToScreen</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Adds this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> to the screen by registering it with the <a href="WidgetManager.html" title="class in com.avrix.ui"><code>WidgetManager</code></a>.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawArc(int,int,float,float,float,float,com.avrix.ui.UIColor)" class="member-name-link">drawArc</a><wbr>(int&nbsp;x,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#bringToTop()" class="member-name-link">bringToTop</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Moves this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> to the front of the rendering order, ensuring it is drawn above other widgets.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawArc(int,int,float,float,float,float,com.avrix.ui.UIColor)" class="member-name-link">drawArc</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  float&nbsp;radius,
  float&nbsp;thickness,
  float&nbsp;startAngle,
  float&nbsp;endAngle,
  <a href="UIColor.html" title="class in com.avrix.ui">UIColor</a>&nbsp;color)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws an arc segment with the specified center, radius, start angle, end angle, and thickness.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawArc(int,int,float,float,float,com.avrix.ui.UIColor)" class="member-name-link">drawArc</a><wbr>(int&nbsp;x,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawArc(int,int,float,float,float,com.avrix.ui.UIColor)" class="member-name-link">drawArc</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  float&nbsp;radius,
  float&nbsp;startAngle,
  float&nbsp;endAngle,
  <a href="UIColor.html" title="class in com.avrix.ui">UIColor</a>&nbsp;color)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws an arc segment with the specified center, radius, start angle, and end angle.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawCircle(int,int,float,com.avrix.ui.UIColor)" class="member-name-link">drawCircle</a><wbr>(int&nbsp;x,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawCircle(int,int,float,com.avrix.ui.UIColor)" class="member-name-link">drawCircle</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  float&nbsp;radius,
  <a href="UIColor.html" title="class in com.avrix.ui">UIColor</a>&nbsp;color)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws a circle at the specified position with the given radius and color.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawEllipse(int,int,int,int,com.avrix.ui.UIColor)" class="member-name-link">drawEllipse</a><wbr>(int&nbsp;x,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawEllipse(int,int,int,int,com.avrix.ui.UIColor)" class="member-name-link">drawEllipse</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height,
  <a href="UIColor.html" title="class in com.avrix.ui">UIColor</a>&nbsp;color)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws an ellipse at the specified position with the given size and color.</div>
 </div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawImage(int,int,int,int,int)" class="member-name-link">drawImage</a><wbr>(int&nbsp;imageId,
+ int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Draws an image at the specified position with the given size.</div>
+</div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawImage(int,int,int,int,int)" class="member-name-link">drawImage</a><wbr>(int&nbsp;imageId,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawImage(java.nio.file.Path,int,int,int,int)" class="member-name-link">drawImage</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link">Path</a>&nbsp;imagePath,
  int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
@@ -164,32 +182,33 @@ loadScripts(document, 'script');</script>
 <div class="block">Draws an image at the specified position with the given size.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawImage(java.nio.file.Path,int,int,int,int)" class="member-name-link">drawImage</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link">Path</a>&nbsp;imagePath,
- int&nbsp;x,
- int&nbsp;y,
- int&nbsp;width,
- int&nbsp;height)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Draws an image at the specified position with the given size.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawLine(int,int,int,int,float,com.avrix.ui.UIColor)" class="member-name-link">drawLine</a><wbr>(int&nbsp;x1,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawLine(int,int,int,int,float,com.avrix.ui.UIColor)" class="member-name-link">drawLine</a><wbr>(int&nbsp;x1,
  int&nbsp;y1,
  int&nbsp;x2,
  int&nbsp;y2,
  float&nbsp;width,
  <a href="UIColor.html" title="class in com.avrix.ui">UIColor</a>&nbsp;color)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws a line from (x1, y1) to (x2, y2) with the specified color and thickness.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRect(int,int,int,int,com.avrix.ui.UIColor)" class="member-name-link">drawRect</a><wbr>(int&nbsp;x,
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRect(int,int,int,int,com.avrix.ui.UIColor)" class="member-name-link">drawRect</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height,
  <a href="UIColor.html" title="class in com.avrix.ui">UIColor</a>&nbsp;color)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws a filled rectangle with the specified position, size, and color.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRectOutline(int,int,int,int,float,com.avrix.ui.UIColor)" class="member-name-link">drawRectOutline</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height,
+ float&nbsp;lineWidth,
+ <a href="UIColor.html" title="class in com.avrix.ui">UIColor</a>&nbsp;color)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Draws a rectangle with a stroke and no fill</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRoundedRect(int,int,int,int,float,com.avrix.ui.UIColor)" class="member-name-link">drawRoundedRect</a><wbr>(int&nbsp;x,
@@ -202,39 +221,65 @@ loadScripts(document, 'script');</script>
 <div class="block">Draws a filled rectangle with rounded corners with the specified position, size, radius, and color.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawText(java.lang.String,java.lang.String,int,int,int,com.avrix.ui.UIColor)" class="member-name-link">drawText</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRoundedRectOutline(int,int,int,int,int,float,com.avrix.ui.UIColor)" class="member-name-link">drawRoundedRectOutline</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height,
+ int&nbsp;radius,
+ float&nbsp;lineWidth,
+ <a href="UIColor.html" title="class in com.avrix.ui">UIColor</a>&nbsp;color)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Draws a rectangle with rounded corners and a stroke without fill.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawText(java.lang.String,java.lang.String,int,int,int,com.avrix.ui.UIColor)" class="member-name-link">drawText</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fontName,
  int&nbsp;x,
  int&nbsp;y,
  int&nbsp;fontSize,
  <a href="UIColor.html" title="class in com.avrix.ui">UIColor</a>&nbsp;color)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws text on the screen using NanoVG.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="UIContext.html" title="class in com.avrix.ui">UIContext</a></code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#endScissor()" class="member-name-link">endScissor</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Resets the scissor region, allowing rendering to occur over the entire canvas.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="UIContext.html" title="class in com.avrix.ui">UIContext</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getContext()" class="member-name-link">getContext</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the current <a href="UIContext.html" title="class in com.avrix.ui"><code>UIContext</code></a> for this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getHeight()" class="member-name-link">getHeight</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final long</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getContextID()" class="member-name-link">getContextID</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the current <a href="UIContext.html" title="class in com.avrix.ui"><code>UIContext</code></a> ID for this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getHeight()" class="member-name-link">getHeight</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the height of the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWidth()" class="member-name-link">getWidth</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getWidth()" class="member-name-link">getWidth</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the width of the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getX()" class="member-name-link">getX</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getX()" class="member-name-link">getX</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the x-coordinate of the top-left corner of the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getY()" class="member-name-link">getY</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getY()" class="member-name-link">getY</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Returns the y-coordinate of the top-left corner of the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isAlwaysOnTop()" class="member-name-link">isAlwaysOnTop</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Checks if the window is set to always be on top of other windows.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>boolean</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isHovered()" class="member-name-link">isHovered</a>()</code></div>
@@ -253,67 +298,95 @@ loadScripts(document, 'script');</script>
 <div class="block">Returns the current visibility of the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onKeyPress(com.avrix.ui.UIContext,int)" class="member-name-link">onKeyPress</a><wbr>(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- int&nbsp;key)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onKeyPress(int)" class="member-name-link">onKeyPress</a><wbr>(int&nbsp;key)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Called when a key is pressed while the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> has focus.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onKeyRelease(com.avrix.ui.UIContext,int)" class="member-name-link">onKeyRelease</a><wbr>(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- int&nbsp;key)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onKeyRelease(int)" class="member-name-link">onKeyRelease</a><wbr>(int&nbsp;key)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Called when a key is released while the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> has focus.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onKeyRepeat(com.avrix.ui.UIContext,int)" class="member-name-link">onKeyRepeat</a><wbr>(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- int&nbsp;key)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onKeyRepeat(int)" class="member-name-link">onKeyRepeat</a><wbr>(int&nbsp;key)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Called when a key is held down and repeatedly pressed while the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> has focus.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseDown(com.avrix.ui.UIContext,float,float)" class="member-name-link">onLeftMouseDown</a><wbr>(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- float&nbsp;x,
- float&nbsp;y)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseDown(int,int)" class="member-name-link">onLeftMouseDown</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Called when the left mouse button is pressed down over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseUp(com.avrix.ui.UIContext,float,float)" class="member-name-link">onLeftMouseUp</a><wbr>(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- float&nbsp;x,
- float&nbsp;y)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseDownOutside(int,int)" class="member-name-link">onLeftMouseDownOutside</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Called when the left mouse button is released over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+<div class="block">Handles the left mouse button down event outside any visible widget</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onMouseMove(com.avrix.ui.UIContext,float,float)" class="member-name-link">onMouseMove</a><wbr>(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- float&nbsp;x,
- float&nbsp;y)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseUp(int,int)" class="member-name-link">onLeftMouseUp</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Called when the left mouse button is released over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseUpOutside(int,int)" class="member-name-link">onLeftMouseUpOutside</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Handles the left mouse button up event outside any visible widget</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onMouseMove(int,int)" class="member-name-link">onMouseMove</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Called when the mouse is moved over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onMouseWheel(com.avrix.ui.UIContext,float,float,float)" class="member-name-link">onMouseWheel</a><wbr>(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- float&nbsp;x,
- float&nbsp;y,
- float&nbsp;delta)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onMouseMoveOutside(int,int)" class="member-name-link">onMouseMoveOutside</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Called when the mouse wheel is scrolled over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+<div class="block">Handles the mouse move event outside any visible widget</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onRightMouseDown(com.avrix.ui.UIContext,float,float)" class="member-name-link">onRightMouseDown</a><wbr>(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- float&nbsp;x,
- float&nbsp;y)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onMouseWheel(int,int,int)" class="member-name-link">onMouseWheel</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;delta)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Called when the mouse wheel is scrolled over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onMouseWheelOutside(int,int,int)" class="member-name-link">onMouseWheelOutside</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;delta)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Handles the mouse wheel event outside any visible widget</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onRightMouseDown(int,int)" class="member-name-link">onRightMouseDown</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Called when the right mouse button is pressed down over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onRightMouseUp(com.avrix.ui.UIContext,float,float)" class="member-name-link">onRightMouseUp</a><wbr>(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- float&nbsp;x,
- float&nbsp;y)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onRightMouseDownOutside(int,int)" class="member-name-link">onRightMouseDownOutside</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Called when the right mouse button is released over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+<div class="block">Handles the right mouse button down event outside any visible widget</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onRightMouseUp(int,int)" class="member-name-link">onRightMouseUp</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Called when the right mouse button is released over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onRightMouseUpOutside(int,int)" class="member-name-link">onRightMouseUpOutside</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Handles the right mouse button up event outside any visible widget</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#removeFromScreen()" class="member-name-link">removeFromScreen</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Removes this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> from the screen by deregistering it from the <a href="WidgetManager.html" title="class in com.avrix.ui"><code>WidgetManager</code></a>.</div>
@@ -324,38 +397,59 @@ loadScripts(document, 'script');</script>
 <div class="block">Renders the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> with the given context.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setContext(com.avrix.ui.UIContext)" class="member-name-link">setContext</a><wbr>(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setAlwaysOnTop(boolean)" class="member-name-link">setAlwaysOnTop</a><wbr>(boolean&nbsp;alwaysOnTop)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets whether the window should always be on top of other windows.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setContext(com.avrix.ui.UIContext)" class="member-name-link">setContext</a><wbr>(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the <a href="UIContext.html" title="class in com.avrix.ui"><code>UIContext</code></a> for this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setHeight(int)" class="member-name-link">setHeight</a><wbr>(int&nbsp;height)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setHeight(int)" class="member-name-link">setHeight</a><wbr>(int&nbsp;height)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the height of the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setVisible(boolean)" class="member-name-link">setVisible</a><wbr>(boolean&nbsp;visible)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setVisible(boolean)" class="member-name-link">setVisible</a><wbr>(boolean&nbsp;visible)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the visibility of the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setWidth(int)" class="member-name-link">setWidth</a><wbr>(int&nbsp;width)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setWidth(int)" class="member-name-link">setWidth</a><wbr>(int&nbsp;width)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the width of the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setX(int)" class="member-name-link">setX</a><wbr>(int&nbsp;x)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setX(int)" class="member-name-link">setX</a><wbr>(int&nbsp;x)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the x-coordinate of the top-left corner of the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setY(int)" class="member-name-link">setY</a><wbr>(int&nbsp;y)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setY(int)" class="member-name-link">setY</a><wbr>(int&nbsp;y)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the y-coordinate of the top-left corner of the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#startIntersectScissor(int,int,int,int)" class="member-name-link">startIntersectScissor</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the intersecting scissor region for NanoVG.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update()" class="member-name-link">update</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#startScissor(int,int,int,int)" class="member-name-link">startScissor</a><wbr>(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the scissor region for NanoVG.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update()" class="member-name-link">update</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Updates the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> with the given context.</div>
 </div>
 </div>
@@ -401,134 +495,225 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="onMouseMove(com.avrix.ui.UIContext,float,float)">
+<section class="detail" id="onMouseMove(int,int)">
 <h3>onMouseMove</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onMouseMove</span><wbr><span class="parameters">(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- float&nbsp;x,
- float&nbsp;y)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onMouseMove</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
 <div class="block">Called when the mouse is moved over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>context</code> - the UI context in which the event occurred</dd>
-<dd><code>x</code> - the x-coordinate of the mouse position</dd>
-<dd><code>y</code> - the y-coordinate of the mouse position</dd>
+<dd><code>x</code> - relative x-coordinate of mouse position</dd>
+<dd><code>y</code> - relative y-coordinate of the mouse position</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="onLeftMouseDown(com.avrix.ui.UIContext,float,float)">
+<section class="detail" id="onLeftMouseDown(int,int)">
 <h3>onLeftMouseDown</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseDown</span><wbr><span class="parameters">(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- float&nbsp;x,
- float&nbsp;y)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseDown</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
 <div class="block">Called when the left mouse button is pressed down over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>context</code> - the UI context in which the event occurred</dd>
-<dd><code>x</code> - the x-coordinate of the mouse position</dd>
-<dd><code>y</code> - the y-coordinate of the mouse position</dd>
+<dd><code>x</code> - relative x-coordinate of the mouse position</dd>
+<dd><code>y</code> - relative y-coordinate of the mouse position</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="onLeftMouseUp(com.avrix.ui.UIContext,float,float)">
+<section class="detail" id="onLeftMouseUp(int,int)">
 <h3>onLeftMouseUp</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseUp</span><wbr><span class="parameters">(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- float&nbsp;x,
- float&nbsp;y)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseUp</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
 <div class="block">Called when the left mouse button is released over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>context</code> - the UI context in which the event occurred</dd>
-<dd><code>x</code> - the x-coordinate of the mouse position</dd>
-<dd><code>y</code> - the y-coordinate of the mouse position</dd>
+<dd><code>x</code> - relative x-coordinate of the mouse position</dd>
+<dd><code>y</code> - relative y-coordinate of the mouse position</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="onRightMouseDown(com.avrix.ui.UIContext,float,float)">
+<section class="detail" id="onRightMouseDown(int,int)">
 <h3>onRightMouseDown</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onRightMouseDown</span><wbr><span class="parameters">(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- float&nbsp;x,
- float&nbsp;y)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onRightMouseDown</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
 <div class="block">Called when the right mouse button is pressed down over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>context</code> - the UI context in which the event occurred</dd>
-<dd><code>x</code> - the x-coordinate of the mouse position</dd>
-<dd><code>y</code> - the y-coordinate of the mouse position</dd>
+<dd><code>x</code> - relative x-coordinate of the mouse position</dd>
+<dd><code>y</code> - relative y-coordinate of the mouse position</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="onRightMouseUp(com.avrix.ui.UIContext,float,float)">
+<section class="detail" id="onRightMouseUp(int,int)">
 <h3>onRightMouseUp</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onRightMouseUp</span><wbr><span class="parameters">(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- float&nbsp;x,
- float&nbsp;y)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onRightMouseUp</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
 <div class="block">Called when the right mouse button is released over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>context</code> - the UI context in which the event occurred</dd>
-<dd><code>x</code> - the x-coordinate of the mouse position</dd>
-<dd><code>y</code> - the y-coordinate of the mouse position</dd>
+<dd><code>x</code> - relative x-coordinate of the mouse position</dd>
+<dd><code>y</code> - relative y-coordinate of the mouse position</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="onMouseWheel(com.avrix.ui.UIContext,float,float,float)">
+<section class="detail" id="onMouseWheel(int,int,int)">
 <h3>onMouseWheel</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onMouseWheel</span><wbr><span class="parameters">(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- float&nbsp;x,
- float&nbsp;y,
- float&nbsp;delta)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onMouseWheel</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;delta)</span></div>
 <div class="block">Called when the mouse wheel is scrolled over the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>context</code> - the UI context in which the event occurred</dd>
-<dd><code>x</code> - the x-coordinate of the mouse position</dd>
-<dd><code>y</code> - the y-coordinate of the mouse position</dd>
-<dd><code>delta</code> - the amount of scrolling; positive values for scrolling up, negative for scrolling down</dd>
+<dd><code>x</code> - relative x-coordinate of the mouse position</dd>
+<dd><code>y</code> - relative y-coordinate of the mouse position</dd>
+<dd><code>delta</code> - direction of mouse wheel movement - (1 - up, -1 - down)</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="onKeyPress(com.avrix.ui.UIContext,int)">
+<section class="detail" id="onMouseMoveOutside(int,int)">
+<h3>onMouseMoveOutside</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onMouseMoveOutside</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
+<div class="block">Handles the mouse move event outside any visible widget</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - absolute x-coordinate of the mouse position</dd>
+<dd><code>y</code> - absolute y-coordinate of the mouse position</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onLeftMouseDownOutside(int,int)">
+<h3>onLeftMouseDownOutside</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseDownOutside</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
+<div class="block">Handles the left mouse button down event outside any visible widget</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - absolute x-coordinate of the mouse position</dd>
+<dd><code>y</code> - absolute y-coordinate of the mouse position</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onLeftMouseUpOutside(int,int)">
+<h3>onLeftMouseUpOutside</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseUpOutside</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
+<div class="block">Handles the left mouse button up event outside any visible widget</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - absolute x-coordinate of the mouse position</dd>
+<dd><code>y</code> - absolute y-coordinate of the mouse position</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onRightMouseDownOutside(int,int)">
+<h3>onRightMouseDownOutside</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onRightMouseDownOutside</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
+<div class="block">Handles the right mouse button down event outside any visible widget</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - absolute x-coordinate of the mouse position</dd>
+<dd><code>y</code> - absolute y-coordinate of the mouse position</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onRightMouseUpOutside(int,int)">
+<h3>onRightMouseUpOutside</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onRightMouseUpOutside</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
+<div class="block">Handles the right mouse button up event outside any visible widget</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - absolute x-coordinate of the mouse position</dd>
+<dd><code>y</code> - absolute y-coordinate of the mouse position</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onMouseWheelOutside(int,int,int)">
+<h3>onMouseWheelOutside</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onMouseWheelOutside</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;delta)</span></div>
+<div class="block">Handles the mouse wheel event outside any visible widget</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - absolute x-coordinate of the mouse position</dd>
+<dd><code>y</code> - absolute y-coordinate of the mouse position</dd>
+<dd><code>delta</code> - the amount of wheel movement</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onKeyPress(int)">
 <h3>onKeyPress</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyPress</span><wbr><span class="parameters">(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- int&nbsp;key)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyPress</span><wbr><span class="parameters">(int&nbsp;key)</span></div>
 <div class="block">Called when a key is pressed while the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> has focus.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>context</code> - the UI context in which the event occurred</dd>
 <dd><code>key</code> - the code of the key that was pressed</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="onKeyRelease(com.avrix.ui.UIContext,int)">
+<section class="detail" id="onKeyRelease(int)">
 <h3>onKeyRelease</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyRelease</span><wbr><span class="parameters">(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- int&nbsp;key)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyRelease</span><wbr><span class="parameters">(int&nbsp;key)</span></div>
 <div class="block">Called when a key is released while the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> has focus.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>context</code> - the UI context in which the event occurred</dd>
 <dd><code>key</code> - the code of the key that was released</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="onKeyRepeat(com.avrix.ui.UIContext,int)">
+<section class="detail" id="onKeyRepeat(int)">
 <h3>onKeyRepeat</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyRepeat</span><wbr><span class="parameters">(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context,
- int&nbsp;key)</span></div>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyRepeat</span><wbr><span class="parameters">(int&nbsp;key)</span></div>
 <div class="block">Called when a key is held down and repeatedly pressed while the <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> has focus.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>context</code> - the UI context in which the event occurred</dd>
 <dd><code>key</code> - the code of the key that is being repeatedly pressed</dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setAlwaysOnTop(boolean)">
+<h3>setAlwaysOnTop</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setAlwaysOnTop</span><wbr><span class="parameters">(boolean&nbsp;alwaysOnTop)</span></div>
+<div class="block">Sets whether the window should always be on top of other windows.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>alwaysOnTop</code> - <code>true</code> if the window should always be on top; otherwise <code>false</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isAlwaysOnTop()">
+<h3>isAlwaysOnTop</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isAlwaysOnTop</span>()</div>
+<div class="block">Checks if the window is set to always be on top of other windows.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd><code>true</code> if the window is always on top; otherwise <code>false</code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="bringToTop()">
+<h3>bringToTop</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">bringToTop</span>()</div>
+<div class="block">Moves this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> to the front of the rendering order, ensuring it is drawn above other widgets.</div>
 </section>
 </li>
 <li>
@@ -670,7 +855,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="addToScreen()">
 <h3>addToScreen</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addToScreen</span>()</div>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addToScreen</span>()</div>
 <div class="block">Adds this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> to the screen by registering it with the <a href="WidgetManager.html" title="class in com.avrix.ui"><code>WidgetManager</code></a>.
  The <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> will be managed and rendered as part of the UI.</div>
 </section>
@@ -678,7 +863,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="removeFromScreen()">
 <h3>removeFromScreen</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">removeFromScreen</span>()</div>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">removeFromScreen</span>()</div>
 <div class="block">Removes this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> from the screen by deregistering it from the <a href="WidgetManager.html" title="class in com.avrix.ui"><code>WidgetManager</code></a>.
  The <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> will no longer be managed or rendered as part of the UI.</div>
 </section>
@@ -686,7 +871,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="setContext(com.avrix.ui.UIContext)">
 <h3>setContext</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setContext</span><wbr><span class="parameters">(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context)</span></div>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setContext</span><wbr><span class="parameters">(<a href="UIContext.html" title="class in com.avrix.ui">UIContext</a>&nbsp;context)</span></div>
 <div class="block">Sets the <a href="UIContext.html" title="class in com.avrix.ui"><code>UIContext</code></a> for this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -697,11 +882,108 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getContext()">
 <h3>getContext</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="UIContext.html" title="class in com.avrix.ui">UIContext</a></span>&nbsp;<span class="element-name">getContext</span>()</div>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="UIContext.html" title="class in com.avrix.ui">UIContext</a></span>&nbsp;<span class="element-name">getContext</span>()</div>
 <div class="block">Returns the current <a href="UIContext.html" title="class in com.avrix.ui"><code>UIContext</code></a> for this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the <a href="UIContext.html" title="class in com.avrix.ui"><code>UIContext</code></a> currently associated with this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getContextID()">
+<h3>getContextID</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">long</span>&nbsp;<span class="element-name">getContextID</span>()</div>
+<div class="block">Returns the current <a href="UIContext.html" title="class in com.avrix.ui"><code>UIContext</code></a> ID for this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the <a href="UIContext.html" title="class in com.avrix.ui"><code>UIContext</code></a> ID currently associated with this <a href="Widget.html" title="class in com.avrix.ui"><code>Widget</code></a></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="startScissor(int,int,int,int)">
+<h3>startScissor</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">startScissor</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height)</span></div>
+<div class="block">Sets the scissor region for NanoVG. Only content inside this region will be rendered.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - the x-coordinate of the scissor region.</dd>
+<dd><code>y</code> - the y-coordinate of the scissor region.</dd>
+<dd><code>width</code> - the width of the scissor region.</dd>
+<dd><code>height</code> - the height of the scissor region.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="startIntersectScissor(int,int,int,int)">
+<h3>startIntersectScissor</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">startIntersectScissor</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height)</span></div>
+<div class="block">Sets the intersecting scissor region for NanoVG. Only content inside this intersection of
+ this region and the current scissor region will be rendered.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - the x-coordinate of the intersecting scissor region.</dd>
+<dd><code>y</code> - the y-coordinate of the intersecting scissor region.</dd>
+<dd><code>width</code> - the width of the intersecting scissor region.</dd>
+<dd><code>height</code> - the height of the intersecting scissor region.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="endScissor()">
+<h3>endScissor</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">endScissor</span>()</div>
+<div class="block">Resets the scissor region, allowing rendering to occur over the entire canvas.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="drawRectOutline(int,int,int,int,float,com.avrix.ui.UIColor)">
+<h3>drawRectOutline</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawRectOutline</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height,
+ float&nbsp;lineWidth,
+ <a href="UIColor.html" title="class in com.avrix.ui">UIColor</a>&nbsp;color)</span></div>
+<div class="block">Draws a rectangle with a stroke and no fill</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - the X coordinate of the top left corner of the rectangle</dd>
+<dd><code>y</code> - the Y coordinate of the top left corner of the rectangle</dd>
+<dd><code>width</code> - the width of the rectangle</dd>
+<dd><code>height</code> - height of the rectangle</dd>
+<dd><code>lineWidth</code> - the width of the stroke line in pixels</dd>
+<dd><code>color</code> - the color of the outline</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="drawRoundedRectOutline(int,int,int,int,int,float,com.avrix.ui.UIColor)">
+<h3>drawRoundedRectOutline</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawRoundedRectOutline</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height,
+ int&nbsp;radius,
+ float&nbsp;lineWidth,
+ <a href="UIColor.html" title="class in com.avrix.ui">UIColor</a>&nbsp;color)</span></div>
+<div class="block">Draws a rectangle with rounded corners and a stroke without fill.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - the X coordinate of the top left corner of the rectangle</dd>
+<dd><code>y</code> - the Y coordinate of the top left corner of the rectangle</dd>
+<dd><code>width</code> - the width of the rectangle</dd>
+<dd><code>height</code> - height of the rectangle</dd>
+<dd><code>radius</code> - corner radius</dd>
+<dd><code>lineWidth</code> - the width of the stroke line in pixels</dd>
+<dd><code>color</code> - the color of the outline</dd>
 </dl>
 </section>
 </li>

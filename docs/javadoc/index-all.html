@@ -219,6 +219,14 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Both client and server environments.</div>
 </dd>
+<dt><a href="com/avrix/ui/Widget.html#bringToTop()" class="member-name-link">bringToTop()</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Moves this <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> to the front of the rendering order, ensuring it is drawn above other widgets.</div>
+</dd>
+<dt><a href="com/avrix/ui/WidgetManager.html#bringWidgetToTop(com.avrix.ui.Widget)" class="member-name-link">bringWidgetToTop(Widget)</a> - Static method in class com.avrix.ui.<a href="com/avrix/ui/WidgetManager.html" title="class in com.avrix.ui">WidgetManager</a></dt>
+<dd>
+<div class="block">Moves the specified widget to the front of the rendering order, ensuring it is drawn above other widgets.</div>
+</dd>
 <dt><a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html#build()" class="member-name-link">build()</a> - Method in class com.avrix.agent.<a href="com/avrix/agent/ClassModifier.ClassModifierBuilder.html" title="class in com.avrix.agent">ClassModifier.ClassModifierBuilder</a></dt>
 <dd>
 <div class="block">Creates a <a href="com/avrix/agent/ClassModifier.html" title="class in com.avrix.agent"><code>ClassModifier</code></a> object based on the current state of the builder.</div>
@@ -463,9 +471,17 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Draws a filled rectangle with the specified position, size, and color.</div>
 </dd>
+<dt><a href="com/avrix/ui/Widget.html#drawRectOutline(int,int,int,int,float,com.avrix.ui.UIColor)" class="member-name-link">drawRectOutline(int, int, int, int, float, UIColor)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Draws a rectangle with a stroke and no fill</div>
+</dd>
 <dt><a href="com/avrix/ui/Widget.html#drawRoundedRect(int,int,int,int,float,com.avrix.ui.UIColor)" class="member-name-link">drawRoundedRect(int, int, int, int, float, UIColor)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
 <dd>
 <div class="block">Draws a filled rectangle with rounded corners with the specified position, size, radius, and color.</div>
+</dd>
+<dt><a href="com/avrix/ui/Widget.html#drawRoundedRectOutline(int,int,int,int,int,float,com.avrix.ui.UIColor)" class="member-name-link">drawRoundedRectOutline(int, int, int, int, int, float, UIColor)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Draws a rectangle with rounded corners and a stroke without fill.</div>
 </dd>
 <dt><a href="com/avrix/ui/Widget.html#drawText(java.lang.String,java.lang.String,int,int,int,com.avrix.ui.UIColor)" class="member-name-link">drawText(String, String, int, int, int, UIColor)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
 <dd>
@@ -485,6 +501,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/ui/UIContext.html#endFrame()" class="member-name-link">endFrame()</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/UIContext.html" title="class in com.avrix.ui">UIContext</a></dt>
 <dd>
 <div class="block">Ends the current frame of rendering (<code>nvgEndFrame(context)</code>)</div>
+</dd>
+<dt><a href="com/avrix/ui/Widget.html#endScissor()" class="member-name-link">endScissor()</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Resets the scissor region, allowing rendering to occur over the entire canvas.</div>
 </dd>
 <dt><a href="com/avrix/plugin/Metadata.MetadataBuilder.html#entryPointsList(java.util.List)" class="member-name-link">entryPointsList(List&lt;String&gt;)</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Metadata.MetadataBuilder.html" title="class in com.avrix.plugin">Metadata.MetadataBuilder</a></dt>
 <dd>
@@ -674,6 +694,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/ui/Widget.html#getContext()" class="member-name-link">getContext()</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
 <dd>
 <div class="block">Returns the current <a href="com/avrix/ui/UIContext.html" title="class in com.avrix.ui"><code>UIContext</code></a> for this <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+</dd>
+<dt><a href="com/avrix/ui/Widget.html#getContextID()" class="member-name-link">getContextID()</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Returns the current <a href="com/avrix/ui/UIContext.html" title="class in com.avrix.ui"><code>UIContext</code></a> ID for this <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </dd>
 <dt><a href="com/avrix/plugin/Plugin.html#getDefaultConfig()" class="member-name-link">getDefaultConfig()</a> - Method in class com.avrix.plugin.<a href="com/avrix/plugin/Plugin.html" title="class in com.avrix.plugin">Plugin</a></dt>
 <dd>
@@ -2789,6 +2813,14 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Raises an event by its name, passing arguments to listeners registered for that event.</div>
 </dd>
+<dt><a href="com/avrix/ui/Widget.html#isAlwaysOnTop()" class="member-name-link">isAlwaysOnTop()</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Checks if the window is set to always be on top of other windows.</div>
+</dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#isDraggable()" class="member-name-link">isDraggable()</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
+<dd>
+<div class="block">Checks if the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> is draggable.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#isEmpty()" class="member-name-link">isEmpty()</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Checks if the YAML file is empty.</div>
@@ -2832,6 +2864,10 @@ loadScripts(document, 'script');</script>
 </dl>
 <h2 class="title" id="I:K">K</h2>
 <dl class="index">
+<dt><a href="com/avrix/enums/KeyEventType.html" class="type-name-link" title="enum class in com.avrix.enums">KeyEventType</a> - Enum Class in <a href="com/avrix/enums/package-summary.html">com.avrix.enums</a></dt>
+<dd>
+<div class="block">Enum representing the types of keyboard events.</div>
+</dd>
 <dt><a href="com/avrix/utils/PlayerUtils.html#kickPlayer(zombie.characters.IsoPlayer,java.lang.String)" class="member-name-link">kickPlayer(IsoPlayer, String)</a> - Static method in class com.avrix.utils.<a href="com/avrix/utils/PlayerUtils.html" title="class in com.avrix.utils">PlayerUtils</a></dt>
 <dd>
 <div class="block">Kicks a player from the server.</div>
@@ -3601,13 +3637,13 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/events/OnKeyKeepPressedEvent.html#%3Cinit%3E()" class="member-name-link">OnKeyKeepPressedEvent()</a> - Constructor for class com.avrix.events.<a href="com/avrix/events/OnKeyKeepPressedEvent.html" title="class in com.avrix.events">OnKeyKeepPressedEvent</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/ui/Widget.html#onKeyPress(int)" class="member-name-link">onKeyPress(int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Called when a key is pressed while the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> has focus.</div>
+</dd>
 <dt><a href="com/avrix/ui/WidgetManager.html#onKeyPress(int)" class="member-name-link">onKeyPress(int)</a> - Static method in class com.avrix.ui.<a href="com/avrix/ui/WidgetManager.html" title="class in com.avrix.ui">WidgetManager</a></dt>
 <dd>
 <div class="block">Handles key press events for all visible widgets.</div>
-</dd>
-<dt><a href="com/avrix/ui/Widget.html#onKeyPress(com.avrix.ui.UIContext,int)" class="member-name-link">onKeyPress(UIContext, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
-<dd>
-<div class="block">Called when a key is pressed while the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> has focus.</div>
 </dd>
 <dt><a href="com/avrix/events/OnKeyPressedEvent.html" class="type-name-link" title="class in com.avrix.events">OnKeyPressedEvent</a> - Class in <a href="com/avrix/events/package-summary.html">com.avrix.events</a></dt>
 <dd>
@@ -3615,21 +3651,21 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/events/OnKeyPressedEvent.html#%3Cinit%3E()" class="member-name-link">OnKeyPressedEvent()</a> - Constructor for class com.avrix.events.<a href="com/avrix/events/OnKeyPressedEvent.html" title="class in com.avrix.events">OnKeyPressedEvent</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/ui/Widget.html#onKeyRelease(int)" class="member-name-link">onKeyRelease(int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Called when a key is released while the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> has focus.</div>
+</dd>
 <dt><a href="com/avrix/ui/WidgetManager.html#onKeyRelease(int)" class="member-name-link">onKeyRelease(int)</a> - Static method in class com.avrix.ui.<a href="com/avrix/ui/WidgetManager.html" title="class in com.avrix.ui">WidgetManager</a></dt>
 <dd>
 <div class="block">Handles key release events for all visible widgets.</div>
 </dd>
-<dt><a href="com/avrix/ui/Widget.html#onKeyRelease(com.avrix.ui.UIContext,int)" class="member-name-link">onKeyRelease(UIContext, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dt><a href="com/avrix/ui/Widget.html#onKeyRepeat(int)" class="member-name-link">onKeyRepeat(int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
 <dd>
-<div class="block">Called when a key is released while the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> has focus.</div>
+<div class="block">Called when a key is held down and repeatedly pressed while the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> has focus.</div>
 </dd>
 <dt><a href="com/avrix/ui/WidgetManager.html#onKeyRepeat(int)" class="member-name-link">onKeyRepeat(int)</a> - Static method in class com.avrix.ui.<a href="com/avrix/ui/WidgetManager.html" title="class in com.avrix.ui">WidgetManager</a></dt>
 <dd>
 <div class="block">Handles key repeat events for all visible widgets.</div>
-</dd>
-<dt><a href="com/avrix/ui/Widget.html#onKeyRepeat(com.avrix.ui.UIContext,int)" class="member-name-link">onKeyRepeat(UIContext, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
-<dd>
-<div class="block">Called when a key is held down and repeatedly pressed while the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> has focus.</div>
 </dd>
 <dt><a href="com/avrix/events/OnKeyStartPressedEvent.html" class="type-name-link" title="class in com.avrix.events">OnKeyStartPressedEvent</a> - Class in <a href="com/avrix/events/package-summary.html">com.avrix.events</a></dt>
 <dd>
@@ -3637,13 +3673,33 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/events/OnKeyStartPressedEvent.html#%3Cinit%3E()" class="member-name-link">OnKeyStartPressedEvent()</a> - Constructor for class com.avrix.events.<a href="com/avrix/events/OnKeyStartPressedEvent.html" title="class in com.avrix.events">OnKeyStartPressedEvent</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/avrix/ui/Widget.html#onLeftMouseDown(com.avrix.ui.UIContext,float,float)" class="member-name-link">onLeftMouseDown(UIContext, float, float)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dt><a href="com/avrix/ui/PanelWidget.html#onLeftMouseDown(int,int)" class="member-name-link">onLeftMouseDown(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
 <dd>
 <div class="block">Called when the left mouse button is pressed down over the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </dd>
-<dt><a href="com/avrix/ui/Widget.html#onLeftMouseUp(com.avrix.ui.UIContext,float,float)" class="member-name-link">onLeftMouseUp(UIContext, float, float)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dt><a href="com/avrix/ui/Widget.html#onLeftMouseDown(int,int)" class="member-name-link">onLeftMouseDown(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Called when the left mouse button is pressed down over the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+</dd>
+<dt><a href="com/avrix/ui/Widget.html#onLeftMouseDownOutside(int,int)" class="member-name-link">onLeftMouseDownOutside(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Handles the left mouse button down event outside any visible widget</div>
+</dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#onLeftMouseUp(int,int)" class="member-name-link">onLeftMouseUp(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
 <dd>
 <div class="block">Called when the left mouse button is released over the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+</dd>
+<dt><a href="com/avrix/ui/Widget.html#onLeftMouseUp(int,int)" class="member-name-link">onLeftMouseUp(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Called when the left mouse button is released over the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+</dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#onLeftMouseUpOutside(int,int)" class="member-name-link">onLeftMouseUpOutside(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
+<dd>
+<div class="block">Handles the left mouse button up event outside any visible <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a></div>
+</dd>
+<dt><a href="com/avrix/ui/Widget.html#onLeftMouseUpOutside(int,int)" class="member-name-link">onLeftMouseUpOutside(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Handles the left mouse button up event outside any visible widget</div>
 </dd>
 <dt><a href="com/avrix/events/OnLevelPerkEvent.html" class="type-name-link" title="class in com.avrix.events">OnLevelPerkEvent</a> - Class in <a href="com/avrix/events/package-summary.html">com.avrix.events</a></dt>
 <dd>
@@ -3741,7 +3797,7 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/events/OnMouseDownEvent.html#%3Cinit%3E()" class="member-name-link">OnMouseDownEvent()</a> - Constructor for class com.avrix.events.<a href="com/avrix/events/OnMouseDownEvent.html" title="class in com.avrix.events">OnMouseDownEvent</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/avrix/ui/Widget.html#onMouseMove(com.avrix.ui.UIContext,float,float)" class="member-name-link">onMouseMove(UIContext, float, float)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dt><a href="com/avrix/ui/Widget.html#onMouseMove(int,int)" class="member-name-link">onMouseMove(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
 <dd>
 <div class="block">Called when the mouse is moved over the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </dd>
@@ -3751,15 +3807,23 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/events/OnMouseMoveEvent.html#%3Cinit%3E()" class="member-name-link">OnMouseMoveEvent()</a> - Constructor for class com.avrix.events.<a href="com/avrix/events/OnMouseMoveEvent.html" title="class in com.avrix.events">OnMouseMoveEvent</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/ui/Widget.html#onMouseMoveOutside(int,int)" class="member-name-link">onMouseMoveOutside(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Handles the mouse move event outside any visible widget</div>
+</dd>
 <dt><a href="com/avrix/events/OnMouseUpEvent.html" class="type-name-link" title="class in com.avrix.events">OnMouseUpEvent</a> - Class in <a href="com/avrix/events/package-summary.html">com.avrix.events</a></dt>
 <dd>
 <div class="block">Triggered when the mouse button is released.</div>
 </dd>
 <dt><a href="com/avrix/events/OnMouseUpEvent.html#%3Cinit%3E()" class="member-name-link">OnMouseUpEvent()</a> - Constructor for class com.avrix.events.<a href="com/avrix/events/OnMouseUpEvent.html" title="class in com.avrix.events">OnMouseUpEvent</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/avrix/ui/Widget.html#onMouseWheel(com.avrix.ui.UIContext,float,float,float)" class="member-name-link">onMouseWheel(UIContext, float, float, float)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dt><a href="com/avrix/ui/Widget.html#onMouseWheel(int,int,int)" class="member-name-link">onMouseWheel(int, int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
 <dd>
 <div class="block">Called when the mouse wheel is scrolled over the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+</dd>
+<dt><a href="com/avrix/ui/Widget.html#onMouseWheelOutside(int,int,int)" class="member-name-link">onMouseWheelOutside(int, int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Handles the mouse wheel event outside any visible widget</div>
 </dd>
 <dt><a href="com/avrix/events/OnMultiTriggerNPCEventEvent.html" class="type-name-link" title="class in com.avrix.events">OnMultiTriggerNPCEventEvent</a> - Class in <a href="com/avrix/events/package-summary.html">com.avrix.events</a></dt>
 <dd>
@@ -4059,7 +4123,7 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/events/OnReuseGridsquareEvent.html#%3Cinit%3E()" class="member-name-link">OnReuseGridsquareEvent()</a> - Constructor for class com.avrix.events.<a href="com/avrix/events/OnReuseGridsquareEvent.html" title="class in com.avrix.events">OnReuseGridsquareEvent</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/avrix/ui/Widget.html#onRightMouseDown(com.avrix.ui.UIContext,float,float)" class="member-name-link">onRightMouseDown(UIContext, float, float)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dt><a href="com/avrix/ui/Widget.html#onRightMouseDown(int,int)" class="member-name-link">onRightMouseDown(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
 <dd>
 <div class="block">Called when the right mouse button is pressed down over the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </dd>
@@ -4069,7 +4133,11 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/events/OnRightMouseDownEvent.html#%3Cinit%3E()" class="member-name-link">OnRightMouseDownEvent()</a> - Constructor for class com.avrix.events.<a href="com/avrix/events/OnRightMouseDownEvent.html" title="class in com.avrix.events">OnRightMouseDownEvent</a></dt>
 <dd>&nbsp;</dd>
-<dt><a href="com/avrix/ui/Widget.html#onRightMouseUp(com.avrix.ui.UIContext,float,float)" class="member-name-link">onRightMouseUp(UIContext, float, float)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dt><a href="com/avrix/ui/Widget.html#onRightMouseDownOutside(int,int)" class="member-name-link">onRightMouseDownOutside(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Handles the right mouse button down event outside any visible widget</div>
+</dd>
+<dt><a href="com/avrix/ui/Widget.html#onRightMouseUp(int,int)" class="member-name-link">onRightMouseUp(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
 <dd>
 <div class="block">Called when the right mouse button is released over the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
 </dd>
@@ -4079,6 +4147,10 @@ loadScripts(document, 'script');</script>
 </dd>
 <dt><a href="com/avrix/events/OnRightMouseUpEvent.html#%3Cinit%3E()" class="member-name-link">OnRightMouseUpEvent()</a> - Constructor for class com.avrix.events.<a href="com/avrix/events/OnRightMouseUpEvent.html" title="class in com.avrix.events">OnRightMouseUpEvent</a></dt>
 <dd>&nbsp;</dd>
+<dt><a href="com/avrix/ui/Widget.html#onRightMouseUpOutside(int,int)" class="member-name-link">onRightMouseUpOutside(int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Handles the right mouse button up event outside any visible widget</div>
+</dd>
 <dt><a href="com/avrix/events/OnSafehousesChangedEvent.html" class="type-name-link" title="class in com.avrix.events">OnSafehousesChangedEvent</a> - Class in <a href="com/avrix/events/package-summary.html">com.avrix.events</a></dt>
 <dd>
 <div class="block">Triggered when the safehouse is being changed.</div>
@@ -4469,6 +4541,19 @@ loadScripts(document, 'script');</script>
 </dl>
 <h2 class="title" id="I:P">P</h2>
 <dl class="index">
+<dt><a href="com/avrix/ui/PanelWidget.html" class="type-name-link" title="class in com.avrix.ui">PanelWidget</a> - Class in <a href="com/avrix/ui/package-summary.html">com.avrix.ui</a></dt>
+<dd>
+<div class="block">Represents a panel <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> with optional rounded corners, borders, and drag functionality.</div>
+</dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#%3Cinit%3E(int,int,int,int)" class="member-name-link">PanelWidget(int, int, int, int)</a> - Constructor for class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
+<dd>
+<div class="block">Constructs a new <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> with the specified position and size.</div>
+</dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#%3Cinit%3E(int,int,int,int,int,com.avrix.ui.UIColor)" class="member-name-link">PanelWidget(int, int, int, int, int, UIColor)</a> - Constructor for class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
+<dd>
+<div class="block">Constructs a new <a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui"><code>PanelWidget</code></a> with the specified position, size, border radius,
+ and background color.</div>
+</dd>
 <dt><a href="com/avrix/patches/PatchBanSteamIDCommand.html" class="type-name-link" title="class in com.avrix.patches">PatchBanSteamIDCommand</a> - Class in <a href="com/avrix/patches/package-summary.html">com.avrix.patches</a></dt>
 <dd>
 <div class="block">BanSteamIDCommand patcher</div>
@@ -4655,6 +4740,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Plugin metadata file name</div>
 </dd>
+<dt><a href="com/avrix/enums/KeyEventType.html#PRESS" class="member-name-link">PRESS</a> - Enum constant in enum class com.avrix.enums.<a href="com/avrix/enums/KeyEventType.html" title="enum class in com.avrix.enums">KeyEventType</a></dt>
+<dd>
+<div class="block">Represents a key press event.</div>
+</dd>
 <dt><a href="com/avrix/events/EventManager.EventListener.html#priority()" class="member-name-link">priority()</a> - Method in record class com.avrix.events.<a href="com/avrix/events/EventManager.EventListener.html" title="class in com.avrix.events">EventManager.EventListener</a></dt>
 <dd>
 <div class="block">Returns the value of the <a href="./com/avrix/events/EventManager.EventListener.html#param-priority"><code>priority</code></a> record component.</div>
@@ -4677,6 +4766,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/plugin/ServiceManager.html#register(java.lang.Class,T)" class="member-name-link">register(Class&lt;T&gt;, T)</a> - Static method in class com.avrix.plugin.<a href="com/avrix/plugin/ServiceManager.html" title="class in com.avrix.plugin">ServiceManager</a></dt>
 <dd>
 <div class="block">Registers a service by its interface.</div>
+</dd>
+<dt><a href="com/avrix/enums/KeyEventType.html#RELEASE" class="member-name-link">RELEASE</a> - Enum constant in enum class com.avrix.enums.<a href="com/avrix/enums/KeyEventType.html" title="enum class in com.avrix.enums">KeyEventType</a></dt>
+<dd>
+<div class="block">Represents a key release event.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#remove(java.lang.String)" class="member-name-link">remove(String)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -4722,9 +4815,17 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Removes a widget from the list of widgets to be managed and displayed.</div>
 </dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#render()" class="member-name-link">render()</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
+<dd>
+<div class="block">Renders the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> with the given context.</div>
+</dd>
 <dt><a href="com/avrix/ui/Widget.html#render()" class="member-name-link">render()</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
 <dd>
 <div class="block">Renders the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> with the given context.</div>
+</dd>
+<dt><a href="com/avrix/enums/KeyEventType.html#REPEAT" class="member-name-link">REPEAT</a> - Enum constant in enum class com.avrix.enums.<a href="com/avrix/enums/KeyEventType.html" title="enum class in com.avrix.enums">KeyEventType</a></dt>
+<dd>
+<div class="block">Represents a key repeat event.</div>
 </dd>
 <dt><a href="com/avrix/ui/UIColor.html#rgbMatches(com.avrix.ui.UIColor)" class="member-name-link">rgbMatches(UIColor)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/UIColor.html" title="class in com.avrix.ui">UIColor</a></dt>
 <dd>
@@ -4795,6 +4896,14 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Sets the <a href="com/avrix/enums/AccessLevel.html" title="enum class in com.avrix.enums"><code>AccessLevel</code></a> of a player.</div>
 </dd>
+<dt><a href="com/avrix/ui/Widget.html#setAlwaysOnTop(boolean)" class="member-name-link">setAlwaysOnTop(boolean)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Sets whether the window should always be on top of other windows.</div>
+</dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#setBackgroundColor(com.avrix.ui.UIColor)" class="member-name-link">setBackgroundColor(UIColor)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
+<dd>
+<div class="block">Sets the background color of the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>.</div>
+</dd>
 <dt><a href="com/avrix/utils/YamlFile.html#setBoolean(java.lang.String,boolean)" class="member-name-link">setBoolean(String, boolean)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Sets a boolean value in the YAML file.</div>
@@ -4806,6 +4915,18 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/utils/YamlFile.html#setBooleanMap(java.lang.String,java.util.Map)" class="member-name-link">setBooleanMap(String, Map&lt;String, Boolean&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Sets a map of boolean values in the YAML file under the specified key.</div>
+</dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#setBorderColor(com.avrix.ui.UIColor)" class="member-name-link">setBorderColor(UIColor)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
+<dd>
+<div class="block">Sets the border color of the widget.</div>
+</dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#setBorderRadius(int)" class="member-name-link">setBorderRadius(int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
+<dd>
+<div class="block">Sets the radius of the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a>'s corner rounding.</div>
+</dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#setBorderWidth(int)" class="member-name-link">setBorderWidth(int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
+<dd>
+<div class="block">Sets the border width of the widget.</div>
 </dd>
 <dt><a href="com/avrix/utils/YamlFile.html#setByte(java.lang.String,byte)" class="member-name-link">setByte(String, byte)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
@@ -4838,6 +4959,14 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/utils/YamlFile.html#setDoubleMap(java.lang.String,java.util.Map)" class="member-name-link">setDoubleMap(String, Map&lt;String, Double&gt;)</a> - Method in class com.avrix.utils.<a href="com/avrix/utils/YamlFile.html" title="class in com.avrix.utils">YamlFile</a></dt>
 <dd>
 <div class="block">Sets a map of double values in the YAML file under the specified key.</div>
+</dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#setDraggable(boolean)" class="member-name-link">setDraggable(boolean)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
+<dd>
+<div class="block">Sets whether the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> is draggable.</div>
+</dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#setDrawBorder(boolean)" class="member-name-link">setDrawBorder(boolean)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
+<dd>
+<div class="block">Sets whether to draw the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> border.</div>
 </dd>
 <dt><a href="com/avrix/ui/Widget.html#setHeight(int)" class="member-name-link">setHeight(int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
 <dd>
@@ -4923,6 +5052,14 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">White space symbol, used to separate words after applying color, etc. to it.</div>
 </dd>
+<dt><a href="com/avrix/ui/Widget.html#startIntersectScissor(int,int,int,int)" class="member-name-link">startIntersectScissor(int, int, int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Sets the intersecting scissor region for NanoVG.</div>
+</dd>
+<dt><a href="com/avrix/ui/Widget.html#startScissor(int,int,int,int)" class="member-name-link">startScissor(int, int, int, int)</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
+<dd>
+<div class="block">Sets the scissor region for NanoVG.</div>
+</dd>
 </dl>
 <h2 class="title" id="I:T">T</h2>
 <dl class="index">
@@ -4951,6 +5088,10 @@ loadScripts(document, 'script');</script>
 <dt><a href="com/avrix/agent/AgentManager.html#transformClass(java.lang.String,byte%5B%5D)" class="member-name-link">transformClass(String, byte[])</a> - Static method in class com.avrix.agent.<a href="com/avrix/agent/AgentManager.html" title="class in com.avrix.agent">AgentManager</a></dt>
 <dd>
 <div class="block">Transforming a class by its name using a new class as a byte array.</div>
+</dd>
+<dt><a href="com/avrix/ui/UIColor.html#TRANSPARENT" class="member-name-link">TRANSPARENT</a> - Static variable in class com.avrix.ui.<a href="com/avrix/ui/UIColor.html" title="class in com.avrix.ui">UIColor</a></dt>
+<dd>
+<div class="block">Predefined color constant for transparency.</div>
 </dd>
 </dl>
 <h2 class="title" id="I:U">U</h2>
@@ -4992,6 +5133,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Removes a service from the list of registered ones</div>
 </dd>
+<dt><a href="com/avrix/ui/PanelWidget.html#update()" class="member-name-link">update()</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/PanelWidget.html" title="class in com.avrix.ui">PanelWidget</a></dt>
+<dd>
+<div class="block">Updates the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> with the given context.</div>
+</dd>
 <dt><a href="com/avrix/ui/Widget.html#update()" class="member-name-link">update()</a> - Method in class com.avrix.ui.<a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui">Widget</a></dt>
 <dd>
 <div class="block">Updates the <a href="com/avrix/ui/Widget.html" title="class in com.avrix.ui"><code>Widget</code></a> with the given context.</div>
@@ -5031,6 +5176,10 @@ loadScripts(document, 'script');</script>
 <dd>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
 </dd>
+<dt><a href="com/avrix/enums/KeyEventType.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class com.avrix.enums.<a href="com/avrix/enums/KeyEventType.html" title="enum class in com.avrix.enums">KeyEventType</a></dt>
+<dd>
+<div class="block">Returns the enum constant of this class with the specified name.</div>
+</dd>
 <dt><a href="com/avrix/enums/Priority.html#valueOf(java.lang.String)" class="member-name-link">valueOf(String)</a> - Static method in enum class com.avrix.enums.<a href="com/avrix/enums/Priority.html" title="enum class in com.avrix.enums">Priority</a></dt>
 <dd>
 <div class="block">Returns the enum constant of this class with the specified name.</div>
@@ -5046,6 +5195,11 @@ the order they are declared.</div>
 the order they are declared.</div>
 </dd>
 <dt><a href="com/avrix/enums/Environment.html#values()" class="member-name-link">values()</a> - Static method in enum class com.avrix.enums.<a href="com/avrix/enums/Environment.html" title="enum class in com.avrix.enums">Environment</a></dt>
+<dd>
+<div class="block">Returns an array containing the constants of this enum class, in
+the order they are declared.</div>
+</dd>
+<dt><a href="com/avrix/enums/KeyEventType.html#values()" class="member-name-link">values()</a> - Static method in enum class com.avrix.enums.<a href="com/avrix/enums/KeyEventType.html" title="enum class in com.avrix.enums">KeyEventType</a></dt>
 <dd>
 <div class="block">Returns an array containing the constants of this enum class, in
 the order they are declared.</div>

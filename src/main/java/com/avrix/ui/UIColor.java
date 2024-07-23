@@ -15,6 +15,11 @@ public class UIColor {
     public static final UIColor WHITE = new UIColor("#FFFFFF").immutable();
 
     /**
+     * Predefined color constant for transparency.
+     */
+    public static final UIColor TRANSPARENT = new UIColor("#FFFFFF").alpha(0).immutable();
+
+    /**
      * Predefined color constant for light gray (#D3D3D3).
      */
     public static final UIColor LIGHT_GRAY = new UIColor("#D3D3D3").immutable();

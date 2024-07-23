@@ -5,6 +5,7 @@
 - Added new logging system `TinyLog2`
 - Added `onWidgetManagerInitialized` event
 - Added default fonts: `Arial-Regular`, `Roboto-Regular`, `Montserrat-Regular`, `FontAwesome`
+- Added basic widgets: `Panel`
 - Implemented a GUI system based on `NanoVG`
 
 # AvrixLoader v1.3.0
