@@ -190,7 +190,7 @@ public class ButtonWidget extends PanelWidget {
     public void onLeftMouseUp(int x, int y) {
         super.onLeftMouseUp(x, y);
 
-        if (this.enable && this.visible) {
+        if (this.enable && this.visible && this.LMBDown) {
             this.onClickMethod.run();
             SoundManager.instance.playUISound(this.clickSound);
         }
