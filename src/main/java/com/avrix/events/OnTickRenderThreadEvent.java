@@ -1,9 +1,9 @@
 package com.avrix.events;
 
 /**
- * Triggered when every tick after all elements have been rendered. Called from the render thread.
+ * Triggered when every tick after elements have been rendered. Called from the render thread.
  */
-public abstract class OnPostTickRenderThreadEvent extends Event {
+public abstract class OnTickRenderThreadEvent extends Event {
     /**
      * Getting the event name
      *
@@ -11,7 +11,7 @@ public abstract class OnPostTickRenderThreadEvent extends Event {
      */
     @Override
     public String getEventName() {
-        return "onPostTickRenderThread";
+        return "onTickRenderThread";
     }
 
     /**

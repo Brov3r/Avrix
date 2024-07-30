@@ -619,13 +619,13 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered after a game has been saved.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnPostTickRenderThreadEvent.html" title="class in com.avrix.events">OnPostTickRenderThreadEvent</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnPostUIDrawEvent.html" title="class in com.avrix.events">OnPostUIDrawEvent</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
-<div class="block">Triggered when every tick after all elements have been rendered.</div>
-</div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnPostUIDrawEvent.html" title="class in com.avrix.events">OnPostUIDrawEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered by UI Manager in its render function after the UI has been drawn.</div>
+</div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnPostWidgetDrawEvent.html" title="class in com.avrix.events">OnPostWidgetDrawEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Trigger when all widgets are rendered, but before the NanoVG frame has finished rendering</div>
 </div>
 <div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnPreAddCatDefsEvent.html" title="class in com.avrix.events">OnPreAddCatDefsEvent</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
@@ -671,205 +671,213 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered by UI Manager in its render function before the UI gets drawn.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnRainStopEvent.html" title="class in com.avrix.events">OnRainStopEvent</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnPreWidgetDrawEvent.html" title="class in com.avrix.events">OnPreWidgetDrawEvent</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">Trigger before widgets are drawn, but after NanoVG frame creation begins</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnRainStopEvent.html" title="class in com.avrix.events">OnRainStopEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when it stops raining.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnReceiveFactionInviteEvent.html" title="class in com.avrix.events">OnReceiveFactionInviteEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnReceiveFactionInviteEvent.html" title="class in com.avrix.events">OnReceiveFactionInviteEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a player is invited to join a faction.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnReceiveGlobalModDataEvent.html" title="class in com.avrix.events">OnReceiveGlobalModDataEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnReceiveGlobalModDataEvent.html" title="class in com.avrix.events">OnReceiveGlobalModDataEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the game client is receiving GlobalModData from the server.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnReceiveItemListNetEvent.html" title="class in com.avrix.events">OnReceiveItemListNetEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnReceiveItemListNetEvent.html" title="class in com.avrix.events">OnReceiveItemListNetEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a player is receiving a list of items from another player.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnReceiveSafehouseInviteEvent.html" title="class in com.avrix.events">OnReceiveSafehouseInviteEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnReceiveSafehouseInviteEvent.html" title="class in com.avrix.events">OnReceiveSafehouseInviteEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a player is invited to a safehouse.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnReceiveUserlogEvent.html" title="class in com.avrix.events">OnReceiveUserlogEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnReceiveUserlogEvent.html" title="class in com.avrix.events">OnReceiveUserlogEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the game client is receiving user log from the server.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnRenderTickEvent.html" title="class in com.avrix.events">OnRenderTickEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnRenderTickEvent.html" title="class in com.avrix.events">OnRenderTickEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered every time the display is being rendered.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnRequestTradeEvent.html" title="class in com.avrix.events">OnRequestTradeEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnRequestTradeEvent.html" title="class in com.avrix.events">OnRequestTradeEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a character is requesting a trade with another character.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnResetLuaEvent.html" title="class in com.avrix.events">OnResetLuaEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnResetLuaEvent.html" title="class in com.avrix.events">OnResetLuaEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when Lua is being reset.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnResolutionChangeEvent.html" title="class in com.avrix.events">OnResolutionChangeEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnResolutionChangeEvent.html" title="class in com.avrix.events">OnResolutionChangeEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when game resolution has changed.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnReuseGridsquareEvent.html" title="class in com.avrix.events">OnReuseGridsquareEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnReuseGridsquareEvent.html" title="class in com.avrix.events">OnReuseGridsquareEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a grid square is being reused.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnRightMouseDownEvent.html" title="class in com.avrix.events">OnRightMouseDownEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnRightMouseDownEvent.html" title="class in com.avrix.events">OnRightMouseDownEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when right mouse button is down.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnRightMouseUpEvent.html" title="class in com.avrix.events">OnRightMouseUpEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnRightMouseUpEvent.html" title="class in com.avrix.events">OnRightMouseUpEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when mouse button is released.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSafehousesChangedEvent.html" title="class in com.avrix.events">OnSafehousesChangedEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSafehousesChangedEvent.html" title="class in com.avrix.events">OnSafehousesChangedEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the safehouse is being changed.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSaveEvent.html" title="class in com.avrix.events">OnSaveEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSaveEvent.html" title="class in com.avrix.events">OnSaveEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered during the game's saving process.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnScoreboardUpdateEvent.html" title="class in com.avrix.events">OnScoreboardUpdateEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnScoreboardUpdateEvent.html" title="class in com.avrix.events">OnScoreboardUpdateEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when multiplayer scoreboard is updated.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSeeNewRoomEvent.html" title="class in com.avrix.events">OnSeeNewRoomEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSeeNewRoomEvent.html" title="class in com.avrix.events">OnSeeNewRoomEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered for each room about to get spawned, the first time a character gets close enough to the building where the room is located.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSendChatCommandEvent.html" title="class in com.avrix.events">OnSendChatCommandEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSendChatCommandEvent.html" title="class in com.avrix.events">OnSendChatCommandEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the player sends a command to the chat.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSendConsoleCommandEvent.html" title="class in com.avrix.events">OnSendConsoleCommandEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSendConsoleCommandEvent.html" title="class in com.avrix.events">OnSendConsoleCommandEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the command is sent to the server console.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSendCustomModDataEvent.html" title="class in com.avrix.events">OnSendCustomModDataEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSendCustomModDataEvent.html" title="class in com.avrix.events">OnSendCustomModDataEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the game server is sending custom ModData to the client.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnServerCommandEvent.html" title="class in com.avrix.events">OnServerCommandEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnServerCommandEvent.html" title="class in com.avrix.events">OnServerCommandEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a command from the server is being received.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnServerFinishSavingEvent.html" title="class in com.avrix.events">OnServerFinishSavingEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnServerFinishSavingEvent.html" title="class in com.avrix.events">OnServerFinishSavingEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the server is done saving.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnServerInitializeEvent.html" title="class in com.avrix.events">OnServerInitializeEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnServerInitializeEvent.html" title="class in com.avrix.events">OnServerInitializeEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the server is fully initialized.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnServerPingedEvent.html" title="class in com.avrix.events">OnServerPingedEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnServerPingedEvent.html" title="class in com.avrix.events">OnServerPingedEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the game client receives the response after intiating a ping to a server.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnServerShutdownEvent.html" title="class in com.avrix.events">OnServerShutdownEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnServerShutdownEvent.html" title="class in com.avrix.events">OnServerShutdownEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the server shuts down</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnServerStartedEvent.html" title="class in com.avrix.events">OnServerStartedEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnServerStartedEvent.html" title="class in com.avrix.events">OnServerStartedEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the game server has started.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnServerStartSavingEvent.html" title="class in com.avrix.events">OnServerStartSavingEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnServerStartSavingEvent.html" title="class in com.avrix.events">OnServerStartSavingEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the server starts saving.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnServerStatisticReceivedEvent.html" title="class in com.avrix.events">OnServerStatisticReceivedEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnServerStatisticReceivedEvent.html" title="class in com.avrix.events">OnServerStatisticReceivedEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the game client receives statistics from the server.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSetDefaultTabEvent.html" title="class in com.avrix.events">OnSetDefaultTabEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSetDefaultTabEvent.html" title="class in com.avrix.events">OnSetDefaultTabEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the default chat tab has been set.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSGlobalObjectSystemInitEvent.html" title="class in com.avrix.events">OnSGlobalObjectSystemInitEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSGlobalObjectSystemInitEvent.html" title="class in com.avrix.events">OnSGlobalObjectSystemInitEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the server global object system is being initialized.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSpawnRegionsLoadedEvent.html" title="class in com.avrix.events">OnSpawnRegionsLoadedEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSpawnRegionsLoadedEvent.html" title="class in com.avrix.events">OnSpawnRegionsLoadedEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered after spawn regions are loaded.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSteamFriendStatusChangedEvent.html" title="class in com.avrix.events">OnSteamFriendStatusChangedEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSteamFriendStatusChangedEvent.html" title="class in com.avrix.events">OnSteamFriendStatusChangedEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the status of a friend changed on Steam.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSteamGameJoinEvent.html" title="class in com.avrix.events">OnSteamGameJoinEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSteamGameJoinEvent.html" title="class in com.avrix.events">OnSteamGameJoinEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when joining a game through Steam.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSteamRefreshInternetServersEvent.html" title="class in com.avrix.events">OnSteamRefreshInternetServersEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSteamRefreshInternetServersEvent.html" title="class in com.avrix.events">OnSteamRefreshInternetServersEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when the list of public Internet servers is being refreshed.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSteamRulesRefreshCompleteEvent.html" title="class in com.avrix.events">OnSteamRulesRefreshCompleteEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
-<div class="block">TODO</div>
-</div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSteamServerFailedToRespond2Event.html" title="class in com.avrix.events">OnSteamServerFailedToRespond2Event</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSteamRulesRefreshCompleteEvent.html" title="class in com.avrix.events">OnSteamRulesRefreshCompleteEvent</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">TODO</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSteamServerResponded2Event.html" title="class in com.avrix.events">OnSteamServerResponded2Event</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSteamServerFailedToRespond2Event.html" title="class in com.avrix.events">OnSteamServerFailedToRespond2Event</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">TODO</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSteamServerRespondedEvent.html" title="class in com.avrix.events">OnSteamServerRespondedEvent</a></div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSteamServerResponded2Event.html" title="class in com.avrix.events">OnSteamServerResponded2Event</a></div>
 <div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">TODO</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSteamWorkshopItemCreatedEvent.html" title="class in com.avrix.events">OnSteamWorkshopItemCreatedEvent</a></div>
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSteamServerRespondedEvent.html" title="class in com.avrix.events">OnSteamServerRespondedEvent</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="block">TODO</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSteamWorkshopItemCreatedEvent.html" title="class in com.avrix.events">OnSteamWorkshopItemCreatedEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered after a new Steam workshop item was successfully created.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSteamWorkshopItemNotCreatedEvent.html" title="class in com.avrix.events">OnSteamWorkshopItemNotCreatedEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSteamWorkshopItemNotCreatedEvent.html" title="class in com.avrix.events">OnSteamWorkshopItemNotCreatedEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a Steam workshop item couldn't be created.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSteamWorkshopItemNotUpdatedEvent.html" title="class in com.avrix.events">OnSteamWorkshopItemNotUpdatedEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSteamWorkshopItemNotUpdatedEvent.html" title="class in com.avrix.events">OnSteamWorkshopItemNotUpdatedEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a Steam workshop item couldn't be updated.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSteamWorkshopItemUpdatedEvent.html" title="class in com.avrix.events">OnSteamWorkshopItemUpdatedEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSteamWorkshopItemUpdatedEvent.html" title="class in com.avrix.events">OnSteamWorkshopItemUpdatedEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered after a Steam workship item was successfully updated.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSwitchChatStreamEvent.html" title="class in com.avrix.events">OnSwitchChatStreamEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSwitchChatStreamEvent.html" title="class in com.avrix.events">OnSwitchChatStreamEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a user presses TAB on his keyboard to switch chat stream.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSwitchVehicleSeatEvent.html" title="class in com.avrix.events">OnSwitchVehicleSeatEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSwitchVehicleSeatEvent.html" title="class in com.avrix.events">OnSwitchVehicleSeatEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a character is switching seat in a vehicle.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnSyncFactionEvent.html" title="class in com.avrix.events">OnSyncFactionEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnSyncFactionEvent.html" title="class in com.avrix.events">OnSyncFactionEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a faction is being synced by the server on client side.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnTabAddedEvent.html" title="class in com.avrix.events">OnTabAddedEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnTabAddedEvent.html" title="class in com.avrix.events">OnTabAddedEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a chat tab is added.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnTabRemovedEvent.html" title="class in com.avrix.events">OnTabRemovedEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnTabRemovedEvent.html" title="class in com.avrix.events">OnTabRemovedEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a chat tab is closed.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnThunderEventEvent.html" title="class in com.avrix.events">OnThunderEventEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnThunderEventEvent.html" title="class in com.avrix.events">OnThunderEventEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered when a thunderstorm is about to start.</div>
 </div>
-<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnTickEvenPausedEvent.html" title="class in com.avrix.events">OnTickEvenPausedEvent</a></div>
-<div class="col-last odd-row-color class-summary class-summary-tab2">
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnTickEvenPausedEvent.html" title="class in com.avrix.events">OnTickEvenPausedEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
 <div class="block">Same as OnTick, but triggered when the game is paused as well.</div>
 </div>
-<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnTickEvent.html" title="class in com.avrix.events">OnTickEvent</a></div>
-<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnTickEvent.html" title="class in com.avrix.events">OnTickEvent</a></div>
+<div class="col-last odd-row-color class-summary class-summary-tab2">
 <div class="block">Triggered every tick, try to not use this one, use EveryTenMinutes instead because it can create a lot of frame loss/garbage collection.</div>
+</div>
+<div class="col-first even-row-color class-summary class-summary-tab2"><a href="OnTickRenderThreadEvent.html" title="class in com.avrix.events">OnTickRenderThreadEvent</a></div>
+<div class="col-last even-row-color class-summary class-summary-tab2">
+<div class="block">Triggered when every tick after elements have been rendered.</div>
 </div>
 <div class="col-first odd-row-color class-summary class-summary-tab2"><a href="OnTileRemovedEvent.html" title="class in com.avrix.events">OnTileRemovedEvent</a></div>
 <div class="col-last odd-row-color class-summary class-summary-tab2">

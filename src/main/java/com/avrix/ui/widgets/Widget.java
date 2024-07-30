@@ -1,17 +1,13 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.UIColor;
-import com.avrix.ui.UIContext;
+import com.avrix.ui.NVGColor;
+import com.avrix.ui.NVGDrawer;
 import com.avrix.ui.WidgetManager;
-import org.joml.Vector2f;
-import org.lwjgl.nanovg.NVGPaint;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static org.lwjgl.nanovg.NanoVG.*;
 
 /**
  * Abstract base class for all UI {@link Widget}'s. This class provides the basic interface and functionality
@@ -87,11 +83,6 @@ public abstract class Widget {
      * The speed at which the {@link Widget} scrolls in response to mouse wheel movements.
      */
     protected int scrollSpeed = 20;
-
-    /**
-     * The rendering context used by the {@link Widget}.
-     */
-    protected UIContext context;
 
     /**
      * List of all child elements of the {@link Widget}.
@@ -272,10 +263,6 @@ public abstract class Widget {
         for (Widget child : this.children) {
             if (!child.isVisible()) continue;
 
-            if (child.getContext() == null) {
-                child.setContext(this.context);
-            }
-
             // Calculate absolute positions considering scrolling
             int absoluteX = child.isScrollLock() ? getX() + child.getX() : getX() + child.getX() - this.scrollX;
             int absoluteY = child.isScrollLock() ? getY() + child.getY() : getY() + child.getY() - this.scrollY;
@@ -288,8 +275,8 @@ public abstract class Widget {
             child.setX(absoluteX);
             child.setY(absoluteY);
 
-            child.saveRenderState();
-            child.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
+            NVGDrawer.saveRenderState();
+            NVGDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
 
             // Render child and its children
             child.preRender();
@@ -299,7 +286,7 @@ public abstract class Widget {
             child.postRender();
 
             // Restore the original positions
-            child.restoreRenderState();
+            NVGDrawer.restoreRenderState();
             child.setX(originalX);
             child.setY(originalY);
         }
@@ -311,7 +298,6 @@ public abstract class Widget {
      * @param widget the widget to add as a child
      */
     public synchronized void addChild(Widget widget) {
-        widget.setContext(this.context);
         widget.parent = this;
         this.children.add(widget);
         updateMaxScrollOffset();
@@ -418,6 +404,7 @@ public abstract class Widget {
      * @param y relative y-coordinate of the mouse position
      */
     public void onLeftMouseDown(int x, int y) {
+        boolean topWidget = false;
         bringToTop();
         for (int i = this.children.size() - 1; i >= 0; i--) {
             Widget child = this.children.get(i);
@@ -427,9 +414,9 @@ public abstract class Widget {
             int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : this.scrollX);
             int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : this.scrollY);
 
-            if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY)) {
+            if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && !topWidget) {
+                topWidget = true;
                 child.onLeftMouseDown(childRelativeX, childRelativeY);
-                break;
             } else {
                 child.onLeftMouseDownOutside(x, y);
             }
@@ -443,6 +430,7 @@ public abstract class Widget {
      * @param y relative y-coordinate of the mouse position
      */
     public void onLeftMouseUp(int x, int y) {
+        boolean topWidget = false;
         for (int i = this.children.size() - 1; i >= 0; i--) {
             Widget child = this.children.get(i);
             int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : this.scrollX);
@@ -451,9 +439,9 @@ public abstract class Widget {
             int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : this.scrollX);
             int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : this.scrollY);
 
-            if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY)) {
+            if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && !topWidget) {
+                topWidget = true;
                 child.onLeftMouseUp(childRelativeX, childRelativeY);
-                break;
             } else {
                 child.onLeftMouseUpOutside(x, y);
             }
@@ -467,6 +455,7 @@ public abstract class Widget {
      * @param y relative y-coordinate of the mouse position
      */
     public void onRightMouseDown(int x, int y) {
+        boolean topWidget = false;
         bringToTop();
         for (int i = this.children.size() - 1; i >= 0; i--) {
             Widget child = this.children.get(i);
@@ -476,9 +465,9 @@ public abstract class Widget {
             int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : this.scrollX);
             int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : this.scrollY);
 
-            if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY)) {
+            if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && !topWidget) {
+                topWidget = true;
                 child.onRightMouseDown(childRelativeX, childRelativeY);
-                break;
             } else {
                 child.onRightMouseDownOutside(x, y);
             }
@@ -492,6 +481,7 @@ public abstract class Widget {
      * @param y relative y-coordinate of the mouse position
      */
     public void onRightMouseUp(int x, int y) {
+        boolean topWidget = false;
         for (int i = this.children.size() - 1; i >= 0; i--) {
             Widget child = this.children.get(i);
             int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : this.scrollX);
@@ -500,9 +490,9 @@ public abstract class Widget {
             int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : this.scrollX);
             int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : this.scrollY);
 
-            if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY)) {
+            if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && !topWidget) {
+                topWidget = true;
                 child.onRightMouseUp(childRelativeX, childRelativeY);
-                break;
             } else {
                 child.onRightMouseUpOutside(x, y);
             }
@@ -517,6 +507,8 @@ public abstract class Widget {
      * @param delta direction of mouse wheel movement - (1 - up, -1 - down)
      */
     public void onMouseWheel(int x, int y, int delta) {
+        boolean topWidget = false;
+
         // Update scroll position
         if (this.scrollable) {
             this.scrollY -= delta * this.scrollSpeed;
@@ -538,9 +530,9 @@ public abstract class Widget {
             int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : this.scrollX);
             int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : this.scrollY);
 
-            if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY)) {
+            if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && !topWidget) {
+                topWidget = true;
                 child.onMouseWheel(childRelativeX, childRelativeY, delta);
-                break;
             } else {
                 child.onMouseWheelOutside(x, y, delta);
             }
@@ -845,89 +837,6 @@ public abstract class Widget {
     }
 
     /**
-     * Sets the {@link UIContext} for this {@link Widget}.
-     *
-     * @param context the {@link UIContext} to be set
-     */
-    public final void setContext(UIContext context) {
-        this.context = context;
-    }
-
-    /**
-     * Returns the current {@link UIContext} for this {@link Widget}.
-     *
-     * @return the {@link UIContext} currently associated with this {@link Widget}
-     */
-    public final UIContext getContext() {
-        return this.context;
-    }
-
-    /**
-     * Returns the current {@link UIContext} ID for this {@link Widget}.
-     *
-     * @return the {@link UIContext} ID currently associated with this {@link Widget}
-     */
-    public final long getContextID() {
-        return this.context.get();
-    }
-
-    /**
-     * Sets the current scissor rectangle.
-     * The scissor rectangle is transformed by the current transform.
-     *
-     * @param x      absolute x-coordinate of the scissor region.
-     * @param y      absolute y-coordinate of the scissor region.
-     * @param width  the width of the scissor region.
-     * @param height the height of the scissor region.
-     */
-    public final void scissor(int x, int y, int width, int height) {
-        nvgScissor(getContextID(), x, y, width, height);
-    }
-
-    /**
-     * Intersects current scissor rectangle with the specified rectangle.
-     * The scissor rectangle is transformed by the current transform.
-     * Note: in case the rotation of previous scissor rect differs from the current one, the intersection will be done
-     * between the specified rectangle and the previous scissor rectangle transformed in the current transform space. The resulting shape is always rectangle.
-     *
-     * @param x      absolute x-coordinate of the intersecting scissor region.
-     * @param y      absolute y-coordinate of the intersecting scissor region.
-     * @param width  the width of the intersecting scissor region.
-     * @param height the height of the intersecting scissor region.
-     */
-    public final void intersectScissor(int x, int y, int width, int height) {
-        nvgIntersectScissor(getContextID(), x, y, width, height);
-    }
-
-    /**
-     * Resets and disables scissoring.
-     */
-    public final void resetScissor() {
-        nvgResetScissor(getContextID());
-    }
-
-    /**
-     * Pushes and saves the current render state into a state stack. A matching {@link Widget#restoreRenderState()} must be used to restore the state.
-     */
-    public final void saveRenderState() {
-        nvgSave(getContextID());
-    }
-
-    /**
-     * Pops and restores current render state.
-     */
-    public final void restoreRenderState() {
-        nvgRestore(getContextID());
-    }
-
-    /**
-     * Resets current render state to default values. Does not affect the render state stack.
-     */
-    public final void resetRenderState() {
-        nvgReset(getContextID());
-    }
-
-    /**
      * Draws a rectangle with a stroke and no fill
      *
      * @param x         relative X coordinate of the top left corner of the rectangle
@@ -937,12 +846,8 @@ public abstract class Widget {
      * @param lineWidth the width of the stroke line in pixels
      * @param color     the color of the outline
      */
-    public final void drawRectOutline(int x, int y, int width, int height, float lineWidth, UIColor color) {
-        nvgBeginPath(getContextID());
-        nvgRect(getContextID(), getX() + x, getY() + y, width, height);
-        color.tallocNVG(nvgColor -> nvgStrokeColor(getContextID(), nvgColor));
-        nvgStrokeWidth(getContextID(), lineWidth);
-        nvgStroke(getContextID());
+    public final void drawRectOutline(int x, int y, int width, int height, float lineWidth, NVGColor color) {
+        NVGDrawer.drawRectOutline(getX() + x, getY() + y, width, height, lineWidth, color);
     }
 
     /**
@@ -956,12 +861,8 @@ public abstract class Widget {
      * @param lineWidth the width of the stroke line in pixels
      * @param color     the color of the outline
      */
-    public final void drawRoundedRectOutline(int x, int y, int width, int height, int radius, float lineWidth, UIColor color) {
-        nvgBeginPath(getContextID());
-        nvgRoundedRect(getContextID(), getX() + x, getY() + y, width, height, radius);
-        color.tallocNVG(nvgColor -> nvgStrokeColor(getContextID(), nvgColor));
-        nvgStrokeWidth(getContextID(), lineWidth);
-        nvgStroke(getContextID());
+    public final void drawRoundedRectOutline(int x, int y, int width, int height, int radius, float lineWidth, NVGColor color) {
+        NVGDrawer.drawRoundedRectOutline(getX() + x, getY() + y, width, height, radius, lineWidth, color);
     }
 
     /**
@@ -973,11 +874,8 @@ public abstract class Widget {
      * @param height the height of the rectangle
      * @param color  the color to fill the rectangle with
      */
-    public final void drawRect(int x, int y, int width, int height, UIColor color) {
-        nvgBeginPath(getContextID());
-        nvgRect(getContextID(), getX() + x, getY() + y, width, height);
-        color.tallocNVG(nvgColor -> nvgFillColor(getContextID(), nvgColor));
-        nvgFill(getContextID());
+    public final void drawRect(int x, int y, int width, int height, NVGColor color) {
+        NVGDrawer.drawRect(getX() + x, getY() + y, width, height, color);
     }
 
     /**
@@ -990,40 +888,8 @@ public abstract class Widget {
      * @param fontSize the size of the font
      * @param color    the color of the text
      */
-    public final void drawText(String text, String fontName, int x, int y, int fontSize, UIColor color) {
-        Vector2f textSize = getTextSize(text, fontName, fontSize);
-
-        int horizontalOffset = 1;
-
-        nvgFontFace(getContextID(), fontName);
-        nvgFontSize(getContextID(), fontSize);
-        nvgBeginPath(getContextID());
-        color.tallocNVG(nvgColor -> nvgFillColor(getContextID(), nvgColor));
-        nvgText(getContextID(), getX() + x + horizontalOffset, getY() + y + textSize.y, text);
-        nvgFill(getContextID());
-        nvgClosePath(getContextID());
-    }
-
-    /**
-     * Calculates the width and height of the given text when rendered with the specified font and size.
-     *
-     * @param text     the text whose dimensions are to be calculated
-     * @param fontName the name of the font to use
-     * @param fontSize the size of the font
-     * @return an array containing two elements: the width (index 0) and the height (index 1) of the text
-     */
-    public final Vector2f getTextSize(String text, String fontName, int fontSize) {
-        nvgFontFace(getContextID(), fontName);
-        nvgFontSize(getContextID(), fontSize);
-
-        float[] bounds = new float[4];
-
-        nvgTextBounds(getContextID(), 0, 0, text, bounds);
-
-        float width = bounds[2] - bounds[0];
-        float height = bounds[3] - bounds[1];
-
-        return new Vector2f(width, height);
+    public final void drawText(String text, String fontName, int x, int y, int fontSize, NVGColor color) {
+        NVGDrawer.drawText(text, fontName, getX() + x, getY() + y, fontSize, color);
     }
 
     /**
@@ -1036,11 +902,8 @@ public abstract class Widget {
      * @param radius the radius of the corners
      * @param color  the color to fill the rectangle with
      */
-    public final void drawRoundedRect(int x, int y, int width, int height, float radius, UIColor color) {
-        nvgBeginPath(getContextID());
-        nvgRoundedRect(getContextID(), getX() + x, getY() + y, width, height, radius);
-        color.tallocNVG(nvgColor -> nvgFillColor(getContextID(), nvgColor));
-        nvgFill(getContextID());
+    public final void drawRoundedRect(int x, int y, int width, int height, float radius, NVGColor color) {
+        NVGDrawer.drawRoundedRect(getX() + x, getY() + y, width, height, radius, color);
     }
 
     /**
@@ -1052,11 +915,8 @@ public abstract class Widget {
      * @param height the height of the ellipse
      * @param color  the color of the ellipse
      */
-    public final void drawEllipse(int x, int y, int width, int height, UIColor color) {
-        nvgBeginPath(getContextID());
-        nvgEllipse(getContextID(), getX() + x, getY() + y, (float) width / 2, (float) height / 2);
-        color.tallocNVG(nvgColor -> nvgFillColor(getContextID(), nvgColor));
-        nvgFill(getContextID());
+    public final void drawEllipse(int x, int y, int width, int height, NVGColor color) {
+        NVGDrawer.drawEllipse(getX() + x, getY() + y, width, height, color);
     }
 
     /**
@@ -1069,13 +929,8 @@ public abstract class Widget {
      * @param width the thickness of the line
      * @param color the color of the line
      */
-    public final void drawLine(int x1, int y1, int x2, int y2, float width, UIColor color) {
-        nvgBeginPath(getContextID());
-        nvgMoveTo(getContextID(), getX() + x1, getY() + y1);
-        nvgLineTo(getContextID(), getX() + x2, getY() + y2);
-        nvgStrokeWidth(getContextID(), width);
-        color.tallocNVG(nvgColor -> nvgStrokeColor(getContextID(), nvgColor));
-        nvgStroke(getContextID());
+    public final void drawLine(int x1, int y1, int x2, int y2, float width, NVGColor color) {
+        NVGDrawer.drawLine(getX() + x1, getY() + y1, getX() + x2, getY() + y2, width, color);
     }
 
     /**
@@ -1086,11 +941,8 @@ public abstract class Widget {
      * @param radius the radius of the circle
      * @param color  the color of the circle
      */
-    public final void drawCircle(int x, int y, float radius, UIColor color) {
-        nvgBeginPath(getContextID());
-        nvgCircle(getContextID(), getX() + x, getY() + y, radius);
-        color.tallocNVG(nvgColor -> nvgFillColor(getContextID(), nvgColor));
-        nvgFill(getContextID());
+    public final void drawCircle(int x, int y, float radius, NVGColor color) {
+        NVGDrawer.drawCircle(getX() + x, getY() + y, radius, color);
     }
 
     /**
@@ -1103,13 +955,8 @@ public abstract class Widget {
      * @param endAngle   the ending angle of the arc (in radians)
      * @param color      the color of the arc segment
      */
-    public final void drawArc(int x, int y, float radius, float startAngle, float endAngle, UIColor color) {
-        nvgBeginPath(getContextID());
-        nvgArc(getContextID(), getX() + x, getY() + y, radius, startAngle, endAngle, NVG_CW);
-        nvgLineTo(getContextID(), getX() + x, getY() + y);
-        nvgClosePath(getContextID());
-        color.tallocNVG(nvgColor -> nvgFillColor(getContextID(), nvgColor));
-        nvgFill(getContextID());
+    public final void drawArc(int x, int y, float radius, float startAngle, float endAngle, NVGColor color) {
+        NVGDrawer.drawArc(getX() + x, getY() + y, radius, startAngle, endAngle, color);
     }
 
     /**
@@ -1123,15 +970,8 @@ public abstract class Widget {
      * @param thickness  the thickness of the arc segment
      * @param color      the color of the arc segment
      */
-    public final void drawArc(int x, int y, float radius, float thickness, float startAngle, float endAngle, UIColor color) {
-        nvgBeginPath(getContextID());
-        nvgArc(getContextID(), getX() + x, getY() + y, radius, startAngle, endAngle, NVG_CW);
-        nvgLineTo(getContextID(), getX() + x + (float) Math.cos(endAngle) * radius, getY() + y + (float) Math.sin(endAngle) * radius);
-        nvgArc(getContextID(), getX() + x, getY() + y, radius - thickness, endAngle, startAngle, NVG_CCW);
-        nvgLineTo(getContextID(), getX() + x + (float) Math.cos(startAngle) * radius, getY() + y + (float) Math.sin(startAngle) * radius);
-        nvgClosePath(getContextID());
-        color.tallocNVG(nvgColor -> nvgFillColor(getContextID(), nvgColor));
-        nvgFill(getContextID());
+    public final void drawArc(int x, int y, float radius, float thickness, float startAngle, float endAngle, NVGColor color) {
+        NVGDrawer.drawArc(getX() + x, getY() + y, radius, thickness, startAngle, endAngle, color);
     }
 
     /**
@@ -1144,11 +984,7 @@ public abstract class Widget {
      * @param height  the height of the image
      */
     public final void drawImage(int imageId, int x, int y, int width, int height) {
-        NVGPaint paint = nvgImagePattern(getContextID(), getX() + x, getY() + y, width, height, 0, imageId, 1, NVGPaint.create());
-        nvgBeginPath(getContextID());
-        nvgRect(getContextID(), getX() + x, getY() + y, width, height);
-        nvgFillPaint(getContextID(), paint);
-        nvgFill(getContextID());
+        NVGDrawer.drawImage(imageId, getX() + x, getY() + y, width, height);
     }
 
     /**
@@ -1161,8 +997,7 @@ public abstract class Widget {
      * @param height    the height of the image
      */
     public final void drawImage(Path imagePath, int x, int y, int width, int height) {
-        int imageID = nvgCreateImage(getContextID(), imagePath.toString(), NVG_IMAGE_NEAREST);
-        drawImage(imageID, getX() + x, getY() + y, width, height);
+        NVGDrawer.drawImage(imagePath, getX() + x, getY() + y, width, height);
     }
 
     /**

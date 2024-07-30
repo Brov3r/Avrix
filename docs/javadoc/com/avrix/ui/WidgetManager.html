@@ -77,8 +77,7 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">WidgetManager</span>
 <span class="extends-implements">extends <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></span></div>
-<div class="block">Manages a collection of <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> instances, handling rendering, input events, and updates.
- Provides static methods to interact with the widget list and process user input.</div>
+<div class="block">Manages a collection of <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> instances, handling rendering and updates.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -109,50 +108,42 @@ loadScripts(document, 'script');</script>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#addWidget(com.avrix.ui.widgets.Widget)" class="member-name-link">addWidget</a><wbr>(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Adds a widget to the list of widgets to be managed and displayed.</div>
+<div class="block">Adds a widget to the list of <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s to be managed and displayed.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#bringWidgetToTop(com.avrix.ui.widgets.Widget)" class="member-name-link">bringWidgetToTop</a><wbr>(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Moves the specified widget to the front of the rendering order, ensuring it is drawn above other widgets.</div>
+<div class="block">Moves the specified <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> to the front of the rendering order, ensuring it is drawn above other <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="NVGContext.html" title="class in com.avrix.ui">NVGContext</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getContext()" class="member-name-link">getContext</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Getting the NanoVG rendering context</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&gt;</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#getWidgetList()" class="member-name-link">getWidgetList</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Getting a list of <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s registered in the manager</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createFont(java.lang.String,java.lang.String,java.lang.String)" class="member-name-link">createFont</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fontName,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;jarFilePath,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;internalFilePath)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#init()" class="member-name-link">init</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Creates and loads a font into NanoVG with the specified name from a font file inside a JAR.</div>
+<div class="block">Initializing the <a href="WidgetManager.html" title="class in com.avrix.ui"><code>WidgetManager</code></a> (creating NanoVG contexts)</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#isOverCustomUI()" class="member-name-link">isOverCustomUI</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Checks if the mouse pointer is over a custom UI element.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#onRender()" class="member-name-link">onRender</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Renders all <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s and processes input events.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#createFont(java.lang.String,java.nio.file.Path)" class="member-name-link">createFont</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fontName,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link">Path</a>&nbsp;fontPath)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#removeWidget(com.avrix.ui.widgets.Widget)" class="member-name-link">removeWidget</a><wbr>(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Creates and loads a font into NanoVG with the specified name from the given path.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#onKeyPress(int)" class="member-name-link">onKeyPress</a><wbr>(int&nbsp;key)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Handles key press events for all visible widgets.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#onKeyRelease(int)" class="member-name-link">onKeyRelease</a><wbr>(int&nbsp;key)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Handles key release events for all visible widgets.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#onKeyRepeat(int)" class="member-name-link">onKeyRepeat</a><wbr>(int&nbsp;key)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Handles key repeat events for all visible widgets.</div>
-</div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#onRender()" class="member-name-link">onRender</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Renders all widgets and processes input events.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#removeWidget(com.avrix.ui.widgets.Widget)" class="member-name-link">removeWidget</a><wbr>(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
-<div class="block">Removes a widget from the list of widgets to be managed and displayed.</div>
+<div class="block">Removes a <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> from the list of <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s to be managed and displayed.</div>
 </div>
 </div>
 </div>
@@ -186,42 +177,51 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
-<section class="detail" id="onRender()">
-<h3>onRender</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onRender</span>()</div>
-<div class="block">Renders all widgets and processes input events.
- Initializes the UI context if it is not already set.
- Updates mouse events and renders each visible widget.</div>
+<section class="detail" id="init()">
+<h3>init</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">init</span>()</div>
+<div class="block">Initializing the <a href="WidgetManager.html" title="class in com.avrix.ui"><code>WidgetManager</code></a> (creating NanoVG contexts)</div>
 </section>
 </li>
 <li>
-<section class="detail" id="createFont(java.lang.String,java.lang.String,java.lang.String)">
-<h3>createFont</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">createFont</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fontName,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;jarFilePath,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;internalFilePath)</span>
-                       throws <span class="exceptions"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/IOException.html" title="class or interface in java.io" class="external-link">IOException</a></span></div>
-<div class="block">Creates and loads a font into NanoVG with the specified name from a font file inside a JAR.</div>
+<section class="detail" id="onRender()">
+<h3>onRender</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onRender</span>()</div>
+<div class="block">Renders all <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s and processes input events.
+ Initializes the UI context if it is not already set.
+ Updates mouse events and renders each visible <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="getContext()">
+<h3>getContext</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="NVGContext.html" title="class in com.avrix.ui">NVGContext</a></span>&nbsp;<span class="element-name">getContext</span>()</div>
+<div class="block">Getting the NanoVG rendering context</div>
 <dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>fontName</code> - the name to assign to the font.</dd>
-<dd><code>jarFilePath</code> - the path to the JAR file containing the font.</dd>
-<dd><code>internalFilePath</code> - the path to the font file inside the JAR.</dd>
-<dt>Throws:</dt>
-<dd><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/io/IOException.html" title="class or interface in java.io" class="external-link">IOException</a></code> - if an I/O error occurs while reading the font file.</dd>
+<dt>Returns:</dt>
+<dd>NanoVG context, if it does not exist (not initialized) returns <code>null</code></dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="createFont(java.lang.String,java.nio.file.Path)">
-<h3>createFont</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">createFont</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fontName,
- <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link">Path</a>&nbsp;fontPath)</span></div>
-<div class="block">Creates and loads a font into NanoVG with the specified name from the given path.</div>
+<section class="detail" id="getWidgetList()">
+<h3>getWidgetList</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&gt;</span>&nbsp;<span class="element-name">getWidgetList</span>()</div>
+<div class="block">Getting a list of <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s registered in the manager</div>
 <dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>fontName</code> - the name to assign to the font.</dd>
-<dd><code>fontPath</code> - the path to the font file (e.g., a TrueType font file).</dd>
+<dt>Returns:</dt>
+<dd>list of <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isOverCustomUI()">
+<h3>isOverCustomUI</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isOverCustomUI</span>()</div>
+<div class="block">Checks if the mouse pointer is over a custom UI element.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>true if the mouse pointer is over a custom UI element, false otherwise.</dd>
 </dl>
 </section>
 </li>
@@ -229,10 +229,10 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="bringWidgetToTop(com.avrix.ui.widgets.Widget)">
 <h3>bringWidgetToTop</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">bringWidgetToTop</span><wbr><span class="parameters">(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</span></div>
-<div class="block">Moves the specified widget to the front of the rendering order, ensuring it is drawn above other widgets.</div>
+<div class="block">Moves the specified <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> to the front of the rendering order, ensuring it is drawn above other <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>widget</code> - the widget to bring to the front</dd>
+<dd><code>widget</code> - the <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> to bring to the front</dd>
 </dl>
 </section>
 </li>
@@ -240,11 +240,11 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="addWidget(com.avrix.ui.widgets.Widget)">
 <h3>addWidget</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addWidget</span><wbr><span class="parameters">(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</span></div>
-<div class="block">Adds a widget to the list of widgets to be managed and displayed.
- The widget is added only if it is not already present in the list.</div>
+<div class="block">Adds a widget to the list of <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s to be managed and displayed.
+ The <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> is added only if it is not already present in the list.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>widget</code> - the widget to be added</dd>
+<dd><code>widget</code> - the <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> to be added</dd>
 </dl>
 </section>
 </li>
@@ -252,43 +252,10 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="removeWidget(com.avrix.ui.widgets.Widget)">
 <h3>removeWidget</h3>
 <div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">removeWidget</span><wbr><span class="parameters">(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</span></div>
-<div class="block">Removes a widget from the list of widgets to be managed and displayed.</div>
+<div class="block">Removes a <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> from the list of <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s to be managed and displayed.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
-<dd><code>widget</code> - the widget to be removed</dd>
-</dl>
-</section>
-</li>
-<li>
-<section class="detail" id="onKeyPress(int)">
-<h3>onKeyPress</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyPress</span><wbr><span class="parameters">(int&nbsp;key)</span></div>
-<div class="block">Handles key press events for all visible widgets.</div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>key</code> - the code of the key that was pressed</dd>
-</dl>
-</section>
-</li>
-<li>
-<section class="detail" id="onKeyRepeat(int)">
-<h3>onKeyRepeat</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyRepeat</span><wbr><span class="parameters">(int&nbsp;key)</span></div>
-<div class="block">Handles key repeat events for all visible widgets.</div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>key</code> - the code of the key that is being repeatedly pressed</dd>
-</dl>
-</section>
-</li>
-<li>
-<section class="detail" id="onKeyRelease(int)">
-<h3>onKeyRelease</h3>
-<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyRelease</span><wbr><span class="parameters">(int&nbsp;key)</span></div>
-<div class="block">Handles key release events for all visible widgets.</div>
-<dl class="notes">
-<dt>Parameters:</dt>
-<dd><code>key</code> - the code of the key that was released</dd>
+<dd><code>widget</code> - the <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> to be removed</dd>
 </dl>
 </section>
 </li>

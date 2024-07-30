@@ -1,6 +1,6 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.UIColor;
+import com.avrix.ui.NVGColor;
 import zombie.input.Mouse;
 
 /**
@@ -10,12 +10,12 @@ public class PanelWidget extends Widget {
     /**
      * The background color of the panel.
      */
-    protected UIColor backgroundColor = UIColor.LIGHT_BLACK;
+    protected NVGColor backgroundColor = NVGColor.LIGHT_BLACK;
 
     /**
      * The border color of the panel.
      */
-    protected UIColor borderColor = UIColor.WHITE_SMOKE;
+    protected NVGColor borderColor = NVGColor.WHITE_SMOKE;
 
     /**
      * The radius of the panel's border corners.
@@ -73,9 +73,9 @@ public class PanelWidget extends Widget {
      * @param width           the width of the widget
      * @param height          the height of the widget
      * @param borderRadius    the radius of the corner rounding in pixels
-     * @param backgroundColor the background color of the widget, specified in {@link UIColor}
+     * @param backgroundColor the background color of the widget, specified in {@link NVGColor}
      */
-    public PanelWidget(int x, int y, int width, int height, int borderRadius, UIColor backgroundColor) {
+    public PanelWidget(int x, int y, int width, int height, int borderRadius, NVGColor backgroundColor) {
         super(x, y, width, height);
 
         this.backgroundColor = backgroundColor;
@@ -103,18 +103,18 @@ public class PanelWidget extends Widget {
     /**
      * Sets the background color of the {@link Widget}.
      *
-     * @param color the background color, specified in {@link UIColor}
+     * @param color the background color, specified in {@link NVGColor}
      */
-    public final void setBackgroundColor(UIColor color) {
+    public final void setBackgroundColor(NVGColor color) {
         this.backgroundColor = color;
     }
 
     /**
      * Sets the border color of the widget.
      *
-     * @param color the border color, specified in {@link UIColor}
+     * @param color the border color, specified in {@link NVGColor}
      */
-    public final void setBorderColor(UIColor color) {
+    public final void setBorderColor(NVGColor color) {
         this.borderColor = color;
     }
 

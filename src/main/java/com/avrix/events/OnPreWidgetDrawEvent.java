@@ -3,9 +3,9 @@ package com.avrix.events;
 import com.avrix.ui.NVGContext;
 
 /**
- * Triggers when the widget manager is fully initialized (contexts for NanoVG are installed)
+ * Trigger before widgets are drawn, but after NanoVG frame creation begins
  */
-public abstract class OnWidgetManagerInitEvent extends Event {
+public abstract class OnPreWidgetDrawEvent extends Event {
     /**
      * Getting the event name
      *
@@ -13,7 +13,7 @@ public abstract class OnWidgetManagerInitEvent extends Event {
      */
     @Override
     public String getEventName() {
-        return "onWidgetManagerInitialized";
+        return "onPreWidgetRender";
     }
 
     /**

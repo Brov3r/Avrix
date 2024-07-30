@@ -1,20 +1,21 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.UIColor;
+import com.avrix.ui.NVGColor;
+import com.avrix.ui.NVGDrawer;
 
 /**
- * The {@code ScrollPanelWidget} class represents a panel widget that supports scrolling.
- * It extends the {@code PanelWidget} class and adds functionality for managing scrollbars.
+ * The {@link  ScrollPanelWidget} class represents a panel widget that supports scrolling.
+ * It extends the {@link  PanelWidget} class and adds functionality for managing scrollbars.
  */
 public class ScrollPanelWidget extends PanelWidget {
     /**
-     * The vertical scrollbar widget used for scrolling content in the vertical direction.
+     * The vertical scrollbar {@link Widget} used for scrolling content in the vertical direction.
      * This scrollbar allows users to navigate through content that exceeds the visible area vertically.
      */
     protected ScrollbarWidget verticalScrollbar;
 
     /**
-     * The horizontal scrollbar widget used for scrolling content in the horizontal direction.
+     * The horizontal scrollbar {@link Widget} used for scrolling content in the horizontal direction.
      * This scrollbar allows users to navigate through content that exceeds the visible area horizontally.
      */
     protected ScrollbarWidget horizontalScrollbar;
@@ -40,7 +41,7 @@ public class ScrollPanelWidget extends PanelWidget {
      * @param height the height of the {@link Widget}
      */
     public ScrollPanelWidget(int x, int y, int width, int height) {
-        this(x, y, width, height, 0, UIColor.LIGHT_BLACK);
+        this(x, y, width, height, 0, NVGColor.LIGHT_BLACK);
     }
 
     /**
@@ -52,27 +53,27 @@ public class ScrollPanelWidget extends PanelWidget {
      * @param width           the width of the widget
      * @param height          the height of the widget
      * @param borderRadius    the radius of the corner rounding in pixels
-     * @param backgroundColor the background color of the widget, specified in {@link UIColor}
+     * @param backgroundColor the background color of the widget, specified in {@link NVGColor}
      */
-    public ScrollPanelWidget(int x, int y, int width, int height, int borderRadius, UIColor backgroundColor) {
+    public ScrollPanelWidget(int x, int y, int width, int height, int borderRadius, NVGColor backgroundColor) {
         super(x, y, width, height, borderRadius, backgroundColor);
 
         this.scrollable = true;
     }
 
     /**
-     * Returns the vertical scrollbar widget associated with this container.
+     * Returns the vertical scrollbar {@link Widget} associated with this container.
      *
-     * @return the vertical scrollbar widget
+     * @return the vertical scrollbar {@link Widget}
      */
     public final ScrollbarWidget getVerticalScrollbar() {
         return this.verticalScrollbar;
     }
 
     /**
-     * Returns the horizontal scrollbar widget associated with this container.
+     * Returns the horizontal scrollbar {@link Widget} associated with this container.
      *
-     * @return the horizontal scrollbar widget
+     * @return the horizontal scrollbar {@link Widget}
      */
     public final ScrollbarWidget getHorizontalScrollbar() {
         return this.horizontalScrollbar;
@@ -96,29 +97,34 @@ public class ScrollPanelWidget extends PanelWidget {
     }
 
     /**
-     * Removes a child widget from this widget's list of children.
+     * Removes a child widget from this {@link Widget}'s list of children.
      *
      * @param widget the widget to remove from the list of children
      */
     @Override
-    public synchronized void addChild(Widget widget) {
-        super.addChild(widget);
-        bringToTopScrollbars(widget != this.horizontalScrollbar && widget != this.verticalScrollbar);
+    public synchronized void removeChild(Widget widget) {
+        super.removeChild(widget);
+        raiseScrollbars(widget != this.horizontalScrollbar && widget != this.verticalScrollbar);
     }
 
     /**
-     * Adds a child widget to this widget's list of children.
+     * Adds a child widget to this {@link Widget}'s list of children.
      *
      * @param widget the widget to add as a child
      */
     @Override
-    public synchronized void removeChild(Widget widget) {
-        super.removeChild(widget);
-        bringToTopScrollbars(widget == this.horizontalScrollbar || widget == this.verticalScrollbar);
+    public synchronized void addChild(Widget widget) {
+        super.addChild(widget);
+        raiseScrollbars(widget != this.horizontalScrollbar && widget != this.verticalScrollbar);
     }
 
-    private void bringToTopScrollbars(boolean isAnotherWidget) {
-        if (isAnotherWidget) {
+    /**
+     * Raising scrollbars to the top of rendering
+     *
+     * @param isAnotherWidget flag pointing to other widgets
+     */
+    private synchronized void raiseScrollbars(boolean isAnotherWidget) {
+        if (isAnotherWidget && this.horizontalScrollbar != null && this.verticalScrollbar != null) {
             this.children.remove(this.horizontalScrollbar);
             this.children.remove(this.verticalScrollbar);
             this.children.add(this.horizontalScrollbar);
@@ -128,22 +134,18 @@ public class ScrollPanelWidget extends PanelWidget {
 
     /**
      * Updates and renders all child widgets of this {@link Widget}.
-     * This method recursively calls the update and render methods on each child widget,
-     * ensuring that the rendering order respects the hierarchy of widgets.
+     * This method recursively calls the update and render methods on each child {@link Widget},
+     * ensuring that the rendering order respects the hierarchy of {@link Widget}s.
      */
     @Override
     public void renderChildren() {
         for (Widget child : this.children) {
             if (!child.isVisible()) continue;
 
-            if (child.getContext() == null) {
-                child.setContext(this.context);
-            }
-
             // Limitation for scroll bars
             if (!child.equals(this.horizontalScrollbar) && !child.equals(this.verticalScrollbar)) {
-                saveRenderState();
-                intersectScissor(getX(), getY(),
+                NVGDrawer.saveRenderState();
+                NVGDrawer.intersectScissor(getX(), getY(),
                         this.verticalScrollbar.isVisible() ? this.getWidth() - this.verticalScrollbar.width - this.verticalScrollbar.borderOffset * 2 : this.getWidth(),
                         this.horizontalScrollbar.isVisible() ? this.getHeight() - this.horizontalScrollbar.height - this.horizontalScrollbar.borderOffset * 2 : this.getHeight());
             }
@@ -160,8 +162,8 @@ public class ScrollPanelWidget extends PanelWidget {
             child.setX(absoluteX);
             child.setY(absoluteY);
 
-            child.saveRenderState();
-            child.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
+            NVGDrawer.saveRenderState();
+            NVGDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
 
             // Render child and its children
             child.preRender();
@@ -171,20 +173,20 @@ public class ScrollPanelWidget extends PanelWidget {
             child.postRender();
 
             // Restore the original positions
-            child.restoreRenderState();
+            NVGDrawer.restoreRenderState();
             child.setX(originalX);
             child.setY(originalY);
 
             // Limitation for scroll bars
             if (!child.equals(this.horizontalScrollbar) && !child.equals(this.verticalScrollbar)) {
-                restoreRenderState();
+                NVGDrawer.restoreRenderState();
             }
         }
     }
 
     /**
-     * Updates the maximum scroll offsets based on the coordinates and sizes of child widgets.
-     * This method ensures the scroll limits are correctly set even if widgets overlap or are larger than the parent widget.
+     * Updates the maximum scroll offsets based on the coordinates and sizes of child {@link Widget}s.
+     * This method ensures the scroll limits are correctly set even if {@link Widget}s overlap or are larger than the parent {@link Widget}.
      */
     @Override
     protected void updateMaxScrollOffset() {

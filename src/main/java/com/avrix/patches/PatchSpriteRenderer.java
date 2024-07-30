@@ -25,7 +25,7 @@ public class PatchSpriteRenderer extends ClassTransformer {
         getModifierBuilder().modifyMethod("postRender", (ctClass, ctMethod) -> {
             try {
                 ctMethod.insertAfter(WidgetManager.class.getName() + ".onRender();");
-                ctMethod.insertAfter(EventManager.class.getName() + ".invokeEvent(\"onPostTickRenderThread\", new Object[0]);");
+                ctMethod.insertAfter(EventManager.class.getName() + ".invokeEvent(\"onTickRenderThread\", new Object[0]);");
             } catch (CannotCompileException e) {
                 throw new RuntimeException(e);
             }

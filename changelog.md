@@ -3,10 +3,11 @@
 - Launch scripts updated
 - Added `.exe` executable files for Windows, allowing launch from Steam
 - Added new logging system `TinyLog2`
-- Added `onWidgetManagerInitialized` event
+- Added a GUI system based on `NanoVG`
+- Added `onWidgetManagerInitialized`, `OnPreWidgetRender`, `OnPostWidgetRender` events
 - Added default fonts: `Arial-Regular`, `Roboto-Regular`, `Montserrat-Regular`, `FontAwesome`
-- Added basic widgets: `Panel`, `Button`, `Scrollbar`, `ScrollPanel`, `Window`
-- Implemented a GUI system based on `NanoVG`
+- Added basic widgets: `Panel`, `Button`, `Scrollbar`, `ScrollPanel`, `Window`, `Label`
+- Event renamed: `onPostTickRenderThread` -> `onTickRenderThread`
 
 # AvrixLoader v1.3.0
 

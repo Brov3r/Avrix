@@ -2,6 +2,7 @@ package com.avrix.patches;
 
 import com.avrix.agent.ClassTransformer;
 import com.avrix.events.EventManager;
+import com.avrix.ui.WidgetManager;
 import com.avrix.utils.Constants;
 import javassist.CannotCompileException;
 import javassist.expr.ExprEditor;
@@ -40,6 +41,12 @@ public class PatchGameWindow extends ClassTransformer {
                         }
                     }
                 });
+            } catch (CannotCompileException e) {
+                throw new RuntimeException(e);
+            }
+        }).modifyMethod("InitGameThread", (ctClass, ctMethod) -> {
+            try {
+                ctMethod.insertBefore(WidgetManager.class.getName() + ".init();");
             } catch (CannotCompileException e) {
                 throw new RuntimeException(e);
             }

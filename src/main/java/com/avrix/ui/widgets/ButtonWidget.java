@@ -1,6 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.UIColor;
+import com.avrix.ui.NVGColor;
+import com.avrix.ui.NVGDrawer;
 import org.joml.Vector2f;
 import zombie.SoundManager;
 
@@ -31,7 +32,7 @@ public class ButtonWidget extends PanelWidget {
     /**
      * The color of the button text.
      */
-    protected UIColor textColor = UIColor.WHITE;
+    protected NVGColor textColor = NVGColor.WHITE;
 
     /**
      * The method to be executed when the button is clicked.
@@ -58,10 +59,10 @@ public class ButtonWidget extends PanelWidget {
      * @param width           the width of the widget
      * @param height          the height of the widget
      * @param borderRadius    the radius of the corner rounding in pixels
-     * @param backgroundColor the background color of the widget, specified in {@link UIColor}
+     * @param backgroundColor the background color of the widget, specified in {@link NVGColor}
      * @param onClickMethod   method that is called when the button is clicked
      */
-    public ButtonWidget(String text, int x, int y, int width, int height, int borderRadius, UIColor backgroundColor, Runnable onClickMethod) {
+    public ButtonWidget(String text, int x, int y, int width, int height, int borderRadius, NVGColor backgroundColor, Runnable onClickMethod) {
         super(x, y, width, height, borderRadius, backgroundColor);
 
         this.text = text;
@@ -73,7 +74,7 @@ public class ButtonWidget extends PanelWidget {
      *
      * @return the text color
      */
-    public final UIColor getTextColor() {
+    public final NVGColor getTextColor() {
         return this.textColor;
     }
 
@@ -82,7 +83,7 @@ public class ButtonWidget extends PanelWidget {
      *
      * @param textColor the text color to set
      */
-    public final void setTextColor(UIColor textColor) {
+    public final void setTextColor(NVGColor textColor) {
         this.textColor = textColor;
     }
 
@@ -216,7 +217,7 @@ public class ButtonWidget extends PanelWidget {
      */
     @Override
     public void render() {
-        UIColor bgColor = this.backgroundColor.copy();
+        NVGColor bgColor = this.backgroundColor.copy();
 
         if (isEnable()) {
             if (isHovered()) bgColor = bgColor.multiply(1.25f);
@@ -237,7 +238,7 @@ public class ButtonWidget extends PanelWidget {
             }
         }
 
-        Vector2f titleSize = getTextSize(this.text, this.fontName, this.fontSize);
+        Vector2f titleSize = NVGDrawer.getTextSize(this.text, this.fontName, this.fontSize);
         drawText(this.text, this.fontName, (getWidth() - (int) titleSize.x) / 2, (getHeight() - (int) titleSize.y - this.fontSize / 4) / 2, this.fontSize, this.textColor);
     }
 }

@@ -1,6 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.UIColor;
+import com.avrix.ui.NVGColor;
+import com.avrix.ui.NVGDrawer;
 import org.joml.Vector2f;
 
 /**
@@ -21,7 +22,7 @@ public class WindowWidget extends ScrollPanelWidget {
     /**
      * The color of the {@link Widget}'s header.
      */
-    protected UIColor headerColor = UIColor.LIGHT_BLACK.multiply(1.7f);
+    protected NVGColor headerColor = NVGColor.LIGHT_BLACK.multiply(1.7f);
 
     /**
      * The height of the {@link Widget}'s header.
@@ -77,16 +78,50 @@ public class WindowWidget extends ScrollPanelWidget {
     public void onInitialize() {
         super.onInitialize();
 
-        closeButton = new ButtonWidget("\uf00d", getWidth() - 16 - 5, 5, 16, 16, 16, new UIColor("#e74c3c"), this::closeWindow);
+        closeButton = new ButtonWidget("\uf00d", getWidth() - 16 - 5, 5, 16, 16, 16, new NVGColor("#e74c3c"), this::closeWindow);
         closeButton.setDrawBorder(false);
         closeButton.setFontSize(12);
-        closeButton.setTextColor(UIColor.WHITE);
+        closeButton.setTextColor(NVGColor.WHITE);
         closeButton.setFontName("FontAwesome");
         closeButton.setScrollLock(true);
         addChild(closeButton);
 
         this.originalVerticalScrollBarY = this.verticalScrollbar.getY();
         this.originalVerticalScrollBarHeight = this.verticalScrollbar.getHeight();
+    }
+
+    /**
+     * Adds a child widget to this widget's list of children.
+     *
+     * @param widget the widget to add as a child
+     */
+    @Override
+    public synchronized void addChild(Widget widget) {
+        super.addChild(widget);
+        raiseCloseButton(widget != this.closeButton);
+    }
+
+    /**
+     * Removes a child widget from this widget's list of children.
+     *
+     * @param widget the widget to remove from the list of children
+     */
+    @Override
+    public synchronized void removeChild(Widget widget) {
+        super.removeChild(widget);
+        raiseCloseButton(widget != this.closeButton);
+    }
+
+    /**
+     * Raising the close button to the top of rendering
+     *
+     * @param isAnotherWidget flag pointing to other widgets
+     */
+    private synchronized void raiseCloseButton(boolean isAnotherWidget) {
+        if (isAnotherWidget && this.closeButton != null) {
+            this.children.remove(this.closeButton);
+            this.children.add(this.closeButton);
+        }
     }
 
     /**
@@ -130,7 +165,7 @@ public class WindowWidget extends ScrollPanelWidget {
      *
      * @param headerColor the color to use for the header
      */
-    public void setHeaderColor(UIColor headerColor) {
+    public void setHeaderColor(NVGColor headerColor) {
         this.headerColor = headerColor;
     }
 
@@ -164,14 +199,10 @@ public class WindowWidget extends ScrollPanelWidget {
         for (Widget child : this.children) {
             if (!child.isVisible()) continue;
 
-            if (child.getContext() == null) {
-                child.setContext(this.context);
-            }
-
             // Limitation for scroll bars
             if (!child.equals(this.horizontalScrollbar) && !child.equals(this.verticalScrollbar) && !child.equals(this.closeButton)) {
-                saveRenderState();
-                intersectScissor(getX(), getY() + this.headerHeight,
+                NVGDrawer.saveRenderState();
+                NVGDrawer.intersectScissor(getX(), getY() + this.headerHeight,
                         this.verticalScrollbar.isVisible() ? this.getWidth() - this.verticalScrollbar.width - this.verticalScrollbar.borderOffset * 2 : this.getWidth(),
                         this.horizontalScrollbar.isVisible() ? this.getHeight() - this.horizontalScrollbar.height - this.horizontalScrollbar.borderOffset * 2 - this.headerHeight : this.getHeight() - this.headerHeight);
             }
@@ -188,8 +219,8 @@ public class WindowWidget extends ScrollPanelWidget {
             child.setX(absoluteX);
             child.setY(absoluteY);
 
-            child.saveRenderState();
-            child.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
+            NVGDrawer.saveRenderState();
+            NVGDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
 
             // Render child and its children
             child.preRender();
@@ -199,13 +230,13 @@ public class WindowWidget extends ScrollPanelWidget {
             child.postRender();
 
             // Restore the original positions
-            child.restoreRenderState();
+            NVGDrawer.restoreRenderState();
             child.setX(originalX);
             child.setY(originalY);
 
             // Limitation for scroll bars
             if (!child.equals(this.horizontalScrollbar) && !child.equals(this.verticalScrollbar) && !child.equals(this.closeButton)) {
-                restoreRenderState();
+                NVGDrawer.restoreRenderState();
             }
         }
     }
@@ -230,8 +261,8 @@ public class WindowWidget extends ScrollPanelWidget {
      */
     @Override
     public void postRender() {
-        Vector2f titleSize = getTextSize(this.title, this.fontName, this.titleFontSize);
-        drawText(this.title, this.fontName, (int) ((getWidth() - titleSize.x) / 2), (int) (this.headerHeight - titleSize.y) / 2, this.titleFontSize, UIColor.WHITE);
+        Vector2f titleSize = NVGDrawer.getTextSize(this.title, this.fontName, this.titleFontSize);
+        drawText(this.title, this.fontName, (int) ((getWidth() - titleSize.x) / 2), (int) (this.headerHeight - titleSize.y) / 2, this.titleFontSize, NVGColor.WHITE);
 
         // Border
         if (this.drawBorder) {

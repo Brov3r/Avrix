@@ -1,6 +1,7 @@
 package com.avrix.patches;
 
 import com.avrix.agent.ClassTransformer;
+import com.avrix.ui.InputWidgetHandler;
 import com.avrix.ui.WidgetManager;
 import javassist.CannotCompileException;
 
@@ -23,19 +24,25 @@ public class PatchUIManager extends ClassTransformer {
     public void modifyClass() {
         getModifierBuilder().modifyMethod("onKeyPress", (ctClass, ctMethod) -> {
             try {
-                ctMethod.insertBefore(WidgetManager.class.getName() + ".onKeyPress($1);");
+                ctMethod.insertBefore(InputWidgetHandler.class.getName() + ".onKeyPress($1);");
             } catch (CannotCompileException e) {
                 throw new RuntimeException(e);
             }
         }).modifyMethod("onKeyRepeat", (ctClass, ctMethod) -> {
             try {
-                ctMethod.insertBefore(WidgetManager.class.getName() + ".onKeyRepeat($1);");
+                ctMethod.insertBefore(InputWidgetHandler.class.getName() + ".onKeyRepeat($1);");
             } catch (CannotCompileException e) {
                 throw new RuntimeException(e);
             }
         }).modifyMethod("onKeyRelease", (ctClass, ctMethod) -> {
             try {
-                ctMethod.insertBefore(WidgetManager.class.getName() + ".onKeyRelease($1);");
+                ctMethod.insertBefore(InputWidgetHandler.class.getName() + ".onKeyRelease($1);");
+            } catch (CannotCompileException e) {
+                throw new RuntimeException(e);
+            }
+        }).modifyMethod("update", (ctClass, ctMethod) -> {
+            try {
+                ctMethod.insertBefore("{ if (" + WidgetManager.class.getName() + ".isOverCustomUI()) return; }");
             } catch (CannotCompileException e) {
                 throw new RuntimeException(e);
             }
