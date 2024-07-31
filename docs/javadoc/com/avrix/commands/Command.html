@@ -80,7 +80,6 @@ loadScripts(document, 'script');</script>
 <div class="block">Interface for implementing a new command.
  Implementing classes must use the <a href="CommandName.html" title="annotation interface in com.avrix.commands"><code>CommandName</code></a> annotation to specify the command name.
  They may also use the <a href="CommandAccessLevel.html" title="annotation interface in com.avrix.commands"><code>CommandAccessLevel</code></a> annotation to specify the required access level for the command.
- The <a href="CommandChatReturn.html" title="annotation interface in com.avrix.commands"><code>CommandChatReturn</code></a> annotation can be used to provide text that will be displayed in chat when the command is invoked.
  The <a href="CommandExecutionScope.html" title="annotation interface in com.avrix.commands"><code>CommandExecutionScope</code></a> annotation should be used to define where the command is available (e.g., in chat, in console, or both).
  The <a href="CommandDescription.html" title="annotation interface in com.avrix.commands"><code>CommandDescription</code></a> annotation can be used to add a description to the command, providing additional information about its functionality.</div>
 </section>
@@ -116,29 +115,24 @@ loadScripts(document, 'script');</script>
 <div class="block">Retrieves the access level required for the command from the <a href="CommandAccessLevel.html" title="annotation interface in com.avrix.commands"><code>CommandAccessLevel</code></a> annotation.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getChatReturnText()" class="member-name-link">getChatReturnText</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getCommandName()" class="member-name-link">getCommandName</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Retrieves the chat return message from the <a href="CommandChatReturn.html" title="annotation interface in com.avrix.commands"><code>CommandChatReturn</code></a> annotation.</div>
-</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getCommandName()" class="member-name-link">getCommandName</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Retrieves the command name from the <a href="CommandName.html" title="annotation interface in com.avrix.commands"><code>CommandName</code></a> annotation.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getDescription()" class="member-name-link">getDescription</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getDescription()" class="member-name-link">getDescription</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Retrieves the command description from the <a href="CommandDescription.html" title="annotation interface in com.avrix.commands"><code>CommandDescription</code></a> annotation.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../enums/CommandScope.html" title="enum class in com.avrix.enums">CommandScope</a></code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getExecutionScope()" class="member-name-link">getExecutionScope</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="../enums/CommandScope.html" title="enum class in com.avrix.enums">CommandScope</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getExecutionScope()" class="member-name-link">getExecutionScope</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Retrieves the execution scope of the command from the <a href="CommandExecutionScope.html" title="annotation interface in com.avrix.commands"><code>CommandExecutionScope</code></a> annotation.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onInvoke(zombie.core.raknet.UdpConnection,java.lang.String%5B%5D)" class="member-name-link">onInvoke</a><wbr>(zombie.core.raknet.UdpConnection&nbsp;playerConnection,
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code>abstract <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3"><code><a href="#onInvoke(zombie.core.raknet.UdpConnection,java.lang.String%5B%5D)" class="member-name-link">onInvoke</a><wbr>(zombie.core.raknet.UdpConnection&nbsp;playerConnection,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;args)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab3">
 <div class="block">Performing a chat command action</div>
 </div>
 </div>
@@ -175,13 +169,15 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="onInvoke(zombie.core.raknet.UdpConnection,java.lang.String[])">
 <h3>onInvoke</h3>
-<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onInvoke</span><wbr><span class="parameters">(zombie.core.raknet.UdpConnection&nbsp;playerConnection,
+<div class="member-signature"><span class="modifiers">public abstract</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">onInvoke</span><wbr><span class="parameters">(zombie.core.raknet.UdpConnection&nbsp;playerConnection,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>[]&nbsp;args)</span></div>
 <div class="block">Performing a chat command action</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>playerConnection</code> - <code>UdpConnection</code>, if called from the console, the connection will return as <code>null</code></dd>
 <dd><code>args</code> - arguments of the received command</dd>
+<dt>Returns:</dt>
+<dd>message text that will be displayed to the user (or console) when the command is executed</dd>
 </dl>
 </section>
 </li>
@@ -215,17 +211,6 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Returns:</dt>
 <dd>the required <a href="../enums/AccessLevel.html" title="enum class in com.avrix.enums"><code>AccessLevel</code></a>, or <code>null</code> if the annotation is not present</dd>
-</dl>
-</section>
-</li>
-<li>
-<section class="detail" id="getChatReturnText()">
-<h3>getChatReturnText</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getChatReturnText</span>()</div>
-<div class="block">Retrieves the chat return message from the <a href="CommandChatReturn.html" title="annotation interface in com.avrix.commands"><code>CommandChatReturn</code></a> annotation.</div>
-<dl class="notes">
-<dt>Returns:</dt>
-<dd>the chat return message, or <code>null</code> if the annotation is not present</dd>
 </dl>
 </section>
 </li>

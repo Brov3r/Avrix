@@ -1,6 +1,7 @@
 # AvrixLoader v1.4.0
 
 - Launch scripts updated
+- Fixed the custom command manager (the @CommandChatReturn annotation was removed as unnecessary)
 - Added `.exe` executable files for Windows, allowing launch from Steam
 - Added new logging system `TinyLog2`
 - Added a GUI system based on `NanoVG`

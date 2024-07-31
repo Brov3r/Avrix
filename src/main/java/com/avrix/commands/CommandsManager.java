@@ -39,7 +39,6 @@ public class CommandsManager {
         CommandName commandNameAnnotation = commandClass.getAnnotation(CommandName.class);
         CommandAccessLevel accessLevelAnnotation = commandClass.getAnnotation(CommandAccessLevel.class);
         CommandExecutionScope executionScopeAnnotation = commandClass.getAnnotation(CommandExecutionScope.class);
-        CommandChatReturn chatReturnAnnotation = commandClass.getAnnotation(CommandChatReturn.class);
         CommandDescription commandDescription = commandClass.getAnnotation(CommandDescription.class);
 
         if (commandNameAnnotation == null || commandNameAnnotation.value().isEmpty()) {
@@ -59,11 +58,6 @@ public class CommandsManager {
 
         if (executionScopeAnnotation == null) {
             System.out.printf("[!] Command '%s' is missing the @CommandExecutionScope annotation!%n", commandClass);
-            return;
-        }
-
-        if (chatReturnAnnotation == null) {
-            System.out.printf("[!] Command '%s' is missing the @CommandChatReturn annotation!%n", commandClass);
             return;
         }
 
@@ -138,10 +132,9 @@ public class CommandsManager {
         String[] commandArgsToInvoke = Arrays.copyOfRange(commandArgs, 1, commandArgs.length);
         String playerName = playerConnection == null ? "Console" : playerConnection.username;
         System.out.printf("[#] Player '%s' called command '%s' with arguments: '%s'%n", playerName, commandArgs[0], Arrays.toString(commandArgsToInvoke));
-        command.onInvoke(playerConnection, commandArgsToInvoke);
 
-        CommandChatReturn chatReturnAnnotation = command.getClass().getAnnotation(CommandChatReturn.class);
-        return chatReturnAnnotation.value();
+        String response = command.onInvoke(playerConnection, commandArgsToInvoke);
+        return response == null ? "" : response;
     }
 
     /**
