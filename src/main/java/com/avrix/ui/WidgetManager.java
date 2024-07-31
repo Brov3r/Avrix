@@ -1,7 +1,7 @@
 package com.avrix.ui;
 
 import com.avrix.events.EventManager;
-import com.avrix.ui.widgets.*;
+import com.avrix.ui.widgets.Widget;
 import com.avrix.utils.WindowUtils;
 import zombie.core.opengl.RenderThread;
 import zombie.input.Mouse;
@@ -20,38 +20,6 @@ public class WidgetManager {
     private static final List<Widget> renderWidgetList = new ArrayList<>();
 
     /**
-     * TODO: TEST
-     */
-    private static void test() {
-        WindowWidget ww = new WindowWidget("Test widget", 10, 10, 400, 300);
-        ww.setDraggable(true);
-        ww.addToScreen();
-
-        ButtonWidget bw = new ButtonWidget("Click", 10, 50, 100, 25, 0, NVGColor.AQUA, () -> {
-            System.out.println("Click!");
-        });
-        ww.addChild(bw);
-
-        ButtonWidget bw2 = new ButtonWidget("Click2", 60, 50, 100, 25, 0, NVGColor.BABY_BLUE, () -> {
-            System.out.println("Click2!");
-        });
-        ww.addChild(bw2);
-
-        ButtonWidget bw3 = new ButtonWidget("Click3", 560, 50, 100, 25, 0, NVGColor.BABY_BLUE, () -> {
-            System.out.println("Click3!");
-        });
-        ww.addChild(bw3);
-
-        LabelWidget lw = new LabelWidget("Hello world!", "Arial-Regular", 10, 100, 24, NVGColor.DARK_VIOLET);
-        ww.addChild(lw);
-
-        InputTextWidget itw = new InputTextWidget(10, 150, 200, 32);
-        itw.setBorderRadius(16);
-        itw.setPlaceholder("Placeholder...");
-        ww.addChild(itw);
-    }
-
-    /**
      * Initializing the {@link WidgetManager} (creating NanoVG contexts)
      */
     public static void init() {
@@ -61,11 +29,6 @@ public class WidgetManager {
             }
 
             NVGFont.loadDefaultFonts();
-
-            /*
-             TODO: TEST
-             */
-            test();
 
             EventManager.invokeEvent("onWidgetManagerInitialized", NVGContext);
         });
