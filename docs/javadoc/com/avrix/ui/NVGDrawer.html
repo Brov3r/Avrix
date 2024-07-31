@@ -153,6 +153,25 @@ loadScripts(document, 'script');</script>
 <div class="block">Draws an image at the specified position with the given size.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#drawImage(java.lang.String,int,int,int,int)" class="member-name-link">drawImage</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;imageURL,
+ int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Draws an image at the specified position with the given size.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#drawImage(java.lang.String,java.lang.String,int,int,int,int)" class="member-name-link">drawImage</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;jarPath,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;internalFilePath,
+ int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Draws an image at the specified position with the given size.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#drawImage(java.nio.file.Path,int,int,int,int)" class="member-name-link">drawImage</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/nio/file/Path.html" title="class or interface in java.nio.file" class="external-link">Path</a>&nbsp;imagePath,
  int&nbsp;x,
  int&nbsp;y,
@@ -615,6 +634,46 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>imagePath</code> - path to the image</dd>
+<dd><code>x</code> - absolute x-coordinate of the image's position</dd>
+<dd><code>y</code> - absolute y-coordinate of the image's position</dd>
+<dd><code>width</code> - the width of the image</dd>
+<dd><code>height</code> - the height of the image</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="drawImage(java.lang.String,java.lang.String,int,int,int,int)">
+<h3>drawImage</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawImage</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;jarPath,
+ <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;internalFilePath,
+ int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height)</span></div>
+<div class="block">Draws an image at the specified position with the given size.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>jarPath</code> - path to the jar file</dd>
+<dd><code>internalFilePath</code> - path to the image in the jar file</dd>
+<dd><code>x</code> - absolute x-coordinate of the image's position</dd>
+<dd><code>y</code> - absolute y-coordinate of the image's position</dd>
+<dd><code>width</code> - the width of the image</dd>
+<dd><code>height</code> - the height of the image</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="drawImage(java.lang.String,int,int,int,int)">
+<h3>drawImage</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawImage</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;imageURL,
+ int&nbsp;x,
+ int&nbsp;y,
+ int&nbsp;width,
+ int&nbsp;height)</span></div>
+<div class="block">Draws an image at the specified position with the given size.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>imageURL</code> - url to the image (including from the Internet)</dd>
 <dd><code>x</code> - absolute x-coordinate of the image's position</dd>
 <dd><code>y</code> - absolute y-coordinate of the image's position</dd>
 <dd><code>width</code> - the width of the image</dd>

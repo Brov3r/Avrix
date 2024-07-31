@@ -75,7 +75,7 @@ public class ButtonWidget extends PanelWidget {
      * @return the text color
      */
     public final NVGColor getTextColor() {
-        return this.textColor;
+        return textColor;
     }
 
     /**
@@ -93,7 +93,7 @@ public class ButtonWidget extends PanelWidget {
      * @return the text
      */
     public final String getText() {
-        return this.text;
+        return text;
     }
 
     /**
@@ -111,7 +111,7 @@ public class ButtonWidget extends PanelWidget {
      * @return the font size
      */
     public final int getFontSize() {
-        return this.fontSize;
+        return fontSize;
     }
 
     /**
@@ -191,12 +191,12 @@ public class ButtonWidget extends PanelWidget {
     public void onLeftMouseUp(int x, int y) {
         super.onLeftMouseUp(x, y);
 
-        if (this.enable && this.visible && this.LMBDown) {
-            this.onClickMethod.run();
-            SoundManager.instance.playUISound(this.clickSound);
+        if (enable && visible && LMBDown) {
+            onClickMethod.run();
+            SoundManager.instance.playUISound(clickSound);
         }
 
-        this.LMBDown = false;
+        LMBDown = false;
     }
 
     /**
@@ -209,7 +209,7 @@ public class ButtonWidget extends PanelWidget {
     public void onLeftMouseUpOutside(int x, int y) {
         super.onLeftMouseUpOutside(x, y);
 
-        this.LMBDown = false;
+        LMBDown = false;
     }
 
     /**
@@ -217,7 +217,7 @@ public class ButtonWidget extends PanelWidget {
      */
     @Override
     public void render() {
-        NVGColor bgColor = this.backgroundColor.copy();
+        NVGColor bgColor = backgroundColor.copy();
 
         if (isEnable()) {
             if (isHovered()) bgColor = bgColor.multiply(1.25f);
@@ -226,19 +226,19 @@ public class ButtonWidget extends PanelWidget {
             bgColor = bgColor.multiply(0.3f);
         }
 
-        if (this.borderRadius != 0) {
-            drawRoundedRect(0, 0, getWidth(), getHeight(), this.borderRadius, bgColor);
-            if (this.drawBorder) {
-                drawRoundedRectOutline(0, 0, getWidth(), getHeight(), this.borderRadius, this.borderWidth, this.borderColor);
+        if (borderRadius != 0) {
+            drawRoundedRect(0, 0, getWidth(), getHeight(), borderRadius, bgColor);
+            if (drawBorder) {
+                drawRoundedRectOutline(0, 0, getWidth(), getHeight(), borderRadius, borderWidth, borderColor);
             }
         } else {
             drawRect(0, 0, getWidth(), getHeight(), bgColor);
-            if (this.drawBorder) {
-                drawRectOutline(0, 0, getWidth(), getHeight(), this.borderWidth, this.borderColor);
+            if (drawBorder) {
+                drawRectOutline(0, 0, getWidth(), getHeight(), borderWidth, borderColor);
             }
         }
 
-        Vector2f titleSize = NVGDrawer.getTextSize(this.text, this.fontName, this.fontSize);
-        drawText(this.text, this.fontName, (getWidth() - (int) titleSize.x) / 2, (getHeight() - (int) titleSize.y - this.fontSize / 4) / 2, this.fontSize, this.textColor);
+        Vector2f titleSize = NVGDrawer.getTextSize(text, fontName, fontSize);
+        drawText(text, fontName, (getWidth() - (int) titleSize.x) / 2, (getHeight() - (int) titleSize.y - fontSize / 4) / 2, fontSize, textColor);
     }
 }

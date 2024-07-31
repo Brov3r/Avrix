@@ -3,6 +3,7 @@ package com.avrix;
 import com.avrix.agent.AgentLoader;
 import com.avrix.logs.LineReadingOutputStream;
 import com.avrix.plugin.PluginManager;
+import com.avrix.resources.ResourceManager;
 import com.avrix.utils.PatchUtils;
 import org.tinylog.Logger;
 import zombie.gameStates.MainScreenState;
@@ -27,6 +28,8 @@ public class Launcher {
         AgentLoader.loadAgent();
 
         PatchUtils.applyDefaultPatches();
+
+        ResourceManager.init();
 
         PluginManager.loadPlugins();
 

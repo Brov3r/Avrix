@@ -2,12 +2,15 @@
 
 - Launch scripts updated
 - Fixed the custom command manager (the @CommandChatReturn annotation was removed as unnecessary)
+- Minor bugs fixed
+- Added client side plugin example
 - Added `.exe` executable files for Windows, allowing launch from Steam
 - Added new logging system `TinyLog2`
 - Added a GUI system based on `NanoVG`
 - Added `onWidgetManagerInitialized`, `OnPreWidgetRender`, `OnPostWidgetRender` events
 - Added default fonts: `Arial-Regular`, `Roboto-Regular`, `Montserrat-Regular`, `FontAwesome`
-- Added basic widgets: `Panel`, `Button`, `Scrollbar`, `ScrollPanel`, `Window`, `Label`
+- Added basic widgets: `Panel`, `Button`, `Scrollbar`, `ScrollPanel`, `Window`, `Label`, `InputText'
+- Added `ResourceManager` and `ImageLoader`
 - Event renamed: `onPostTickRenderThread` -> `onTickRenderThread`
 
 # AvrixLoader v1.3.0

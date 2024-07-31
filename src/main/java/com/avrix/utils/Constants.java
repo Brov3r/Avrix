@@ -9,6 +9,11 @@ import java.util.Properties;
  */
 public class Constants {
     /**
+     * Name of the file cache directory
+     */
+    public static final String CACHE_DIR_NAME = "avrix/cache";
+
+    /**
      * Folder name for plugins
      */
     public static final String PLUGINS_FOLDER_NAME = "plugins";
@@ -22,7 +27,7 @@ public class Constants {
      * Name of the default plugin config
      */
     public static final String PLUGINS_DEFAULT_CONFIG_NAME = "config.yml";
-    
+
     /**
      * Project version
      */
@@ -32,6 +37,12 @@ public class Constants {
      * Project name
      */
     public static final String AVRIX_NAME;
+
+    /**
+     * Maximum cache folder size (in megabytes).
+     * If exceeded, it will be cleared at the next start.
+     */
+    public static final int MAX_CACHE_SIZE = 256;
 
     /*
      Initializing data and configuration file

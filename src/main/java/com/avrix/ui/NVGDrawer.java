@@ -1,5 +1,6 @@
 package com.avrix.ui;
 
+import com.avrix.resources.ImageLoader;
 import org.joml.Vector2f;
 import org.lwjgl.nanovg.NVGPaint;
 
@@ -293,6 +294,11 @@ public class NVGDrawer {
      * @param height  the height of the image
      */
     public static void drawImage(int imageId, int x, int y, int width, int height) {
+        if (imageId == -1) {
+            drawRect(x, y, width, height, NVGColor.WHITE);
+            return;
+        }
+
         NVGPaint paint = nvgImagePattern(getContextID(), x, y, width, height, 0, imageId, 1, NVGPaint.create());
         nvgBeginPath(getContextID());
         nvgRect(getContextID(), x, y, width, height);
@@ -310,7 +316,33 @@ public class NVGDrawer {
      * @param height    the height of the image
      */
     public static void drawImage(Path imagePath, int x, int y, int width, int height) {
-        int imageID = nvgCreateImage(getContextID(), imagePath.toString(), NVG_IMAGE_NEAREST);
-        drawImage(imageID, x, y, width, height);
+        drawImage(ImageLoader.loadImage(imagePath), x, y, width, height);
+    }
+
+    /**
+     * Draws an image at the specified position with the given size.
+     *
+     * @param jarPath          path to the jar file
+     * @param internalFilePath path to the image in the jar file
+     * @param x                absolute x-coordinate of the image's position
+     * @param y                absolute y-coordinate of the image's position
+     * @param width            the width of the image
+     * @param height           the height of the image
+     */
+    public static void drawImage(String jarPath, String internalFilePath, int x, int y, int width, int height) {
+        drawImage(ImageLoader.loadImage(jarPath, internalFilePath), x, y, width, height);
+    }
+
+    /**
+     * Draws an image at the specified position with the given size.
+     *
+     * @param imageURL url to the image (including from the Internet)
+     * @param x        absolute x-coordinate of the image's position
+     * @param y        absolute y-coordinate of the image's position
+     * @param width    the width of the image
+     * @param height   the height of the image
+     */
+    public static void drawImage(String imageURL, int x, int y, int width, int height) {
+        drawImage(ImageLoader.loadImage(imageURL), x, y, width, height);
     }
 }

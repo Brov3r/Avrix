@@ -67,7 +67,7 @@ public class ScrollPanelWidget extends PanelWidget {
      * @return the vertical scrollbar {@link Widget}
      */
     public final ScrollbarWidget getVerticalScrollbar() {
-        return this.verticalScrollbar;
+        return verticalScrollbar;
     }
 
     /**
@@ -76,7 +76,7 @@ public class ScrollPanelWidget extends PanelWidget {
      * @return the horizontal scrollbar {@link Widget}
      */
     public final ScrollbarWidget getHorizontalScrollbar() {
-        return this.horizontalScrollbar;
+        return horizontalScrollbar;
     }
 
     /**
@@ -86,14 +86,14 @@ public class ScrollPanelWidget extends PanelWidget {
     public void onInitialize() {
         super.onInitialize();
 
-        this.horizontalScrollbar = new ScrollbarWidget(true);
-        this.verticalScrollbar = new ScrollbarWidget();
+        horizontalScrollbar = new ScrollbarWidget(true);
+        verticalScrollbar = new ScrollbarWidget();
 
-        addChild(this.horizontalScrollbar);
-        addChild(this.verticalScrollbar);
+        addChild(horizontalScrollbar);
+        addChild(verticalScrollbar);
 
-        this.horizontalScrollbar.initPosition();
-        this.verticalScrollbar.initPosition();
+        horizontalScrollbar.initPosition();
+        verticalScrollbar.initPosition();
     }
 
     /**
@@ -104,7 +104,7 @@ public class ScrollPanelWidget extends PanelWidget {
     @Override
     public synchronized void removeChild(Widget widget) {
         super.removeChild(widget);
-        raiseScrollbars(widget != this.horizontalScrollbar && widget != this.verticalScrollbar);
+        raiseScrollbars(widget != horizontalScrollbar && widget != verticalScrollbar);
     }
 
     /**
@@ -115,7 +115,7 @@ public class ScrollPanelWidget extends PanelWidget {
     @Override
     public synchronized void addChild(Widget widget) {
         super.addChild(widget);
-        raiseScrollbars(widget != this.horizontalScrollbar && widget != this.verticalScrollbar);
+        raiseScrollbars(widget != horizontalScrollbar && widget != verticalScrollbar);
     }
 
     /**
@@ -124,11 +124,11 @@ public class ScrollPanelWidget extends PanelWidget {
      * @param isAnotherWidget flag pointing to other widgets
      */
     private synchronized void raiseScrollbars(boolean isAnotherWidget) {
-        if (isAnotherWidget && this.horizontalScrollbar != null && this.verticalScrollbar != null) {
-            this.children.remove(this.horizontalScrollbar);
-            this.children.remove(this.verticalScrollbar);
-            this.children.add(this.horizontalScrollbar);
-            this.children.add(this.verticalScrollbar);
+        if (isAnotherWidget && horizontalScrollbar != null && verticalScrollbar != null) {
+            children.remove(horizontalScrollbar);
+            children.remove(verticalScrollbar);
+            children.add(horizontalScrollbar);
+            children.add(verticalScrollbar);
         }
     }
 
@@ -139,20 +139,20 @@ public class ScrollPanelWidget extends PanelWidget {
      */
     @Override
     public void renderChildren() {
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             if (!child.isVisible()) continue;
 
             // Limitation for scroll bars
-            if (!child.equals(this.horizontalScrollbar) && !child.equals(this.verticalScrollbar)) {
+            if (!child.equals(horizontalScrollbar) && !child.equals(verticalScrollbar)) {
                 NVGDrawer.saveRenderState();
                 NVGDrawer.intersectScissor(getX(), getY(),
-                        this.verticalScrollbar.isVisible() ? this.getWidth() - this.verticalScrollbar.width - this.verticalScrollbar.borderOffset * 2 : this.getWidth(),
-                        this.horizontalScrollbar.isVisible() ? this.getHeight() - this.horizontalScrollbar.height - this.horizontalScrollbar.borderOffset * 2 : this.getHeight());
+                        verticalScrollbar.isVisible() ? getWidth() - verticalScrollbar.width - verticalScrollbar.borderOffset * 2 : getWidth(),
+                        horizontalScrollbar.isVisible() ? getHeight() - horizontalScrollbar.height - horizontalScrollbar.borderOffset * 2 : getHeight());
             }
 
             // Calculate absolute positions considering scrolling
-            int absoluteX = child.isScrollLock() ? getX() + child.getX() : getX() + child.getX() - this.scrollX;
-            int absoluteY = child.isScrollLock() ? getY() + child.getY() : getY() + child.getY() - this.scrollY;
+            int absoluteX = child.isScrollLock() ? getX() + child.getX() : getX() + child.getX() - scrollX;
+            int absoluteY = child.isScrollLock() ? getY() + child.getY() : getY() + child.getY() - scrollY;
 
             // Save original positions to restore later
             int originalX = child.getX();
@@ -178,7 +178,7 @@ public class ScrollPanelWidget extends PanelWidget {
             child.setY(originalY);
 
             // Limitation for scroll bars
-            if (!child.equals(this.horizontalScrollbar) && !child.equals(this.verticalScrollbar)) {
+            if (!child.equals(horizontalScrollbar) && !child.equals(verticalScrollbar)) {
                 NVGDrawer.restoreRenderState();
             }
         }
@@ -192,8 +192,8 @@ public class ScrollPanelWidget extends PanelWidget {
     protected void updateMaxScrollOffset() {
         super.updateMaxScrollOffset();
 
-        this.originalMaxScrollY = this.maxScrollY;
-        this.originalMaxScrollX = this.maxScrollX;
+        originalMaxScrollY = maxScrollY;
+        originalMaxScrollX = maxScrollX;
     }
 
     /**
@@ -203,19 +203,19 @@ public class ScrollPanelWidget extends PanelWidget {
     public void update() {
         super.update();
 
-        this.horizontalScrollbar.setVisible(maxScrollX > 0);
-        this.verticalScrollbar.setVisible(maxScrollY > 0);
+        horizontalScrollbar.setVisible(maxScrollX > 0);
+        verticalScrollbar.setVisible(maxScrollY > 0);
 
-        if (this.verticalScrollbar.isVisible()) {
-            this.maxScrollY = originalMaxScrollY + this.horizontalScrollbar.height + this.horizontalScrollbar.borderOffset * 2;
+        if (verticalScrollbar.isVisible()) {
+            maxScrollY = originalMaxScrollY + horizontalScrollbar.height + horizontalScrollbar.borderOffset * 2;
         }
 
-        if (this.horizontalScrollbar.isVisible()) {
-            this.maxScrollX = originalMaxScrollX + this.verticalScrollbar.width + this.verticalScrollbar.borderOffset * 2;
+        if (horizontalScrollbar.isVisible()) {
+            maxScrollX = originalMaxScrollX + verticalScrollbar.width + verticalScrollbar.borderOffset * 2;
         }
 
-        if (this.verticalScrollbar.isVisible() && this.horizontalScrollbar.isVisible()) {
-            this.horizontalScrollbar.width = this.horizontalScrollbar.compressedWidth;
+        if (verticalScrollbar.isVisible() && horizontalScrollbar.isVisible()) {
+            horizontalScrollbar.width = horizontalScrollbar.compressedWidth;
         }
     }
 }

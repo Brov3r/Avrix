@@ -1,13 +1,13 @@
 package com.avrix.ui;
 
 import com.avrix.events.EventManager;
+import com.avrix.resources.ImageLoader;
 import com.avrix.ui.widgets.Widget;
 import com.avrix.utils.WindowUtils;
 import zombie.core.opengl.RenderThread;
 import zombie.input.Mouse;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -29,6 +29,8 @@ public class WidgetManager {
             }
 
             NVGFont.loadDefaultFonts();
+
+            ImageLoader.loadImages(NVGContext);
 
             EventManager.invokeEvent("onWidgetManagerInitialized", NVGContext);
         });
@@ -88,7 +90,7 @@ public class WidgetManager {
      * @return list of {@link Widget}s
      */
     public static List<Widget> getWidgetList() {
-        return Collections.unmodifiableList(widgetList);
+        return new ArrayList<>(widgetList);
     }
 
     /**

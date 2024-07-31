@@ -1,0 +1,13 @@
+name: "Example Client Plugin"
+id: "example-client-plugin"
+description: "Example Client Plugin"
+author: "Brov3r"
+version: "%PROJECT_VERSION%"
+environment: "client"
+license: "MIT"
+contacts: "https://github.com/brov3r/avrix"
+entrypoints:
+  - "com.avrix.example.Main"
+dependencies:
+  pz-core: ">=41.78.16"
+  avrix-loader: ">=1.0.0"

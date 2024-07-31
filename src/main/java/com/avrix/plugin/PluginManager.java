@@ -78,12 +78,20 @@ public class PluginManager {
             Metadata metadata = Metadata.createFromJar(plugin, Constants.PLUGINS_METADATA_NAME);
 
             if (metadata == null) {
-                System.out.printf("[!] No metadata found for the potential plugin '%s'. Skipping...%n", plugin.getName());
+                System.out.printf("[?] No metadata found for the potential plugin '%s'. Skipping...%n", plugin.getName());
                 continue;
             }
 
             if (!metadata.getPluginFile().exists()) {
                 System.out.printf("[!] Could not access the plugin file for '%s'. Skipping...%n", plugin.getName());
+                continue;
+            }
+
+            if (metadata.getEnvironment() != loaderEnvironment && metadata.getEnvironment() != Environment.BOTH) {
+                System.out.printf("[?] Plugin '%s' found with inappropriate environment (Loader: '%s', Plugin: '%s'). Skipping...%n",
+                        plugin.getName(),
+                        loaderEnvironment.getValue(),
+                        metadata.getEnvironment().getValue());
                 continue;
             }
 
@@ -168,10 +176,8 @@ public class PluginManager {
     private static List<File> getPluginFiles() throws IOException {
         File folder = new File(Constants.PLUGINS_FOLDER_NAME);
 
-        if (!folder.exists()) {
-            if (!folder.mkdir()) {
-                System.out.println("[!] Failed to create the plugins folder.");
-            }
+        if (!folder.exists() && !folder.mkdirs()) {
+            System.out.println("[!] Failed to create the plugins folder.");
         }
 
         if (!folder.isDirectory()) {

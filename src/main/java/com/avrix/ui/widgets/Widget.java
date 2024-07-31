@@ -1,5 +1,6 @@
 package com.avrix.ui.widgets;
 
+import com.avrix.resources.ImageLoader;
 import com.avrix.ui.NVGColor;
 import com.avrix.ui.NVGDrawer;
 import com.avrix.ui.WidgetManager;
@@ -119,7 +120,7 @@ public abstract class Widget {
      * @return {@code true} if the {@link Widget} is scrollable, {@code false} otherwise.
      */
     public final boolean isScrollable() {
-        return this.scrollable;
+        return scrollable;
     }
 
     /**
@@ -137,7 +138,7 @@ public abstract class Widget {
      * @return {@code true} if scrolling is locked, {@code false} otherwise.
      */
     public final boolean isScrollLock() {
-        return this.scrollLock;
+        return scrollLock;
     }
 
     /**
@@ -155,7 +156,7 @@ public abstract class Widget {
      * @return the parent {@link Widget}, or {@code null} if this {@link Widget} does not have a parent
      */
     public final Widget getParent() {
-        return this.parent;
+        return parent;
     }
 
     /**
@@ -164,7 +165,7 @@ public abstract class Widget {
      * @return the current horizontal scroll offset
      */
     public final int getScrollX() {
-        return this.scrollX;
+        return scrollX;
     }
 
     /**
@@ -183,7 +184,7 @@ public abstract class Widget {
      * @return the maximum horizontal scroll offset
      */
     public final int getMaxScrollX() {
-        return this.maxScrollX;
+        return maxScrollX;
     }
 
     /**
@@ -202,7 +203,7 @@ public abstract class Widget {
      * @return the current vertical scroll offset
      */
     public final int getScrollY() {
-        return this.scrollY;
+        return scrollY;
     }
 
     /**
@@ -221,7 +222,7 @@ public abstract class Widget {
      * @return the maximum vertical scroll offset
      */
     public final int getMaxScrollY() {
-        return this.maxScrollY;
+        return maxScrollY;
     }
 
     /**
@@ -241,7 +242,7 @@ public abstract class Widget {
      * @return the scroll speed
      */
     public final int getScrollSpeed() {
-        return this.scrollSpeed;
+        return scrollSpeed;
     }
 
     /**
@@ -260,12 +261,12 @@ public abstract class Widget {
      * ensuring that the rendering order respects the hierarchy of widgets.
      */
     public void renderChildren() {
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             if (!child.isVisible()) continue;
 
             // Calculate absolute positions considering scrolling
-            int absoluteX = child.isScrollLock() ? getX() + child.getX() : getX() + child.getX() - this.scrollX;
-            int absoluteY = child.isScrollLock() ? getY() + child.getY() : getY() + child.getY() - this.scrollY;
+            int absoluteX = child.isScrollLock() ? getX() + child.getX() : getX() + child.getX() - scrollX;
+            int absoluteY = child.isScrollLock() ? getY() + child.getY() : getY() + child.getY() - scrollY;
 
             // Save original positions to restore later
             int originalX = child.getX();
@@ -299,7 +300,7 @@ public abstract class Widget {
      */
     public synchronized void addChild(Widget widget) {
         widget.parent = this;
-        this.children.add(widget);
+        children.add(widget);
         updateMaxScrollOffset();
     }
 
@@ -310,7 +311,7 @@ public abstract class Widget {
      */
     public synchronized void removeChild(Widget widget) {
         widget.parent = null;
-        this.children.remove(widget);
+        children.remove(widget);
         updateMaxScrollOffset();
     }
 
@@ -320,7 +321,7 @@ public abstract class Widget {
      * @return an unmodifiable list of child widgets
      */
     public final synchronized List<Widget> getChildren() {
-        return Collections.unmodifiableList(this.children);
+        return Collections.unmodifiableList(children);
     }
 
     /**
@@ -340,7 +341,7 @@ public abstract class Widget {
         int maxY = Integer.MIN_VALUE;
 
         // Calculate the bounding box of all children
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             int childMinX = child.getX();
             int childMinY = child.getY();
             int childMaxX = child.getX() + child.getWidth();
@@ -365,8 +366,8 @@ public abstract class Widget {
         int newMaxScrollY = Math.max(0, maxY - getHeight());
 
         // Update the class fields with the calculated values
-        this.maxScrollX = newMaxScrollX;
-        this.maxScrollY = newMaxScrollY;
+        maxScrollX = newMaxScrollX;
+        maxScrollY = newMaxScrollY;
     }
 
     /**
@@ -378,13 +379,13 @@ public abstract class Widget {
     public void onMouseMove(int x, int y) {
         boolean topWidgetHovered = false;
 
-        for (int i = this.children.size() - 1; i >= 0; i--) {
-            Widget child = this.children.get(i);
-            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : this.scrollX);
-            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : this.scrollY);
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
+            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
+            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
-            int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : this.scrollX);
-            int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : this.scrollY);
+            int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : scrollX);
+            int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : scrollY);
 
             if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && !topWidgetHovered) {
                 child.onMouseMove(childRelativeX, childRelativeY);
@@ -406,13 +407,13 @@ public abstract class Widget {
     public void onLeftMouseDown(int x, int y) {
         boolean topWidget = false;
         bringToTop();
-        for (int i = this.children.size() - 1; i >= 0; i--) {
-            Widget child = this.children.get(i);
-            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : this.scrollX);
-            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : this.scrollY);
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
+            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
+            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
-            int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : this.scrollX);
-            int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : this.scrollY);
+            int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : scrollX);
+            int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : scrollY);
 
             if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && !topWidget) {
                 topWidget = true;
@@ -431,13 +432,13 @@ public abstract class Widget {
      */
     public void onLeftMouseUp(int x, int y) {
         boolean topWidget = false;
-        for (int i = this.children.size() - 1; i >= 0; i--) {
-            Widget child = this.children.get(i);
-            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : this.scrollX);
-            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : this.scrollY);
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
+            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
+            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
-            int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : this.scrollX);
-            int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : this.scrollY);
+            int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : scrollX);
+            int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : scrollY);
 
             if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && !topWidget) {
                 topWidget = true;
@@ -457,13 +458,13 @@ public abstract class Widget {
     public void onRightMouseDown(int x, int y) {
         boolean topWidget = false;
         bringToTop();
-        for (int i = this.children.size() - 1; i >= 0; i--) {
-            Widget child = this.children.get(i);
-            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : this.scrollX);
-            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : this.scrollY);
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
+            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
+            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
-            int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : this.scrollX);
-            int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : this.scrollY);
+            int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : scrollX);
+            int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : scrollY);
 
             if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && !topWidget) {
                 topWidget = true;
@@ -482,13 +483,13 @@ public abstract class Widget {
      */
     public void onRightMouseUp(int x, int y) {
         boolean topWidget = false;
-        for (int i = this.children.size() - 1; i >= 0; i--) {
-            Widget child = this.children.get(i);
-            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : this.scrollX);
-            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : this.scrollY);
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
+            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
+            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
-            int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : this.scrollX);
-            int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : this.scrollY);
+            int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : scrollX);
+            int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : scrollY);
 
             if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && !topWidget) {
                 topWidget = true;
@@ -510,25 +511,25 @@ public abstract class Widget {
         boolean topWidget = false;
 
         // Update scroll position
-        if (this.scrollable) {
-            this.scrollY -= delta * this.scrollSpeed;
+        if (scrollable) {
+            scrollY -= delta * scrollSpeed;
         }
 
         // Limit the scroll values
-        if (this.scrollY < 0) {
-            this.scrollY = 0;
-        } else if (this.scrollY > this.maxScrollY) {
-            this.scrollY = this.maxScrollY;
+        if (scrollY < 0) {
+            scrollY = 0;
+        } else if (scrollY > maxScrollY) {
+            scrollY = maxScrollY;
         }
 
         // Update child widgets based on the new scroll values
-        for (int i = this.children.size() - 1; i >= 0; i--) {
-            Widget child = this.children.get(i);
-            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : this.scrollX);
-            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : this.scrollY);
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
+            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
+            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
-            int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : this.scrollX);
-            int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : this.scrollY);
+            int scrollAbsoluteX = x + (child.isScrollLock() ? 0 : scrollX);
+            int scrollAbsoluteY = y + (child.isScrollLock() ? 0 : scrollY);
 
             if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && !topWidget) {
                 topWidget = true;
@@ -546,10 +547,10 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onMouseEnter(int x, int y) {
-        for (int i = this.children.size() - 1; i >= 0; i--) {
-            Widget child = this.children.get(i);
-            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : this.scrollX);
-            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : this.scrollY);
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
+            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
+            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
             if (child.isPointOver(x, y)) {
                 child.onMouseEnter(childRelativeX, childRelativeY);
             }
@@ -563,10 +564,10 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onMouseExit(int x, int y) {
-        for (int i = this.children.size() - 1; i >= 0; i--) {
-            Widget child = this.children.get(i);
-            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : this.scrollX);
-            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : this.scrollY);
+        for (int i = children.size() - 1; i >= 0; i--) {
+            Widget child = children.get(i);
+            int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
+            int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
             child.hovered = false;
 
@@ -583,7 +584,7 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onMouseMoveOutside(int x, int y) {
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             child.onMouseMoveOutside(x, y);
         }
     }
@@ -595,7 +596,7 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onLeftMouseDownOutside(int x, int y) {
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             child.onLeftMouseDownOutside(x, y);
         }
     }
@@ -607,7 +608,7 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onLeftMouseUpOutside(int x, int y) {
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             child.onLeftMouseUpOutside(x, y);
         }
     }
@@ -619,7 +620,7 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onRightMouseDownOutside(int x, int y) {
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             child.onRightMouseDownOutside(x, y);
         }
     }
@@ -631,7 +632,7 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onRightMouseUpOutside(int x, int y) {
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             child.onRightMouseUpOutside(x, y);
         }
     }
@@ -644,7 +645,7 @@ public abstract class Widget {
      * @param delta the amount of wheel movement
      */
     public void onMouseWheelOutside(int x, int y, int delta) {
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             child.onMouseWheelOutside(x, y, delta);
         }
     }
@@ -655,7 +656,7 @@ public abstract class Widget {
      * @param key the code of the key that was pressed
      */
     public void onKeyPress(int key) {
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             child.onKeyPress(key);
         }
     }
@@ -666,7 +667,7 @@ public abstract class Widget {
      * @param key the code of the key that was released
      */
     public void onKeyRelease(int key) {
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             child.onKeyRelease(key);
         }
     }
@@ -677,7 +678,7 @@ public abstract class Widget {
      * @param key the code of the key that is being repeatedly pressed
      */
     public void onKeyRepeat(int key) {
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             child.onKeyRepeat(key);
         }
     }
@@ -697,7 +698,7 @@ public abstract class Widget {
      * @return {@code true} if the window is always on top; otherwise {@code false}
      */
     public final boolean isAlwaysOnTop() {
-        return this.alwaysOnTop;
+        return alwaysOnTop;
     }
 
     /**
@@ -715,10 +716,10 @@ public abstract class Widget {
      * @return {@code true} if the point is within the bounds of the {@link Widget}, otherwise {@code false}
      */
     public final boolean isPointOver(int x, int y) {
-        if (!this.visible) return false;
+        if (!visible) return false;
 
-        return x >= this.x && x <= this.x + this.width &&
-                y >= this.y && y <= this.y + this.height;
+        return x >= this.x && x <= this.x + width &&
+                y >= this.y && y <= this.y + height;
     }
 
     /**
@@ -727,7 +728,7 @@ public abstract class Widget {
      * @return {@code true} if the mouse pointer is over the widget, otherwise {@code false}
      */
     public final boolean isHovered() {
-        return this.hovered;
+        return hovered;
     }
 
     /**
@@ -745,7 +746,7 @@ public abstract class Widget {
      * @return {@code true} if the element is visible, otherwise {@code false}
      */
     public final boolean isVisible() {
-        return this.visible;
+        return visible;
     }
 
     /**
@@ -754,7 +755,7 @@ public abstract class Widget {
      * @return the x-coordinate of the top-left corner of the {@link Widget}
      */
     public final int getX() {
-        return this.x;
+        return x;
     }
 
     /**
@@ -763,7 +764,7 @@ public abstract class Widget {
      * @return the y-coordinate of the top-left corner of the {@link Widget}
      */
     public final int getY() {
-        return this.y;
+        return y;
     }
 
     /**
@@ -772,7 +773,7 @@ public abstract class Widget {
      * @return the width of the {@link Widget}
      */
     public final int getWidth() {
-        return this.width;
+        return width;
     }
 
     /**
@@ -781,7 +782,7 @@ public abstract class Widget {
      * @return the height of the {@link Widget}
      */
     public final int getHeight() {
-        return this.height;
+        return height;
     }
 
     /**
@@ -998,6 +999,33 @@ public abstract class Widget {
      */
     public final void drawImage(Path imagePath, int x, int y, int width, int height) {
         NVGDrawer.drawImage(imagePath, getX() + x, getY() + y, width, height);
+    }
+
+    /**
+     * Draws an image at the specified position with the given size.
+     *
+     * @param jarPath          path to the jar file
+     * @param internalFilePath path to the image in the jar file
+     * @param x                relative x-coordinate of the image's position
+     * @param y                relative y-coordinate of the image's position
+     * @param width            the width of the image
+     * @param height           the height of the image
+     */
+    public final void drawImage(String jarPath, String internalFilePath, int x, int y, int width, int height) {
+        NVGDrawer.drawImage(ImageLoader.loadImage(jarPath, internalFilePath), getX() + x, getY() + y, width, height);
+    }
+
+    /**
+     * Draws an image at the specified position with the given size.
+     *
+     * @param imageURL url to the image (including from the Internet)
+     * @param x        relative x-coordinate of the image's position
+     * @param y        relative y-coordinate of the image's position
+     * @param width    the width of the image
+     * @param height   the height of the image
+     */
+    public final void drawImage(String imageURL, int x, int y, int width, int height) {
+        NVGDrawer.drawImage(ImageLoader.loadImage(imageURL), getX() + x, getY() + y, width, height);
     }
 
     /**

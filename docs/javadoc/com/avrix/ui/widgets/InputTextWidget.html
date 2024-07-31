@@ -81,6 +81,7 @@ loadScripts(document, 'script');</script>
 <hr>
 <div class="type-signature"><span class="modifiers">public class </span><span class="element-name type-name-label">InputTextWidget</span>
 <span class="extends-implements">extends <a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></span></div>
+<div class="block">A widget for input text that supports text editing, selection, and clipboard operations.</div>
 </section>
 <section class="summary">
 <ul class="summary-list">
@@ -95,43 +96,79 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-last">Description</div>
 <div class="col-first even-row-color"><code>protected boolean</code></div>
 <div class="col-second even-row-color"><code><a href="#active" class="member-name-link">active</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block">Indicates if the widget is currently active.</div>
+</div>
 <div class="col-first odd-row-color"><code>protected int</code></div>
 <div class="col-second odd-row-color"><code><a href="#borderOffset" class="member-name-link">borderOffset</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>protected int</code></div>
-<div class="col-second even-row-color"><code><a href="#cursorOffset" class="member-name-link">cursorOffset</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last odd-row-color">
+<div class="block">The offset from the border for the text.</div>
+</div>
+<div class="col-first even-row-color"><code>protected boolean</code></div>
+<div class="col-second even-row-color"><code><a href="#cursorVisible" class="member-name-link">cursorVisible</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Indicates if the cursor is currently visible.</div>
+</div>
 <div class="col-first odd-row-color"><code>protected boolean</code></div>
-<div class="col-second odd-row-color"><code><a href="#cursorVisible" class="member-name-link">cursorVisible</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>protected boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#editable" class="member-name-link">editable</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
-<div class="col-first odd-row-color"><code>protected int</code></div>
-<div class="col-second odd-row-color"><code><a href="#fontSize" class="member-name-link">fontSize</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
-<div class="col-first even-row-color"><code>protected boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#LMBDown" class="member-name-link">LMBDown</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-second odd-row-color"><code><a href="#editable" class="member-name-link">editable</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">Indicates if the text can be edited.</div>
+</div>
+<div class="col-first even-row-color"><code>protected int</code></div>
+<div class="col-second even-row-color"><code><a href="#fontSize" class="member-name-link">fontSize</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">The font size used for displaying text.</div>
+</div>
+<div class="col-first odd-row-color"><code>protected boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#LMBDown" class="member-name-link">LMBDown</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">Indicates if the left mouse button is currently pressed.</div>
+</div>
+<div class="col-first even-row-color"><code>protected <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Runnable.html" title="class or interface in java.lang" class="external-link">Runnable</a></code></div>
+<div class="col-second even-row-color"><code><a href="#onTextChangeAction" class="member-name-link">onTextChangeAction</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Action to be executed when the text changes.</div>
+</div>
 <div class="col-first odd-row-color"><code>protected <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color"><code><a href="#placeholder" class="member-name-link">placeholder</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-last odd-row-color">
+<div class="block">The placeholder text shown when the value is empty.</div>
+</div>
 <div class="col-first even-row-color"><code>protected <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a></code></div>
 <div class="col-second even-row-color"><code><a href="#placeholderColor" class="member-name-link">placeholderColor</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block">The color of the placeholder text.</div>
+</div>
+<div class="col-first odd-row-color"><code>protected int</code></div>
+<div class="col-second odd-row-color"><code><a href="#repeatDelay" class="member-name-link">repeatDelay</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">The delay between key repeats in milliseconds.</div>
+</div>
+<div class="col-first even-row-color"><code>protected boolean</code></div>
+<div class="col-second even-row-color"><code><a href="#selecting" class="member-name-link">selecting</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Indicates if text selection is currently active.</div>
+</div>
 <div class="col-first odd-row-color"><code>protected <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a></code></div>
 <div class="col-second odd-row-color"><code><a href="#selectionColor" class="member-name-link">selectionColor</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-last odd-row-color">
+<div class="block">The color of the selected text highlight.</div>
+</div>
 <div class="col-first even-row-color"><code>protected <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a></code></div>
 <div class="col-second even-row-color"><code><a href="#textColor" class="member-name-link">textColor</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block">The color of the text.</div>
+</div>
 <div class="col-first odd-row-color"><code>protected <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color"><code><a href="#textFont" class="member-name-link">textFont</a></code></div>
-<div class="col-last odd-row-color">&nbsp;</div>
+<div class="col-last odd-row-color">
+<div class="block">The font used for displaying text.</div>
+</div>
 <div class="col-first even-row-color"><code>protected <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second even-row-color"><code><a href="#value" class="member-name-link">value</a></code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block">The current text value of the input widget.</div>
+</div>
 </div>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.avrix.ui.widgets.PanelWidget">Fields inherited from class&nbsp;com.avrix.ui.widgets.<a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></h3>
@@ -153,7 +190,9 @@ loadScripts(document, 'script');</script>
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height)</code></div>
-<div class="col-last even-row-color">&nbsp;</div>
+<div class="col-last even-row-color">
+<div class="block">Constructs an InputTextWidget with the specified position and size.</div>
+</div>
 </div>
 </section>
 </li>
@@ -168,61 +207,185 @@ loadScripts(document, 'script');</script>
 <div class="table-header col-first">Modifier and Type</div>
 <div class="table-header col-second">Method</div>
 <div class="table-header col-last">Description</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getBorderOffset()" class="member-name-link">getBorderOffset</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Gets the offset from the border for the text.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFontSize()" class="member-name-link">getFontSize</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Gets the font size used for displaying text.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getPlaceholder()" class="member-name-link">getPlaceholder</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Gets the placeholder text shown when the text value is empty.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getPlaceholderColor()" class="member-name-link">getPlaceholderColor</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Gets the color of the placeholder text.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getRepeatDelay()" class="member-name-link">getRepeatDelay</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Gets the delay between key repeat events in milliseconds.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getSelectionColor()" class="member-name-link">getSelectionColor</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Gets the color of the selected text highlight.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTextColor()" class="member-name-link">getTextColor</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Gets the color of the text.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTextFont()" class="member-name-link">getTextFont</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Gets the font used for displaying text.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getValue()" class="member-name-link">getValue</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Gets the current value of the text widget.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isActive()" class="member-name-link">isActive</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Checks if the text widget is currently active.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isCursorVisible()" class="member-name-link">isCursorVisible</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Checks if the cursor is currently visible.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final boolean</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isEditable()" class="member-name-link">isEditable</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Checks if the text widget is editable.</div>
+</div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onKeyPress(int)" class="member-name-link">onKeyPress</a><wbr>(int&nbsp;key)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Called when a key is pressed while the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> has focus.</div>
+<div class="block">Handles the event when a key is pressed down.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onKeyRelease(int)" class="member-name-link">onKeyRelease</a><wbr>(int&nbsp;key)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onKeyRepeat(int)" class="member-name-link">onKeyRepeat</a><wbr>(int&nbsp;key)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Called when a key is released while the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> has focus.</div>
+<div class="block">Handles the event when a key is repeatedly pressed.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onKeyRepeat(int)" class="member-name-link">onKeyRepeat</a><wbr>(int&nbsp;key)</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseDown(int,int)" class="member-name-link">onLeftMouseDown</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Called when a key is held down and repeatedly pressed while the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> has focus.</div>
+<div class="block">Handles the event when the left mouse button is pressed down within the widget.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseDown(int,int)" class="member-name-link">onLeftMouseDown</a><wbr>(int&nbsp;x,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseDownOutside(int,int)" class="member-name-link">onLeftMouseDownOutside</a><wbr>(int&nbsp;x,
  int&nbsp;y)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Called when the left mouse button is pressed down over the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+<div class="block">Handles the event when the left mouse button is released outside the widget.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseUp(int,int)" class="member-name-link">onLeftMouseUp</a><wbr>(int&nbsp;x,
  int&nbsp;y)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Called when the left mouse button is released over the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+<div class="block">Handles the event when the left mouse button is released.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseUpOutside(int,int)" class="member-name-link">onLeftMouseUpOutside</a><wbr>(int&nbsp;x,
  int&nbsp;y)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Handles the left mouse button up event outside any visible <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
+<div class="block">Handles the event when the left mouse button is released outside the widget.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#render()" class="member-name-link">render</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onMouseMove(int,int)" class="member-name-link">onMouseMove</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Renders the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
+<div class="block">Handles the event when the mouse is moved within the widget.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#render()" class="member-name-link">render</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Renders the text widget, including text, selection highlight, and cursor.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setActive(boolean)" class="member-name-link">setActive</a><wbr>(boolean&nbsp;active)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the active state of the text widget.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPlaceholder(java.lang.String)" class="member-name-link">setPlaceholder</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;placeholder)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">&nbsp;</div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update()" class="member-name-link">update</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setBorderOffset(int)" class="member-name-link">setBorderOffset</a><wbr>(int&nbsp;borderOffset)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the offset from the border for the text.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setCursorVisible(boolean)" class="member-name-link">setCursorVisible</a><wbr>(boolean&nbsp;cursorVisible)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Updates the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
+<div class="block">Sets the visibility of the cursor.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setEditable(boolean)" class="member-name-link">setEditable</a><wbr>(boolean&nbsp;editable)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets whether the text widget is editable.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFontSize(int)" class="member-name-link">setFontSize</a><wbr>(int&nbsp;fontSize)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the font size used for displaying text.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setOnTextChangeAction(java.lang.Runnable)" class="member-name-link">setOnTextChangeAction</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Runnable.html" title="class or interface in java.lang" class="external-link">Runnable</a>&nbsp;onTextChangeAction)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the action to be executed when the text changes.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPlaceholder(java.lang.String)" class="member-name-link">setPlaceholder</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;placeholder)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the placeholder text to be shown when the text value is empty.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPlaceholderColor(com.avrix.ui.NVGColor)" class="member-name-link">setPlaceholderColor</a><wbr>(<a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;placeholderColor)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the color of the placeholder text.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setRepeatDelay(int)" class="member-name-link">setRepeatDelay</a><wbr>(int&nbsp;repeatDelay)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the delay between key repeat events in milliseconds.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setSelectionColor(com.avrix.ui.NVGColor)" class="member-name-link">setSelectionColor</a><wbr>(<a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;selectionColor)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the color of the selected text highlight.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTextColor(com.avrix.ui.NVGColor)" class="member-name-link">setTextColor</a><wbr>(<a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;textColor)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the color of the text.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTextFont(java.lang.String)" class="member-name-link">setTextFont</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;textFont)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the font to be used for displaying text.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setValue(java.lang.String)" class="member-name-link">setValue</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;value)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the current value of the text widget.</div>
 </div>
 </div>
 </div>
 </div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.avrix.ui.widgets.PanelWidget">Methods inherited from class&nbsp;com.avrix.ui.widgets.<a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></h3>
-<code><a href="PanelWidget.html#isDraggable()">isDraggable</a>, <a href="PanelWidget.html#postRender()">postRender</a>, <a href="PanelWidget.html#setBackgroundColor(com.avrix.ui.NVGColor)">setBackgroundColor</a>, <a href="PanelWidget.html#setBorderColor(com.avrix.ui.NVGColor)">setBorderColor</a>, <a href="PanelWidget.html#setBorderRadius(int)">setBorderRadius</a>, <a href="PanelWidget.html#setBorderWidth(int)">setBorderWidth</a>, <a href="PanelWidget.html#setDraggable(boolean)">setDraggable</a>, <a href="PanelWidget.html#setDrawBorder(boolean)">setDrawBorder</a></code></div>
+<code><a href="PanelWidget.html#isDraggable()">isDraggable</a>, <a href="PanelWidget.html#postRender()">postRender</a>, <a href="PanelWidget.html#setBackgroundColor(com.avrix.ui.NVGColor)">setBackgroundColor</a>, <a href="PanelWidget.html#setBorderColor(com.avrix.ui.NVGColor)">setBorderColor</a>, <a href="PanelWidget.html#setBorderRadius(int)">setBorderRadius</a>, <a href="PanelWidget.html#setBorderWidth(int)">setBorderWidth</a>, <a href="PanelWidget.html#setDraggable(boolean)">setDraggable</a>, <a href="PanelWidget.html#setDrawBorder(boolean)">setDrawBorder</a>, <a href="PanelWidget.html#update()">update</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.avrix.ui.widgets.Widget">Methods inherited from class&nbsp;com.avrix.ui.widgets.<a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></h3>
-<code><a href="Widget.html#addChild(com.avrix.ui.widgets.Widget)">addChild</a>, <a href="Widget.html#addToScreen()">addToScreen</a>, <a href="Widget.html#bringToTop()">bringToTop</a>, <a href="Widget.html#drawArc(int,int,float,float,float,float,com.avrix.ui.NVGColor)">drawArc</a>, <a href="Widget.html#drawArc(int,int,float,float,float,com.avrix.ui.NVGColor)">drawArc</a>, <a href="Widget.html#drawCircle(int,int,float,com.avrix.ui.NVGColor)">drawCircle</a>, <a href="Widget.html#drawEllipse(int,int,int,int,com.avrix.ui.NVGColor)">drawEllipse</a>, <a href="Widget.html#drawImage(int,int,int,int,int)">drawImage</a>, <a href="Widget.html#drawImage(java.nio.file.Path,int,int,int,int)">drawImage</a>, <a href="Widget.html#drawLine(int,int,int,int,float,com.avrix.ui.NVGColor)">drawLine</a>, <a href="Widget.html#drawRect(int,int,int,int,com.avrix.ui.NVGColor)">drawRect</a>, <a href="Widget.html#drawRectOutline(int,int,int,int,float,com.avrix.ui.NVGColor)">drawRectOutline</a>, <a href="Widget.html#drawRoundedRect(int,int,int,int,float,com.avrix.ui.NVGColor)">drawRoundedRect</a>, <a href="Widget.html#drawRoundedRectOutline(int,int,int,int,int,float,com.avrix.ui.NVGColor)">drawRoundedRectOutline</a>, <a href="Widget.html#drawText(java.lang.String,java.lang.String,int,int,int,com.avrix.ui.NVGColor)">drawText</a>, <a href="Widget.html#getChildren()">getChildren</a>, <a href="Widget.html#getHeight()">getHeight</a>, <a href="Widget.html#getMaxScrollX()">getMaxScrollX</a>, <a href="Widget.html#getMaxScrollY()">getMaxScrollY</a>, <a href="Widget.html#getParent()">getParent</a>, <a href="Widget.html#getScrollSpeed()">getScrollSpeed</a>, <a href="Widget.html#getScrollX()">getScrollX</a>, <a href="Widget.html#getScrollY()">getScrollY</a>, <a href="Widget.html#getWidth()">getWidth</a>, <a href="Widget.html#getX()">getX</a>, <a href="Widget.html#getY()">getY</a>, <a href="Widget.html#isAlwaysOnTop()">isAlwaysOnTop</a>, <a href="Widget.html#isHovered()">isHovered</a>, <a href="Widget.html#isPointOver(int,int)">isPointOver</a>, <a href="Widget.html#isScrollable()">isScrollable</a>, <a href="Widget.html#isScrollLock()">isScrollLock</a>, <a href="Widget.html#isVisible()">isVisible</a>, <a href="Widget.html#onInitialize()">onInitialize</a>, <a href="Widget.html#onLeftMouseDownOutside(int,int)">onLeftMouseDownOutside</a>, <a href="Widget.html#onMouseEnter(int,int)">onMouseEnter</a>, <a href="Widget.html#onMouseExit(int,int)">onMouseExit</a>, <a href="Widget.html#onMouseMove(int,int)">onMouseMove</a>, <a href="Widget.html#onMouseMoveOutside(int,int)">onMouseMoveOutside</a>, <a href="Widget.html#onMouseWheel(int,int,int)">onMouseWheel</a>, <a href="Widget.html#onMouseWheelOutside(int,int,int)">onMouseWheelOutside</a>, <a href="Widget.html#onRightMouseDown(int,int)">onRightMouseDown</a>, <a href="Widget.html#onRightMouseDownOutside(int,int)">onRightMouseDownOutside</a>, <a href="Widget.html#onRightMouseUp(int,int)">onRightMouseUp</a>, <a href="Widget.html#onRightMouseUpOutside(int,int)">onRightMouseUpOutside</a>, <a href="Widget.html#preRender()">preRender</a>, <a href="Widget.html#removeChild(com.avrix.ui.widgets.Widget)">removeChild</a>, <a href="Widget.html#removeFromScreen()">removeFromScreen</a>, <a href="Widget.html#renderChildren()">renderChildren</a>, <a href="Widget.html#setAlwaysOnTop(boolean)">setAlwaysOnTop</a>, <a href="Widget.html#setHeight(int)">setHeight</a>, <a href="Widget.html#setMaxScrollX(int)">setMaxScrollX</a>, <a href="Widget.html#setMaxScrollY(int)">setMaxScrollY</a>, <a href="Widget.html#setScrollable(boolean)">setScrollable</a>, <a href="Widget.html#setScrollLock(boolean)">setScrollLock</a>, <a href="Widget.html#setScrollSpeed(int)">setScrollSpeed</a>, <a href="Widget.html#setScrollX(int)">setScrollX</a>, <a href="Widget.html#setScrollY(int)">setScrollY</a>, <a href="Widget.html#setVisible(boolean)">setVisible</a>, <a href="Widget.html#setWidth(int)">setWidth</a>, <a href="Widget.html#setX(int)">setX</a>, <a href="Widget.html#setY(int)">setY</a>, <a href="Widget.html#updateMaxScrollOffset()">updateMaxScrollOffset</a></code></div>
+<code><a href="Widget.html#addChild(com.avrix.ui.widgets.Widget)">addChild</a>, <a href="Widget.html#addToScreen()">addToScreen</a>, <a href="Widget.html#bringToTop()">bringToTop</a>, <a href="Widget.html#drawArc(int,int,float,float,float,float,com.avrix.ui.NVGColor)">drawArc</a>, <a href="Widget.html#drawArc(int,int,float,float,float,com.avrix.ui.NVGColor)">drawArc</a>, <a href="Widget.html#drawCircle(int,int,float,com.avrix.ui.NVGColor)">drawCircle</a>, <a href="Widget.html#drawEllipse(int,int,int,int,com.avrix.ui.NVGColor)">drawEllipse</a>, <a href="Widget.html#drawImage(int,int,int,int,int)">drawImage</a>, <a href="Widget.html#drawImage(java.lang.String,int,int,int,int)">drawImage</a>, <a href="Widget.html#drawImage(java.lang.String,java.lang.String,int,int,int,int)">drawImage</a>, <a href="Widget.html#drawImage(java.nio.file.Path,int,int,int,int)">drawImage</a>, <a href="Widget.html#drawLine(int,int,int,int,float,com.avrix.ui.NVGColor)">drawLine</a>, <a href="Widget.html#drawRect(int,int,int,int,com.avrix.ui.NVGColor)">drawRect</a>, <a href="Widget.html#drawRectOutline(int,int,int,int,float,com.avrix.ui.NVGColor)">drawRectOutline</a>, <a href="Widget.html#drawRoundedRect(int,int,int,int,float,com.avrix.ui.NVGColor)">drawRoundedRect</a>, <a href="Widget.html#drawRoundedRectOutline(int,int,int,int,int,float,com.avrix.ui.NVGColor)">drawRoundedRectOutline</a>, <a href="Widget.html#drawText(java.lang.String,java.lang.String,int,int,int,com.avrix.ui.NVGColor)">drawText</a>, <a href="Widget.html#getChildren()">getChildren</a>, <a href="Widget.html#getHeight()">getHeight</a>, <a href="Widget.html#getMaxScrollX()">getMaxScrollX</a>, <a href="Widget.html#getMaxScrollY()">getMaxScrollY</a>, <a href="Widget.html#getParent()">getParent</a>, <a href="Widget.html#getScrollSpeed()">getScrollSpeed</a>, <a href="Widget.html#getScrollX()">getScrollX</a>, <a href="Widget.html#getScrollY()">getScrollY</a>, <a href="Widget.html#getWidth()">getWidth</a>, <a href="Widget.html#getX()">getX</a>, <a href="Widget.html#getY()">getY</a>, <a href="Widget.html#isAlwaysOnTop()">isAlwaysOnTop</a>, <a href="Widget.html#isHovered()">isHovered</a>, <a href="Widget.html#isPointOver(int,int)">isPointOver</a>, <a href="Widget.html#isScrollable()">isScrollable</a>, <a href="Widget.html#isScrollLock()">isScrollLock</a>, <a href="Widget.html#isVisible()">isVisible</a>, <a href="Widget.html#onInitialize()">onInitialize</a>, <a href="Widget.html#onKeyRelease(int)">onKeyRelease</a>, <a href="Widget.html#onMouseEnter(int,int)">onMouseEnter</a>, <a href="Widget.html#onMouseExit(int,int)">onMouseExit</a>, <a href="Widget.html#onMouseMoveOutside(int,int)">onMouseMoveOutside</a>, <a href="Widget.html#onMouseWheel(int,int,int)">onMouseWheel</a>, <a href="Widget.html#onMouseWheelOutside(int,int,int)">onMouseWheelOutside</a>, <a href="Widget.html#onRightMouseDown(int,int)">onRightMouseDown</a>, <a href="Widget.html#onRightMouseDownOutside(int,int)">onRightMouseDownOutside</a>, <a href="Widget.html#onRightMouseUp(int,int)">onRightMouseUp</a>, <a href="Widget.html#onRightMouseUpOutside(int,int)">onRightMouseUpOutside</a>, <a href="Widget.html#preRender()">preRender</a>, <a href="Widget.html#removeChild(com.avrix.ui.widgets.Widget)">removeChild</a>, <a href="Widget.html#removeFromScreen()">removeFromScreen</a>, <a href="Widget.html#renderChildren()">renderChildren</a>, <a href="Widget.html#setAlwaysOnTop(boolean)">setAlwaysOnTop</a>, <a href="Widget.html#setHeight(int)">setHeight</a>, <a href="Widget.html#setMaxScrollX(int)">setMaxScrollX</a>, <a href="Widget.html#setMaxScrollY(int)">setMaxScrollY</a>, <a href="Widget.html#setScrollable(boolean)">setScrollable</a>, <a href="Widget.html#setScrollLock(boolean)">setScrollLock</a>, <a href="Widget.html#setScrollSpeed(int)">setScrollSpeed</a>, <a href="Widget.html#setScrollX(int)">setScrollX</a>, <a href="Widget.html#setScrollY(int)">setScrollY</a>, <a href="Widget.html#setVisible(boolean)">setVisible</a>, <a href="Widget.html#setWidth(int)">setWidth</a>, <a href="Widget.html#setX(int)">setX</a>, <a href="Widget.html#setY(int)">setY</a>, <a href="Widget.html#updateMaxScrollOffset()">updateMaxScrollOffset</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-java.lang.Object">Methods inherited from class&nbsp;java.lang.<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html" title="class or interface in java.lang" class="external-link">Object</a></h3>
 <code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#clone()" title="class or interface in java.lang" class="external-link">clone</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#equals(java.lang.Object)" title="class or interface in java.lang" class="external-link">equals</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#finalize()" title="class or interface in java.lang" class="external-link">finalize</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#getClass()" title="class or interface in java.lang" class="external-link">getClass</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#hashCode()" title="class or interface in java.lang" class="external-link">hashCode</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notify()" title="class or interface in java.lang" class="external-link">notify</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#notifyAll()" title="class or interface in java.lang" class="external-link">notifyAll</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#toString()" title="class or interface in java.lang" class="external-link">toString</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait()" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long)" title="class or interface in java.lang" class="external-link">wait</a>, <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Object.html#wait(long,int)" title="class or interface in java.lang" class="external-link">wait</a></code></div>
@@ -241,78 +404,105 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="value">
 <h3>value</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">value</span></div>
+<div class="block">The current text value of the input widget.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="placeholder">
 <h3>placeholder</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">placeholder</span></div>
+<div class="block">The placeholder text shown when the value is empty.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="textFont">
 <h3>textFont</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">textFont</span></div>
+<div class="block">The font used for displaying text.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="textColor">
 <h3>textColor</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a></span>&nbsp;<span class="element-name">textColor</span></div>
+<div class="block">The color of the text.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="placeholderColor">
 <h3>placeholderColor</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a></span>&nbsp;<span class="element-name">placeholderColor</span></div>
+<div class="block">The color of the placeholder text.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="selectionColor">
 <h3>selectionColor</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a></span>&nbsp;<span class="element-name">selectionColor</span></div>
+<div class="block">The color of the selected text highlight.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="onTextChangeAction">
+<h3>onTextChangeAction</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Runnable.html" title="class or interface in java.lang" class="external-link">Runnable</a></span>&nbsp;<span class="element-name">onTextChangeAction</span></div>
+<div class="block">Action to be executed when the text changes.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="fontSize">
 <h3>fontSize</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">fontSize</span></div>
+<div class="block">The font size used for displaying text.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="borderOffset">
 <h3>borderOffset</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">borderOffset</span></div>
+<div class="block">The offset from the border for the text.</div>
 </section>
 </li>
 <li>
-<section class="detail" id="cursorOffset">
-<h3>cursorOffset</h3>
-<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">cursorOffset</span></div>
+<section class="detail" id="repeatDelay">
+<h3>repeatDelay</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">repeatDelay</span></div>
+<div class="block">The delay between key repeats in milliseconds.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="editable">
 <h3>editable</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">editable</span></div>
+<div class="block">Indicates if the text can be edited.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="active">
 <h3>active</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">active</span></div>
+<div class="block">Indicates if the widget is currently active.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="LMBDown">
 <h3>LMBDown</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">LMBDown</span></div>
+<div class="block">Indicates if the left mouse button is currently pressed.</div>
 </section>
 </li>
 <li>
 <section class="detail" id="cursorVisible">
 <h3>cursorVisible</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">cursorVisible</span></div>
+<div class="block">Indicates if the cursor is currently visible.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="selecting">
+<h3>selecting</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">selecting</span></div>
+<div class="block">Indicates if text selection is currently active.</div>
 </section>
 </li>
 </ul>
@@ -330,6 +520,14 @@ loadScripts(document, 'script');</script>
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height)</span></div>
+<div class="block">Constructs an InputTextWidget with the specified position and size.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>x</code> - The x-coordinate of the widget.</dd>
+<dd><code>y</code> - The y-coordinate of the widget.</dd>
+<dd><code>width</code> - The width of the widget.</dd>
+<dd><code>height</code> - The height of the widget.</dd>
+</dl>
 </section>
 </li>
 </ul>
@@ -341,9 +539,278 @@ loadScripts(document, 'script');</script>
 <h2>Method Details</h2>
 <ul class="member-list">
 <li>
+<section class="detail" id="setOnTextChangeAction(java.lang.Runnable)">
+<h3>setOnTextChangeAction</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setOnTextChangeAction</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/Runnable.html" title="class or interface in java.lang" class="external-link">Runnable</a>&nbsp;onTextChangeAction)</span></div>
+<div class="block">Sets the action to be executed when the text changes.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>onTextChangeAction</code> - The action to be executed on text change.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getValue()">
+<h3>getValue</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getValue</span>()</div>
+<div class="block">Gets the current value of the text widget.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The current text value.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setValue(java.lang.String)">
+<h3>setValue</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setValue</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;value)</span></div>
+<div class="block">Sets the current value of the text widget.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>value</code> - The new text value.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getPlaceholder()">
+<h3>getPlaceholder</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getPlaceholder</span>()</div>
+<div class="block">Gets the placeholder text shown when the text value is empty.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The placeholder text.</dd>
+</dl>
+</section>
+</li>
+<li>
 <section class="detail" id="setPlaceholder(java.lang.String)">
 <h3>setPlaceholder</h3>
 <div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setPlaceholder</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;placeholder)</span></div>
+<div class="block">Sets the placeholder text to be shown when the text value is empty.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>placeholder</code> - The new placeholder text.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getTextFont()">
+<h3>getTextFont</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getTextFont</span>()</div>
+<div class="block">Gets the font used for displaying text.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The text font.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setTextFont(java.lang.String)">
+<h3>setTextFont</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setTextFont</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;textFont)</span></div>
+<div class="block">Sets the font to be used for displaying text.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>textFont</code> - The new text font.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getTextColor()">
+<h3>getTextColor</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a></span>&nbsp;<span class="element-name">getTextColor</span>()</div>
+<div class="block">Gets the color of the text.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The text color.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setTextColor(com.avrix.ui.NVGColor)">
+<h3>setTextColor</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setTextColor</span><wbr><span class="parameters">(<a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;textColor)</span></div>
+<div class="block">Sets the color of the text.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>textColor</code> - The new text color.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getPlaceholderColor()">
+<h3>getPlaceholderColor</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a></span>&nbsp;<span class="element-name">getPlaceholderColor</span>()</div>
+<div class="block">Gets the color of the placeholder text.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The placeholder text color.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setPlaceholderColor(com.avrix.ui.NVGColor)">
+<h3>setPlaceholderColor</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setPlaceholderColor</span><wbr><span class="parameters">(<a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;placeholderColor)</span></div>
+<div class="block">Sets the color of the placeholder text.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>placeholderColor</code> - The new placeholder text color.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getSelectionColor()">
+<h3>getSelectionColor</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a></span>&nbsp;<span class="element-name">getSelectionColor</span>()</div>
+<div class="block">Gets the color of the selected text highlight.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The selection color.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setSelectionColor(com.avrix.ui.NVGColor)">
+<h3>setSelectionColor</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setSelectionColor</span><wbr><span class="parameters">(<a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;selectionColor)</span></div>
+<div class="block">Sets the color of the selected text highlight.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>selectionColor</code> - The new selection color.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getFontSize()">
+<h3>getFontSize</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getFontSize</span>()</div>
+<div class="block">Gets the font size used for displaying text.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The font size.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setFontSize(int)">
+<h3>setFontSize</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setFontSize</span><wbr><span class="parameters">(int&nbsp;fontSize)</span></div>
+<div class="block">Sets the font size used for displaying text.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>fontSize</code> - The new font size.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getBorderOffset()">
+<h3>getBorderOffset</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getBorderOffset</span>()</div>
+<div class="block">Gets the offset from the border for the text.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The border offset.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setBorderOffset(int)">
+<h3>setBorderOffset</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setBorderOffset</span><wbr><span class="parameters">(int&nbsp;borderOffset)</span></div>
+<div class="block">Sets the offset from the border for the text.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>borderOffset</code> - The new border offset.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getRepeatDelay()">
+<h3>getRepeatDelay</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getRepeatDelay</span>()</div>
+<div class="block">Gets the delay between key repeat events in milliseconds.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>The repeat delay.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setRepeatDelay(int)">
+<h3>setRepeatDelay</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setRepeatDelay</span><wbr><span class="parameters">(int&nbsp;repeatDelay)</span></div>
+<div class="block">Sets the delay between key repeat events in milliseconds.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>repeatDelay</code> - The new repeat delay.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isEditable()">
+<h3>isEditable</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isEditable</span>()</div>
+<div class="block">Checks if the text widget is editable.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd><code>true</code> if the text widget is editable, <code>false</code> otherwise.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setEditable(boolean)">
+<h3>setEditable</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setEditable</span><wbr><span class="parameters">(boolean&nbsp;editable)</span></div>
+<div class="block">Sets whether the text widget is editable.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>editable</code> - <code>true</code> to make the widget editable, <code>false</code> otherwise.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isActive()">
+<h3>isActive</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isActive</span>()</div>
+<div class="block">Checks if the text widget is currently active.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd><code>true</code> if the widget is active, <code>false</code> otherwise.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setActive(boolean)">
+<h3>setActive</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setActive</span><wbr><span class="parameters">(boolean&nbsp;active)</span></div>
+<div class="block">Sets the active state of the text widget.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>active</code> - <code>true</code> to activate the widget, <code>false</code> to deactivate it.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isCursorVisible()">
+<h3>isCursorVisible</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isCursorVisible</span>()</div>
+<div class="block">Checks if the cursor is currently visible.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd><code>true</code> if the cursor is visible, <code>false</code> otherwise.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setCursorVisible(boolean)">
+<h3>setCursorVisible</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setCursorVisible</span><wbr><span class="parameters">(boolean&nbsp;cursorVisible)</span></div>
+<div class="block">Sets the visibility of the cursor.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>cursorVisible</code> - <code>true</code> to make the cursor visible, <code>false</code> to hide it.</dd>
+</dl>
 </section>
 </li>
 <li>
@@ -351,14 +818,30 @@ loadScripts(document, 'script');</script>
 <h3>onLeftMouseUp</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseUp</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y)</span></div>
-<div class="block"><span class="descfrm-type-label">Description copied from class:&nbsp;<code><a href="PanelWidget.html#onLeftMouseUp(int,int)">PanelWidget</a></code></span></div>
-<div class="block">Called when the left mouse button is released over the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+<div class="block">Handles the event when the left mouse button is released.
+ This method updates the widget's state based on the mouse release and finalizes the selection if needed.</div>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="PanelWidget.html#onLeftMouseUp(int,int)">onLeftMouseUp</a></code>&nbsp;in class&nbsp;<code><a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></code></dd>
 <dt>Parameters:</dt>
-<dd><code>x</code> - relative x-coordinate of the mouse position</dd>
-<dd><code>y</code> - relative y-coordinate of the mouse position</dd>
+<dd><code>x</code> - The x-coordinate of the mouse position at the time of release.</dd>
+<dd><code>y</code> - The y-coordinate of the mouse position at the time of release.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onLeftMouseDownOutside(int,int)">
+<h3>onLeftMouseDownOutside</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseDownOutside</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
+<div class="block">Handles the event when the left mouse button is released outside the widget.
+ This method clears any active selection and deactivates the widget.</div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="Widget.html#onLeftMouseDownOutside(int,int)">onLeftMouseDownOutside</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>x</code> - The x-coordinate of the mouse position at the time of release.</dd>
+<dd><code>y</code> - The y-coordinate of the mouse position at the time of release.</dd>
 </dl>
 </section>
 </li>
@@ -367,14 +850,14 @@ loadScripts(document, 'script');</script>
 <h3>onLeftMouseDown</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseDown</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y)</span></div>
-<div class="block"><span class="descfrm-type-label">Description copied from class:&nbsp;<code><a href="PanelWidget.html#onLeftMouseDown(int,int)">PanelWidget</a></code></span></div>
-<div class="block">Called when the left mouse button is pressed down over the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+<div class="block">Handles the event when the left mouse button is pressed down within the widget.
+ This method sets up the widget's state for selection and cursor positioning.</div>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="PanelWidget.html#onLeftMouseDown(int,int)">onLeftMouseDown</a></code>&nbsp;in class&nbsp;<code><a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></code></dd>
 <dt>Parameters:</dt>
-<dd><code>x</code> - relative x-coordinate of the mouse position</dd>
-<dd><code>y</code> - relative y-coordinate of the mouse position</dd>
+<dd><code>x</code> - The x-coordinate of the mouse position at the time of press.</dd>
+<dd><code>y</code> - The y-coordinate of the mouse position at the time of press.</dd>
 </dl>
 </section>
 </li>
@@ -383,42 +866,30 @@ loadScripts(document, 'script');</script>
 <h3>onLeftMouseUpOutside</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseUpOutside</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y)</span></div>
-<div class="block"><span class="descfrm-type-label">Description copied from class:&nbsp;<code><a href="PanelWidget.html#onLeftMouseUpOutside(int,int)">PanelWidget</a></code></span></div>
-<div class="block">Handles the left mouse button up event outside any visible <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
+<div class="block">Handles the event when the left mouse button is released outside the widget.
+ This method deactivates the widget if the mouse was dragging, but reactivates it if it was being selected.</div>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="PanelWidget.html#onLeftMouseUpOutside(int,int)">onLeftMouseUpOutside</a></code>&nbsp;in class&nbsp;<code><a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></code></dd>
 <dt>Parameters:</dt>
-<dd><code>x</code> - absolute x-coordinate of the mouse position</dd>
-<dd><code>y</code> - absolute y-coordinate of the mouse position</dd>
+<dd><code>x</code> - The x-coordinate of the mouse position at the time of release.</dd>
+<dd><code>y</code> - The y-coordinate of the mouse position at the time of release.</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="onKeyPress(int)">
-<h3>onKeyPress</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyPress</span><wbr><span class="parameters">(int&nbsp;key)</span></div>
-<div class="block"><span class="descfrm-type-label">Description copied from class:&nbsp;<code><a href="Widget.html#onKeyPress(int)">Widget</a></code></span></div>
-<div class="block">Called when a key is pressed while the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> has focus.</div>
+<section class="detail" id="onMouseMove(int,int)">
+<h3>onMouseMove</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onMouseMove</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
+<div class="block">Handles the event when the mouse is moved within the widget.
+ This method updates the cursor position and adjusts text offset based on the mouse movement during selection.</div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="Widget.html#onKeyPress(int)">onKeyPress</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></code></dd>
+<dd><code><a href="Widget.html#onMouseMove(int,int)">onMouseMove</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></code></dd>
 <dt>Parameters:</dt>
-<dd><code>key</code> - the code of the key that was pressed</dd>
-</dl>
-</section>
-</li>
-<li>
-<section class="detail" id="onKeyRelease(int)">
-<h3>onKeyRelease</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyRelease</span><wbr><span class="parameters">(int&nbsp;key)</span></div>
-<div class="block"><span class="descfrm-type-label">Description copied from class:&nbsp;<code><a href="Widget.html#onKeyRelease(int)">Widget</a></code></span></div>
-<div class="block">Called when a key is released while the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> has focus.</div>
-<dl class="notes">
-<dt>Overrides:</dt>
-<dd><code><a href="Widget.html#onKeyRelease(int)">onKeyRelease</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></code></dd>
-<dt>Parameters:</dt>
-<dd><code>key</code> - the code of the key that was released</dd>
+<dd><code>x</code> - The x-coordinate of the mouse position at the time of movement.</dd>
+<dd><code>y</code> - The y-coordinate of the mouse position at the time of movement.</dd>
 </dl>
 </section>
 </li>
@@ -426,24 +897,27 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="onKeyRepeat(int)">
 <h3>onKeyRepeat</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyRepeat</span><wbr><span class="parameters">(int&nbsp;key)</span></div>
-<div class="block"><span class="descfrm-type-label">Description copied from class:&nbsp;<code><a href="Widget.html#onKeyRepeat(int)">Widget</a></code></span></div>
-<div class="block">Called when a key is held down and repeatedly pressed while the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> has focus.</div>
+<div class="block">Handles the event when a key is repeatedly pressed.
+ This method manages key repeat actions based on the configured repeat delay.</div>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="Widget.html#onKeyRepeat(int)">onKeyRepeat</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></code></dd>
 <dt>Parameters:</dt>
-<dd><code>key</code> - the code of the key that is being repeatedly pressed</dd>
+<dd><code>key</code> - The key code of the key being repeated.</dd>
 </dl>
 </section>
 </li>
 <li>
-<section class="detail" id="update()">
-<h3>update</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">update</span>()</div>
-<div class="block">Updates the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
+<section class="detail" id="onKeyPress(int)">
+<h3>onKeyPress</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onKeyPress</span><wbr><span class="parameters">(int&nbsp;key)</span></div>
+<div class="block">Handles the event when a key is pressed down.
+ This method processes key inputs for text manipulation and updates the widget accordingly.</div>
 <dl class="notes">
 <dt>Overrides:</dt>
-<dd><code><a href="PanelWidget.html#update()">update</a></code>&nbsp;in class&nbsp;<code><a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></code></dd>
+<dd><code><a href="Widget.html#onKeyPress(int)">onKeyPress</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>key</code> - The key code of the key being pressed.</dd>
 </dl>
 </section>
 </li>
@@ -451,8 +925,8 @@ loadScripts(document, 'script');</script>
 <section class="detail" id="render()">
 <h3>render</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">render</span>()</div>
-<div class="block"><span class="descfrm-type-label">Description copied from class:&nbsp;<code><a href="PanelWidget.html#render()">PanelWidget</a></code></span></div>
-<div class="block">Renders the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
+<div class="block">Renders the text widget, including text, selection highlight, and cursor.
+ This method also handles text offset adjustments and cursor blinking.</div>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="PanelWidget.html#render()">render</a></code>&nbsp;in class&nbsp;<code><a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></code></dd>

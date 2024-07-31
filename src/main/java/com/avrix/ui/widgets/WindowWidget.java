@@ -86,8 +86,8 @@ public class WindowWidget extends ScrollPanelWidget {
         closeButton.setScrollLock(true);
         addChild(closeButton);
 
-        this.originalVerticalScrollBarY = this.verticalScrollbar.getY();
-        this.originalVerticalScrollBarHeight = this.verticalScrollbar.getHeight();
+        originalVerticalScrollBarY = verticalScrollbar.getY();
+        originalVerticalScrollBarHeight = verticalScrollbar.getHeight();
     }
 
     /**
@@ -98,7 +98,7 @@ public class WindowWidget extends ScrollPanelWidget {
     @Override
     public synchronized void addChild(Widget widget) {
         super.addChild(widget);
-        raiseCloseButton(widget != this.closeButton);
+        raiseCloseButton(widget != closeButton);
     }
 
     /**
@@ -109,7 +109,7 @@ public class WindowWidget extends ScrollPanelWidget {
     @Override
     public synchronized void removeChild(Widget widget) {
         super.removeChild(widget);
-        raiseCloseButton(widget != this.closeButton);
+        raiseCloseButton(widget != closeButton);
     }
 
     /**
@@ -118,9 +118,9 @@ public class WindowWidget extends ScrollPanelWidget {
      * @param isAnotherWidget flag pointing to other widgets
      */
     private synchronized void raiseCloseButton(boolean isAnotherWidget) {
-        if (isAnotherWidget && this.closeButton != null) {
-            this.children.remove(this.closeButton);
-            this.children.add(this.closeButton);
+        if (isAnotherWidget && closeButton != null) {
+            children.remove(closeButton);
+            children.add(closeButton);
         }
     }
 
@@ -148,7 +148,7 @@ public class WindowWidget extends ScrollPanelWidget {
      * @return the name of the font being used
      */
     public String getFontName() {
-        return this.fontName;
+        return fontName;
     }
 
     /**
@@ -157,7 +157,7 @@ public class WindowWidget extends ScrollPanelWidget {
      * @return the title text currently set for the header
      */
     public String getTitle() {
-        return this.title;
+        return title;
     }
 
     /**
@@ -185,8 +185,8 @@ public class WindowWidget extends ScrollPanelWidget {
     public void update() {
         super.update();
 
-        this.verticalScrollbar.setY(this.originalVerticalScrollBarY + this.headerHeight);
-        this.verticalScrollbar.setHeight(this.originalVerticalScrollBarHeight - this.headerHeight);
+        verticalScrollbar.setY(originalVerticalScrollBarY + headerHeight);
+        verticalScrollbar.setHeight(originalVerticalScrollBarHeight - headerHeight);
     }
 
     /**
@@ -196,20 +196,20 @@ public class WindowWidget extends ScrollPanelWidget {
      */
     @Override
     public void renderChildren() {
-        for (Widget child : this.children) {
+        for (Widget child : children) {
             if (!child.isVisible()) continue;
 
             // Limitation for scroll bars
-            if (!child.equals(this.horizontalScrollbar) && !child.equals(this.verticalScrollbar) && !child.equals(this.closeButton)) {
+            if (!child.equals(horizontalScrollbar) && !child.equals(verticalScrollbar) && !child.equals(closeButton)) {
                 NVGDrawer.saveRenderState();
-                NVGDrawer.intersectScissor(getX(), getY() + this.headerHeight,
-                        this.verticalScrollbar.isVisible() ? this.getWidth() - this.verticalScrollbar.width - this.verticalScrollbar.borderOffset * 2 : this.getWidth(),
-                        this.horizontalScrollbar.isVisible() ? this.getHeight() - this.horizontalScrollbar.height - this.horizontalScrollbar.borderOffset * 2 - this.headerHeight : this.getHeight() - this.headerHeight);
+                NVGDrawer.intersectScissor(getX(), getY() + headerHeight,
+                        verticalScrollbar.isVisible() ? getWidth() - verticalScrollbar.width - verticalScrollbar.borderOffset * 2 : getWidth(),
+                        horizontalScrollbar.isVisible() ? getHeight() - horizontalScrollbar.height - horizontalScrollbar.borderOffset * 2 - headerHeight : getHeight() - headerHeight);
             }
 
             // Calculate absolute positions considering scrolling
-            int absoluteX = child.isScrollLock() ? getX() + child.getX() : getX() + child.getX() - this.scrollX;
-            int absoluteY = child.isScrollLock() ? getY() + child.getY() : getY() + child.getY() - this.scrollY;
+            int absoluteX = child.isScrollLock() ? getX() + child.getX() : getX() + child.getX() - scrollX;
+            int absoluteY = child.isScrollLock() ? getY() + child.getY() : getY() + child.getY() - scrollY;
 
             // Save original positions to restore later
             int originalX = child.getX();
@@ -235,7 +235,7 @@ public class WindowWidget extends ScrollPanelWidget {
             child.setY(originalY);
 
             // Limitation for scroll bars
-            if (!child.equals(this.horizontalScrollbar) && !child.equals(this.verticalScrollbar) && !child.equals(this.closeButton)) {
+            if (!child.equals(horizontalScrollbar) && !child.equals(verticalScrollbar) && !child.equals(closeButton)) {
                 NVGDrawer.restoreRenderState();
             }
         }
@@ -249,10 +249,10 @@ public class WindowWidget extends ScrollPanelWidget {
         super.render();
 
         // Header
-        if (this.borderRadius != 0) {
-            drawRoundedRect(0, 0, getWidth(), this.headerHeight, this.borderRadius, this.headerColor);
+        if (borderRadius != 0) {
+            drawRoundedRect(0, 0, getWidth(), headerHeight, borderRadius, headerColor);
         } else {
-            drawRect(0, 0, getWidth(), this.headerHeight, this.headerColor);
+            drawRect(0, 0, getWidth(), headerHeight, headerColor);
         }
     }
 
@@ -261,15 +261,15 @@ public class WindowWidget extends ScrollPanelWidget {
      */
     @Override
     public void postRender() {
-        Vector2f titleSize = NVGDrawer.getTextSize(this.title, this.fontName, this.titleFontSize);
-        drawText(this.title, this.fontName, (int) ((getWidth() - titleSize.x) / 2), (int) (this.headerHeight - titleSize.y) / 2, this.titleFontSize, NVGColor.WHITE);
+        Vector2f titleSize = NVGDrawer.getTextSize(title, fontName, titleFontSize);
+        drawText(title, fontName, (int) ((getWidth() - titleSize.x) / 2), (int) (headerHeight - titleSize.y) / 2, titleFontSize, NVGColor.WHITE);
 
         // Border
-        if (this.drawBorder) {
-            if (this.borderRadius != 0) {
-                drawRoundedRectOutline(0, 0, getWidth(), getHeight(), this.borderRadius, this.borderWidth, this.borderColor);
+        if (drawBorder) {
+            if (borderRadius != 0) {
+                drawRoundedRectOutline(0, 0, getWidth(), getHeight(), borderRadius, borderWidth, borderColor);
             } else {
-                drawRectOutline(0, 0, getWidth(), getHeight(), this.borderWidth, this.borderColor);
+                drawRectOutline(0, 0, getWidth(), getHeight(), borderWidth, borderColor);
             }
         }
     }

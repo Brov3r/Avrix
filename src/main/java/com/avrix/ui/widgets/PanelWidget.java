@@ -184,7 +184,10 @@ public class PanelWidget extends Widget {
         boolean canDrag = true;
 
         for (Widget child : children) {
-            if (child.isPointOver(x, y)) {
+            int childRelativeX = x + (child.isScrollLock() ? 0 : scrollX);
+            int childRelativeY = y + (child.isScrollLock() ? 0 : scrollY);
+
+            if (child.isPointOver(childRelativeX, childRelativeY)) {
                 canDrag = false;
                 break;
             }

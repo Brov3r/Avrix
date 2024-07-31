@@ -125,7 +125,7 @@ public class ScrollbarWidget extends PanelWidget {
      * @return the border offset in pixels as an {@code int}
      */
     public final int getBorderOffset() {
-        return this.borderOffset;
+        return borderOffset;
     }
 
     /**
@@ -143,7 +143,7 @@ public class ScrollbarWidget extends PanelWidget {
      * @return the compressed width in pixels as an {@code int}
      */
     public final int getCompressedWidth() {
-        return this.compressedWidth;
+        return compressedWidth;
     }
 
     /**
@@ -159,21 +159,21 @@ public class ScrollbarWidget extends PanelWidget {
      * Initializes the {@link Widget} position
      */
     public void initPosition() {
-        if (this.parent == null) {
+        if (parent == null) {
             return;
         }
 
-        if (!this.horizontal) {
-            this.width = this.DEFAULT_VERTICAL_WIDTH;
-            this.height = this.parent.height - this.borderOffset * 2;
-            this.x = this.parent.width - this.width - this.borderOffset;
-            this.y = this.borderOffset;
+        if (!horizontal) {
+            width = DEFAULT_VERTICAL_WIDTH;
+            height = parent.height - borderOffset * 2;
+            x = parent.width - width - borderOffset;
+            y = borderOffset;
         } else {
-            this.height = this.DEFAULT_HORIZONTAL_HEIGHT;
-            this.compressedWidth = this.parent.width - this.borderOffset * 2 - this.DEFAULT_VERTICAL_WIDTH * 2;
-            this.width = this.parent.width - this.borderOffset * 2;
-            this.x = this.borderOffset;
-            this.y = this.parent.height - this.height - this.borderOffset;
+            height = DEFAULT_HORIZONTAL_HEIGHT;
+            compressedWidth = parent.width - borderOffset * 2 - DEFAULT_VERTICAL_WIDTH * 2;
+            width = parent.width - borderOffset * 2;
+            x = borderOffset;
+            y = parent.height - height - borderOffset;
         }
     }
 
@@ -187,15 +187,15 @@ public class ScrollbarWidget extends PanelWidget {
     public void onLeftMouseDown(int x, int y) {
         super.onLeftMouseDown(x, y);
 
-        this.dragging = true;
+        dragging = true;
 
-        this.dragStartX = Mouse.getXA();
-        this.dragStartY = Mouse.getYA();
+        dragStartX = Mouse.getXA();
+        dragStartY = Mouse.getYA();
 
-        if (!this.horizontal) {
-            this.scrollStartY = this.parent.scrollY;
+        if (!horizontal) {
+            scrollStartY = parent.scrollY;
         } else {
-            this.scrollStartX = this.parent.scrollX;
+            scrollStartX = parent.scrollX;
         }
     }
 
@@ -208,7 +208,7 @@ public class ScrollbarWidget extends PanelWidget {
     @Override
     public void onLeftMouseUpOutside(int x, int y) {
         super.onLeftMouseUpOutside(x, y);
-        this.dragging = false;
+        dragging = false;
     }
 
     /**
@@ -220,7 +220,7 @@ public class ScrollbarWidget extends PanelWidget {
     @Override
     public void onLeftMouseUp(int x, int y) {
         super.onLeftMouseUp(x, y);
-        this.dragging = false;
+        dragging = false;
     }
 
     /**
@@ -229,7 +229,7 @@ public class ScrollbarWidget extends PanelWidget {
     @Override
     public void update() {
         super.update();
-        if (this.dragging) {
+        if (dragging) {
             int mouseX = Mouse.getXA();
             int mouseY = Mouse.getYA();
             updateScrollbarPosition(mouseX, mouseY);
@@ -243,18 +243,18 @@ public class ScrollbarWidget extends PanelWidget {
      * @param mouseY absolute y-coordinate of the mouse position
      */
     private void updateScrollbarPosition(int mouseX, int mouseY) {
-        if (!this.horizontal) {
-            int deltaY = mouseY - this.dragStartY;
-            int contentHeight = this.height - 2 * this.thumbOffset;
-            int thumbHeight = (int) ((float) this.height / (this.height + this.parent.maxScrollY) * contentHeight);
+        if (!horizontal) {
+            int deltaY = mouseY - dragStartY;
+            int contentHeight = height - 2 * thumbOffset;
+            int thumbHeight = (int) ((float) height / (height + parent.maxScrollY) * contentHeight);
             int maxThumbY = contentHeight - thumbHeight;
-            this.parent.scrollY = Math.max(0, Math.min(this.parent.maxScrollY, this.scrollStartY + (int) ((float) deltaY / maxThumbY * this.parent.maxScrollY)));
+            parent.scrollY = Math.max(0, Math.min(parent.maxScrollY, scrollStartY + (int) ((float) deltaY / maxThumbY * parent.maxScrollY)));
         } else {
-            int deltaX = mouseX - this.dragStartX;
-            int contentWidth = this.width - 2 * this.thumbOffset;
-            int thumbWidth = (int) ((float) this.width / (this.width + this.parent.maxScrollX) * contentWidth);
+            int deltaX = mouseX - dragStartX;
+            int contentWidth = width - 2 * thumbOffset;
+            int thumbWidth = (int) ((float) width / (width + parent.maxScrollX) * contentWidth);
             int maxThumbX = contentWidth - thumbWidth;
-            this.parent.scrollX = Math.max(0, Math.min(this.parent.maxScrollX, this.scrollStartX + (int) ((float) deltaX / maxThumbX * this.parent.maxScrollX)));
+            parent.scrollX = Math.max(0, Math.min(parent.maxScrollX, scrollStartX + (int) ((float) deltaX / maxThumbX * parent.maxScrollX)));
         }
     }
 
@@ -265,29 +265,29 @@ public class ScrollbarWidget extends PanelWidget {
     public void render() {
         super.render();
 
-        int scrollX = this.parent.scrollX;
-        int scrollY = this.parent.scrollY;
+        int scrollX = parent.scrollX;
+        int scrollY = parent.scrollY;
 
-        int maxScrollX = this.parent.maxScrollX;
-        int maxScrollY = this.parent.maxScrollY;
+        int maxScrollX = parent.maxScrollX;
+        int maxScrollY = parent.maxScrollY;
 
-        if (!this.horizontal) {
+        if (!horizontal) {
             // Vertical thumb
-            int thumbHeight = (int) ((float) this.height / (this.height + maxScrollY) * (this.height - 2 * this.thumbOffset));
-            int thumbY = (int) ((float) scrollY / maxScrollY * (this.height - thumbHeight - 2 * this.thumbOffset)) + this.thumbOffset;
-            if (this.borderRadius != 0) {
-                drawRoundedRect(this.thumbOffset, thumbY, this.width - 2 * this.thumbOffset, thumbHeight, (float) this.width / 4, this.thumbColor);
+            int thumbHeight = (int) ((float) height / (height + maxScrollY) * (height - 2 * thumbOffset));
+            int thumbY = (int) ((float) scrollY / maxScrollY * (height - thumbHeight - 2 * thumbOffset)) + thumbOffset;
+            if (borderRadius != 0) {
+                drawRoundedRect(thumbOffset, thumbY, width - 2 * thumbOffset, thumbHeight, (float) width / 4, thumbColor);
             } else {
-                drawRect(this.thumbOffset, thumbY, this.width - 2 * this.thumbOffset, thumbHeight, this.thumbColor);
+                drawRect(thumbOffset, thumbY, width - 2 * thumbOffset, thumbHeight, thumbColor);
             }
         } else {
             // Horizontal thumb
-            int thumbWidth = (int) ((float) this.width / (this.width + maxScrollX) * (this.width - 2 * this.thumbOffset));
-            int thumbX = (int) ((float) scrollX / maxScrollX * (this.width - thumbWidth - 2 * this.thumbOffset)) + this.thumbOffset;
-            if (this.borderRadius != 0) {
-                drawRoundedRect(thumbX, this.thumbOffset, thumbWidth, this.height - 2 * this.thumbOffset, (float) this.height / 4, this.thumbColor);
+            int thumbWidth = (int) ((float) width / (width + maxScrollX) * (width - 2 * thumbOffset));
+            int thumbX = (int) ((float) scrollX / maxScrollX * (width - thumbWidth - 2 * thumbOffset)) + thumbOffset;
+            if (borderRadius != 0) {
+                drawRoundedRect(thumbX, thumbOffset, thumbWidth, height - 2 * thumbOffset, (float) height / 4, thumbColor);
             } else {
-                drawRect(thumbX, this.thumbOffset, thumbWidth, this.height - 2 * this.thumbOffset, this.thumbColor);
+                drawRect(thumbX, thumbOffset, thumbWidth, height - 2 * thumbOffset, thumbColor);
             }
         }
     }

@@ -71,7 +71,7 @@ public class LabelWidget extends Widget {
      * @return the text color
      */
     public final NVGColor getTextColor() {
-        return this.textColor;
+        return textColor;
     }
 
     /**
@@ -89,7 +89,7 @@ public class LabelWidget extends Widget {
      * @return the text
      */
     public final String getText() {
-        return this.text;
+        return text;
     }
 
     /**
@@ -126,10 +126,10 @@ public class LabelWidget extends Widget {
     public void update() {
         super.update();
 
-        Vector2f textSize = NVGDrawer.getTextSize(this.text, this.fontName, this.fontSize);
+        Vector2f textSize = NVGDrawer.getTextSize(text, fontName, fontSize);
 
-        this.width = (int) textSize.x;
-        this.height = (int) textSize.y;
+        width = (int) textSize.x;
+        height = (int) textSize.y;
     }
 
     /**
