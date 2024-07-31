@@ -12,8 +12,7 @@ import java.util.Arrays;
  */
 @CommandName("test")
 @CommandAccessLevel(AccessLevel.NONE)
-@CommandExecutionScope(CommandScope.CHAT)
-@CommandChatReturn("Return text")
+@CommandExecutionScope(CommandScope.BOTH)
 @CommandDescription("Command description")
 public class TestCommand extends Command {
     /**
@@ -23,7 +22,7 @@ public class TestCommand extends Command {
      * @param args             arguments of the received command
      */
     @Override
-    public void onInvoke(UdpConnection playerConnection, String[] args) {
-        System.out.println("[###] Test command. Args: " + Arrays.toString(args));
+    public String onInvoke(UdpConnection playerConnection, String[] args) {
+        return "[###] Test command. Args: " + Arrays.toString(args);
     }
 }

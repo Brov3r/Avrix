@@ -43,7 +43,7 @@ dependencies {
      * Project Zomboid
      * Dependencies are created via the Gradle task 'createZombieJar'
      */
-    compileOnly files('../libs/ProjectZomboid-core-41.78.16.jar')
+    compileOnly files('../../libs/ProjectZomboid-core-41.78.16.jar')
 
     /**
      * Utils
@@ -60,7 +60,7 @@ dependencies {
  * Creating a Jar file wrapper (core) to run a game server
  */
 shadowJar {
-    archiveFileName.set("${rootProject.name}-${version}.jar")
+    archiveFileName.set("${this.name}-${version}.jar")
     destinationDirectory.set(file(buildPath))
 
     manifest {

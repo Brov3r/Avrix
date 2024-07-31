@@ -3,7 +3,7 @@ package com.avrix.example;
 import com.avrix.events.OnServerInitializeEvent;
 
 /**
- * Event handler'OnServerInitializeEvent'
+ * Event handler 'OnServerInitializeEvent'
  */
 public class OnServerInitHandler extends OnServerInitializeEvent {
     /**
