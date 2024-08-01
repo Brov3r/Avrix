@@ -24,6 +24,9 @@ def buildPath = System.getenv('BUILD_PATH') ?: 'build';
  */
 repositories {
     mavenCentral()
+    flatDir {
+        dirs 'libs'
+    }
 }
 
 /**
