@@ -12,9 +12,9 @@ import java.io.File;
  */
 public class HUDHandler extends OnPreWidgetDrawEvent {
     private File coreJarFile;
-    private static final float AMPLITUDE = 10.0f; // Максимальное смещение вверх и вниз
-    private static final float FREQUENCY = 5.0f; // Частота движения (цикл в секунду)
-    private float phase = 0.0f; // Фаза синусоиды для расчета вертикальной позиции
+    private static final float AMPLITUDE = 10.0f; // Maximum up and down displacement
+    private static final float FREQUENCY = 5.0f; // Motion frequency (cycles per second)
+    private float phase = 0.0f; // Sine wave phase to calculate vertical position
     private long lastTime = System.currentTimeMillis();
 
     public HUDHandler(Main main) {
