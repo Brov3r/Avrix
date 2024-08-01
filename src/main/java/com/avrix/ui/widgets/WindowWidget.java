@@ -196,7 +196,7 @@ public class WindowWidget extends ScrollPanelWidget {
      */
     @Override
     public void renderChildren() {
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             if (!child.isVisible()) continue;
 
             // Limitation for scroll bars

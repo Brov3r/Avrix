@@ -49,8 +49,8 @@ public class HUDHandler extends OnPreWidgetDrawEvent {
         float x = 120 + AMPLITUDE * (float) Math.cos(phase);
 
         if (coreJarFile != null) {
-            NVGDrawer.drawImage(coreJarFile.getAbsolutePath(), "media/image_test.jpg", 10, (int) y, 100, 100);
+            NVGDrawer.drawImage(coreJarFile.getAbsolutePath(), "media/image_test.jpg", 10, (int) y, 100, 100, 1);
         }
-        NVGDrawer.drawImage("https://ltdfoto.ru/images/2024/07/31/c53d539b59c19087182f0b1c53bb52de.jpg", (int) x, (int) y, 100, 100);
+        NVGDrawer.drawImage("https://ltdfoto.ru/images/2024/07/31/c53d539b59c19087182f0b1c53bb52de.jpg", (int) x, (int) y, 100, 100, 1);
     }
 }

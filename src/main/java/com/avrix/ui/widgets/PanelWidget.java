@@ -155,7 +155,7 @@ public class PanelWidget extends Widget {
     public void onLeftMouseUp(int x, int y) {
         super.onLeftMouseUp(x, y);
 
-        this.dragging = false;
+        dragging = false;
     }
 
     /**
@@ -168,7 +168,7 @@ public class PanelWidget extends Widget {
     public void onLeftMouseUpOutside(int x, int y) {
         super.onLeftMouseUpOutside(x, y);
 
-        this.dragging = false;
+        dragging = false;
     }
 
     /**
@@ -183,7 +183,7 @@ public class PanelWidget extends Widget {
 
         boolean canDrag = true;
 
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             int childRelativeX = x + (child.isScrollLock() ? 0 : scrollX);
             int childRelativeY = y + (child.isScrollLock() ? 0 : scrollY);
 

@@ -12,6 +12,8 @@ import com.avrix.ui.widgets.WindowWidget;
  * Main entry point of the example plugin
  */
 public class Main extends Plugin {
+    public static int buttonCount = 1;
+
     /**
      * Constructs a new {@link Plugin} with the specified metadata.
      * Metadata is transferred when the plugin is loaded into the game context.
@@ -41,16 +43,16 @@ public class Main extends Plugin {
         root.setDraggable(true);
 
         ButtonWidget btn = new ButtonWidget("Click", 10, 40, 100, 32, 0, NVGColor.BABY_BLUE, () -> {
-            System.out.println("[#] Click!");
+            ButtonWidget btn2 = new ButtonWidget("Click - " + buttonCount, 10 + 115 * buttonCount, 40, 100, 32, 0, NVGColor.BABY_BLUE, () -> {
+                System.out.println("[#] Click! #" + buttonCount);
+            });
+            btn2.setDrawBorder(false);
+            root.addChild(btn2);
+
+            buttonCount++;
         });
         btn.setDrawBorder(false);
         root.addChild(btn);
-
-        ButtonWidget btn2 = new ButtonWidget("Click2", 410, 40, 100, 32, 0, NVGColor.BABY_BLUE, () -> {
-            System.out.println("[#] Click2!");
-        });
-        btn2.setDrawBorder(false);
-        root.addChild(btn2);
 
         InputTextWidget input = new InputTextWidget(10, 100, 200, 32);
         input.setPlaceholder("Placeholder...");

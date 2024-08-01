@@ -292,14 +292,15 @@ public class NVGDrawer {
      * @param y       absolute y-coordinate of the image's position
      * @param width   the width of the image
      * @param height  the height of the image
+     * @param opacity image opacity (from 0 to 1)
      */
-    public static void drawImage(int imageId, int x, int y, int width, int height) {
+    public static void drawImage(int imageId, int x, int y, int width, int height, float opacity) {
         if (imageId == -1) {
             drawRect(x, y, width, height, NVGColor.WHITE);
             return;
         }
 
-        NVGPaint paint = nvgImagePattern(getContextID(), x, y, width, height, 0, imageId, 1, NVGPaint.create());
+        NVGPaint paint = nvgImagePattern(getContextID(), x, y, width, height, 0, imageId, opacity, NVGPaint.create());
         nvgBeginPath(getContextID());
         nvgRect(getContextID(), x, y, width, height);
         nvgFillPaint(getContextID(), paint);
@@ -314,9 +315,10 @@ public class NVGDrawer {
      * @param y         absolute y-coordinate of the image's position
      * @param width     the width of the image
      * @param height    the height of the image
+     * @param opacity   image opacity (from 0 to 1)
      */
-    public static void drawImage(Path imagePath, int x, int y, int width, int height) {
-        drawImage(ImageLoader.loadImage(imagePath), x, y, width, height);
+    public static void drawImage(Path imagePath, int x, int y, int width, int height, float opacity) {
+        drawImage(ImageLoader.loadImage(imagePath), x, y, width, height, opacity);
     }
 
     /**
@@ -328,9 +330,10 @@ public class NVGDrawer {
      * @param y                absolute y-coordinate of the image's position
      * @param width            the width of the image
      * @param height           the height of the image
+     * @param opacity          image opacity (from 0 to 1)
      */
-    public static void drawImage(String jarPath, String internalFilePath, int x, int y, int width, int height) {
-        drawImage(ImageLoader.loadImage(jarPath, internalFilePath), x, y, width, height);
+    public static void drawImage(String jarPath, String internalFilePath, int x, int y, int width, int height, float opacity) {
+        drawImage(ImageLoader.loadImage(jarPath, internalFilePath), x, y, width, height, opacity);
     }
 
     /**
@@ -341,8 +344,9 @@ public class NVGDrawer {
      * @param y        absolute y-coordinate of the image's position
      * @param width    the width of the image
      * @param height   the height of the image
+     * @param opacity  image opacity (from 0 to 1)
      */
-    public static void drawImage(String imageURL, int x, int y, int width, int height) {
-        drawImage(ImageLoader.loadImage(imageURL), x, y, width, height);
+    public static void drawImage(String imageURL, int x, int y, int width, int height, float opacity) {
+        drawImage(ImageLoader.loadImage(imageURL), x, y, width, height, opacity);
     }
 }

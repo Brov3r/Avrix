@@ -7,17 +7,16 @@ import com.avrix.utils.WindowUtils;
 import zombie.core.opengl.RenderThread;
 import zombie.input.Mouse;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Manages a collection of {@link Widget} instances, handling rendering and updates.
  */
 public class WidgetManager {
     private static NVGContext NVGContext;
-    private static final List<Widget> widgetList = new ArrayList<>();
-    private static final List<Widget> renderWidgetList = new ArrayList<>();
+    private static final List<Widget> widgetList = new CopyOnWriteArrayList<>();
 
     /**
      * Initializing the {@link WidgetManager} (creating NanoVG contexts)
@@ -42,10 +41,8 @@ public class WidgetManager {
      * Updates mouse events and renders each visible {@link Widget}.
      */
     public static void onRender() {
+        List<Widget> widgetList = getWidgetList();
         widgetList.sort(Comparator.comparing(Widget::isAlwaysOnTop));
-
-        renderWidgetList.clear();
-        renderWidgetList.addAll(widgetList);
 
         InputWidgetHandler.updateMouseEvent();
 
@@ -53,7 +50,7 @@ public class WidgetManager {
 
         EventManager.invokeEvent("onPreWidgetRender", NVGContext);
 
-        for (Widget widget : renderWidgetList) {
+        for (Widget widget : widgetList) {
             if (!widget.isVisible()) continue;
 
             NVGDrawer.saveRenderState();
@@ -90,7 +87,7 @@ public class WidgetManager {
      * @return list of {@link Widget}s
      */
     public static List<Widget> getWidgetList() {
-        return new ArrayList<>(widgetList);
+        return widgetList;
     }
 
     /**
@@ -99,16 +96,10 @@ public class WidgetManager {
      * @return true if the mouse pointer is over a custom UI element, false otherwise.
      */
     public static boolean isOverCustomUI() {
-        List<Widget> widgetsCopy;
-
         int x = Mouse.getXA();
         int y = Mouse.getYA();
 
-        synchronized (renderWidgetList) {
-            widgetsCopy = new ArrayList<>(renderWidgetList);
-        }
-
-        for (Widget widget : widgetsCopy) {
+        for (Widget widget : getWidgetList()) {
             if (widget == null) continue;
 
             if (widget.isPointOver(x, y)) {

@@ -6,9 +6,8 @@ import com.avrix.ui.NVGDrawer;
 import com.avrix.ui.WidgetManager;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Abstract base class for all UI {@link Widget}'s. This class provides the basic interface and functionality
@@ -88,7 +87,7 @@ public abstract class Widget {
     /**
      * List of all child elements of the {@link Widget}.
      */
-    protected List<Widget> children = new ArrayList<>();
+    protected List<Widget> children = new CopyOnWriteArrayList<>();
 
     /**
      * Parent {@link Widget}.
@@ -261,7 +260,7 @@ public abstract class Widget {
      * ensuring that the rendering order respects the hierarchy of widgets.
      */
     public void renderChildren() {
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             if (!child.isVisible()) continue;
 
             // Calculate absolute positions considering scrolling
@@ -321,7 +320,7 @@ public abstract class Widget {
      * @return an unmodifiable list of child widgets
      */
     public final synchronized List<Widget> getChildren() {
-        return Collections.unmodifiableList(children);
+        return children;
     }
 
     /**
@@ -341,7 +340,7 @@ public abstract class Widget {
         int maxY = Integer.MIN_VALUE;
 
         // Calculate the bounding box of all children
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             int childMinX = child.getX();
             int childMinY = child.getY();
             int childMaxX = child.getX() + child.getWidth();
@@ -379,8 +378,9 @@ public abstract class Widget {
     public void onMouseMove(int x, int y) {
         boolean topWidgetHovered = false;
 
-        for (int i = children.size() - 1; i >= 0; i--) {
-            Widget child = children.get(i);
+        List<Widget> childrenCopy = getChildren();
+        for (int i = childrenCopy.size() - 1; i >= 0; i--) {
+            Widget child = childrenCopy.get(i);
             int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
             int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
@@ -407,8 +407,9 @@ public abstract class Widget {
     public void onLeftMouseDown(int x, int y) {
         boolean topWidget = false;
         bringToTop();
-        for (int i = children.size() - 1; i >= 0; i--) {
-            Widget child = children.get(i);
+        List<Widget> childrenCopy = getChildren();
+        for (int i = childrenCopy.size() - 1; i >= 0; i--) {
+            Widget child = childrenCopy.get(i);
             int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
             int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
@@ -432,8 +433,9 @@ public abstract class Widget {
      */
     public void onLeftMouseUp(int x, int y) {
         boolean topWidget = false;
-        for (int i = children.size() - 1; i >= 0; i--) {
-            Widget child = children.get(i);
+        List<Widget> childrenCopy = getChildren();
+        for (int i = childrenCopy.size() - 1; i >= 0; i--) {
+            Widget child = childrenCopy.get(i);
             int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
             int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
@@ -458,8 +460,9 @@ public abstract class Widget {
     public void onRightMouseDown(int x, int y) {
         boolean topWidget = false;
         bringToTop();
-        for (int i = children.size() - 1; i >= 0; i--) {
-            Widget child = children.get(i);
+        List<Widget> childrenCopy = getChildren();
+        for (int i = childrenCopy.size() - 1; i >= 0; i--) {
+            Widget child = childrenCopy.get(i);
             int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
             int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
@@ -483,8 +486,9 @@ public abstract class Widget {
      */
     public void onRightMouseUp(int x, int y) {
         boolean topWidget = false;
-        for (int i = children.size() - 1; i >= 0; i--) {
-            Widget child = children.get(i);
+        List<Widget> childrenCopy = getChildren();
+        for (int i = childrenCopy.size() - 1; i >= 0; i--) {
+            Widget child = childrenCopy.get(i);
             int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
             int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
@@ -523,8 +527,9 @@ public abstract class Widget {
         }
 
         // Update child widgets based on the new scroll values
-        for (int i = children.size() - 1; i >= 0; i--) {
-            Widget child = children.get(i);
+        List<Widget> childrenCopy = getChildren();
+        for (int i = childrenCopy.size() - 1; i >= 0; i--) {
+            Widget child = childrenCopy.get(i);
             int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
             int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
@@ -547,8 +552,9 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onMouseEnter(int x, int y) {
-        for (int i = children.size() - 1; i >= 0; i--) {
-            Widget child = children.get(i);
+        List<Widget> childrenCopy = getChildren();
+        for (int i = childrenCopy.size() - 1; i >= 0; i--) {
+            Widget child = childrenCopy.get(i);
             int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
             int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
             if (child.isPointOver(x, y)) {
@@ -564,8 +570,9 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onMouseExit(int x, int y) {
-        for (int i = children.size() - 1; i >= 0; i--) {
-            Widget child = children.get(i);
+        List<Widget> childrenCopy = getChildren();
+        for (int i = childrenCopy.size() - 1; i >= 0; i--) {
+            Widget child = childrenCopy.get(i);
             int childRelativeX = x - child.getX() + (child.isScrollLock() ? 0 : scrollX);
             int childRelativeY = y - child.getY() + (child.isScrollLock() ? 0 : scrollY);
 
@@ -584,7 +591,7 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onMouseMoveOutside(int x, int y) {
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             child.onMouseMoveOutside(x, y);
         }
     }
@@ -596,7 +603,7 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onLeftMouseDownOutside(int x, int y) {
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             child.onLeftMouseDownOutside(x, y);
         }
     }
@@ -608,7 +615,7 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onLeftMouseUpOutside(int x, int y) {
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             child.onLeftMouseUpOutside(x, y);
         }
     }
@@ -620,7 +627,7 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onRightMouseDownOutside(int x, int y) {
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             child.onRightMouseDownOutside(x, y);
         }
     }
@@ -632,7 +639,7 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onRightMouseUpOutside(int x, int y) {
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             child.onRightMouseUpOutside(x, y);
         }
     }
@@ -645,7 +652,7 @@ public abstract class Widget {
      * @param delta the amount of wheel movement
      */
     public void onMouseWheelOutside(int x, int y, int delta) {
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             child.onMouseWheelOutside(x, y, delta);
         }
     }
@@ -656,7 +663,7 @@ public abstract class Widget {
      * @param key the code of the key that was pressed
      */
     public void onKeyPress(int key) {
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             child.onKeyPress(key);
         }
     }
@@ -667,7 +674,7 @@ public abstract class Widget {
      * @param key the code of the key that was released
      */
     public void onKeyRelease(int key) {
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             child.onKeyRelease(key);
         }
     }
@@ -678,7 +685,7 @@ public abstract class Widget {
      * @param key the code of the key that is being repeatedly pressed
      */
     public void onKeyRepeat(int key) {
-        for (Widget child : children) {
+        for (Widget child : getChildren()) {
             child.onKeyRepeat(key);
         }
     }
@@ -983,9 +990,10 @@ public abstract class Widget {
      * @param y       relative y-coordinate of the image's position
      * @param width   the width of the image
      * @param height  the height of the image
+     * @param opacity image opacity (from 0 to 1)
      */
-    public final void drawImage(int imageId, int x, int y, int width, int height) {
-        NVGDrawer.drawImage(imageId, getX() + x, getY() + y, width, height);
+    public final void drawImage(int imageId, int x, int y, int width, int height, float opacity) {
+        NVGDrawer.drawImage(imageId, getX() + x, getY() + y, width, height, opacity);
     }
 
     /**
@@ -996,9 +1004,10 @@ public abstract class Widget {
      * @param y         relative y-coordinate of the image's position
      * @param width     the width of the image
      * @param height    the height of the image
+     * @param opacity   image opacity (from 0 to 1)
      */
-    public final void drawImage(Path imagePath, int x, int y, int width, int height) {
-        NVGDrawer.drawImage(imagePath, getX() + x, getY() + y, width, height);
+    public final void drawImage(Path imagePath, int x, int y, int width, int height, float opacity) {
+        NVGDrawer.drawImage(imagePath, getX() + x, getY() + y, width, height, opacity);
     }
 
     /**
@@ -1010,9 +1019,10 @@ public abstract class Widget {
      * @param y                relative y-coordinate of the image's position
      * @param width            the width of the image
      * @param height           the height of the image
+     * @param opacity          image opacity (from 0 to 1)
      */
-    public final void drawImage(String jarPath, String internalFilePath, int x, int y, int width, int height) {
-        NVGDrawer.drawImage(ImageLoader.loadImage(jarPath, internalFilePath), getX() + x, getY() + y, width, height);
+    public final void drawImage(String jarPath, String internalFilePath, int x, int y, int width, int height, float opacity) {
+        NVGDrawer.drawImage(ImageLoader.loadImage(jarPath, internalFilePath), getX() + x, getY() + y, width, height, opacity);
     }
 
     /**
@@ -1023,9 +1033,10 @@ public abstract class Widget {
      * @param y        relative y-coordinate of the image's position
      * @param width    the width of the image
      * @param height   the height of the image
+     * @param opacity  image opacity (from 0 to 1)
      */
-    public final void drawImage(String imageURL, int x, int y, int width, int height) {
-        NVGDrawer.drawImage(ImageLoader.loadImage(imageURL), getX() + x, getY() + y, width, height);
+    public final void drawImage(String imageURL, int x, int y, int width, int height, float opacity) {
+        NVGDrawer.drawImage(ImageLoader.loadImage(imageURL), getX() + x, getY() + y, width, height, opacity);
     }
 
     /**

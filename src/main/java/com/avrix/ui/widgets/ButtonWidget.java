@@ -178,7 +178,7 @@ public class ButtonWidget extends PanelWidget {
     public void onLeftMouseDown(int x, int y) {
         super.onLeftMouseDown(x, y);
 
-        this.LMBDown = true;
+        LMBDown = true;
     }
 
     /**
