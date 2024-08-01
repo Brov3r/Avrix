@@ -25,7 +25,7 @@ def buildPath = System.getenv('BUILD_PATH') ?: 'build';
 repositories {
     mavenCentral()
     flatDir {
-        dirs 'libs'
+        dirs project.file("$rootProject.projectDir/libs")
     }
 }
 
@@ -63,8 +63,8 @@ dependencies {
      * Project Zomboid
      * Dependencies are created via the Gradle task 'createZombieJar'
      */
-    compileOnly files('/libs/ProjectZomboid-core-41.78.16.jar')
-    compileOnly files('/libs/ProjectZomboid-libs-41.78.16.jar')
+    compileOnly files('libs/ProjectZomboid-core-41.78.16.jar')
+    compileOnly files('libs/ProjectZomboid-libs-41.78.16.jar')
 
     /**
      * Utils
