@@ -47,11 +47,10 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@dbbdc275be76ac10734476cc723d82dfe7ec6eda # v3.4.2
-
-    - name: Build with Gradle Wrapper
-      run: ./gradlew build
+    - name: Build with Gradle
+      uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3.1.0
+      with:
+        arguments: build
 
   dependency-submission:
 
@@ -72,4 +71,4 @@ jobs:
       run: chmod +x gradlew
 
     - name: Generate and submit dependency graph
-      uses: gradle/actions/dependency-submission@dbbdc275be76ac10734476cc723d82dfe7ec6eda # v3.4.2
+      uses: gradle/gradle-build-action@29c0906b64b8fc82467890bfb7a0a7ef34bda89e # v3.1.0
