@@ -4,10 +4,7 @@ import com.avrix.events.EventManager;
 import com.avrix.plugin.Metadata;
 import com.avrix.plugin.Plugin;
 import com.avrix.ui.NVGColor;
-import com.avrix.ui.widgets.ButtonWidget;
-import com.avrix.ui.widgets.CheckboxWidget;
-import com.avrix.ui.widgets.InputTextWidget;
-import com.avrix.ui.widgets.WindowWidget;
+import com.avrix.ui.widgets.*;
 
 /**
  * Main entry point of the example plugin
@@ -39,7 +36,7 @@ public class Main extends Plugin {
 
         System.out.println("[#] Config: " + getDefaultConfig().getString("test"));
 
-        WindowWidget root = new WindowWidget("Hello window", 10, 300, 300, 200);
+        WindowWidget root = new WindowWidget("Hello window", 10, 200, 300, 500);
         root.setBorderRadius(8);
         root.setDraggable(true);
 
@@ -70,6 +67,11 @@ public class Main extends Plugin {
             System.out.println("CHECK - " + checked);
         });
         root.addChild(cb);
+
+        SliderWidget sw = new SliderWidget(10, 250, 200, (value) -> {
+            System.out.println("Value - " + value);
+        });
+        root.addChild(sw);
 
         root.addToScreen();
     }
