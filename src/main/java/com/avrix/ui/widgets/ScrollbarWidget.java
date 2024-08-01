@@ -156,9 +156,9 @@ public class ScrollbarWidget extends PanelWidget {
     }
 
     /**
-     * Initializes the {@link Widget} position
+     * Update the {@link Widget} position
      */
-    public void initPosition() {
+    public void updatePosition() {
         if (parent == null) {
             return;
         }

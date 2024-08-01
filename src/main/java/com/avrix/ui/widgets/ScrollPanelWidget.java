@@ -92,8 +92,8 @@ public class ScrollPanelWidget extends PanelWidget {
         addChild(horizontalScrollbar);
         addChild(verticalScrollbar);
 
-        horizontalScrollbar.initPosition();
-        verticalScrollbar.initPosition();
+        horizontalScrollbar.updatePosition();
+        verticalScrollbar.updatePosition();
     }
 
     /**
@@ -217,5 +217,8 @@ public class ScrollPanelWidget extends PanelWidget {
         if (verticalScrollbar.isVisible() && horizontalScrollbar.isVisible()) {
             horizontalScrollbar.width = horizontalScrollbar.compressedWidth;
         }
+
+        horizontalScrollbar.updatePosition();
+        verticalScrollbar.updatePosition();
     }
 }

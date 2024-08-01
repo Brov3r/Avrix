@@ -3,6 +3,7 @@ package com.avrix.ui.widgets;
 import com.avrix.ui.NVGColor;
 import com.avrix.ui.NVGDrawer;
 import org.joml.Vector2f;
+import zombie.input.Mouse;
 
 /**
  * Represents a {@link Widget} panel that can be customized with various properties such as font, title,
@@ -13,6 +14,16 @@ public class WindowWidget extends ScrollPanelWidget {
      * The name of the font used for rendering text within the {@link Widget}.
      */
     protected String fontName = "Montserrat-Regular";
+
+    /**
+     * The name of the font used for rendering icon within the {@link Widget}.
+     */
+    protected String iconFontName = "FontAwesome";
+
+    /**
+     * Window resizing icon
+     */
+    protected String resizeIcon = "\uf00a";
 
     /**
      * The title text displayed in the {@link Widget}'s header.
@@ -35,6 +46,56 @@ public class WindowWidget extends ScrollPanelWidget {
     protected int titleFontSize = 12;
 
     /**
+     * Window resize icon size
+     */
+    protected int resizeIconSize = 8;
+
+    /**
+     * Window resize icon offset
+     */
+    protected int resizeIconOffset = 5;
+
+    /**
+     * The x-coordinate offset for resize the window
+     */
+    protected int resizeOffsetX = 0;
+
+    /**
+     * The y-coordinate offset for resize the window
+     */
+    protected int resizeOffsetY = 0;
+
+    /**
+     * The size of the close button in pixels.
+     */
+    private final int closeButtonSize = 16;
+
+    /**
+     * The offset of the close button from the edge of the widget in pixels.
+     */
+    private final int closeButtonOffset = 5;
+
+    /**
+     * The original width of the widget before resizing.
+     */
+    protected int originalWidth = 0;
+
+    /**
+     * The original height of the widget before resizing.
+     */
+    protected int originalHeight = 0;
+
+    /**
+     * The minimum width of the widget in pixels.
+     */
+    protected int minSizeX = 100;
+
+    /**
+     * The minimum height of the widget in pixels.
+     */
+    protected int minSizeY = 100;
+
+    /**
      * Window close button object
      */
     private ButtonWidget closeButton;
@@ -45,9 +106,14 @@ public class WindowWidget extends ScrollPanelWidget {
     private int originalVerticalScrollBarY;
 
     /**
-     * The original height of the vertical scrollbar before any transformation.
+     * Indicates whether the widget can be resized.
      */
-    private int originalVerticalScrollBarHeight;
+    protected boolean resizable = true;
+
+    /**
+     * Indicates whether the widget is currently being resized.
+     */
+    private boolean resizing = false;
 
     /**
      * Constructs a new {@link Widget} with the specified position and size.
@@ -78,7 +144,7 @@ public class WindowWidget extends ScrollPanelWidget {
     public void onInitialize() {
         super.onInitialize();
 
-        closeButton = new ButtonWidget("\uf00d", getWidth() - 16 - 5, 5, 16, 16, 16, new NVGColor("#e74c3c"), this::closeWindow);
+        closeButton = new ButtonWidget("\uf00d", getWidth() - closeButtonSize - closeButtonOffset, closeButtonOffset, closeButtonSize, closeButtonSize, closeButtonSize, new NVGColor("#e74c3c"), this::closeWindow);
         closeButton.setDrawBorder(false);
         closeButton.setFontSize(12);
         closeButton.setTextColor(NVGColor.WHITE);
@@ -87,7 +153,60 @@ public class WindowWidget extends ScrollPanelWidget {
         addChild(closeButton);
 
         originalVerticalScrollBarY = verticalScrollbar.getY();
-        originalVerticalScrollBarHeight = verticalScrollbar.getHeight();
+    }
+
+    /**
+     * Returns the minimum width of the widget.
+     *
+     * @return the minimum width of the widget in pixels.
+     */
+    public final int getMinSizeX() {
+        return minSizeX;
+    }
+
+    /**
+     * Sets the minimum width of the widget.
+     *
+     * @param minSizeX the minimum width of the widget in pixels.
+     */
+    public final void setMinSizeX(int minSizeX) {
+        this.minSizeX = minSizeX;
+    }
+
+    /**
+     * Returns the minimum height of the widget.
+     *
+     * @return the minimum height of the widget in pixels.
+     */
+    public final int getMinSizeY() {
+        return minSizeY;
+    }
+
+    /**
+     * Sets the minimum height of the widget.
+     *
+     * @param minSizeY the minimum height of the widget in pixels.
+     */
+    public final void setMinSizeY(int minSizeY) {
+        this.minSizeY = minSizeY;
+    }
+
+    /**
+     * Checks if the widget is resizable.
+     *
+     * @return {@code true} if the widget is resizable, {@code false} otherwise.
+     */
+    public final boolean isResizable() {
+        return resizable;
+    }
+
+    /**
+     * Sets the ability to resize the widget.
+     *
+     * @param resizable {@code true} if the widget is resizable, {@code false} otherwise.
+     */
+    public final void setResizable(boolean resizable) {
+        this.resizable = resizable;
     }
 
     /**
@@ -129,7 +248,7 @@ public class WindowWidget extends ScrollPanelWidget {
      *
      * @param fontName the name of the font to use, specified as a string (e.g., "Arial", "Helvetica")
      */
-    public void setFont(String fontName) {
+    public final void setFont(String fontName) {
         this.fontName = fontName;
     }
 
@@ -138,7 +257,7 @@ public class WindowWidget extends ScrollPanelWidget {
      *
      * @param title the title text to display in the header
      */
-    public void setTitle(String title) {
+    public final void setTitle(String title) {
         this.title = title;
     }
 
@@ -147,7 +266,7 @@ public class WindowWidget extends ScrollPanelWidget {
      *
      * @return the name of the font being used
      */
-    public String getFontName() {
+    public final String getFontName() {
         return fontName;
     }
 
@@ -156,7 +275,7 @@ public class WindowWidget extends ScrollPanelWidget {
      *
      * @return the title text currently set for the header
      */
-    public String getTitle() {
+    public final String getTitle() {
         return title;
     }
 
@@ -165,7 +284,7 @@ public class WindowWidget extends ScrollPanelWidget {
      *
      * @param headerColor the color to use for the header
      */
-    public void setHeaderColor(NVGColor headerColor) {
+    public final void setHeaderColor(NVGColor headerColor) {
         this.headerColor = headerColor;
     }
 
@@ -174,8 +293,52 @@ public class WindowWidget extends ScrollPanelWidget {
      *
      * @param headerHeight the height of the header in pixels
      */
-    public void setHeaderHeight(int headerHeight) {
+    public final void setHeaderHeight(int headerHeight) {
         this.headerHeight = headerHeight;
+    }
+
+    /**
+     * Called when the left mouse button is pressed down over the {@link Widget}.
+     *
+     * @param x relative x-coordinate of the mouse position
+     * @param y relative y-coordinate of the mouse position
+     */
+    @Override
+    public void onLeftMouseDown(int x, int y) {
+        if (x < width && y < height && x > width - resizeIconSize - resizeIconOffset && y > height - resizeIconSize - resizeIconOffset) {
+            resizing = true;
+            resizeOffsetX = x;
+            resizeOffsetY = y;
+            originalWidth = width;
+            originalHeight = height;
+            return;
+        }
+
+        super.onLeftMouseDown(x, y);
+    }
+
+    /**
+     * Handles the left mouse button up event outside any visible {@link Widget}
+     *
+     * @param x absolute x-coordinate of the mouse position
+     * @param y absolute y-coordinate of the mouse position
+     */
+    @Override
+    public void onLeftMouseUpOutside(int x, int y) {
+        super.onLeftMouseUpOutside(x, y);
+        resizing = false;
+    }
+
+    /**
+     * Called when the left mouse button is released over the {@link Widget}.
+     *
+     * @param x relative x-coordinate of the mouse position
+     * @param y relative y-coordinate of the mouse position
+     */
+    @Override
+    public void onLeftMouseUp(int x, int y) {
+        super.onLeftMouseUp(x, y);
+        resizing = false;
     }
 
     /**
@@ -186,7 +349,38 @@ public class WindowWidget extends ScrollPanelWidget {
         super.update();
 
         verticalScrollbar.setY(originalVerticalScrollBarY + headerHeight);
-        verticalScrollbar.setHeight(originalVerticalScrollBarHeight - headerHeight);
+
+        if (resizing) {
+            int mouseX = Mouse.getXA();
+            int mouseY = Mouse.getYA();
+
+            int deltaX = mouseX - getX() - resizeOffsetX;
+            int deltaY = mouseY - getY() - resizeOffsetY;
+
+            int newWidth = Math.max(minSizeX, originalWidth + deltaX);
+            int newHeight = Math.max(minSizeY, originalHeight + deltaY);
+
+            if (newWidth != getWidth() || newHeight != getHeight()) {
+                setWidth(newWidth);
+                setHeight(newHeight);
+
+                updateMaxScrollOffset();
+            }
+        }
+
+        if (resizable) {
+            horizontalScrollbar.setWidth(width - horizontalScrollbar.borderOffset * 2 - resizeIconSize - resizeIconOffset);
+            verticalScrollbar.setHeight((int) (height - verticalScrollbar.borderOffset * 1.5 - headerHeight - resizeIconSize - resizeIconOffset));
+        } else {
+            if (verticalScrollbar.isVisible()) {
+                horizontalScrollbar.setWidth(width - horizontalScrollbar.borderOffset * 2 - verticalScrollbar.getWidth() * 2);
+            } else {
+                horizontalScrollbar.setWidth(width - horizontalScrollbar.borderOffset * 2);
+            }
+            verticalScrollbar.setHeight(height - verticalScrollbar.borderOffset * 2 - headerHeight);
+        }
+
+        closeButton.setX(width - closeButtonSize - closeButtonOffset);
     }
 
     /**
@@ -271,6 +465,11 @@ public class WindowWidget extends ScrollPanelWidget {
             } else {
                 drawRectOutline(0, 0, getWidth(), getHeight(), borderWidth, borderColor);
             }
+        }
+
+        if (resizable) {
+            Vector2f iconSize = NVGDrawer.getTextSize(resizeIcon, iconFontName, resizeIconSize);
+            drawText(resizeIcon, iconFontName, (int) (width - iconSize.x - resizeIconOffset), (int) (height - iconSize.y - resizeIconOffset), resizeIconSize, NVGColor.WHITE);
         }
     }
 }

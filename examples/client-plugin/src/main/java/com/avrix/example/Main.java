@@ -36,7 +36,8 @@ public class Main extends Plugin {
 
         System.out.println("[#] Config: " + getDefaultConfig().getString("test"));
 
-        WindowWidget root = new WindowWidget("Hello window", 10, 200, 300, 500);
+        WindowWidget root = new WindowWidget("Hello window", 10, 50, 300, 500);
+        root.setResizable(true);
         root.setBorderRadius(8);
         root.setDraggable(true);
 

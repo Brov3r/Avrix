@@ -113,13 +113,68 @@ loadScripts(document, 'script');</script>
 <div class="block">The height of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s header.</div>
 </div>
 <div class="col-first odd-row-color"><code>protected <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
-<div class="col-second odd-row-color"><code><a href="#title" class="member-name-link">title</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#iconFontName" class="member-name-link">iconFontName</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block">The title text displayed in the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s header.</div>
+<div class="block">The name of the font used for rendering icon within the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
 </div>
 <div class="col-first even-row-color"><code>protected int</code></div>
-<div class="col-second even-row-color"><code><a href="#titleFontSize" class="member-name-link">titleFontSize</a></code></div>
+<div class="col-second even-row-color"><code><a href="#minSizeX" class="member-name-link">minSizeX</a></code></div>
 <div class="col-last even-row-color">
+<div class="block">The minimum width of the widget in pixels.</div>
+</div>
+<div class="col-first odd-row-color"><code>protected int</code></div>
+<div class="col-second odd-row-color"><code><a href="#minSizeY" class="member-name-link">minSizeY</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">The minimum height of the widget in pixels.</div>
+</div>
+<div class="col-first even-row-color"><code>protected int</code></div>
+<div class="col-second even-row-color"><code><a href="#originalHeight" class="member-name-link">originalHeight</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">The original height of the widget before resizing.</div>
+</div>
+<div class="col-first odd-row-color"><code>protected int</code></div>
+<div class="col-second odd-row-color"><code><a href="#originalWidth" class="member-name-link">originalWidth</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">The original width of the widget before resizing.</div>
+</div>
+<div class="col-first even-row-color"><code>protected boolean</code></div>
+<div class="col-second even-row-color"><code><a href="#resizable" class="member-name-link">resizable</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Indicates whether the widget can be resized.</div>
+</div>
+<div class="col-first odd-row-color"><code>protected <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#resizeIcon" class="member-name-link">resizeIcon</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">Window resizing icon</div>
+</div>
+<div class="col-first even-row-color"><code>protected int</code></div>
+<div class="col-second even-row-color"><code><a href="#resizeIconOffset" class="member-name-link">resizeIconOffset</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Window resize icon offset</div>
+</div>
+<div class="col-first odd-row-color"><code>protected int</code></div>
+<div class="col-second odd-row-color"><code><a href="#resizeIconSize" class="member-name-link">resizeIconSize</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">Window resize icon size</div>
+</div>
+<div class="col-first even-row-color"><code>protected int</code></div>
+<div class="col-second even-row-color"><code><a href="#resizeOffsetX" class="member-name-link">resizeOffsetX</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">The x-coordinate offset for resize the window</div>
+</div>
+<div class="col-first odd-row-color"><code>protected int</code></div>
+<div class="col-second odd-row-color"><code><a href="#resizeOffsetY" class="member-name-link">resizeOffsetY</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">The y-coordinate offset for resize the window</div>
+</div>
+<div class="col-first even-row-color"><code>protected <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second even-row-color"><code><a href="#title" class="member-name-link">title</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">The title text displayed in the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s header.</div>
+</div>
+<div class="col-first odd-row-color"><code>protected int</code></div>
+<div class="col-second odd-row-color"><code><a href="#titleFontSize" class="member-name-link">titleFontSize</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">Font size for drawing the title.</div>
 </div>
 </div>
@@ -174,20 +229,53 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Closing a window (removes it from the screen)</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getFontName()" class="member-name-link">getFontName</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Gets the current font name used by the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final int</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMinSizeX()" class="member-name-link">getMinSizeX</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the minimum width of the widget.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final int</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getMinSizeY()" class="member-name-link">getMinSizeY</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Returns the minimum height of the widget.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#getTitle()" class="member-name-link">getTitle</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Gets the current title of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s header.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onInitialize()" class="member-name-link">onInitialize</a>()</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#isResizable()" class="member-name-link">isResizable</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Checks if the widget is resizable.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onInitialize()" class="member-name-link">onInitialize</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Initializes the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseDown(int,int)" class="member-name-link">onLeftMouseDown</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Called when the left mouse button is pressed down over the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseUp(int,int)" class="member-name-link">onLeftMouseUp</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Called when the left mouse button is released over the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#onLeftMouseUpOutside(int,int)" class="member-name-link">onLeftMouseUpOutside</a><wbr>(int&nbsp;x,
+ int&nbsp;y)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Handles the left mouse button up event outside any visible <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#postRender()" class="member-name-link">postRender</a>()</code></div>
@@ -209,29 +297,44 @@ loadScripts(document, 'script');</script>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Updates and renders all child widgets of this <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFont(java.lang.String)" class="member-name-link">setFont</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fontName)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the font name for the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setHeaderColor(com.avrix.ui.NVGColor)" class="member-name-link">setHeaderColor</a><wbr>(<a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;headerColor)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the color of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s header.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
 <div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setHeaderHeight(int)" class="member-name-link">setHeaderHeight</a><wbr>(int&nbsp;headerHeight)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the height of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s header.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTitle(java.lang.String)" class="member-name-link">setTitle</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;title)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setMinSizeX(int)" class="member-name-link">setMinSizeX</a><wbr>(int&nbsp;minSizeX)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the minimum width of the widget.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setMinSizeY(int)" class="member-name-link">setMinSizeY</a><wbr>(int&nbsp;minSizeY)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the minimum height of the widget.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setResizable(boolean)" class="member-name-link">setResizable</a><wbr>(boolean&nbsp;resizable)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Sets the ability to resize the widget.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>final void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTitle(java.lang.String)" class="member-name-link">setTitle</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;title)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the title of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s header.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update()" class="member-name-link">update</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update()" class="member-name-link">update</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Updates the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
 </div>
 </div>
@@ -242,7 +345,7 @@ loadScripts(document, 'script');</script>
 <code><a href="ScrollPanelWidget.html#getHorizontalScrollbar()">getHorizontalScrollbar</a>, <a href="ScrollPanelWidget.html#getVerticalScrollbar()">getVerticalScrollbar</a>, <a href="ScrollPanelWidget.html#updateMaxScrollOffset()">updateMaxScrollOffset</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.avrix.ui.widgets.PanelWidget">Methods inherited from class&nbsp;com.avrix.ui.widgets.<a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></h3>
-<code><a href="PanelWidget.html#isDraggable()">isDraggable</a>, <a href="PanelWidget.html#onLeftMouseDown(int,int)">onLeftMouseDown</a>, <a href="PanelWidget.html#onLeftMouseUp(int,int)">onLeftMouseUp</a>, <a href="PanelWidget.html#onLeftMouseUpOutside(int,int)">onLeftMouseUpOutside</a>, <a href="PanelWidget.html#setBackgroundColor(com.avrix.ui.NVGColor)">setBackgroundColor</a>, <a href="PanelWidget.html#setBorderColor(com.avrix.ui.NVGColor)">setBorderColor</a>, <a href="PanelWidget.html#setBorderRadius(int)">setBorderRadius</a>, <a href="PanelWidget.html#setBorderWidth(int)">setBorderWidth</a>, <a href="PanelWidget.html#setDraggable(boolean)">setDraggable</a>, <a href="PanelWidget.html#setDrawBorder(boolean)">setDrawBorder</a></code></div>
+<code><a href="PanelWidget.html#isDraggable()">isDraggable</a>, <a href="PanelWidget.html#setBackgroundColor(com.avrix.ui.NVGColor)">setBackgroundColor</a>, <a href="PanelWidget.html#setBorderColor(com.avrix.ui.NVGColor)">setBorderColor</a>, <a href="PanelWidget.html#setBorderRadius(int)">setBorderRadius</a>, <a href="PanelWidget.html#setBorderWidth(int)">setBorderWidth</a>, <a href="PanelWidget.html#setDraggable(boolean)">setDraggable</a>, <a href="PanelWidget.html#setDrawBorder(boolean)">setDrawBorder</a></code></div>
 <div class="inherited-list">
 <h3 id="methods-inherited-from-class-com.avrix.ui.widgets.Widget">Methods inherited from class&nbsp;com.avrix.ui.widgets.<a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></h3>
 <code><a href="Widget.html#addToScreen()">addToScreen</a>, <a href="Widget.html#bringToTop()">bringToTop</a>, <a href="Widget.html#drawArc(int,int,float,float,float,float,com.avrix.ui.NVGColor)">drawArc</a>, <a href="Widget.html#drawArc(int,int,float,float,float,com.avrix.ui.NVGColor)">drawArc</a>, <a href="Widget.html#drawCircle(int,int,float,com.avrix.ui.NVGColor)">drawCircle</a>, <a href="Widget.html#drawEllipse(int,int,int,int,com.avrix.ui.NVGColor)">drawEllipse</a>, <a href="Widget.html#drawImage(int,int,int,int,int,float)">drawImage</a>, <a href="Widget.html#drawImage(java.lang.String,int,int,int,int,float)">drawImage</a>, <a href="Widget.html#drawImage(java.lang.String,java.lang.String,int,int,int,int,float)">drawImage</a>, <a href="Widget.html#drawImage(java.nio.file.Path,int,int,int,int,float)">drawImage</a>, <a href="Widget.html#drawLine(int,int,int,int,float,com.avrix.ui.NVGColor)">drawLine</a>, <a href="Widget.html#drawRect(int,int,int,int,com.avrix.ui.NVGColor)">drawRect</a>, <a href="Widget.html#drawRectOutline(int,int,int,int,float,com.avrix.ui.NVGColor)">drawRectOutline</a>, <a href="Widget.html#drawRoundedRect(int,int,int,int,float,com.avrix.ui.NVGColor)">drawRoundedRect</a>, <a href="Widget.html#drawRoundedRectOutline(int,int,int,int,int,float,com.avrix.ui.NVGColor)">drawRoundedRectOutline</a>, <a href="Widget.html#drawText(java.lang.String,java.lang.String,int,int,int,com.avrix.ui.NVGColor)">drawText</a>, <a href="Widget.html#getChildren()">getChildren</a>, <a href="Widget.html#getHeight()">getHeight</a>, <a href="Widget.html#getMaxScrollX()">getMaxScrollX</a>, <a href="Widget.html#getMaxScrollY()">getMaxScrollY</a>, <a href="Widget.html#getParent()">getParent</a>, <a href="Widget.html#getScrollSpeed()">getScrollSpeed</a>, <a href="Widget.html#getScrollX()">getScrollX</a>, <a href="Widget.html#getScrollY()">getScrollY</a>, <a href="Widget.html#getWidth()">getWidth</a>, <a href="Widget.html#getX()">getX</a>, <a href="Widget.html#getY()">getY</a>, <a href="Widget.html#isAlwaysOnTop()">isAlwaysOnTop</a>, <a href="Widget.html#isHovered()">isHovered</a>, <a href="Widget.html#isPointOver(int,int)">isPointOver</a>, <a href="Widget.html#isScrollable()">isScrollable</a>, <a href="Widget.html#isScrollLock()">isScrollLock</a>, <a href="Widget.html#isVisible()">isVisible</a>, <a href="Widget.html#onKeyPress(int)">onKeyPress</a>, <a href="Widget.html#onKeyRelease(int)">onKeyRelease</a>, <a href="Widget.html#onKeyRepeat(int)">onKeyRepeat</a>, <a href="Widget.html#onLeftMouseDownOutside(int,int)">onLeftMouseDownOutside</a>, <a href="Widget.html#onMouseEnter(int,int)">onMouseEnter</a>, <a href="Widget.html#onMouseExit(int,int)">onMouseExit</a>, <a href="Widget.html#onMouseMove(int,int)">onMouseMove</a>, <a href="Widget.html#onMouseMoveOutside(int,int)">onMouseMoveOutside</a>, <a href="Widget.html#onMouseWheel(int,int,int)">onMouseWheel</a>, <a href="Widget.html#onMouseWheelOutside(int,int,int)">onMouseWheelOutside</a>, <a href="Widget.html#onRightMouseDown(int,int)">onRightMouseDown</a>, <a href="Widget.html#onRightMouseDownOutside(int,int)">onRightMouseDownOutside</a>, <a href="Widget.html#onRightMouseUp(int,int)">onRightMouseUp</a>, <a href="Widget.html#onRightMouseUpOutside(int,int)">onRightMouseUpOutside</a>, <a href="Widget.html#preRender()">preRender</a>, <a href="Widget.html#removeFromScreen()">removeFromScreen</a>, <a href="Widget.html#setAlwaysOnTop(boolean)">setAlwaysOnTop</a>, <a href="Widget.html#setHeight(int)">setHeight</a>, <a href="Widget.html#setMaxScrollX(int)">setMaxScrollX</a>, <a href="Widget.html#setMaxScrollY(int)">setMaxScrollY</a>, <a href="Widget.html#setScrollable(boolean)">setScrollable</a>, <a href="Widget.html#setScrollLock(boolean)">setScrollLock</a>, <a href="Widget.html#setScrollSpeed(int)">setScrollSpeed</a>, <a href="Widget.html#setScrollX(int)">setScrollX</a>, <a href="Widget.html#setScrollY(int)">setScrollY</a>, <a href="Widget.html#setVisible(boolean)">setVisible</a>, <a href="Widget.html#setWidth(int)">setWidth</a>, <a href="Widget.html#setX(int)">setX</a>, <a href="Widget.html#setY(int)">setY</a></code></div>
@@ -265,6 +368,20 @@ loadScripts(document, 'script');</script>
 <h3>fontName</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">fontName</span></div>
 <div class="block">The name of the font used for rendering text within the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="iconFontName">
+<h3>iconFontName</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">iconFontName</span></div>
+<div class="block">The name of the font used for rendering icon within the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="resizeIcon">
+<h3>resizeIcon</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">resizeIcon</span></div>
+<div class="block">Window resizing icon</div>
 </section>
 </li>
 <li>
@@ -293,6 +410,69 @@ loadScripts(document, 'script');</script>
 <h3>titleFontSize</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">titleFontSize</span></div>
 <div class="block">Font size for drawing the title.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="resizeIconSize">
+<h3>resizeIconSize</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">resizeIconSize</span></div>
+<div class="block">Window resize icon size</div>
+</section>
+</li>
+<li>
+<section class="detail" id="resizeIconOffset">
+<h3>resizeIconOffset</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">resizeIconOffset</span></div>
+<div class="block">Window resize icon offset</div>
+</section>
+</li>
+<li>
+<section class="detail" id="resizeOffsetX">
+<h3>resizeOffsetX</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">resizeOffsetX</span></div>
+<div class="block">The x-coordinate offset for resize the window</div>
+</section>
+</li>
+<li>
+<section class="detail" id="resizeOffsetY">
+<h3>resizeOffsetY</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">resizeOffsetY</span></div>
+<div class="block">The y-coordinate offset for resize the window</div>
+</section>
+</li>
+<li>
+<section class="detail" id="originalWidth">
+<h3>originalWidth</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">originalWidth</span></div>
+<div class="block">The original width of the widget before resizing.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="originalHeight">
+<h3>originalHeight</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">originalHeight</span></div>
+<div class="block">The original height of the widget before resizing.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="minSizeX">
+<h3>minSizeX</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">minSizeX</span></div>
+<div class="block">The minimum width of the widget in pixels.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="minSizeY">
+<h3>minSizeY</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">minSizeY</span></div>
+<div class="block">The minimum height of the widget in pixels.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="resizable">
+<h3>resizable</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">resizable</span></div>
+<div class="block">Indicates whether the widget can be resized.</div>
 </section>
 </li>
 </ul>
@@ -349,6 +529,72 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
+<section class="detail" id="getMinSizeX()">
+<h3>getMinSizeX</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getMinSizeX</span>()</div>
+<div class="block">Returns the minimum width of the widget.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the minimum width of the widget in pixels.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setMinSizeX(int)">
+<h3>setMinSizeX</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setMinSizeX</span><wbr><span class="parameters">(int&nbsp;minSizeX)</span></div>
+<div class="block">Sets the minimum width of the widget.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>minSizeX</code> - the minimum width of the widget in pixels.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="getMinSizeY()">
+<h3>getMinSizeY</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">getMinSizeY</span>()</div>
+<div class="block">Returns the minimum height of the widget.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd>the minimum height of the widget in pixels.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setMinSizeY(int)">
+<h3>setMinSizeY</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setMinSizeY</span><wbr><span class="parameters">(int&nbsp;minSizeY)</span></div>
+<div class="block">Sets the minimum height of the widget.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>minSizeY</code> - the minimum height of the widget in pixels.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="isResizable()">
+<h3>isResizable</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isResizable</span>()</div>
+<div class="block">Checks if the widget is resizable.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd><code>true</code> if the widget is resizable, <code>false</code> otherwise.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setResizable(boolean)">
+<h3>setResizable</h3>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setResizable</span><wbr><span class="parameters">(boolean&nbsp;resizable)</span></div>
+<div class="block">Sets the ability to resize the widget.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>resizable</code> - <code>true</code> if the widget is resizable, <code>false</code> otherwise.</dd>
+</dl>
+</section>
+</li>
+<li>
 <section class="detail" id="addChild(com.avrix.ui.widgets.Widget)">
 <h3>addChild</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">addChild</span><wbr><span class="parameters">(<a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</span></div>
@@ -377,7 +623,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="setFont(java.lang.String)">
 <h3>setFont</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setFont</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fontName)</span></div>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setFont</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fontName)</span></div>
 <div class="block">Sets the font name for the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -388,7 +634,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="setTitle(java.lang.String)">
 <h3>setTitle</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setTitle</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;title)</span></div>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setTitle</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;title)</span></div>
 <div class="block">Sets the title of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s header.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -399,7 +645,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getFontName()">
 <h3>getFontName</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getFontName</span>()</div>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getFontName</span>()</div>
 <div class="block">Gets the current font name used by the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
 <dl class="notes">
 <dt>Returns:</dt>
@@ -410,7 +656,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="getTitle()">
 <h3>getTitle</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getTitle</span>()</div>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">getTitle</span>()</div>
 <div class="block">Gets the current title of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s header.</div>
 <dl class="notes">
 <dt>Returns:</dt>
@@ -421,7 +667,7 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="setHeaderColor(com.avrix.ui.NVGColor)">
 <h3>setHeaderColor</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setHeaderColor</span><wbr><span class="parameters">(<a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;headerColor)</span></div>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setHeaderColor</span><wbr><span class="parameters">(<a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;headerColor)</span></div>
 <div class="block">Sets the color of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s header.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -432,11 +678,56 @@ loadScripts(document, 'script');</script>
 <li>
 <section class="detail" id="setHeaderHeight(int)">
 <h3>setHeaderHeight</h3>
-<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setHeaderHeight</span><wbr><span class="parameters">(int&nbsp;headerHeight)</span></div>
+<div class="member-signature"><span class="modifiers">public final</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setHeaderHeight</span><wbr><span class="parameters">(int&nbsp;headerHeight)</span></div>
 <div class="block">Sets the height of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s header.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>headerHeight</code> - the height of the header in pixels</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onLeftMouseDown(int,int)">
+<h3>onLeftMouseDown</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseDown</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
+<div class="block">Called when the left mouse button is pressed down over the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="PanelWidget.html#onLeftMouseDown(int,int)">onLeftMouseDown</a></code>&nbsp;in class&nbsp;<code><a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>x</code> - relative x-coordinate of the mouse position</dd>
+<dd><code>y</code> - relative y-coordinate of the mouse position</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onLeftMouseUpOutside(int,int)">
+<h3>onLeftMouseUpOutside</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseUpOutside</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
+<div class="block">Handles the left mouse button up event outside any visible <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="PanelWidget.html#onLeftMouseUpOutside(int,int)">onLeftMouseUpOutside</a></code>&nbsp;in class&nbsp;<code><a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>x</code> - absolute x-coordinate of the mouse position</dd>
+<dd><code>y</code> - absolute y-coordinate of the mouse position</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="onLeftMouseUp(int,int)">
+<h3>onLeftMouseUp</h3>
+<div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">onLeftMouseUp</span><wbr><span class="parameters">(int&nbsp;x,
+ int&nbsp;y)</span></div>
+<div class="block">Called when the left mouse button is released over the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+<dl class="notes">
+<dt>Overrides:</dt>
+<dd><code><a href="PanelWidget.html#onLeftMouseUp(int,int)">onLeftMouseUp</a></code>&nbsp;in class&nbsp;<code><a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></code></dd>
+<dt>Parameters:</dt>
+<dd><code>x</code> - relative x-coordinate of the mouse position</dd>
+<dd><code>y</code> - relative y-coordinate of the mouse position</dd>
 </dl>
 </section>
 </li>

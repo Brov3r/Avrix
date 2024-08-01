@@ -334,24 +334,15 @@ public abstract class Widget {
      * This method ensures the scroll limits are correctly set even if widgets overlap or are larger than the parent widget.
      */
     protected void updateMaxScrollOffset() {
-        int minX = Integer.MAX_VALUE;
-        int minY = Integer.MAX_VALUE;
-        int maxX = Integer.MIN_VALUE;
-        int maxY = Integer.MIN_VALUE;
+        int maxX = 0, maxY = 0;
 
         // Calculate the bounding box of all children
         for (Widget child : getChildren()) {
-            int childMinX = child.getX();
-            int childMinY = child.getY();
+            if (child.isScrollLock()) continue;
+
             int childMaxX = child.getX() + child.getWidth();
             int childMaxY = child.getY() + child.getHeight();
 
-            if (childMinX < minX) {
-                minX = childMinX;
-            }
-            if (childMinY < minY) {
-                minY = childMinY;
-            }
             if (childMaxX > maxX) {
                 maxX = childMaxX;
             }
@@ -361,12 +352,15 @@ public abstract class Widget {
         }
 
         // Calculate the maximum scroll offsets based on the parent's dimensions
-        int newMaxScrollX = Math.max(0, maxX - getWidth());
-        int newMaxScrollY = Math.max(0, maxY - getHeight());
+        int newMaxScrollX = Math.max(0, maxX - width);
+        int newMaxScrollY = Math.max(0, maxY - height);
 
         // Update the class fields with the calculated values
         maxScrollX = newMaxScrollX;
         maxScrollY = newMaxScrollY;
+        
+        if (maxScrollX == 0) scrollX = 0;
+        if (maxScrollY == 0) scrollY = 0;
     }
 
     /**
