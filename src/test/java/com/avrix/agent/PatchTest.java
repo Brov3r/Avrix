@@ -21,7 +21,7 @@ public class PatchTest {
     @Test
     public void testMethodPatchedToReturnTrue() {
         // Load the Java agent from the specified path
-        AgentLoader.loadAgent(System.getenv("AGENT_JAR_PATH"));
+        AgentLoader.loadAgent();
 
         // Create a new patcher and define the patches to be applied
         ClassModifier patch = new ClassModifier.ClassModifierBuilder("com.avrix.agent.ExampleClass")

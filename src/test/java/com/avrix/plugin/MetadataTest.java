@@ -291,7 +291,7 @@ public class MetadataTest {
                     .build();
         });
 
-        assertTrue(exception.getMessage().contains("[!] The required field 'license' is not specified in the metadata!"));
+        assertTrue(exception.getMessage().contains("[!] The required field 'license' is not specified in the metadata."));
     }
 
     /**

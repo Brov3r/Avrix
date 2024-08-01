@@ -88,6 +88,8 @@ dependencies {
  * Project testing
  */
 test {
+    dependsOn shadowJar
+    classpath = project.sourceSets.test.output + configurations.testRuntimeClasspath + files("${buildPath}/${rootProject.name}-Core-${version}.jar")
     jvmArgs '-Djdk.attach.allowAttachSelf=true'
     useJUnitPlatform()
 }
