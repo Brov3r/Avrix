@@ -12,6 +12,7 @@
     <img alt="GitHub repo size" src="https://img.shields.io/github/repo-size/Brov3r/Avrix">
     <img alt="GitHub Release" src="https://img.shields.io/github/v/release/brov3r/Avrix">
     <img alt="CodeQL" src="https://github.com/Brov3r/Avrix/actions/workflows/codeql.yml/badge.svg">
+    <img alt="Java CI with Gradle" src="https://github.com/Brov3r/Avrix/actions/workflows/gradle.yml/badge.svg">
 </p>
 
 **Avrix** - a fundamentally new wrapper for running the Project Zomboid server and client with plugins (modifications).
