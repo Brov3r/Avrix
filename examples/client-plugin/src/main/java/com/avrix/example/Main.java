@@ -5,6 +5,7 @@ import com.avrix.plugin.Metadata;
 import com.avrix.plugin.Plugin;
 import com.avrix.ui.NVGColor;
 import com.avrix.ui.widgets.ButtonWidget;
+import com.avrix.ui.widgets.CheckboxWidget;
 import com.avrix.ui.widgets.InputTextWidget;
 import com.avrix.ui.widgets.WindowWidget;
 
@@ -64,6 +65,11 @@ public class Main extends Plugin {
         input2.setDrawBorder(false);
         input2.setPlaceholder("Placeholder text...");
         root.addChild(input2);
+
+        CheckboxWidget cb = new CheckboxWidget("Example checkbox", 10, 200, 150, 16, (checked) -> {
+            System.out.println("CHECK - " + checked);
+        });
+        root.addChild(cb);
 
         root.addToScreen();
     }

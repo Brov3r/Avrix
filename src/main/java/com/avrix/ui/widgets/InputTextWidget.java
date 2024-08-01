@@ -6,6 +6,8 @@ import org.joml.Vector2f;
 import org.lwjglx.input.Keyboard;
 import zombie.core.Clipboard;
 
+import java.util.function.Consumer;
+
 /**
  * A widget for input text that supports text editing, selection, and clipboard operations.
  */
@@ -43,7 +45,7 @@ public class InputTextWidget extends PanelWidget {
     /**
      * Action to be executed when the text changes.
      */
-    protected Runnable onTextChangeAction;
+    protected Consumer<String> onTextChangeAction;
 
     /**
      * The maximum width of the text area.
@@ -145,7 +147,7 @@ public class InputTextWidget extends PanelWidget {
      *
      * @param onTextChangeAction The action to be executed on text change.
      */
-    public final void setOnTextChangeAction(Runnable onTextChangeAction) {
+    public final void setOnTextChangeAction(Consumer<String> onTextChangeAction) {
         this.onTextChangeAction = onTextChangeAction;
     }
 
@@ -522,7 +524,7 @@ public class InputTextWidget extends PanelWidget {
     private void onTextChange() {
         if (onTextChangeAction == null) return;
 
-        onTextChangeAction.run();
+        onTextChangeAction.accept(value);
     }
 
     /**

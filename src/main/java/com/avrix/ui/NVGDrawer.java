@@ -31,6 +31,8 @@ public class NVGDrawer {
      * @param height the height of the scissor region.
      */
     public static void scissor(int x, int y, int width, int height) {
+        if (WidgetManager.getContext() == null) return;
+        
         nvgScissor(getContextID(), x, y, width, height);
     }
 
@@ -46,6 +48,8 @@ public class NVGDrawer {
      * @param height the height of the intersecting scissor region.
      */
     public static void intersectScissor(int x, int y, int width, int height) {
+        if (WidgetManager.getContext() == null) return;
+
         nvgIntersectScissor(getContextID(), x, y, width, height);
     }
 
@@ -53,6 +57,8 @@ public class NVGDrawer {
      * Resets and disables scissoring.
      */
     public static void resetScissor() {
+        if (WidgetManager.getContext() == null) return;
+
         nvgResetScissor(getContextID());
     }
 
@@ -60,6 +66,8 @@ public class NVGDrawer {
      * Pushes and saves the current render state into a state stack. A matching {@link #restoreRenderState()} must be used to restore the state.
      */
     public static void saveRenderState() {
+        if (WidgetManager.getContext() == null) return;
+
         nvgSave(getContextID());
     }
 
@@ -67,6 +75,8 @@ public class NVGDrawer {
      * Pops and restores current render state.
      */
     public static void restoreRenderState() {
+        if (WidgetManager.getContext() == null) return;
+
         nvgRestore(getContextID());
     }
 
@@ -74,6 +84,8 @@ public class NVGDrawer {
      * Resets current render state to default values. Does not affect the render state stack.
      */
     public static void resetRenderState() {
+        if (WidgetManager.getContext() == null) return;
+
         nvgReset(getContextID());
     }
 
@@ -88,6 +100,8 @@ public class NVGDrawer {
      * @param color     the color of the outline
      */
     public static void drawRectOutline(int x, int y, int width, int height, float lineWidth, NVGColor color) {
+        if (WidgetManager.getContext() == null) return;
+
         nvgBeginPath(getContextID());
         nvgRect(getContextID(), x, y, width, height);
         color.tallocNVG(nvgColor -> nvgStrokeColor(getContextID(), nvgColor));
@@ -107,6 +121,8 @@ public class NVGDrawer {
      * @param color     the color of the outline
      */
     public static void drawRoundedRectOutline(int x, int y, int width, int height, int radius, float lineWidth, NVGColor color) {
+        if (WidgetManager.getContext() == null) return;
+
         nvgBeginPath(getContextID());
         nvgRoundedRect(getContextID(), x, y, width, height, radius);
         color.tallocNVG(nvgColor -> nvgStrokeColor(getContextID(), nvgColor));
@@ -124,6 +140,8 @@ public class NVGDrawer {
      * @param color  the color to fill the rectangle with
      */
     public static void drawRect(int x, int y, int width, int height, NVGColor color) {
+        if (WidgetManager.getContext() == null) return;
+
         nvgBeginPath(getContextID());
         nvgRect(getContextID(), x, y, width, height);
         color.tallocNVG(nvgColor -> nvgFillColor(getContextID(), nvgColor));
@@ -141,6 +159,8 @@ public class NVGDrawer {
      * @param color    the color of the text
      */
     public static void drawText(String text, String fontName, int x, int y, int fontSize, NVGColor color) {
+        if (WidgetManager.getContext() == null) return;
+
         Vector2f textSize = getTextSize(text, fontName, fontSize);
 
         int horizontalOffset = 1;
@@ -163,6 +183,8 @@ public class NVGDrawer {
      * @return an array containing two elements: the width (index 0) and the height (index 1) of the text
      */
     public static Vector2f getTextSize(String text, String fontName, int fontSize) {
+        if (WidgetManager.getContext() == null) return new Vector2f(0, 0);
+
         nvgFontFace(getContextID(), fontName);
         nvgFontSize(getContextID(), fontSize);
 
@@ -187,6 +209,8 @@ public class NVGDrawer {
      * @param color  the color to fill the rectangle with
      */
     public static void drawRoundedRect(int x, int y, int width, int height, float radius, NVGColor color) {
+        if (WidgetManager.getContext() == null) return;
+
         nvgBeginPath(getContextID());
         nvgRoundedRect(getContextID(), x, y, width, height, radius);
         color.tallocNVG(nvgColor -> nvgFillColor(getContextID(), nvgColor));
@@ -203,6 +227,8 @@ public class NVGDrawer {
      * @param color  the color of the ellipse
      */
     public static void drawEllipse(int x, int y, int width, int height, NVGColor color) {
+        if (WidgetManager.getContext() == null) return;
+
         nvgBeginPath(getContextID());
         nvgEllipse(getContextID(), x, y, (float) width / 2, (float) height / 2);
         color.tallocNVG(nvgColor -> nvgFillColor(getContextID(), nvgColor));
@@ -220,6 +246,8 @@ public class NVGDrawer {
      * @param color the color of the line
      */
     public static void drawLine(int x1, int y1, int x2, int y2, float width, NVGColor color) {
+        if (WidgetManager.getContext() == null) return;
+
         nvgBeginPath(getContextID());
         nvgMoveTo(getContextID(), x1, y1);
         nvgLineTo(getContextID(), x2, y2);
@@ -237,6 +265,8 @@ public class NVGDrawer {
      * @param color  the color of the circle
      */
     public static void drawCircle(int x, int y, float radius, NVGColor color) {
+        if (WidgetManager.getContext() == null) return;
+
         nvgBeginPath(getContextID());
         nvgCircle(getContextID(), x, y, radius);
         color.tallocNVG(nvgColor -> nvgFillColor(getContextID(), nvgColor));
@@ -254,6 +284,8 @@ public class NVGDrawer {
      * @param color      the color of the arc segment
      */
     public static void drawArc(int x, int y, float radius, float startAngle, float endAngle, NVGColor color) {
+        if (WidgetManager.getContext() == null) return;
+
         nvgBeginPath(getContextID());
         nvgArc(getContextID(), x, y, radius, startAngle, endAngle, NVG_CW);
         nvgLineTo(getContextID(), x, y);
@@ -274,6 +306,8 @@ public class NVGDrawer {
      * @param color      the color of the arc segment
      */
     public static void drawArc(int x, int y, float radius, float thickness, float startAngle, float endAngle, NVGColor color) {
+        if (WidgetManager.getContext() == null) return;
+
         nvgBeginPath(getContextID());
         nvgArc(getContextID(), x, y, radius, startAngle, endAngle, NVG_CW);
         nvgLineTo(getContextID(), x + (float) Math.cos(endAngle) * radius, y + (float) Math.sin(endAngle) * radius);
@@ -295,6 +329,8 @@ public class NVGDrawer {
      * @param opacity image opacity (from 0 to 1)
      */
     public static void drawImage(int imageId, int x, int y, int width, int height, float opacity) {
+        if (WidgetManager.getContext() == null) return;
+
         if (imageId == -1) {
             drawRect(x, y, width, height, NVGColor.WHITE);
             return;

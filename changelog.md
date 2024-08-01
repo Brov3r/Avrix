@@ -9,7 +9,7 @@
 - Added a GUI system based on `NanoVG`
 - Added `onWidgetManagerInitialized`, `OnPreWidgetRender`, `OnPostWidgetRender` events
 - Added default fonts: `Arial-Regular`, `Roboto-Regular`, `Montserrat-Regular`, `FontAwesome`
-- Added basic widgets: `Panel`, `Button`, `Scrollbar`, `ScrollPanel`, `Window`, `Label`, `InputText`
+- Added basic widgets: `Panel`, `Button`, `Scrollbar`, `ScrollPanel`, `Window`, `Label`, `InputText`, `Checkbox`
 - Added `ResourceManager` and `ImageLoader`
 - Event renamed: `onPostTickRenderThread` -> `onTickRenderThread`
 
