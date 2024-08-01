@@ -43,8 +43,7 @@ public enum Environment {
      * Converts a string to the corresponding {@link Environment} enum value.
      *
      * @param text the string to convert
-     * @return the corresponding {@link Environment} enum value
-     * @throws IllegalArgumentException if the string does not match any enum value
+     * @return the corresponding {@link Environment} enum value. If the value could not be determined, it returns {@link Environment#BOTH}
      */
     public static Environment fromString(String text) {
         for (Environment env : Environment.values()) {
@@ -52,6 +51,6 @@ public enum Environment {
                 return env;
             }
         }
-        throw new IllegalArgumentException("[!] Could not determine environment from value '" + text + "'!");
+        return Environment.BOTH;
     }
 }

@@ -52,27 +52,24 @@ public final class Metadata {
      * @return if creation is successful - {@link Metadata} object, if an error occurs - null
      */
     public static Metadata createFromJar(File jarFile, String metadataFileName) {
-        try {
-            YamlFile yamlFile = new YamlFile(jarFile.getAbsolutePath(), metadataFileName);
+        YamlFile yamlFile = new YamlFile(jarFile.getAbsolutePath(), metadataFileName);
 
-            return new Metadata.MetadataBuilder()
-                    .name(yamlFile.getString("name"))
-                    .id(yamlFile.getString("id"))
-                    .description(yamlFile.getString("description"))
-                    .author(yamlFile.getString("author"))
-                    .version(yamlFile.getString("version"))
-                    .license(yamlFile.getString("license"))
-                    .contacts(yamlFile.getString("contacts"))
-                    .environment(yamlFile.getString("environment"))
-                    .entryPointsList(yamlFile.getStringList("entrypoints"))
-                    .patchList(yamlFile.getStringList("patches"))
-                    .dependencies(yamlFile.getStringMap("dependencies"))
-                    .pluginFile(jarFile)
-                    .build();
-        } catch (Exception e) {
-            System.out.printf("[!] Failed to generate metadata '%s' due to: %s%n", jarFile.getName(), e.getMessage().replace("[!] ", ""));
-            return null;
-        }
+        if (yamlFile.isEmpty()) return null;
+
+        return new Metadata.MetadataBuilder()
+                .name(yamlFile.getString("name"))
+                .id(yamlFile.getString("id"))
+                .description(yamlFile.getString("description"))
+                .author(yamlFile.getString("author"))
+                .version(yamlFile.getString("version"))
+                .license(yamlFile.getString("license"))
+                .contacts(yamlFile.getString("contacts"))
+                .environment(yamlFile.getString("environment"))
+                .entryPointsList(yamlFile.getStringList("entrypoints"))
+                .patchList(yamlFile.getStringList("patches"))
+                .dependencies(yamlFile.getStringMap("dependencies"))
+                .pluginFile(jarFile)
+                .build();
     }
 
     /**

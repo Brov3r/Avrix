@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -29,10 +30,16 @@ public class YamlFile {
      *
      * @param jarFilePath      the path to the JAR file
      * @param internalFilePath the internal path to the YAML file within the JAR
-     * @throws IOException if an I/O error occurs
      */
-    public YamlFile(String jarFilePath, String internalFilePath) throws IOException {
-        URL jarUrl = new URL("jar:file:" + jarFilePath + "!/" + internalFilePath);
+    public YamlFile(String jarFilePath, String internalFilePath) {
+        URL jarUrl;
+        try {
+            jarUrl = new URL("jar:file:" + jarFilePath + "!/" + internalFilePath);
+        } catch (MalformedURLException e) {
+            System.out.println("[!] Invalid jar file path or internal file path: " + e.getMessage());
+            return;
+        }
+
         try (InputStream inputStream = jarUrl.openStream()) {
             Yaml yaml = new Yaml();
             Map<String, Object> loadData = yaml.load(inputStream);
@@ -42,7 +49,7 @@ public class YamlFile {
             this.filePath = Paths.get(jarFilePath).resolve(internalFilePath);
             this.fileName = internalFilePath;
         } catch (IOException e) {
-            System.out.printf("[!] File '%s' not found inside JAR file '%s'!%n", internalFilePath, jarFilePath);
+            System.out.println("[!] Error reading the YAML file from the JAR: " + e.getMessage());
         }
     }
 
