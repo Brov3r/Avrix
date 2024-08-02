@@ -2,6 +2,7 @@
 
 - Launch scripts updated
 - Fixed the custom command manager (the @CommandChatReturn annotation was removed as unnecessary)
+- Fixed NVG context closing
 - Minor bugs fixed
 - Added client side plugin example
 - Added `.exe` executable files for Windows, allowing launch from Steam
