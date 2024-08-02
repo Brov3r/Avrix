@@ -100,8 +100,6 @@ public class WidgetManager {
         int y = Mouse.getYA();
 
         for (Widget widget : getWidgetList()) {
-            if (widget == null) continue;
-
             if (widget.isPointOver(x, y)) {
                 return true;
             }

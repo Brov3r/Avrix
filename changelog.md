@@ -10,7 +10,7 @@
 - Added `onWidgetManagerInitialized`, `OnPreWidgetRender`, `OnPostWidgetRender` events
 - Added default fonts: `Arial-Regular`, `Roboto-Regular`, `Montserrat-Regular`, `FontAwesome`
 - Added basic
-  widgets: `Panel`, `Button`, `Scrollbar`, `ScrollPanel`, `Window`, `Label`, `InputText`, `Checkbox`, `Slider`
+  widgets: `Panel`, `Button`, `Scrollbar`, `ScrollPanel`, `Window`, `Label`, `InputText`, `Checkbox`, `Slider`, `Popup`, `Modal`
 - Added `ResourceManager` and `ImageLoader`
 - Event renamed: `onPostTickRenderThread` -> `onTickRenderThread`
 

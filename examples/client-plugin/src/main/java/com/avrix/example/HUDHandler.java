@@ -4,6 +4,7 @@ import com.avrix.events.OnPreWidgetDrawEvent;
 import com.avrix.ui.NVGColor;
 import com.avrix.ui.NVGContext;
 import com.avrix.ui.NVGDrawer;
+import com.avrix.utils.WindowUtils;
 
 import java.io.File;
 
@@ -35,6 +36,7 @@ public class HUDHandler extends OnPreWidgetDrawEvent {
     @Override
     public void handleEvent(NVGContext context) {
         NVGDrawer.drawText("Hello client plugin!", "Endeavourforever", 10, 10, 32, NVGColor.ORANGE);
+        NVGDrawer.drawText("Another hello", "Montserrat-Regular", 10, WindowUtils.getWindowHeight() - 24, 14, NVGColor.ORANGE);
 
         long currentTime = System.currentTimeMillis();
         float deltaTime = (currentTime - lastTime) / 1000.0f;
