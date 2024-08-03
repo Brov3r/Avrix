@@ -409,6 +409,10 @@ public class WindowWidget extends ScrollPanelWidget {
             int originalX = child.getX();
             int originalY = child.getY();
 
+            // Set the child's absolute position
+            child.setXA(absoluteX);
+            child.setYA(absoluteY);
+            
             // Set the child's position to the absolute position
             child.setX(absoluteX);
             child.setY(absoluteY);

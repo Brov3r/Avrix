@@ -158,6 +158,10 @@ public class ScrollPanelWidget extends PanelWidget {
             int originalX = child.getX();
             int originalY = child.getY();
 
+            // Set the child's absolute position
+            child.setXA(absoluteX);
+            child.setYA(absoluteY);
+
             // Set the child's position to the absolute position
             child.setX(absoluteX);
             child.setY(absoluteY);
@@ -194,6 +198,30 @@ public class ScrollPanelWidget extends PanelWidget {
 
         originalMaxScrollY = maxScrollY;
         originalMaxScrollX = maxScrollX;
+    }
+
+    /**
+     * Sets the maximum horizontal scroll offset of the widget.
+     * This value determines the limit for horizontal scrolling based on the content width.
+     *
+     * @param maxScrollX the new maximum horizontal scroll offset
+     */
+    @Override
+    public void setMaxScrollX(int maxScrollX) {
+        super.setMaxScrollX(maxScrollX);
+        originalMaxScrollX = maxScrollX;
+    }
+
+    /**
+     * Sets the maximum vertical scroll offset of the widget.
+     * This value determines the limit for vertical scrolling based on the content height.
+     *
+     * @param maxScrollY the new maximum vertical scroll offset
+     */
+    @Override
+    public void setMaxScrollY(int maxScrollY) {
+        super.setMaxScrollY(maxScrollY);
+        originalMaxScrollY = maxScrollY;
     }
 
     /**

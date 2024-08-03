@@ -47,7 +47,7 @@ public class ButtonWidget extends PanelWidget {
     /**
      * Indicates whether the left mouse button is currently pressed down on the button.
      */
-    private boolean LMBDown = false;
+    protected boolean LMBDown = false;
 
     /**
      * Constructs a new {@link ButtonWidget} with the specified text, position, size, border radius,

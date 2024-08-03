@@ -95,6 +95,14 @@ public class Main extends Plugin {
         });
         root.addChild(sw);
 
+        ComboBoxWidget cbw = new ComboBoxWidget(10, 310, 200, 32);
+        cbw.addValue("Example text value looooooooong");
+        cbw.addValue("Hello world!");
+        cbw.addValue("Hi");
+        cbw.addValue("123321");
+        cbw.addValue("####");
+        root.addChild(cbw);
+
         root.addToScreen();
     }
 }
