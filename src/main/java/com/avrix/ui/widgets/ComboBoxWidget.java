@@ -209,6 +209,258 @@ public class ComboBoxWidget extends PanelWidget {
     }
 
     /**
+     * Gets the name of the icon font.
+     *
+     * @return the name of the icon font
+     */
+    public String getIconFontName() {
+        return iconFontName;
+    }
+
+    /**
+     * Sets the name of the icon font.
+     *
+     * @param iconFontName the new name of the icon font
+     */
+    public void setIconFontName(String iconFontName) {
+        this.iconFontName = iconFontName;
+    }
+
+    /**
+     * Gets the name of the font.
+     *
+     * @return the name of the font
+     */
+    public String getFontName() {
+        return fontName;
+    }
+
+    /**
+     * Sets the name of the font.
+     *
+     * @param fontName the new name of the font
+     */
+    public void setFontName(String fontName) {
+        this.fontName = fontName;
+    }
+
+    /**
+     * Gets the drop icon.
+     *
+     * @return the drop icon
+     */
+    public String getDropIcon() {
+        return dropIcon;
+    }
+
+    /**
+     * Sets the drop icon.
+     *
+     * @param dropIcon the new drop icon
+     */
+    public void setDropIcon(String dropIcon) {
+        this.dropIcon = dropIcon;
+    }
+
+    /**
+     * Gets the width of the drop button.
+     *
+     * @return the width of the drop button
+     */
+    public int getDropButtonWidth() {
+        return dropButtonWidth;
+    }
+
+    /**
+     * Sets the width of the drop button.
+     *
+     * @param dropButtonWidth the new width of the drop button
+     */
+    public void setDropButtonWidth(int dropButtonWidth) {
+        this.dropButtonWidth = dropButtonWidth;
+    }
+
+    /**
+     * Gets the value index.
+     *
+     * @return the value index
+     */
+    public int getValueIndex() {
+        return valueIndex;
+    }
+
+    /**
+     * Sets the value index.
+     *
+     * @param valueIndex the new value index
+     */
+    public void setValueIndex(int valueIndex) {
+        this.valueIndex = valueIndex;
+    }
+
+    /**
+     * Gets the popup height.
+     *
+     * @return the popup height
+     */
+    public int getPopupHeight() {
+        return popupHeight;
+    }
+
+    /**
+     * Sets the popup height.
+     *
+     * @param popupHeight the new popup height
+     */
+    public void setPopupHeight(int popupHeight) {
+        this.popupHeight = popupHeight;
+    }
+
+    /**
+     * Gets the popup button height.
+     *
+     * @return the popup button height
+     */
+    public int getPopupButtonHeight() {
+        return popupButtonHeight;
+    }
+
+    /**
+     * Sets the popup button height.
+     *
+     * @param popupButtonHeight the new popup button height
+     */
+    public void setPopupButtonHeight(int popupButtonHeight) {
+        this.popupButtonHeight = popupButtonHeight;
+    }
+
+    /**
+     * Gets the font size.
+     *
+     * @return the font size
+     */
+    public int getFontSize() {
+        return fontSize;
+    }
+
+    /**
+     * Sets the font size.
+     *
+     * @param fontSize the new font size
+     */
+    public void setFontSize(int fontSize) {
+        this.fontSize = fontSize;
+    }
+
+    /**
+     * Gets the value list.
+     *
+     * @return the value list
+     */
+    public List<String> getValueList() {
+        return valueList;
+    }
+
+    /**
+     * Sets the value list.
+     *
+     * @param valueList the new value list
+     */
+    public void setValueList(List<String> valueList) {
+        this.valueList = valueList;
+    }
+
+    /**
+     * Gets the icon color.
+     *
+     * @return the icon color
+     */
+    public NVGColor getIconColor() {
+        return iconColor;
+    }
+
+    /**
+     * Sets the icon color.
+     *
+     * @param iconColor the new icon color
+     */
+    public void setIconColor(NVGColor iconColor) {
+        this.iconColor = iconColor;
+    }
+
+    /**
+     * Gets the text color.
+     *
+     * @return the text color
+     */
+    public NVGColor getTextColor() {
+        return textColor;
+    }
+
+    /**
+     * Sets the text color.
+     *
+     * @param textColor the new text color
+     */
+    public void setTextColor(NVGColor textColor) {
+        this.textColor = textColor;
+    }
+
+    /**
+     * Gets the accent color.
+     *
+     * @return the accent color
+     */
+    public NVGColor getAccentColor() {
+        return accentColor;
+    }
+
+    /**
+     * Sets the accent color.
+     *
+     * @param accentColor the new accent color
+     */
+    public void setAccentColor(NVGColor accentColor) {
+        this.accentColor = accentColor;
+    }
+
+    /**
+     * Gets the drop icon size.
+     *
+     * @return the icon size
+     */
+    public int getIconSize() {
+        return iconSize;
+    }
+
+    /**
+     * Sets the drop icon size.
+     *
+     * @param iconSize the new icon size
+     */
+    public void setIconSize(int iconSize) {
+        this.iconSize = iconSize;
+    }
+
+    /**
+     * Gets the border offset.
+     *
+     * @return the border offset
+     */
+    public int getBorderOffset() {
+        return borderOffset;
+    }
+
+    /**
+     * Sets the border offset.
+     *
+     * @param borderOffset the new border offset
+     */
+    public void setBorderOffset(int borderOffset) {
+        this.borderOffset = borderOffset;
+    }
+    
+    /**
      * Renders the {@link Widget}
      */
     @Override
