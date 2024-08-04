@@ -298,6 +298,15 @@ public class WindowWidget extends ScrollPanelWidget {
     }
 
     /**
+     * Returns the height of the {@link Widget}'s header
+     *
+     * @return header height in pixels
+     */
+    public final int getHeaderHeight() {
+        return headerHeight;
+    }
+
+    /**
      * Called when the left mouse button is pressed down over the {@link Widget}.
      *
      * @param x relative x-coordinate of the mouse position
@@ -412,7 +421,7 @@ public class WindowWidget extends ScrollPanelWidget {
             // Set the child's absolute position
             child.setXA(absoluteX);
             child.setYA(absoluteY);
-            
+
             // Set the child's position to the absolute position
             child.setX(absoluteX);
             child.setY(absoluteY);

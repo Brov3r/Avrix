@@ -112,8 +112,11 @@ public class ComboBoxWidget extends PanelWidget {
     public void onLeftMouseUp(int x, int y) {
         super.onLeftMouseUp(x, y);
 
+        if (pressed) {
+            openPopup();
+        }
+
         pressed = false;
-        openPopup();
     }
 
     /**
@@ -459,7 +462,7 @@ public class ComboBoxWidget extends PanelWidget {
     public void setBorderOffset(int borderOffset) {
         this.borderOffset = borderOffset;
     }
-    
+
     /**
      * Renders the {@link Widget}
      */

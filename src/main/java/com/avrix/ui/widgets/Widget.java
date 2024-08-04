@@ -388,6 +388,8 @@ public abstract class Widget {
     public void onMouseMove(int x, int y) {
         boolean topWidgetHovered = false;
 
+        hovered = true;
+
         List<Widget> childrenCopy = getChildren();
         for (int i = childrenCopy.size() - 1; i >= 0; i--) {
             Widget child = childrenCopy.get(i);
@@ -591,8 +593,12 @@ public abstract class Widget {
      * @param y absolute y-coordinate of the mouse position
      */
     public void onMouseMoveOutside(int x, int y) {
+        hovered = false;
+
         for (Widget child : getChildren()) {
             child.onMouseMoveOutside(x, y);
+
+            child.hovered = false;
         }
     }
 

@@ -11,8 +11,6 @@ import zombie.input.Mouse;
  * Main entry point of the example plugin
  */
 public class Main extends Plugin {
-    public static int buttonCount = 1;
-
     /**
      * Constructs a new {@link Plugin} with the specified metadata.
      * Metadata is transferred when the plugin is loaded into the game context.
@@ -37,10 +35,16 @@ public class Main extends Plugin {
 
         System.out.println("[#] Config: " + getDefaultConfig().getString("test"));
 
-        WindowWidget root = new WindowWidget("Hello window", 10, 10, 300, 500);
+        WindowWidget root = new WindowWidget("Hello window", 10, 50, 300, 400);
         root.setResizable(true);
         root.setBorderRadius(8);
         root.setDraggable(true);
+
+        VerticalBoxWidget vb = new VerticalBoxWidget(10, root.getHeaderHeight() + 10, 0, 0, true);
+        root.addChild(vb);
+
+        HorizontalBoxWidget hbForButtons = new HorizontalBoxWidget(0, 0, 0, 0, true);
+        vb.addChild(hbForButtons);
 
         PopupWidget pw = new PopupWidget(0, 0, 100, 100);
         for (int i = 0; i < 10; i++) {
@@ -53,55 +57,53 @@ public class Main extends Plugin {
         ModalWidget mw = new ModalWidget(300, 100);
         mw.getContentPanel().addChild(new ButtonWidget("Close", 10, 10, 100, 30, 0, NVGColor.BABY_BLUE, mw::close));
 
-        ButtonWidget btn = new ButtonWidget("Add btn", 10, 40, 100, 32, 0, NVGColor.BABY_BLUE, () -> {
-            ButtonWidget btn2 = new ButtonWidget("Click - " + buttonCount, 120 + 115 * buttonCount, 40, 100, 32, 0, NVGColor.BABY_BLUE, () -> {
+        ButtonWidget btn = new ButtonWidget("Add btn", 0, 0, 100, 32, 0, NVGColor.BABY_BLUE, () -> {
+            ButtonWidget btn2 = new ButtonWidget("Click", 0, 0, 100, 32, 0, NVGColor.BABY_BLUE, () -> {
                 pw.setX(Mouse.getXA());
                 pw.setY(Mouse.getYA());
                 pw.show();
             });
             btn2.setDrawBorder(false);
-            root.addChild(btn2);
-
-            buttonCount++;
+            hbForButtons.addChild(btn2);
         });
 
-        ButtonWidget modalBtn = new ButtonWidget("Modal", 115, 40, 100, 32, 0, NVGColor.BABY_BLUE, () -> {
+        ButtonWidget modalBtn = new ButtonWidget("Modal", 0, 0, 100, 32, 0, NVGColor.BABY_BLUE, () -> {
             mw.show();
         });
 
         btn.setDrawBorder(false);
         modalBtn.setDrawBorder(false);
-        root.addChild(modalBtn);
-        root.addChild(btn);
+        hbForButtons.addChild(modalBtn);
+        hbForButtons.addChild(btn);
 
-        InputTextWidget input = new InputTextWidget(10, 100, 200, 32);
+        InputTextWidget input = new InputTextWidget(0, 0, 200, 32);
         input.setPlaceholder("Placeholder...");
-        root.addChild(input);
+        vb.addChild(input);
 
-        InputTextWidget input2 = new InputTextWidget(10, 150, 200, 32);
+        InputTextWidget input2 = new InputTextWidget(0, 0, 200, 32);
         input2.setBackgroundColor(NVGColor.DARK_GRAY);
         input2.setBorderRadius(8);
         input2.setDrawBorder(false);
         input2.setPlaceholder("Placeholder text...");
-        root.addChild(input2);
+        vb.addChild(input2);
 
         CheckboxWidget cb = new CheckboxWidget("Example checkbox", 10, 200, 150, 16, (checked) -> {
             System.out.println("CHECK - " + checked);
         });
-        root.addChild(cb);
+        vb.addChild(cb);
 
-        SliderWidget sw = new SliderWidget(10, 250, 200, (value) -> {
+        SliderWidget sw = new SliderWidget(0, 0, 200, (value) -> {
             System.out.println("Value - " + value);
         });
-        root.addChild(sw);
+        vb.addChild(sw);
 
-        ComboBoxWidget cbw = new ComboBoxWidget(10, 310, 200, 32);
+        ComboBoxWidget cbw = new ComboBoxWidget(0, 0, 200, 32);
         cbw.addValue("Example text value looooooooong");
         cbw.addValue("Hello world!");
         cbw.addValue("Hi");
         cbw.addValue("123321");
         cbw.addValue("####");
-        root.addChild(cbw);
+        vb.addChild(cbw);
 
         root.addToScreen();
     }

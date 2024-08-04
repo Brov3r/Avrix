@@ -106,7 +106,7 @@ public class CheckboxWidget extends Widget {
     public void onLeftMouseUp(int x, int y) {
         super.onLeftMouseUp(x, y);
 
-        if (x > 0 && x < checkBoxSize && y > 0 && y < checkBoxSize && enable) {
+        if (x > 0 && x < width && y > 0 && y < height && enable) {
             checked = !checked;
             onCheckAction.accept(checked);
         }
