@@ -2,7 +2,6 @@
 
 - Launch scripts updated
 - Fixed the custom command manager (the @CommandChatReturn annotation was removed as unnecessary)
-- Fixed NVG context closing
 - Minor bugs fixed
 - Added client side plugin example
 - Added `.exe` executable files for Windows, allowing launch from Steam
@@ -11,7 +10,7 @@
 - Added `onWidgetManagerInitialized`, `OnPreWidgetRender`, `OnPostWidgetRender` events
 - Added default fonts: `Arial-Regular`, `Roboto-Regular`, `Montserrat-Regular`, `FontAwesome`
 - Added basic
-  widgets: `Panel`, `Button`, `Scrollbar`, `ScrollPanel`, `Window`, `Label`, `InputText`, `Checkbox`, `Slider`, `Popup`, `Modal`, `ComboBox`, `HorizontalBox`, `VerticalBox`
+  widgets: `Panel`, `Button`, `Scrollbar`, `ScrollPanel`, `Window`, `Label`, `InputText`, `Checkbox`, `Slider`, `Popup`, `Modal`, `ComboBox`, `HorizontalBox`, `VerticalBox`, `RadioButton`
 - Added `ResourceManager` and `ImageLoader`
 - Event renamed: `onPostTickRenderThread` -> `onTickRenderThread`
 

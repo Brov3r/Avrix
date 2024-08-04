@@ -105,6 +105,15 @@ public class Main extends Plugin {
         cbw.addValue("####");
         vb.addChild(cbw);
 
+        RadioButtonWidget rbw = new RadioButtonWidget(0, 0, 300, 300, false, (index, value) -> {
+            System.out.println("Radio #" + index + " value: " + value);
+        });
+        rbw.addRadio("Option 1");
+        rbw.addRadio("Option 2");
+        rbw.addRadio("Option 3");
+        rbw.resizeToContent();
+        vb.addChild(rbw);
+
         root.addToScreen();
     }
 }
