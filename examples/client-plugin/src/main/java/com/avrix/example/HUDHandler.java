@@ -6,27 +6,15 @@ import com.avrix.ui.NVGContext;
 import com.avrix.ui.NVGDrawer;
 import com.avrix.utils.WindowUtils;
 
-import java.io.File;
-
 /**
  * Draw HUD
  */
 public class HUDHandler extends OnPreWidgetDrawEvent {
-    private File coreJarFile;
     private static final float AMPLITUDE = 10.0f; // Maximum up and down displacement
     private static final float FREQUENCY = 5.0f; // Motion frequency (cycles per second)
     private float phase = 0.0f; // Sine wave phase to calculate vertical position
     private long lastTime = System.currentTimeMillis();
 
-    public HUDHandler(Main main) {
-        super();
-
-        try {
-            coreJarFile = new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-        } catch (Exception e) {
-            System.out.println("[!] Exception HUD: " + e.getMessage());
-        }
-    }
 
     /**
      * Called Event Handling Method
@@ -50,9 +38,8 @@ public class HUDHandler extends OnPreWidgetDrawEvent {
         float y = 70 + AMPLITUDE * (float) Math.sin(phase);
         float x = 120 + AMPLITUDE * (float) Math.cos(phase);
 
-        if (coreJarFile != null) {
-            NVGDrawer.drawImage(coreJarFile.getAbsolutePath(), "media/image_test.jpg", 10, (int) y, 100, 100, 1);
-        }
-//        NVGDrawer.drawImage("https://ltdfoto.ru/images/2024/07/31/c53d539b59c19087182f0b1c53bb52de.jpg", (int) x, (int) y, 100, 100, 1);
+
+        NVGDrawer.drawImage(WidgetManagerInitHandler.testImageID, 10, (int) y, 100, 100, 1);
+        NVGDrawer.drawImage(WidgetManagerInitHandler.urlImageID, (int) x, (int) y, 100, 100, 1);
     }
 }

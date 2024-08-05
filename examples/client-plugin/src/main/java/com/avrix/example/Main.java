@@ -30,12 +30,12 @@ public class Main extends Plugin {
     public void onInitialize() {
         loadDefaultConfig();
 
-        EventManager.addListener(new HUDHandler(this));
+        EventManager.addListener(new HUDHandler());
         EventManager.addListener(new WidgetManagerInitHandler());
 
         System.out.println("[#] Config: " + getDefaultConfig().getString("test"));
 
-        WindowWidget root = new WindowWidget("Hello window", 10, 50, 300, 400);
+        WindowWidget root = new WindowWidget("Hello window", 10, 150, 300, 400);
         root.setResizable(true);
         root.setBorderRadius(8);
         root.setDraggable(true);

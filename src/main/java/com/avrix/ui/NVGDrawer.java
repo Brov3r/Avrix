@@ -1,10 +1,7 @@
 package com.avrix.ui;
 
-import com.avrix.resources.ImageLoader;
 import org.joml.Vector2f;
 import org.lwjgl.nanovg.NVGPaint;
-
-import java.nio.file.Path;
 
 import static org.lwjgl.nanovg.NanoVG.*;
 
@@ -32,7 +29,7 @@ public class NVGDrawer {
      */
     public static void scissor(int x, int y, int width, int height) {
         if (WidgetManager.getContext() == null) return;
-        
+
         nvgScissor(getContextID(), x, y, width, height);
     }
 
@@ -332,7 +329,10 @@ public class NVGDrawer {
         if (WidgetManager.getContext() == null) return;
 
         if (imageId == -1) {
-            drawRect(x, y, width, height, NVGColor.WHITE);
+            drawRect(x, y, width / 2, height / 2, NVGColor.VIOLET);
+            drawRect(x + width / 2, y, width / 2, height / 2, NVGColor.BLACK);
+            drawRect(x, y + height / 2, width / 2, height / 2, NVGColor.BLACK);
+            drawRect(x + width / 2, y + height / 2, width / 2, height / 2, NVGColor.VIOLET);
             return;
         }
 
@@ -341,48 +341,5 @@ public class NVGDrawer {
         nvgRect(getContextID(), x, y, width, height);
         nvgFillPaint(getContextID(), paint);
         nvgFill(getContextID());
-    }
-
-    /**
-     * Draws an image at the specified position with the given size.
-     *
-     * @param imagePath path to the image
-     * @param x         absolute x-coordinate of the image's position
-     * @param y         absolute y-coordinate of the image's position
-     * @param width     the width of the image
-     * @param height    the height of the image
-     * @param opacity   image opacity (from 0 to 1)
-     */
-    public static void drawImage(Path imagePath, int x, int y, int width, int height, float opacity) {
-        drawImage(ImageLoader.loadImage(imagePath), x, y, width, height, opacity);
-    }
-
-    /**
-     * Draws an image at the specified position with the given size.
-     *
-     * @param jarPath          path to the jar file
-     * @param internalFilePath path to the image in the jar file
-     * @param x                absolute x-coordinate of the image's position
-     * @param y                absolute y-coordinate of the image's position
-     * @param width            the width of the image
-     * @param height           the height of the image
-     * @param opacity          image opacity (from 0 to 1)
-     */
-    public static void drawImage(String jarPath, String internalFilePath, int x, int y, int width, int height, float opacity) {
-        drawImage(ImageLoader.loadImage(jarPath, internalFilePath), x, y, width, height, opacity);
-    }
-
-    /**
-     * Draws an image at the specified position with the given size.
-     *
-     * @param imageURL url to the image (including from the Internet)
-     * @param x        absolute x-coordinate of the image's position
-     * @param y        absolute y-coordinate of the image's position
-     * @param width    the width of the image
-     * @param height   the height of the image
-     * @param opacity  image opacity (from 0 to 1)
-     */
-    public static void drawImage(String imageURL, int x, int y, int width, int height, float opacity) {
-        drawImage(ImageLoader.loadImage(imageURL), x, y, width, height, opacity);
     }
 }

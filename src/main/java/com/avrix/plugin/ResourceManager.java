@@ -1,4 +1,4 @@
-package com.avrix.resources;
+package com.avrix.plugin;
 
 import com.avrix.utils.Constants;
 

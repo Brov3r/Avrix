@@ -1,7 +1,6 @@
-package com.avrix.resources;
+package com.avrix.ui;
 
-import com.avrix.ui.NVGContext;
-import com.avrix.ui.WidgetManager;
+import com.avrix.plugin.ResourceManager;
 import org.lwjgl.nanovg.NanoVG;
 
 import javax.imageio.ImageIO;
@@ -20,11 +19,12 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * A utility class for loading images and caching them.
  */
-public class ImageLoader {
+public class NVGImage {
     /**
      * Map to store image identifiers associated with their names.
      */
     public static Map<String, Integer> imagesCacheMap = new ConcurrentHashMap<>();
+
     /**
      * Path to the image cache directory.
      */
@@ -36,7 +36,7 @@ public class ImageLoader {
      *
      * @param context The NVG context used to load textures.
      */
-    public static void loadImages(NVGContext context) {
+    public static void loadCacheImages(NVGContext context) {
         File cacheFolder = imagesCachePath.toFile();
 
         if (!cacheFolder.exists() && !cacheFolder.mkdirs()) {
@@ -92,7 +92,7 @@ public class ImageLoader {
             String fileName = path.getFileName().toString();
             if (!isImageFile(ResourceManager.getFileExtension(fileName))) {
                 System.out.printf("[!] Failed load image! File '%s' is not a supported image type!%n", fileName);
-                return 0;
+                return -1;
             }
             return loadResourceFromStream(Files.newInputStream(path), fileName);
         } catch (IOException e) {
@@ -104,15 +104,17 @@ public class ImageLoader {
     /**
      * Loads an image from a URL.
      *
-     * @param urlString The URL string to load the image from.
+     * @param url The URL string to load the image from.
      * @return The image identifier or -1 if the image could not be loaded.
      */
-    public static int loadImage(String urlString) {
-        URL url;
-        try {
-            url = new URL(urlString);
-        } catch (Exception e) {
-            System.out.printf("[!] Failed load image! Invalid URL or I/O Error: '%s'!%n", e.getMessage());
+    public static int loadImage(URL url) {
+        if (WidgetManager.getContext() == null) {
+            System.out.println("[!] The image could not be loaded because the NanoVG context was not defined! Use this method after initializing the WidgetManager!");
+            return -1;
+        }
+
+        if (url == null) {
+            System.out.println("[!] Failed load image! Invalid URL!");
             return -1;
         }
 
@@ -127,7 +129,7 @@ public class ImageLoader {
         try {
             BufferedImage image = ImageIO.read(url);
             if (image == null) {
-                System.out.printf("[!] Failed load image! Unable to decode image from URL: '%s'!%n", urlString);
+                System.out.printf("[!] Failed load image! Unable to decode image from URL: '%s'!%n", url);
                 return -1;
             }
 
@@ -150,6 +152,23 @@ public class ImageLoader {
     }
 
     /**
+     * Loads an image from a URL.
+     *
+     * @param urlString The URL string to load the image from.
+     * @return The image identifier or -1 if the image could not be loaded.
+     */
+    public static int loadImage(String urlString) {
+        URL url;
+        try {
+            url = new URL(urlString);
+            return loadImage(url);
+        } catch (Exception e) {
+            System.out.printf("[!] Failed load image! Invalid URL or I/O Error: '%s'!%n", e.getMessage());
+            return -1;
+        }
+    }
+
+    /**
      * Loads an image from an input stream and saves it to cache.
      *
      * @param inputStream The input stream containing the image data.
@@ -157,6 +176,11 @@ public class ImageLoader {
      * @return The image identifier or -1 if the image could not be loaded.
      */
     private static int loadResourceFromStream(InputStream inputStream, String fileName) {
+        if (WidgetManager.getContext() == null) {
+            System.out.println("[!] The image could not be loaded because the NanoVG context was not defined! Use this method after initializing the WidgetManager!");
+            return -1;
+        }
+
         String cacheFileName = ResourceManager.encodeFileName(fileName);
         String fileExtension = ResourceManager.getFileExtension(fileName);
         Path cacheFilePath = imagesCachePath.resolve(cacheFileName + "." + fileExtension);

@@ -1,7 +1,6 @@
 package com.avrix.ui;
 
 import com.avrix.events.EventManager;
-import com.avrix.resources.ImageLoader;
 import com.avrix.ui.widgets.Widget;
 import com.avrix.utils.WindowUtils;
 import zombie.core.opengl.RenderThread;
@@ -29,7 +28,7 @@ public class WidgetManager {
 
             NVGFont.loadDefaultFonts();
 
-            ImageLoader.loadImages(NVGContext);
+            NVGImage.loadCacheImages(NVGContext);
 
             EventManager.invokeEvent("onWidgetManagerInitialized", NVGContext);
         });

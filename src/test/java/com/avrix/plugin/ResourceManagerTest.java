@@ -1,7 +1,6 @@
-package com.avrix.resources;
+package com.avrix.plugin;
 
 import com.avrix.utils.Constants;
-import com.avrix.utils.YamlFileTest;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -22,7 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Unit tests for the {@link ResourceManager} class.
  */
 public class ResourceManagerTest {
-
     /**
      * Tests the {@link ResourceManager#getFolderSize(File)} method to ensure it correctly calculates the size of a folder.
      *
@@ -31,7 +29,7 @@ public class ResourceManagerTest {
      */
     @Test
     public void testFolderSize() throws FileNotFoundException, URISyntaxException {
-        URL resourceUrl = YamlFileTest.class.getClassLoader().getResource("yaml");
+        URL resourceUrl = ResourceManagerTest.class.getClassLoader().getResource("yaml");
         if (resourceUrl == null) {
             throw new FileNotFoundException("[!] Yaml folder not found in resources");
         }

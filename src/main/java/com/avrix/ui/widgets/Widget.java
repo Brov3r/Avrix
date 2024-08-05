@@ -1,11 +1,9 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.resources.ImageLoader;
 import com.avrix.ui.NVGColor;
 import com.avrix.ui.NVGDrawer;
 import com.avrix.ui.WidgetManager;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -1036,49 +1034,6 @@ public abstract class Widget {
      */
     public void drawImage(int imageId, int x, int y, int width, int height, float opacity) {
         NVGDrawer.drawImage(imageId, getX() + x, getY() + y, width, height, opacity);
-    }
-
-    /**
-     * Draws an image at the specified position with the given size.
-     *
-     * @param imagePath path to the image
-     * @param x         relative x-coordinate of the image's position
-     * @param y         relative y-coordinate of the image's position
-     * @param width     the width of the image
-     * @param height    the height of the image
-     * @param opacity   image opacity (from 0 to 1)
-     */
-    public void drawImage(Path imagePath, int x, int y, int width, int height, float opacity) {
-        NVGDrawer.drawImage(imagePath, getX() + x, getY() + y, width, height, opacity);
-    }
-
-    /**
-     * Draws an image at the specified position with the given size.
-     *
-     * @param jarPath          path to the jar file
-     * @param internalFilePath path to the image in the jar file
-     * @param x                relative x-coordinate of the image's position
-     * @param y                relative y-coordinate of the image's position
-     * @param width            the width of the image
-     * @param height           the height of the image
-     * @param opacity          image opacity (from 0 to 1)
-     */
-    public void drawImage(String jarPath, String internalFilePath, int x, int y, int width, int height, float opacity) {
-        NVGDrawer.drawImage(ImageLoader.loadImage(jarPath, internalFilePath), getX() + x, getY() + y, width, height, opacity);
-    }
-
-    /**
-     * Draws an image at the specified position with the given size.
-     *
-     * @param imageURL url to the image (including from the Internet)
-     * @param x        relative x-coordinate of the image's position
-     * @param y        relative y-coordinate of the image's position
-     * @param width    the width of the image
-     * @param height   the height of the image
-     * @param opacity  image opacity (from 0 to 1)
-     */
-    public void drawImage(String imageURL, int x, int y, int width, int height, float opacity) {
-        NVGDrawer.drawImage(ImageLoader.loadImage(imageURL), getX() + x, getY() + y, width, height, opacity);
     }
 
     /**
