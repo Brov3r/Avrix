@@ -1,6 +1,6 @@
 package com.avrix.events;
 
-import com.avrix.ui.NVGContext;
+import com.avrix.ui.NanoContext;
 
 /**
  * Trigger when all widgets are rendered, but before the NanoVG frame has finished rendering
@@ -19,7 +19,7 @@ public abstract class OnPostWidgetDrawEvent extends Event {
     /**
      * Called Event Handling Method
      *
-     * @param context {@link NVGContext} in which NanoVG is initialized
+     * @param context {@link NanoContext} in which NanoVG is initialized
      */
-    public abstract void handleEvent(NVGContext context);
+    public abstract void handleEvent(NanoContext context);
 }

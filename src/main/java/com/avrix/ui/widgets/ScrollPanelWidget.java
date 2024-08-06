@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
-import com.avrix.ui.NVGDrawer;
+import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.NanoColor;
 
 /**
  * The {@link  ScrollPanelWidget} class represents a panel widget that supports scrolling.
@@ -41,7 +41,7 @@ public class ScrollPanelWidget extends PanelWidget {
      * @param height the height of the {@link Widget}
      */
     public ScrollPanelWidget(int x, int y, int width, int height) {
-        this(x, y, width, height, 0, NVGColor.LIGHT_BLACK);
+        this(x, y, width, height, 0, NanoColor.LIGHT_BLACK);
     }
 
     /**
@@ -53,9 +53,9 @@ public class ScrollPanelWidget extends PanelWidget {
      * @param width           the width of the widget
      * @param height          the height of the widget
      * @param borderRadius    the radius of the corner rounding in pixels
-     * @param backgroundColor the background color of the widget, specified in {@link NVGColor}
+     * @param backgroundColor the background color of the widget, specified in {@link NanoColor}
      */
-    public ScrollPanelWidget(int x, int y, int width, int height, int borderRadius, NVGColor backgroundColor) {
+    public ScrollPanelWidget(int x, int y, int width, int height, int borderRadius, NanoColor backgroundColor) {
         super(x, y, width, height, borderRadius, backgroundColor);
 
         this.scrollable = true;
@@ -144,8 +144,8 @@ public class ScrollPanelWidget extends PanelWidget {
 
             // Limitation for scroll bars
             if (!child.equals(horizontalScrollbar) && !child.equals(verticalScrollbar)) {
-                NVGDrawer.saveRenderState();
-                NVGDrawer.intersectScissor(getX(), getY(),
+                NanoDrawer.saveRenderState();
+                NanoDrawer.intersectScissor(getX(), getY(),
                         verticalScrollbar.isVisible() ? getWidth() - verticalScrollbar.width - verticalScrollbar.borderOffset * 2 : getWidth(),
                         horizontalScrollbar.isVisible() ? getHeight() - horizontalScrollbar.height - horizontalScrollbar.borderOffset * 2 : getHeight());
             }
@@ -166,8 +166,8 @@ public class ScrollPanelWidget extends PanelWidget {
             child.setX(absoluteX);
             child.setY(absoluteY);
 
-            NVGDrawer.saveRenderState();
-            NVGDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
+            NanoDrawer.saveRenderState();
+            NanoDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
 
             // Render child and its children
             child.preRender();
@@ -177,13 +177,13 @@ public class ScrollPanelWidget extends PanelWidget {
             child.postRender();
 
             // Restore the original positions
-            NVGDrawer.restoreRenderState();
+            NanoDrawer.restoreRenderState();
             child.setX(originalX);
             child.setY(originalY);
 
             // Limitation for scroll bars
             if (!child.equals(horizontalScrollbar) && !child.equals(verticalScrollbar)) {
-                NVGDrawer.restoreRenderState();
+                NanoDrawer.restoreRenderState();
             }
         }
     }

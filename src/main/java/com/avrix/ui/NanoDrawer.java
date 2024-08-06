@@ -8,7 +8,7 @@ import static org.lwjgl.nanovg.NanoVG.*;
 /**
  * A set of tools for rendering NanoVG elements
  */
-public class NVGDrawer {
+public class NanoDrawer {
     /**
      * Obtaining NanoVG context ID
      *
@@ -96,7 +96,7 @@ public class NVGDrawer {
      * @param lineWidth the width of the stroke line in pixels
      * @param color     the color of the outline
      */
-    public static void drawRectOutline(int x, int y, int width, int height, float lineWidth, NVGColor color) {
+    public static void drawRectOutline(int x, int y, int width, int height, float lineWidth, NanoColor color) {
         if (WidgetManager.getContext() == null) return;
 
         nvgBeginPath(getContextID());
@@ -117,7 +117,7 @@ public class NVGDrawer {
      * @param lineWidth the width of the stroke line in pixels
      * @param color     the color of the outline
      */
-    public static void drawRoundedRectOutline(int x, int y, int width, int height, int radius, float lineWidth, NVGColor color) {
+    public static void drawRoundedRectOutline(int x, int y, int width, int height, int radius, float lineWidth, NanoColor color) {
         if (WidgetManager.getContext() == null) return;
 
         nvgBeginPath(getContextID());
@@ -136,7 +136,7 @@ public class NVGDrawer {
      * @param height the height of the rectangle
      * @param color  the color to fill the rectangle with
      */
-    public static void drawRect(int x, int y, int width, int height, NVGColor color) {
+    public static void drawRect(int x, int y, int width, int height, NanoColor color) {
         if (WidgetManager.getContext() == null) return;
 
         nvgBeginPath(getContextID());
@@ -155,7 +155,7 @@ public class NVGDrawer {
      * @param fontSize the size of the font
      * @param color    the color of the text
      */
-    public static void drawText(String text, String fontName, int x, int y, int fontSize, NVGColor color) {
+    public static void drawText(String text, String fontName, int x, int y, int fontSize, NanoColor color) {
         if (WidgetManager.getContext() == null) return;
 
         Vector2f textSize = getTextSize(text, fontName, fontSize);
@@ -205,7 +205,7 @@ public class NVGDrawer {
      * @param radius the radius of the corners
      * @param color  the color to fill the rectangle with
      */
-    public static void drawRoundedRect(int x, int y, int width, int height, float radius, NVGColor color) {
+    public static void drawRoundedRect(int x, int y, int width, int height, float radius, NanoColor color) {
         if (WidgetManager.getContext() == null) return;
 
         nvgBeginPath(getContextID());
@@ -223,7 +223,7 @@ public class NVGDrawer {
      * @param height the height of the ellipse
      * @param color  the color of the ellipse
      */
-    public static void drawEllipse(int x, int y, int width, int height, NVGColor color) {
+    public static void drawEllipse(int x, int y, int width, int height, NanoColor color) {
         if (WidgetManager.getContext() == null) return;
 
         nvgBeginPath(getContextID());
@@ -242,7 +242,7 @@ public class NVGDrawer {
      * @param width the thickness of the line
      * @param color the color of the line
      */
-    public static void drawLine(int x1, int y1, int x2, int y2, float width, NVGColor color) {
+    public static void drawLine(int x1, int y1, int x2, int y2, float width, NanoColor color) {
         if (WidgetManager.getContext() == null) return;
 
         nvgBeginPath(getContextID());
@@ -261,7 +261,7 @@ public class NVGDrawer {
      * @param radius the radius of the circle
      * @param color  the color of the circle
      */
-    public static void drawCircle(int x, int y, float radius, NVGColor color) {
+    public static void drawCircle(int x, int y, float radius, NanoColor color) {
         if (WidgetManager.getContext() == null) return;
 
         nvgBeginPath(getContextID());
@@ -280,7 +280,7 @@ public class NVGDrawer {
      * @param endAngle   the ending angle of the arc (in radians)
      * @param color      the color of the arc segment
      */
-    public static void drawArc(int x, int y, float radius, float startAngle, float endAngle, NVGColor color) {
+    public static void drawArc(int x, int y, float radius, float startAngle, float endAngle, NanoColor color) {
         if (WidgetManager.getContext() == null) return;
 
         nvgBeginPath(getContextID());
@@ -302,7 +302,7 @@ public class NVGDrawer {
      * @param thickness  the thickness of the arc segment
      * @param color      the color of the arc segment
      */
-    public static void drawArc(int x, int y, float radius, float thickness, float startAngle, float endAngle, NVGColor color) {
+    public static void drawArc(int x, int y, float radius, float thickness, float startAngle, float endAngle, NanoColor color) {
         if (WidgetManager.getContext() == null) return;
 
         nvgBeginPath(getContextID());
@@ -329,10 +329,10 @@ public class NVGDrawer {
         if (WidgetManager.getContext() == null) return;
 
         if (imageId == -1) {
-            drawRect(x, y, width / 2, height / 2, NVGColor.VIOLET);
-            drawRect(x + width / 2, y, width / 2, height / 2, NVGColor.BLACK);
-            drawRect(x, y + height / 2, width / 2, height / 2, NVGColor.BLACK);
-            drawRect(x + width / 2, y + height / 2, width / 2, height / 2, NVGColor.VIOLET);
+            drawRect(x, y, width / 2, height / 2, NanoColor.VIOLET);
+            drawRect(x + width / 2, y, width / 2, height / 2, NanoColor.BLACK);
+            drawRect(x, y + height / 2, width / 2, height / 2, NanoColor.BLACK);
+            drawRect(x + width / 2, y + height / 2, width / 2, height / 2, NanoColor.VIOLET);
             return;
         }
 

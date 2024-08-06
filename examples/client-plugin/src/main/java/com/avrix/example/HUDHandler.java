@@ -1,9 +1,9 @@
 package com.avrix.example;
 
 import com.avrix.events.OnPreWidgetDrawEvent;
-import com.avrix.ui.NVGColor;
-import com.avrix.ui.NVGContext;
-import com.avrix.ui.NVGDrawer;
+import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.NanoColor;
+import com.avrix.ui.NanoContext;
 import com.avrix.utils.WindowUtils;
 
 /**
@@ -19,12 +19,12 @@ public class HUDHandler extends OnPreWidgetDrawEvent {
     /**
      * Called Event Handling Method
      *
-     * @param context {@link NVGContext} in which NanoVG is initialized
+     * @param context {@link NanoContext} in which NanoVG is initialized
      */
     @Override
-    public void handleEvent(NVGContext context) {
-        NVGDrawer.drawText("Hello client plugin!", "Endeavourforever", 10, 10, 32, NVGColor.ORANGE);
-        NVGDrawer.drawText("Another hello", "Montserrat-Regular", 10, WindowUtils.getWindowHeight() - 24, 14, NVGColor.ORANGE);
+    public void handleEvent(NanoContext context) {
+        NanoDrawer.drawText("Hello client plugin!", "Endeavourforever", 10, 10, 32, NanoColor.ORANGE);
+        NanoDrawer.drawText("Another hello", "Montserrat-Regular", 10, WindowUtils.getWindowHeight() - 24, 14, NanoColor.ORANGE);
 
         long currentTime = System.currentTimeMillis();
         float deltaTime = (currentTime - lastTime) / 1000.0f;
@@ -39,7 +39,7 @@ public class HUDHandler extends OnPreWidgetDrawEvent {
         float x = 120 + AMPLITUDE * (float) Math.cos(phase);
 
 
-        NVGDrawer.drawImage(WidgetManagerInitHandler.testImageID, 10, (int) y, 100, 100, 1);
-        NVGDrawer.drawImage(WidgetManagerInitHandler.urlImageID, (int) x, (int) y, 100, 100, 1);
+        NanoDrawer.drawImage(WidgetManagerInitHandler.testImageID, 10, (int) y, 100, 100, 1);
+        NanoDrawer.drawImage(WidgetManagerInitHandler.urlImageID, (int) x, (int) y, 100, 100, 1);
     }
 }

@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
-import com.avrix.ui.NVGDrawer;
+import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.NanoColor;
 import org.joml.Vector2f;
 
 /**
@@ -11,7 +11,7 @@ public class LabelWidget extends Widget {
     /**
      * The color of the text.
      */
-    protected NVGColor textColor;
+    protected NanoColor textColor;
 
     /**
      * The text to display.
@@ -35,11 +35,12 @@ public class LabelWidget extends Widget {
      * @param fontName  the name of the font to use
      * @param x         the x-coordinate of the {@link Widget}'s position
      * @param y         the y-coordinate of the {@link Widget}'s position
+     * @param width     the width of the {@link Widget}'s position
      * @param fontSize  the size of the font
      * @param textColor the color of the text
      */
-    public LabelWidget(String text, String fontName, int x, int y, int fontSize, NVGColor textColor) {
-        super(x, y, 0, 0);
+    public LabelWidget(String text, String fontName, int x, int y, int width, int fontSize, NanoColor textColor) {
+        super(x, y, width, fontSize);
 
         this.textColor = textColor;
         this.text = text;
@@ -70,7 +71,7 @@ public class LabelWidget extends Widget {
      *
      * @return the text color
      */
-    public final NVGColor getTextColor() {
+    public final NanoColor getTextColor() {
         return textColor;
     }
 
@@ -79,7 +80,7 @@ public class LabelWidget extends Widget {
      *
      * @param textColor the new text color
      */
-    public final void setTextColor(NVGColor textColor) {
+    public final void setTextColor(NanoColor textColor) {
         this.textColor = textColor;
     }
 
@@ -126,7 +127,7 @@ public class LabelWidget extends Widget {
     public void update() {
         super.update();
 
-        Vector2f textSize = NVGDrawer.getTextSize(text, fontName, fontSize);
+        Vector2f textSize = NanoDrawer.getTextSize(text, fontName, fontSize);
 
         width = (int) textSize.x;
         height = (int) textSize.y;
@@ -137,6 +138,6 @@ public class LabelWidget extends Widget {
      */
     @Override
     public void render() {
-        drawText(getText(), getFontName(), 0, 0, getFontSize(), getTextColor());
+        drawText(getText(), getFontName(), 0, -getFontSize() / 4, getFontSize(), getTextColor());
     }
 }

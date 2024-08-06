@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
-import com.avrix.ui.NVGDrawer;
+import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.NanoColor;
 import org.joml.Vector2f;
 
 import java.util.List;
@@ -63,11 +63,6 @@ public class ComboBoxWidget extends PanelWidget {
     protected int fontSize;
 
     /**
-     * Indicates whether the dropdown button is currently pressed.
-     */
-    protected boolean pressed = false;
-
-    /**
      * The list of values to be displayed in the dropdown menu.
      * Uses a thread-safe list implementation.
      */
@@ -76,17 +71,17 @@ public class ComboBoxWidget extends PanelWidget {
     /**
      * The color of the icons in the dropdown button.
      */
-    protected NVGColor iconColor = NVGColor.WHITE;
+    protected NanoColor iconColor = NanoColor.WHITE;
 
     /**
      * The color of the text in the dropdown button.
      */
-    protected NVGColor textColor = NVGColor.WHITE;
+    protected NanoColor textColor = NanoColor.WHITE;
 
     /**
      * The accent color used for highlighting in the dropdown button.
      */
-    protected NVGColor accentColor = new NVGColor("#2ecc71");
+    protected NanoColor accentColor = new NanoColor("#2ecc71");
 
     /**
      * Constructs a new {@link Widget} with the specified position and size.
@@ -110,39 +105,11 @@ public class ComboBoxWidget extends PanelWidget {
      */
     @Override
     public void onLeftMouseUp(int x, int y) {
-        super.onLeftMouseUp(x, y);
-
-        if (pressed) {
+        if (lmbPressed) {
             openPopup();
         }
 
-        pressed = false;
-    }
-
-    /**
-     * Handles the left mouse button up event outside any visible {@link Widget}
-     *
-     * @param x absolute x-coordinate of the mouse position
-     * @param y absolute y-coordinate of the mouse position
-     */
-    @Override
-    public void onLeftMouseUpOutside(int x, int y) {
-        super.onLeftMouseUpOutside(x, y);
-
-        pressed = false;
-    }
-
-    /**
-     * Called when the left mouse button is pressed down over the {@link Widget}.
-     *
-     * @param x relative x-coordinate of the mouse position
-     * @param y relative y-coordinate of the mouse position
-     */
-    @Override
-    public void onLeftMouseDown(int x, int y) {
-        super.onLeftMouseDown(x, y);
-
-        pressed = true;
+        super.onLeftMouseUp(x, y);
     }
 
     /**
@@ -153,7 +120,7 @@ public class ComboBoxWidget extends PanelWidget {
         for (int i = 0; i < valueList.size(); i++) {
             int index = i;
             String value = valueList.get(i);
-            ComboPopupButton valueButton = new ComboPopupButton(value, borderOffset, borderOffset + i * popupButtonHeight, popup.width - borderOffset * 2, popupButtonHeight, 0, NVGColor.LIGHT_BLACK, () -> {
+            ComboPopupButton valueButton = new ComboPopupButton(value, borderOffset, borderOffset + i * popupButtonHeight, popup.width - borderOffset * 2, popupButtonHeight, 0, NanoColor.LIGHT_BLACK, () -> {
                 valueIndex = index;
                 popup.close();
             });
@@ -378,7 +345,7 @@ public class ComboBoxWidget extends PanelWidget {
      *
      * @return the icon color
      */
-    public NVGColor getIconColor() {
+    public NanoColor getIconColor() {
         return iconColor;
     }
 
@@ -387,7 +354,7 @@ public class ComboBoxWidget extends PanelWidget {
      *
      * @param iconColor the new icon color
      */
-    public void setIconColor(NVGColor iconColor) {
+    public void setIconColor(NanoColor iconColor) {
         this.iconColor = iconColor;
     }
 
@@ -396,7 +363,7 @@ public class ComboBoxWidget extends PanelWidget {
      *
      * @return the text color
      */
-    public NVGColor getTextColor() {
+    public NanoColor getTextColor() {
         return textColor;
     }
 
@@ -405,7 +372,7 @@ public class ComboBoxWidget extends PanelWidget {
      *
      * @param textColor the new text color
      */
-    public void setTextColor(NVGColor textColor) {
+    public void setTextColor(NanoColor textColor) {
         this.textColor = textColor;
     }
 
@@ -414,7 +381,7 @@ public class ComboBoxWidget extends PanelWidget {
      *
      * @return the accent color
      */
-    public NVGColor getAccentColor() {
+    public NanoColor getAccentColor() {
         return accentColor;
     }
 
@@ -423,7 +390,7 @@ public class ComboBoxWidget extends PanelWidget {
      *
      * @param accentColor the new accent color
      */
-    public void setAccentColor(NVGColor accentColor) {
+    public void setAccentColor(NanoColor accentColor) {
         this.accentColor = accentColor;
     }
 
@@ -468,17 +435,17 @@ public class ComboBoxWidget extends PanelWidget {
      */
     @Override
     public void render() {
-        NVGColor newTextColor = textColor;
-        NVGColor newIconColor = iconColor;
+        NanoColor newTextColor = textColor;
+        NanoColor newIconColor = iconColor;
 
-        NVGDrawer.saveRenderState();
-        NVGDrawer.intersectScissor(absoluteX + borderOffset, absoluteY, width - dropButtonWidth - borderOffset * 2, height);
+        NanoDrawer.saveRenderState();
+        NanoDrawer.intersectScissor(absoluteX + borderOffset, absoluteY, width - dropButtonWidth - borderOffset * 2, height);
 
         if (hovered) {
             newTextColor = accentColor;
             newIconColor = accentColor;
 
-            if (pressed) {
+            if (lmbPressed) {
                 newTextColor = accentColor.multiply(0.85f);
                 newIconColor = accentColor.multiply(0.85f);
             }
@@ -488,13 +455,13 @@ public class ComboBoxWidget extends PanelWidget {
 
         if (!valueList.isEmpty() && valueList.get(valueIndex) != null) {
             String value = valueList.get(valueIndex);
-            Vector2f textSize = NVGDrawer.getTextSize(value, fontName, fontSize);
+            Vector2f textSize = NanoDrawer.getTextSize(value, fontName, fontSize);
             drawText(value, fontName, borderOffset, (int) ((height - textSize.y) / 2 - fontSize / 4), fontSize, newTextColor);
         }
 
-        NVGDrawer.restoreRenderState();
+        NanoDrawer.restoreRenderState();
 
-        Vector2f iconTextSize = NVGDrawer.getTextSize(dropIcon, iconFontName, iconSize);
+        Vector2f iconTextSize = NanoDrawer.getTextSize(dropIcon, iconFontName, iconSize);
 
         drawLine(width - dropButtonWidth, borderOffset, width - dropButtonWidth, height - borderOffset, 2, iconColor);
         drawText(dropIcon, iconFontName, (int) (width - (dropButtonWidth + iconTextSize.x) / 2), (int) ((height - iconTextSize.y) / 2) - iconSize / 4, iconSize, newIconColor);
@@ -520,10 +487,10 @@ public class ComboBoxWidget extends PanelWidget {
          * @param width           the width of the widget
          * @param height          the height of the widget
          * @param borderRadius    the radius of the corner rounding in pixels
-         * @param backgroundColor the background color of the widget, specified in {@link NVGColor}
+         * @param backgroundColor the background color of the widget, specified in {@link NanoColor}
          * @param onClickMethod   method that is called when the button is clicked
          */
-        public ComboPopupButton(String text, int x, int y, int width, int height, int borderRadius, NVGColor backgroundColor, Runnable onClickMethod) {
+        public ComboPopupButton(String text, int x, int y, int width, int height, int borderRadius, NanoColor backgroundColor, Runnable onClickMethod) {
             super(text, x, y, width, height, borderRadius, backgroundColor, onClickMethod);
             setDrawBorder(false);
         }
@@ -553,16 +520,16 @@ public class ComboBoxWidget extends PanelWidget {
         public void render() {
             super.render();
 
-            NVGColor color = textColor;
+            NanoColor color = textColor;
 
             if (isEnable()) {
                 if (isHovered() || selected) color = accentColor;
-                if (LMBDown) color = accentColor.multiply(0.75f);
+                if (lmbPressed) color = accentColor.multiply(0.75f);
             } else {
                 color = textColor.multiply(0.5f);
             }
 
-            Vector2f titleSize = NVGDrawer.getTextSize(text, fontName, fontSize);
+            Vector2f titleSize = NanoDrawer.getTextSize(text, fontName, fontSize);
             drawText(text, fontName, (getWidth() - (int) titleSize.x) / 2, (getHeight() - (int) titleSize.y - fontSize / 4) / 2, fontSize, color);
         }
     }

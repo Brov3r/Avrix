@@ -1,6 +1,6 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
+import com.avrix.ui.NanoColor;
 import zombie.input.Mouse;
 
 /**
@@ -10,12 +10,12 @@ public class PanelWidget extends Widget {
     /**
      * The background color of the panel.
      */
-    protected NVGColor backgroundColor = NVGColor.LIGHT_BLACK;
+    protected NanoColor backgroundColor = NanoColor.LIGHT_BLACK;
 
     /**
      * The border color of the panel.
      */
-    protected NVGColor borderColor = NVGColor.WHITE_SMOKE;
+    protected NanoColor borderColor = NanoColor.WHITE_SMOKE;
 
     /**
      * The radius of the panel's border corners.
@@ -73,9 +73,9 @@ public class PanelWidget extends Widget {
      * @param width           the width of the widget
      * @param height          the height of the widget
      * @param borderRadius    the radius of the corner rounding in pixels
-     * @param backgroundColor the background color of the widget, specified in {@link NVGColor}
+     * @param backgroundColor the background color of the widget, specified in {@link NanoColor}
      */
-    public PanelWidget(int x, int y, int width, int height, int borderRadius, NVGColor backgroundColor) {
+    public PanelWidget(int x, int y, int width, int height, int borderRadius, NanoColor backgroundColor) {
         super(x, y, width, height);
 
         this.backgroundColor = backgroundColor;
@@ -103,18 +103,18 @@ public class PanelWidget extends Widget {
     /**
      * Sets the background color of the {@link Widget}.
      *
-     * @param color the background color, specified in {@link NVGColor}
+     * @param color the background color, specified in {@link NanoColor}
      */
-    public final void setBackgroundColor(NVGColor color) {
+    public final void setBackgroundColor(NanoColor color) {
         this.backgroundColor = color;
     }
 
     /**
      * Sets the border color of the widget.
      *
-     * @param color the border color, specified in {@link NVGColor}
+     * @param color the border color, specified in {@link NanoColor}
      */
-    public final void setBorderColor(NVGColor color) {
+    public final void setBorderColor(NanoColor color) {
         this.borderColor = color;
     }
 

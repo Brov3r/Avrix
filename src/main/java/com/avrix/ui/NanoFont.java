@@ -15,7 +15,7 @@ import static org.lwjgl.nanovg.NanoVG.nvgCreateFont;
 /**
  * A set of tools for working with fonts in NanoVG
  */
-public class NVGFont {
+public class NanoFont {
     /**
      * Loading custom default fonts
      */

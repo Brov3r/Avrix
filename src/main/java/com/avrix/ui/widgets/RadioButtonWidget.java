@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
-import com.avrix.ui.NVGDrawer;
+import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.NanoColor;
 import org.joml.Vector2f;
 
 import java.util.List;
@@ -67,17 +67,17 @@ public class RadioButtonWidget extends Widget {
     /**
      * The color of the text in the radio buttons.
      */
-    protected NVGColor textColor = NVGColor.WHITE;
+    protected NanoColor textColor = NanoColor.WHITE;
 
     /**
      * The color used to accent the selected radio button.
      */
-    protected NVGColor accentColor = new NVGColor("#2ecc71");
+    protected NanoColor accentColor = new NanoColor("#2ecc71");
 
     /**
      * The color of the circles representing the radio buttons.
      */
-    protected NVGColor circleColor = new NVGColor("#2c3e50");
+    protected NanoColor circleColor = new NanoColor("#2c3e50");
 
     /**
      * Constructs a {@link RadioButtonWidget} with the specified position, size, and arrangement.
@@ -279,7 +279,7 @@ public class RadioButtonWidget extends Widget {
      *
      * @return the text color
      */
-    public final NVGColor getTextColor() {
+    public final NanoColor getTextColor() {
         return textColor;
     }
 
@@ -288,7 +288,7 @@ public class RadioButtonWidget extends Widget {
      *
      * @param textColor the text color
      */
-    public final void setTextColor(NVGColor textColor) {
+    public final void setTextColor(NanoColor textColor) {
         this.textColor = textColor;
     }
 
@@ -297,7 +297,7 @@ public class RadioButtonWidget extends Widget {
      *
      * @return the accent color
      */
-    public final NVGColor getAccentColor() {
+    public final NanoColor getAccentColor() {
         return accentColor;
     }
 
@@ -306,7 +306,7 @@ public class RadioButtonWidget extends Widget {
      *
      * @param accentColor the accent color
      */
-    public final void setAccentColor(NVGColor accentColor) {
+    public final void setAccentColor(NanoColor accentColor) {
         this.accentColor = accentColor;
     }
 
@@ -315,7 +315,7 @@ public class RadioButtonWidget extends Widget {
      *
      * @return the circle color
      */
-    public final NVGColor getCircleColor() {
+    public final NanoColor getCircleColor() {
         return circleColor;
     }
 
@@ -324,7 +324,7 @@ public class RadioButtonWidget extends Widget {
      *
      * @param circleColor the circle color
      */
-    public final void setCircleColor(NVGColor circleColor) {
+    public final void setCircleColor(NanoColor circleColor) {
         this.circleColor = circleColor;
     }
 
@@ -356,11 +356,6 @@ public class RadioButtonWidget extends Widget {
         protected boolean selected = false;
 
         /**
-         * Whether the radio button is currently pressed.
-         */
-        protected boolean pressed = false;
-
-        /**
          * Constructs a {@link RadioValue} with the specified text, position, and click action.
          * This class represents a single radio button within the {@link RadioButtonWidget}.
          *
@@ -375,33 +370,9 @@ public class RadioButtonWidget extends Widget {
             this.value = value;
             this.onClickAction = onClickAction;
             setDrawBorder(false);
-            setBackgroundColor(NVGColor.TRANSPARENT);
+            setBackgroundColor(NanoColor.TRANSPARENT);
         }
 
-        /**
-         * Called when the left mouse button is pressed down over the {@link Widget}.
-         *
-         * @param x relative x-coordinate of the mouse position
-         * @param y relative y-coordinate of the mouse position
-         */
-        @Override
-        public void onLeftMouseDown(int x, int y) {
-            super.onLeftMouseDown(x, y);
-            pressed = true;
-        }
-
-        /**
-         * Handles the left mouse button up event outside any visible {@link Widget}
-         *
-         * @param x absolute x-coordinate of the mouse position
-         * @param y absolute y-coordinate of the mouse position
-         */
-        @Override
-        public void onLeftMouseUpOutside(int x, int y) {
-            super.onLeftMouseUpOutside(x, y);
-
-            pressed = false;
-        }
 
         /**
          * Called when the left mouse button is released over the {@link Widget}.
@@ -411,13 +382,10 @@ public class RadioButtonWidget extends Widget {
          */
         @Override
         public void onLeftMouseUp(int x, int y) {
-            super.onLeftMouseUp(x, y);
-
-            if (pressed) {
+            if (lmbPressed) {
                 onClickAction.accept(this);
             }
-
-            pressed = false;
+            super.onLeftMouseUp(x, y);
         }
 
         /**
@@ -427,8 +395,8 @@ public class RadioButtonWidget extends Widget {
         public void render() {
             super.render();
 
-            NVGColor newTextColor = textColor;
-            Vector2f textSize = NVGDrawer.getTextSize(value, fontName, fontSize);
+            NanoColor newTextColor = textColor;
+            Vector2f textSize = NanoDrawer.getTextSize(value, fontName, fontSize);
 
             drawCircle(circleRadius, height / 2, circleRadius, circleColor);
 
@@ -439,7 +407,7 @@ public class RadioButtonWidget extends Widget {
             if (hovered) {
                 newTextColor = accentColor.multiply(0.8f);
 
-                if (pressed) {
+                if (lmbPressed) {
                     newTextColor = accentColor.multiply(0.5f);
                 }
             }

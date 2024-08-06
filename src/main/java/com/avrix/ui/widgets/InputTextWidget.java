@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
-import com.avrix.ui.NVGDrawer;
+import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.NanoColor;
 import org.joml.Vector2f;
 import org.lwjglx.input.Keyboard;
 import zombie.core.Clipboard;
@@ -30,17 +30,17 @@ public class InputTextWidget extends PanelWidget {
     /**
      * The color of the text.
      */
-    protected NVGColor textColor = NVGColor.WHITE;
+    protected NanoColor textColor = NanoColor.WHITE;
 
     /**
      * The color of the placeholder text.
      */
-    protected NVGColor placeholderColor = NVGColor.WHITE.multiply(0.3f);
+    protected NanoColor placeholderColor = NanoColor.WHITE.multiply(0.3f);
 
     /**
      * The color of the selected text highlight.
      */
-    protected NVGColor selectionColor = new NVGColor(0.3f, 0.3f, 0.9f, 0.5f);
+    protected NanoColor selectionColor = new NanoColor(0.3f, 0.3f, 0.9f, 0.5f);
 
     /**
      * Action to be executed when the text changes.
@@ -113,11 +113,6 @@ public class InputTextWidget extends PanelWidget {
     protected boolean active = false;
 
     /**
-     * Indicates if the left mouse button is currently pressed.
-     */
-    protected boolean LMBDown = false;
-
-    /**
      * Indicates if the cursor is currently visible.
      */
     protected boolean cursorVisible = true;
@@ -126,6 +121,11 @@ public class InputTextWidget extends PanelWidget {
      * Indicates if text selection is currently active.
      */
     protected boolean selecting = false;
+
+    /**
+     * Protect input text (all characters are displayed as '*')
+     */
+    protected boolean secure = false;
 
     /**
      * Constructs an InputTextWidget with the specified position and size.
@@ -210,7 +210,7 @@ public class InputTextWidget extends PanelWidget {
      *
      * @return The text color.
      */
-    public final NVGColor getTextColor() {
+    public final NanoColor getTextColor() {
         return textColor;
     }
 
@@ -219,7 +219,7 @@ public class InputTextWidget extends PanelWidget {
      *
      * @param textColor The new text color.
      */
-    public final void setTextColor(NVGColor textColor) {
+    public final void setTextColor(NanoColor textColor) {
         this.textColor = textColor;
     }
 
@@ -228,7 +228,7 @@ public class InputTextWidget extends PanelWidget {
      *
      * @return The placeholder text color.
      */
-    public final NVGColor getPlaceholderColor() {
+    public final NanoColor getPlaceholderColor() {
         return placeholderColor;
     }
 
@@ -237,7 +237,7 @@ public class InputTextWidget extends PanelWidget {
      *
      * @param placeholderColor The new placeholder text color.
      */
-    public final void setPlaceholderColor(NVGColor placeholderColor) {
+    public final void setPlaceholderColor(NanoColor placeholderColor) {
         this.placeholderColor = placeholderColor;
     }
 
@@ -246,7 +246,7 @@ public class InputTextWidget extends PanelWidget {
      *
      * @return The selection color.
      */
-    public final NVGColor getSelectionColor() {
+    public final NanoColor getSelectionColor() {
         return selectionColor;
     }
 
@@ -255,7 +255,7 @@ public class InputTextWidget extends PanelWidget {
      *
      * @param selectionColor The new selection color.
      */
-    public final void setSelectionColor(NVGColor selectionColor) {
+    public final void setSelectionColor(NanoColor selectionColor) {
         this.selectionColor = selectionColor;
     }
 
@@ -368,6 +368,27 @@ public class InputTextWidget extends PanelWidget {
     }
 
     /**
+     * Returns whether the input field is in secure mode.
+     * In secure mode, the input text is masked (with asterisks).
+     *
+     * @return {@code true} if the input field is in secure mode, {@code false} otherwise.
+     */
+    public final boolean isSecure() {
+        return secure;
+    }
+
+    /**
+     * Sets the secure mode for the input field.
+     * In secure mode, the input text will be masked (with asterisks).
+     *
+     * @param secure {@code true} to enable secure mode, {@code false} to disable it.
+     */
+    public final void setSecure(boolean secure) {
+        this.secure = secure;
+    }
+
+
+    /**
      * Handles the event when the left mouse button is released.
      * This method updates the widget's state based on the mouse release and finalizes the selection if needed.
      *
@@ -376,9 +397,7 @@ public class InputTextWidget extends PanelWidget {
      */
     @Override
     public void onLeftMouseUp(int x, int y) {
-        super.onLeftMouseUp(x, y);
-
-        if (LMBDown) {
+        if (lmbPressed) {
             active = true;
             if (selectionStart == -1) {
                 selectionStart = cursorPosition;
@@ -386,8 +405,9 @@ public class InputTextWidget extends PanelWidget {
             selectionEnd = cursorPosition;
         }
 
-        LMBDown = false;
         selecting = false;
+
+        super.onLeftMouseUp(x, y);
     }
 
     /**
@@ -416,7 +436,6 @@ public class InputTextWidget extends PanelWidget {
     public void onLeftMouseDown(int x, int y) {
         super.onLeftMouseDown(x, y);
 
-        LMBDown = true;
         active = true;
         selecting = true;
         cursorPosition = getCursorPositionFromMouse(x);
@@ -433,15 +452,14 @@ public class InputTextWidget extends PanelWidget {
      */
     @Override
     public void onLeftMouseUpOutside(int x, int y) {
-        super.onLeftMouseUpOutside(x, y);
-
         active = false;
 
-        if (selecting && LMBDown) {
+        if (selecting && lmbPressed) {
             selecting = false;
-            LMBDown = false;
             active = true;
         }
+
+        super.onLeftMouseUpOutside(x, y);
     }
 
     /**
@@ -455,7 +473,9 @@ public class InputTextWidget extends PanelWidget {
     public void onMouseMove(int x, int y) {
         super.onMouseMove(x, y);
 
-        if (LMBDown && selecting) {
+        String text = secure ? value.replaceAll(".", "*") : value;
+
+        if (lmbPressed && selecting) {
             cursorPosition = getCursorPositionFromMouse(x);
             selectionEnd = cursorPosition;
 
@@ -466,13 +486,13 @@ public class InputTextWidget extends PanelWidget {
                     int end = Math.max(selectionStart, selectionEnd);
 
                     if (start >= 0 && end <= value.length()) {
-                        float endTextWidth = NVGDrawer.getTextSize(value.substring(0, end), textFont, fontSize).x;
-                        float startTextWidth = NVGDrawer.getTextSize(value.substring(0, start), textFont, fontSize).x;
+                        float endTextWidth = NanoDrawer.getTextSize(text.substring(0, end), textFont, fontSize).x;
+                        float startTextWidth = NanoDrawer.getTextSize(text.substring(0, start), textFont, fontSize).x;
 
                         if (endTextWidth > maxTextWidth + textOffset) {
-                            textOffset += (int) NVGDrawer.getTextSize(value.substring(end - 1, end), textFont, fontSize).x;
+                            textOffset += (int) NanoDrawer.getTextSize(text.substring(end - 1, end), textFont, fontSize).x;
                         } else if (startTextWidth < textOffset) {
-                            textOffset -= (int) NVGDrawer.getTextSize(value.substring(start, start + 1), textFont, fontSize).x;
+                            textOffset -= (int) NanoDrawer.getTextSize(text.substring(start, start + 1), textFont, fontSize).x;
                         }
                     }
                 }
@@ -641,17 +661,18 @@ public class InputTextWidget extends PanelWidget {
      */
     private int getCursorPositionFromMouse(int mouseX) {
         int position = 0;
+        String text = secure ? value.replaceAll(".", "*") : value;
         float offsetX = borderOffset - textOffset;
-        float totalTextWidth = NVGDrawer.getTextSize(value, textFont, fontSize).x;
+        float totalTextWidth = NanoDrawer.getTextSize(text, textFont, fontSize).x;
 
         if (mouseX < offsetX) {
             return 0;
         } else if (mouseX > offsetX + totalTextWidth) {
-            return value.length();
+            return text.length();
         }
 
-        for (int i = 1; i <= value.length(); i++) {
-            float charWidth = NVGDrawer.getTextSize(value.substring(0, i), textFont, fontSize).x;
+        for (int i = 1; i <= text.length(); i++) {
+            float charWidth = NanoDrawer.getTextSize(text.substring(0, i), textFont, fontSize).x;
             if (mouseX <= offsetX + charWidth) {
                 position = i - 1;
                 break;
@@ -668,16 +689,17 @@ public class InputTextWidget extends PanelWidget {
     public void render() {
         super.render();
 
-        NVGDrawer.saveRenderState();
-        NVGDrawer.intersectScissor(getX() + borderOffset, getY() + borderOffset, getWidth() - borderOffset * 2, getHeight() - borderOffset * 2);
+        NanoDrawer.saveRenderState();
+        NanoDrawer.intersectScissor(getX() + borderOffset, getY() + borderOffset, getWidth() - borderOffset * 2, getHeight() - borderOffset * 2);
 
-        Vector2f textSize = NVGDrawer.getTextSize(value, textFont, fontSize);
+        String text = secure ? value.replaceAll(".", "*") : value;
+        Vector2f textSize = NanoDrawer.getTextSize(text, textFont, fontSize);
 
         int textY = (int) ((height - textSize.y) / 2) - borderOffset / 2;
         int textX = borderOffset;
 
         if (textSize.x > maxTextWidth) {
-            Vector2f cursorTextSize = NVGDrawer.getTextSize(value.substring(0, cursorPosition), textFont, fontSize);
+            Vector2f cursorTextSize = NanoDrawer.getTextSize(text.substring(0, cursorPosition), textFont, fontSize);
             if (cursorTextSize.x - textOffset > maxTextWidth) {
                 textOffset = (int) (cursorTextSize.x - maxTextWidth) + borderOffset;
             } else if (cursorTextSize.x - textOffset < 0) {
@@ -691,15 +713,15 @@ public class InputTextWidget extends PanelWidget {
         if (selectionStart != -1 && selectionEnd != -1 && selectionStart != selectionEnd) {
             int start = Math.min(selectionStart, selectionEnd);
             int end = Math.max(selectionStart, selectionEnd);
-            float startX = borderOffset + NVGDrawer.getTextSize(value.substring(0, start), textFont, fontSize).x - textOffset;
-            float endX = borderOffset + NVGDrawer.getTextSize(value.substring(0, end), textFont, fontSize).x - textOffset;
+            float startX = borderOffset + NanoDrawer.getTextSize(text.substring(0, start), textFont, fontSize).x - textOffset;
+            float endX = borderOffset + NanoDrawer.getTextSize(text.substring(0, end), textFont, fontSize).x - textOffset;
             drawRect((int) startX, borderOffset, (int) (endX - startX), y - borderOffset * 2, selectionColor);
         }
 
         if (value.isEmpty() && !active) {
             drawText(placeholder, textFont, borderOffset, textY, fontSize, placeholderColor);
         } else {
-            drawText(value, textFont, textX, textY, fontSize, textColor);
+            drawText(text, textFont, textX, textY, fontSize, textColor);
         }
 
         if (System.currentTimeMillis() - lastBlinkTime > 500) {
@@ -708,13 +730,13 @@ public class InputTextWidget extends PanelWidget {
         }
 
         if (active && cursorVisible) {
-            Vector2f cursorSize = NVGDrawer.getTextSize(value.substring(0, cursorPosition), textFont, fontSize);
+            Vector2f cursorSize = NanoDrawer.getTextSize(text.substring(0, cursorPosition), textFont, fontSize);
             int cursorX = borderOffset + (int) cursorSize.x - textOffset;
             if (cursorX >= borderOffset && cursorX <= getWidth() - borderOffset) {
                 drawLine(cursorX, borderOffset, cursorX, y - borderOffset * 2, 1.0f, textColor);
             }
         }
 
-        NVGDrawer.restoreRenderState();
+        NanoDrawer.restoreRenderState();
     }
 }

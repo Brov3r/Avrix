@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
-import com.avrix.ui.NVGDrawer;
+import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.NanoColor;
 import org.joml.Vector2f;
 import zombie.input.Mouse;
 
@@ -68,11 +68,6 @@ public class SliderWidget extends Widget {
     private int prevValue;
 
     /**
-     * Indicates whether the slider is currently being dragged.
-     */
-    protected boolean dragging = false;
-
-    /**
      * Indicates whether the slider is enabled.
      */
     protected boolean enable = true;
@@ -80,12 +75,12 @@ public class SliderWidget extends Widget {
     /**
      * The color of the slider's thumb and filled bar.
      */
-    protected NVGColor accentColor = new NVGColor("#2ecc71");
+    protected NanoColor accentColor = new NanoColor("#2ecc71");
 
     /**
      * The color of the slider's background bar.
      */
-    protected NVGColor barColor = new NVGColor("#2c3e50");
+    protected NanoColor barColor = new NanoColor("#2c3e50");
 
     /**
      * A callback action to be executed when the slider value changes.
@@ -301,7 +296,7 @@ public class SliderWidget extends Widget {
      *
      * @return the accent color
      */
-    public final NVGColor getAccentColor() {
+    public final NanoColor getAccentColor() {
         return accentColor;
     }
 
@@ -310,7 +305,7 @@ public class SliderWidget extends Widget {
      *
      * @param accentColor the new accent color
      */
-    public final void setAccentColor(NVGColor accentColor) {
+    public final void setAccentColor(NanoColor accentColor) {
         this.accentColor = accentColor;
     }
 
@@ -319,7 +314,7 @@ public class SliderWidget extends Widget {
      *
      * @return the bar color
      */
-    public final NVGColor getBarColor() {
+    public final NanoColor getBarColor() {
         return barColor;
     }
 
@@ -328,7 +323,7 @@ public class SliderWidget extends Widget {
      *
      * @param barColor the new bar color
      */
-    public final void setBarColor(NVGColor barColor) {
+    public final void setBarColor(NanoColor barColor) {
         this.barColor = barColor;
     }
 
@@ -360,33 +355,7 @@ public class SliderWidget extends Widget {
     public void onLeftMouseDown(int x, int y) {
         super.onLeftMouseDown(x, y);
 
-        dragging = true;
-
         prevValue = value;
-    }
-
-    /**
-     * Handles the left mouse button up event outside any visible {@link Widget}
-     *
-     * @param x absolute x-coordinate of the mouse position
-     * @param y absolute y-coordinate of the mouse position
-     */
-    @Override
-    public void onLeftMouseUpOutside(int x, int y) {
-        super.onLeftMouseUpOutside(x, y);
-        dragging = false;
-    }
-
-    /**
-     * Called when the left mouse button is released over the {@link Widget}.
-     *
-     * @param x relative x-coordinate of the mouse position
-     * @param y relative y-coordinate of the mouse position
-     */
-    @Override
-    public void onLeftMouseUp(int x, int y) {
-        super.onLeftMouseUp(x, y);
-        dragging = false;
     }
 
     /**
@@ -394,12 +363,13 @@ public class SliderWidget extends Widget {
      */
     @Override
     public void update() {
-        super.update();
-        if (dragging && enable) {
+        if (lmbPressed && enable) {
             int mouseX = Mouse.getXA();
             int mouseY = Mouse.getYA();
             updateValue(mouseX, mouseY);
         }
+
+        super.update();
     }
 
     /**
@@ -433,9 +403,9 @@ public class SliderWidget extends Widget {
      */
     @Override
     public void render() {
-        Vector2f minSize = NVGDrawer.getTextSize(String.valueOf(minValue), fontName, fontSize);
-        Vector2f maxSize = NVGDrawer.getTextSize(String.valueOf(maxValue), fontName, fontSize);
-        Vector2f valueSize = NVGDrawer.getTextSize(String.valueOf(value), fontName, fontSize);
+        Vector2f minSize = NanoDrawer.getTextSize(String.valueOf(minValue), fontName, fontSize);
+        Vector2f maxSize = NanoDrawer.getTextSize(String.valueOf(maxValue), fontName, fontSize);
+        Vector2f valueSize = NanoDrawer.getTextSize(String.valueOf(value), fontName, fontSize);
 
         int leftOffset = (int) minSize.x + textOffset;
         int rightOffset = (int) (leftOffset + maxSize.x + textOffset);

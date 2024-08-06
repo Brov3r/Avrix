@@ -1,6 +1,6 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
+import com.avrix.ui.NanoColor;
 import zombie.input.Mouse;
 
 /**
@@ -36,12 +36,12 @@ public class ScrollbarWidget extends PanelWidget {
     /**
      * Default background color
      */
-    private final NVGColor DEFAULT_BACKGROUND_COLOR = new NVGColor("#1e272e");
+    private final NanoColor DEFAULT_BACKGROUND_COLOR = new NanoColor("#1e272e");
 
     /**
      * Thumb color
      */
-    protected NVGColor thumbColor = new NVGColor("#808e9b");
+    protected NanoColor thumbColor = new NanoColor("#808e9b");
 
     /**
      * Indicates whether the scrollbar is horizontal. If {@code false}, the scrollbar is vertical.
@@ -104,18 +104,18 @@ public class ScrollbarWidget extends PanelWidget {
     /**
      * Gets the color of the scrollbar thumb (the draggable part of the scrollbar).
      *
-     * @return the color of the scrollbar thumb as a {@link NVGColor} object
+     * @return the color of the scrollbar thumb as a {@link NanoColor} object
      */
-    public final NVGColor getThumbColor() {
+    public final NanoColor getThumbColor() {
         return thumbColor;
     }
 
     /**
      * Sets the color of the scrollbar thumb (the draggable part of the scrollbar).
      *
-     * @param thumbColor the color to set for the scrollbar thumb, specified as a {@link NVGColor} object
+     * @param thumbColor the color to set for the scrollbar thumb, specified as a {@link NanoColor} object
      */
-    public final void setThumbColor(NVGColor thumbColor) {
+    public final void setThumbColor(NanoColor thumbColor) {
         this.thumbColor = thumbColor;
     }
 

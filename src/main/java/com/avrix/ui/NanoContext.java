@@ -10,17 +10,17 @@ import static org.lwjgl.nanovg.NanoVG.nvgBeginFrame;
 import static org.lwjgl.nanovg.NanoVG.nvgEndFrame;
 
 /**
- * The NVGContext class encapsulates a NanoVG context and provides utility methods for managing
+ * The NanoContext class encapsulates a NanoVG context and provides utility methods for managing
  * and rendering with the context in an OpenGL environment.
  */
-public class NVGContext {
+public class NanoContext {
     private final boolean modernOpenGL;
     private final long context;
 
     /**
      * Initializes a NanoVG context and returns this object.
      */
-    public NVGContext() {
+    public NanoContext() {
         this.modernOpenGL = (GL11.glGetInteger(GL30.GL_MAJOR_VERSION) > 3) || (GL11.glGetInteger(GL30.GL_MAJOR_VERSION) == 3 && GL11.glGetInteger(GL30.GL_MINOR_VERSION) >= 2);
 
         if (this.modernOpenGL) {

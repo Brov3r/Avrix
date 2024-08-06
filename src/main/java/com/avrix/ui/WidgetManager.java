@@ -14,7 +14,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Manages a collection of {@link Widget} instances, handling rendering and updates.
  */
 public class WidgetManager {
-    private static NVGContext NVGContext;
+    private static NanoContext NanoContext;
     private static final List<Widget> widgetList = new CopyOnWriteArrayList<>();
 
     /**
@@ -22,15 +22,15 @@ public class WidgetManager {
      */
     public static void init() {
         RenderThread.queueInvokeOnRenderContext(() -> {
-            if (NVGContext == null) {
-                NVGContext = new NVGContext();
+            if (NanoContext == null) {
+                NanoContext = new NanoContext();
             }
 
-            NVGFont.loadDefaultFonts();
+            NanoFont.loadDefaultFonts();
 
-            NVGImage.loadCacheImages(NVGContext);
+            NanoImage.loadCacheImages(NanoContext);
 
-            EventManager.invokeEvent("onWidgetManagerInitialized", NVGContext);
+            EventManager.invokeEvent("onWidgetManagerInitialized", NanoContext);
         });
     }
 
@@ -45,15 +45,15 @@ public class WidgetManager {
 
         InputWidgetHandler.updateMouseEvent();
 
-        NVGContext.beginFrame(WindowUtils.getWindowWidth(), WindowUtils.getWindowHeight(), 1);
+        NanoContext.beginFrame(WindowUtils.getWindowWidth(), WindowUtils.getWindowHeight(), 1);
 
-        EventManager.invokeEvent("onPreWidgetRender", NVGContext);
+        EventManager.invokeEvent("onPreWidgetRender", NanoContext);
 
         for (Widget widget : widgetList) {
             if (!widget.isVisible()) continue;
 
-            NVGDrawer.saveRenderState();
-            NVGDrawer.intersectScissor(widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight());
+            NanoDrawer.saveRenderState();
+            NanoDrawer.intersectScissor(widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight());
 
             widget.preRender();
 
@@ -63,12 +63,12 @@ public class WidgetManager {
 
             widget.postRender();
 
-            NVGDrawer.restoreRenderState();
+            NanoDrawer.restoreRenderState();
         }
 
-        EventManager.invokeEvent("onPostWidgetRender", NVGContext);
+        EventManager.invokeEvent("onPostWidgetRender", NanoContext);
 
-        NVGContext.endFrame();
+        NanoContext.endFrame();
     }
 
     /**
@@ -76,8 +76,8 @@ public class WidgetManager {
      *
      * @return NanoVG context, if it does not exist (not initialized) returns {@code null}
      */
-    public static NVGContext getContext() {
-        return NVGContext;
+    public static NanoContext getContext() {
+        return NanoContext;
     }
 
     /**

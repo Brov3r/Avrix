@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * A utility class for loading images and caching them.
  */
-public class NVGImage {
+public class NanoImage {
     /**
      * Map to store image identifiers associated with their names.
      */
@@ -36,7 +36,7 @@ public class NVGImage {
      *
      * @param context The NVG context used to load textures.
      */
-    public static void loadCacheImages(NVGContext context) {
+    public static void loadCacheImages(NanoContext context) {
         File cacheFolder = imagesCachePath.toFile();
 
         if (!cacheFolder.exists() && !cacheFolder.mkdirs()) {

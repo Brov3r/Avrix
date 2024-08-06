@@ -3,7 +3,7 @@ package com.avrix.example;
 import com.avrix.events.EventManager;
 import com.avrix.plugin.Metadata;
 import com.avrix.plugin.Plugin;
-import com.avrix.ui.NVGColor;
+import com.avrix.ui.NanoColor;
 import com.avrix.ui.widgets.*;
 import zombie.input.Mouse;
 
@@ -49,16 +49,16 @@ public class Main extends Plugin {
         PopupWidget pw = new PopupWidget(0, 0, 100, 100);
         for (int i = 0; i < 10; i++) {
             int index = i;
-            pw.addChild(new ButtonWidget("Hey" + i, 0, i * 50, 100, 40, 0, NVGColor.CORAL, () -> {
+            pw.addChild(new ButtonWidget("Hey" + i, 0, i * 50, 100, 40, 0, NanoColor.CORAL, () -> {
                 System.out.println("Popup click " + index);
             }));
         }
 
         ModalWidget mw = new ModalWidget(300, 100);
-        mw.getContentPanel().addChild(new ButtonWidget("Close", 10, 10, 100, 30, 0, NVGColor.BABY_BLUE, mw::close));
+        mw.getContentPanel().addChild(new ButtonWidget("Close", 10, 10, 100, 30, 0, NanoColor.BABY_BLUE, mw::close));
 
-        ButtonWidget btn = new ButtonWidget("Add btn", 0, 0, 100, 32, 0, NVGColor.BABY_BLUE, () -> {
-            ButtonWidget btn2 = new ButtonWidget("Click", 0, 0, 100, 32, 0, NVGColor.BABY_BLUE, () -> {
+        ButtonWidget btn = new ButtonWidget("Add btn", 0, 0, 100, 32, 0, NanoColor.BABY_BLUE, () -> {
+            ButtonWidget btn2 = new ButtonWidget("Click", 0, 0, 100, 32, 0, NanoColor.BABY_BLUE, () -> {
                 pw.setX(Mouse.getXA());
                 pw.setY(Mouse.getYA());
                 pw.show();
@@ -67,7 +67,7 @@ public class Main extends Plugin {
             hbForButtons.addChild(btn2);
         });
 
-        ButtonWidget modalBtn = new ButtonWidget("Modal", 0, 0, 100, 32, 0, NVGColor.BABY_BLUE, () -> {
+        ButtonWidget modalBtn = new ButtonWidget("Modal", 0, 0, 100, 32, 0, NanoColor.BABY_BLUE, () -> {
             mw.show();
         });
 
@@ -81,10 +81,11 @@ public class Main extends Plugin {
         vb.addChild(input);
 
         InputTextWidget input2 = new InputTextWidget(0, 0, 200, 32);
-        input2.setBackgroundColor(NVGColor.DARK_GRAY);
+        input2.setBackgroundColor(NanoColor.DARK_GRAY);
         input2.setBorderRadius(8);
         input2.setDrawBorder(false);
-        input2.setPlaceholder("Placeholder text...");
+        input2.setPlaceholder("Secure text...");
+        input2.setSecure(true);
         vb.addChild(input2);
 
         CheckboxWidget cb = new CheckboxWidget("Example checkbox", 10, 200, 150, 16, (checked) -> {
@@ -113,6 +114,15 @@ public class Main extends Plugin {
         rbw.addRadio("Option 3");
         rbw.resizeToContent();
         vb.addChild(rbw);
+
+        HorizontalBoxWidget hb2 = new HorizontalBoxWidget(0, 0, 0, 0, true);
+        ColorPickerWidget cp = new ColorPickerWidget(0, 0, 15, 15, NanoColor.BABY_BLUE);
+        cp.setOnChangeColorAction((nanoColor -> System.out.println("New color: " + nanoColor.toHEX())));
+        hb2.addChild(new LabelWidget("Color picker: ", "Montserrat-Regular", 0, 0, 100, 14, NanoColor.WHITE));
+        hb2.addChild(cp);
+
+        vb.addChild(hb2);
+
 
         root.addToScreen();
     }

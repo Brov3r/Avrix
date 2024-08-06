@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
-import com.avrix.ui.NVGDrawer;
+import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.NanoColor;
 import org.joml.Vector2f;
 import zombie.SoundManager;
 
@@ -32,7 +32,7 @@ public class ButtonWidget extends PanelWidget {
     /**
      * The color of the button text.
      */
-    protected NVGColor textColor = NVGColor.WHITE;
+    protected NanoColor textColor = NanoColor.WHITE;
 
     /**
      * The method to be executed when the button is clicked.
@@ -45,11 +45,6 @@ public class ButtonWidget extends PanelWidget {
     protected boolean enable = true;
 
     /**
-     * Indicates whether the left mouse button is currently pressed down on the button.
-     */
-    protected boolean LMBDown = false;
-
-    /**
      * Constructs a new {@link ButtonWidget} with the specified text, position, size, border radius,
      * and background color.
      *
@@ -59,10 +54,10 @@ public class ButtonWidget extends PanelWidget {
      * @param width           the width of the widget
      * @param height          the height of the widget
      * @param borderRadius    the radius of the corner rounding in pixels
-     * @param backgroundColor the background color of the widget, specified in {@link NVGColor}
+     * @param backgroundColor the background color of the widget, specified in {@link NanoColor}
      * @param onClickMethod   method that is called when the button is clicked
      */
-    public ButtonWidget(String text, int x, int y, int width, int height, int borderRadius, NVGColor backgroundColor, Runnable onClickMethod) {
+    public ButtonWidget(String text, int x, int y, int width, int height, int borderRadius, NanoColor backgroundColor, Runnable onClickMethod) {
         super(x, y, width, height, borderRadius, backgroundColor);
 
         this.text = text;
@@ -74,7 +69,7 @@ public class ButtonWidget extends PanelWidget {
      *
      * @return the text color
      */
-    public final NVGColor getTextColor() {
+    public final NanoColor getTextColor() {
         return textColor;
     }
 
@@ -83,7 +78,7 @@ public class ButtonWidget extends PanelWidget {
      *
      * @param textColor the text color to set
      */
-    public final void setTextColor(NVGColor textColor) {
+    public final void setTextColor(NanoColor textColor) {
         this.textColor = textColor;
     }
 
@@ -168,18 +163,6 @@ public class ButtonWidget extends PanelWidget {
         this.enable = enable;
     }
 
-    /**
-     * Called when the left mouse button is pressed down over the {@link Widget}.
-     *
-     * @param x relative x-coordinate of the mouse position
-     * @param y relative y-coordinate of the mouse position
-     */
-    @Override
-    public void onLeftMouseDown(int x, int y) {
-        super.onLeftMouseDown(x, y);
-
-        LMBDown = true;
-    }
 
     /**
      * Called when the left mouse button is released over the {@link Widget}.
@@ -189,27 +172,12 @@ public class ButtonWidget extends PanelWidget {
      */
     @Override
     public void onLeftMouseUp(int x, int y) {
-        super.onLeftMouseUp(x, y);
-
-        if (enable && visible && LMBDown) {
+        if (enable && visible && lmbPressed) {
             onClickMethod.run();
             SoundManager.instance.playUISound(clickSound);
         }
 
-        LMBDown = false;
-    }
-
-    /**
-     * Handles the left mouse button up event outside any visible {@link Widget}
-     *
-     * @param x absolute x-coordinate of the mouse position
-     * @param y absolute y-coordinate of the mouse position
-     */
-    @Override
-    public void onLeftMouseUpOutside(int x, int y) {
-        super.onLeftMouseUpOutside(x, y);
-
-        LMBDown = false;
+        super.onLeftMouseUp(x, y);
     }
 
     /**
@@ -217,11 +185,11 @@ public class ButtonWidget extends PanelWidget {
      */
     @Override
     public void render() {
-        NVGColor bgColor = backgroundColor.copy();
+        NanoColor bgColor = backgroundColor.copy();
 
         if (isEnable()) {
             if (isHovered()) bgColor = bgColor.multiply(1.25f);
-            if (LMBDown) bgColor = bgColor.multiply(0.75f);
+            if (lmbPressed) bgColor = bgColor.multiply(0.75f);
         } else {
             bgColor = bgColor.multiply(0.3f);
         }
@@ -238,7 +206,7 @@ public class ButtonWidget extends PanelWidget {
             }
         }
 
-        Vector2f titleSize = NVGDrawer.getTextSize(text, fontName, fontSize);
+        Vector2f titleSize = NanoDrawer.getTextSize(text, fontName, fontSize);
         drawText(text, fontName, (getWidth() - (int) titleSize.x) / 2, (getHeight() - (int) titleSize.y - fontSize / 4) / 2, fontSize, textColor);
     }
 }

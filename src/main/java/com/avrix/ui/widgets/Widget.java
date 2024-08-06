@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
-import com.avrix.ui.NVGDrawer;
+import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.NanoColor;
 import com.avrix.ui.WidgetManager;
 
 import java.util.List;
@@ -36,6 +36,16 @@ public abstract class Widget {
      * Signals whether the {@link Widget} can scroll child elements
      */
     protected boolean scrollable = false;
+
+    /**
+     * Signal indicating whether {@link Widget} is currently left-clicked
+     */
+    protected boolean lmbPressed = false;
+
+    /**
+     * Signal indicating whether {@link Widget} is currently right-clicked
+     */
+    protected boolean rmbPressed = false;
 
     /**
      * The relative x-coordinate of the {@link Widget}'s position (if not a child, coincides with absolute coordinates).
@@ -289,8 +299,8 @@ public abstract class Widget {
             child.setX(absoluteX);
             child.setY(absoluteY);
 
-            NVGDrawer.saveRenderState();
-            NVGDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
+            NanoDrawer.saveRenderState();
+            NanoDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
 
             // Render child and its children
             child.preRender();
@@ -300,7 +310,7 @@ public abstract class Widget {
             child.postRender();
 
             // Restore the original positions
-            NVGDrawer.restoreRenderState();
+            NanoDrawer.restoreRenderState();
             child.setX(originalX);
             child.setY(originalY);
         }
@@ -431,6 +441,8 @@ public abstract class Widget {
                 child.onLeftMouseDownOutside(x, y);
             }
         }
+
+        lmbPressed = true;
     }
 
     /**
@@ -455,6 +467,8 @@ public abstract class Widget {
                 child.onLeftMouseUpOutside(x, y);
             }
         }
+
+        lmbPressed = false;
     }
 
     /**
@@ -480,6 +494,8 @@ public abstract class Widget {
                 child.onRightMouseDownOutside(x, y);
             }
         }
+
+        rmbPressed = true;
     }
 
     /**
@@ -504,6 +520,8 @@ public abstract class Widget {
                 child.onRightMouseUpOutside(x, y);
             }
         }
+
+        rmbPressed = false;
     }
 
     /**
@@ -622,6 +640,8 @@ public abstract class Widget {
         for (Widget child : getChildren()) {
             child.onLeftMouseUpOutside(x, y);
         }
+
+        lmbPressed = false;
     }
 
     /**
@@ -646,6 +666,8 @@ public abstract class Widget {
         for (Widget child : getChildren()) {
             child.onRightMouseUpOutside(x, y);
         }
+
+        rmbPressed = false;
     }
 
     /**
@@ -894,8 +916,8 @@ public abstract class Widget {
      * @param lineWidth the width of the stroke line in pixels
      * @param color     the color of the outline
      */
-    public void drawRectOutline(int x, int y, int width, int height, float lineWidth, NVGColor color) {
-        NVGDrawer.drawRectOutline(getX() + x, getY() + y, width, height, lineWidth, color);
+    public void drawRectOutline(int x, int y, int width, int height, float lineWidth, NanoColor color) {
+        NanoDrawer.drawRectOutline(getX() + x, getY() + y, width, height, lineWidth, color);
     }
 
     /**
@@ -909,8 +931,8 @@ public abstract class Widget {
      * @param lineWidth the width of the stroke line in pixels
      * @param color     the color of the outline
      */
-    public void drawRoundedRectOutline(int x, int y, int width, int height, int radius, float lineWidth, NVGColor color) {
-        NVGDrawer.drawRoundedRectOutline(getX() + x, getY() + y, width, height, radius, lineWidth, color);
+    public void drawRoundedRectOutline(int x, int y, int width, int height, int radius, float lineWidth, NanoColor color) {
+        NanoDrawer.drawRoundedRectOutline(getX() + x, getY() + y, width, height, radius, lineWidth, color);
     }
 
     /**
@@ -922,8 +944,8 @@ public abstract class Widget {
      * @param height the height of the rectangle
      * @param color  the color to fill the rectangle with
      */
-    public void drawRect(int x, int y, int width, int height, NVGColor color) {
-        NVGDrawer.drawRect(getX() + x, getY() + y, width, height, color);
+    public void drawRect(int x, int y, int width, int height, NanoColor color) {
+        NanoDrawer.drawRect(getX() + x, getY() + y, width, height, color);
     }
 
     /**
@@ -936,8 +958,8 @@ public abstract class Widget {
      * @param fontSize the size of the font
      * @param color    the color of the text
      */
-    public void drawText(String text, String fontName, int x, int y, int fontSize, NVGColor color) {
-        NVGDrawer.drawText(text, fontName, getX() + x, getY() + y, fontSize, color);
+    public void drawText(String text, String fontName, int x, int y, int fontSize, NanoColor color) {
+        NanoDrawer.drawText(text, fontName, getX() + x, getY() + y, fontSize, color);
     }
 
     /**
@@ -950,8 +972,8 @@ public abstract class Widget {
      * @param radius the radius of the corners
      * @param color  the color to fill the rectangle with
      */
-    public void drawRoundedRect(int x, int y, int width, int height, float radius, NVGColor color) {
-        NVGDrawer.drawRoundedRect(getX() + x, getY() + y, width, height, radius, color);
+    public void drawRoundedRect(int x, int y, int width, int height, float radius, NanoColor color) {
+        NanoDrawer.drawRoundedRect(getX() + x, getY() + y, width, height, radius, color);
     }
 
     /**
@@ -963,8 +985,8 @@ public abstract class Widget {
      * @param height the height of the ellipse
      * @param color  the color of the ellipse
      */
-    public void drawEllipse(int x, int y, int width, int height, NVGColor color) {
-        NVGDrawer.drawEllipse(getX() + x, getY() + y, width, height, color);
+    public void drawEllipse(int x, int y, int width, int height, NanoColor color) {
+        NanoDrawer.drawEllipse(getX() + x, getY() + y, width, height, color);
     }
 
     /**
@@ -977,8 +999,8 @@ public abstract class Widget {
      * @param width the thickness of the line
      * @param color the color of the line
      */
-    public void drawLine(int x1, int y1, int x2, int y2, float width, NVGColor color) {
-        NVGDrawer.drawLine(getX() + x1, getY() + y1, getX() + x2, getY() + y2, width, color);
+    public void drawLine(int x1, int y1, int x2, int y2, float width, NanoColor color) {
+        NanoDrawer.drawLine(getX() + x1, getY() + y1, getX() + x2, getY() + y2, width, color);
     }
 
     /**
@@ -989,8 +1011,8 @@ public abstract class Widget {
      * @param radius the radius of the circle
      * @param color  the color of the circle
      */
-    public void drawCircle(int x, int y, float radius, NVGColor color) {
-        NVGDrawer.drawCircle(getX() + x, getY() + y, radius, color);
+    public void drawCircle(int x, int y, float radius, NanoColor color) {
+        NanoDrawer.drawCircle(getX() + x, getY() + y, radius, color);
     }
 
     /**
@@ -1003,8 +1025,8 @@ public abstract class Widget {
      * @param endAngle   the ending angle of the arc (in radians)
      * @param color      the color of the arc segment
      */
-    public void drawArc(int x, int y, float radius, float startAngle, float endAngle, NVGColor color) {
-        NVGDrawer.drawArc(getX() + x, getY() + y, radius, startAngle, endAngle, color);
+    public void drawArc(int x, int y, float radius, float startAngle, float endAngle, NanoColor color) {
+        NanoDrawer.drawArc(getX() + x, getY() + y, radius, startAngle, endAngle, color);
     }
 
     /**
@@ -1018,8 +1040,8 @@ public abstract class Widget {
      * @param thickness  the thickness of the arc segment
      * @param color      the color of the arc segment
      */
-    public void drawArc(int x, int y, float radius, float thickness, float startAngle, float endAngle, NVGColor color) {
-        NVGDrawer.drawArc(getX() + x, getY() + y, radius, thickness, startAngle, endAngle, color);
+    public void drawArc(int x, int y, float radius, float thickness, float startAngle, float endAngle, NanoColor color) {
+        NanoDrawer.drawArc(getX() + x, getY() + y, radius, thickness, startAngle, endAngle, color);
     }
 
     /**
@@ -1033,7 +1055,7 @@ public abstract class Widget {
      * @param opacity image opacity (from 0 to 1)
      */
     public void drawImage(int imageId, int x, int y, int width, int height, float opacity) {
-        NVGDrawer.drawImage(imageId, getX() + x, getY() + y, width, height, opacity);
+        NanoDrawer.drawImage(imageId, getX() + x, getY() + y, width, height, opacity);
     }
 
     /**

@@ -76,7 +76,7 @@ loadScripts(document, 'script');</script>
 <section class="class-description" id="class-description">
 <dl class="notes">
 <dt>Direct Known Subclasses:</dt>
-<dd><code><a href="BoxLayoutWidget.html" title="class in com.avrix.ui.widgets">BoxLayoutWidget</a></code>, <code><a href="CheckboxWidget.html" title="class in com.avrix.ui.widgets">CheckboxWidget</a></code>, <code><a href="LabelWidget.html" title="class in com.avrix.ui.widgets">LabelWidget</a></code>, <code><a href="ModalWidget.html" title="class in com.avrix.ui.widgets">ModalWidget</a></code>, <code><a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></code>, <code><a href="RadioButtonWidget.html" title="class in com.avrix.ui.widgets">RadioButtonWidget</a></code>, <code><a href="SliderWidget.html" title="class in com.avrix.ui.widgets">SliderWidget</a></code></dd>
+<dd><code><a href="BoxLayoutWidget.html" title="class in com.avrix.ui.widgets">BoxLayoutWidget</a></code>, <code><a href="CheckboxWidget.html" title="class in com.avrix.ui.widgets">CheckboxWidget</a></code>, <code><a href="ColorPickerWidget.html" title="class in com.avrix.ui.widgets">ColorPickerWidget</a></code>, <code><a href="LabelWidget.html" title="class in com.avrix.ui.widgets">LabelWidget</a></code>, <code><a href="ModalWidget.html" title="class in com.avrix.ui.widgets">ModalWidget</a></code>, <code><a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></code>, <code><a href="RadioButtonWidget.html" title="class in com.avrix.ui.widgets">RadioButtonWidget</a></code>, <code><a href="SliderWidget.html" title="class in com.avrix.ui.widgets">SliderWidget</a></code></dd>
 </dl>
 <hr>
 <div class="type-signature"><span class="modifiers">public abstract class </span><span class="element-name type-name-label">Widget</span>
@@ -125,20 +125,30 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color">
 <div class="block">Indicates whether the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> is currently hovered by the mouse cursor.</div>
 </div>
-<div class="col-first even-row-color"><code>protected int</code></div>
-<div class="col-second even-row-color"><code><a href="#maxScrollX" class="member-name-link">maxScrollX</a></code></div>
+<div class="col-first even-row-color"><code>protected boolean</code></div>
+<div class="col-second even-row-color"><code><a href="#lmbPressed" class="member-name-link">lmbPressed</a></code></div>
 <div class="col-last even-row-color">
-<div class="block">The maximum horizontal scroll offset of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+<div class="block">Signal indicating whether <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> is currently left-clicked</div>
 </div>
 <div class="col-first odd-row-color"><code>protected int</code></div>
-<div class="col-second odd-row-color"><code><a href="#maxScrollY" class="member-name-link">maxScrollY</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#maxScrollX" class="member-name-link">maxScrollX</a></code></div>
 <div class="col-last odd-row-color">
+<div class="block">The maximum horizontal scroll offset of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+</div>
+<div class="col-first even-row-color"><code>protected int</code></div>
+<div class="col-second even-row-color"><code><a href="#maxScrollY" class="member-name-link">maxScrollY</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">The maximum vertical scroll offset of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first even-row-color"><code>protected <a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></code></div>
-<div class="col-second even-row-color"><code><a href="#parent" class="member-name-link">parent</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><code>protected <a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#parent" class="member-name-link">parent</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">Parent <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+</div>
+<div class="col-first even-row-color"><code>protected boolean</code></div>
+<div class="col-second even-row-color"><code><a href="#rmbPressed" class="member-name-link">rmbPressed</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Signal indicating whether <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> is currently right-clicked</div>
 </div>
 <div class="col-first odd-row-color"><code>protected boolean</code></div>
 <div class="col-second odd-row-color"><code><a href="#scrollable" class="member-name-link">scrollable</a></code></div>
@@ -233,40 +243,40 @@ loadScripts(document, 'script');</script>
 <div class="block">Moves this <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> to the front of the rendering order, ensuring it is drawn above other widgets.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawArc(int,int,float,float,float,float,com.avrix.ui.NVGColor)" class="member-name-link">drawArc</a><wbr>(int&nbsp;x,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawArc(int,int,float,float,float,float,com.avrix.ui.NanoColor)" class="member-name-link">drawArc</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  float&nbsp;radius,
  float&nbsp;thickness,
  float&nbsp;startAngle,
  float&nbsp;endAngle,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</code></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws an arc segment with the specified center, radius, start angle, end angle, and thickness.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawArc(int,int,float,float,float,com.avrix.ui.NVGColor)" class="member-name-link">drawArc</a><wbr>(int&nbsp;x,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawArc(int,int,float,float,float,com.avrix.ui.NanoColor)" class="member-name-link">drawArc</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  float&nbsp;radius,
  float&nbsp;startAngle,
  float&nbsp;endAngle,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</code></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws an arc segment with the specified center, radius, start angle, and end angle.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawCircle(int,int,float,com.avrix.ui.NVGColor)" class="member-name-link">drawCircle</a><wbr>(int&nbsp;x,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawCircle(int,int,float,com.avrix.ui.NanoColor)" class="member-name-link">drawCircle</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  float&nbsp;radius,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</code></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws a circle at the specified position with the given radius and color.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawEllipse(int,int,int,int,com.avrix.ui.NVGColor)" class="member-name-link">drawEllipse</a><wbr>(int&nbsp;x,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawEllipse(int,int,int,int,com.avrix.ui.NanoColor)" class="member-name-link">drawEllipse</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</code></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws an ellipse at the specified position with the given size and color.</div>
 </div>
@@ -281,62 +291,62 @@ loadScripts(document, 'script');</script>
 <div class="block">Draws an image at the specified position with the given size.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawLine(int,int,int,int,float,com.avrix.ui.NVGColor)" class="member-name-link">drawLine</a><wbr>(int&nbsp;x1,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawLine(int,int,int,int,float,com.avrix.ui.NanoColor)" class="member-name-link">drawLine</a><wbr>(int&nbsp;x1,
  int&nbsp;y1,
  int&nbsp;x2,
  int&nbsp;y2,
  float&nbsp;width,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</code></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws a line from (x1, y1) to (x2, y2) with the specified color and thickness.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRect(int,int,int,int,com.avrix.ui.NVGColor)" class="member-name-link">drawRect</a><wbr>(int&nbsp;x,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRect(int,int,int,int,com.avrix.ui.NanoColor)" class="member-name-link">drawRect</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</code></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws a filled rectangle with the specified position, size, and color.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRectOutline(int,int,int,int,float,com.avrix.ui.NVGColor)" class="member-name-link">drawRectOutline</a><wbr>(int&nbsp;x,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRectOutline(int,int,int,int,float,com.avrix.ui.NanoColor)" class="member-name-link">drawRectOutline</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height,
  float&nbsp;lineWidth,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</code></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws a rectangle with a stroke and no fill</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRoundedRect(int,int,int,int,float,com.avrix.ui.NVGColor)" class="member-name-link">drawRoundedRect</a><wbr>(int&nbsp;x,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRoundedRect(int,int,int,int,float,com.avrix.ui.NanoColor)" class="member-name-link">drawRoundedRect</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height,
  float&nbsp;radius,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</code></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws a filled rectangle with rounded corners with the specified position, size, radius, and color.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRoundedRectOutline(int,int,int,int,int,float,com.avrix.ui.NVGColor)" class="member-name-link">drawRoundedRectOutline</a><wbr>(int&nbsp;x,
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawRoundedRectOutline(int,int,int,int,int,float,com.avrix.ui.NanoColor)" class="member-name-link">drawRoundedRectOutline</a><wbr>(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height,
  int&nbsp;radius,
  float&nbsp;lineWidth,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</code></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws a rectangle with rounded corners and a stroke without fill.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawText(java.lang.String,java.lang.String,int,int,int,com.avrix.ui.NVGColor)" class="member-name-link">drawText</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#drawText(java.lang.String,java.lang.String,int,int,int,com.avrix.ui.NanoColor)" class="member-name-link">drawText</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fontName,
  int&nbsp;x,
  int&nbsp;y,
  int&nbsp;fontSize,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</code></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Draws text on the screen using NanoVG.</div>
 </div>
@@ -707,6 +717,20 @@ loadScripts(document, 'script');</script>
 <h3>scrollable</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">scrollable</span></div>
 <div class="block">Signals whether the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> can scroll child elements</div>
+</section>
+</li>
+<li>
+<section class="detail" id="lmbPressed">
+<h3>lmbPressed</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">lmbPressed</span></div>
+<div class="block">Signal indicating whether <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> is currently left-clicked</div>
+</section>
+</li>
+<li>
+<section class="detail" id="rmbPressed">
+<h3>rmbPressed</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">rmbPressed</span></div>
+<div class="block">Signal indicating whether <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> is currently right-clicked</div>
 </section>
 </li>
 <li>
@@ -1506,14 +1530,14 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="drawRectOutline(int,int,int,int,float,com.avrix.ui.NVGColor)">
+<section class="detail" id="drawRectOutline(int,int,int,int,float,com.avrix.ui.NanoColor)">
 <h3>drawRectOutline</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawRectOutline</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height,
  float&nbsp;lineWidth,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</span></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</span></div>
 <div class="block">Draws a rectangle with a stroke and no fill</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -1527,7 +1551,7 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="drawRoundedRectOutline(int,int,int,int,int,float,com.avrix.ui.NVGColor)">
+<section class="detail" id="drawRoundedRectOutline(int,int,int,int,int,float,com.avrix.ui.NanoColor)">
 <h3>drawRoundedRectOutline</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawRoundedRectOutline</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y,
@@ -1535,7 +1559,7 @@ loadScripts(document, 'script');</script>
  int&nbsp;height,
  int&nbsp;radius,
  float&nbsp;lineWidth,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</span></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</span></div>
 <div class="block">Draws a rectangle with rounded corners and a stroke without fill.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -1550,13 +1574,13 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="drawRect(int,int,int,int,com.avrix.ui.NVGColor)">
+<section class="detail" id="drawRect(int,int,int,int,com.avrix.ui.NanoColor)">
 <h3>drawRect</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawRect</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</span></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</span></div>
 <div class="block">Draws a filled rectangle with the specified position, size, and color.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -1569,14 +1593,14 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="drawText(java.lang.String,java.lang.String,int,int,int,com.avrix.ui.NVGColor)">
+<section class="detail" id="drawText(java.lang.String,java.lang.String,int,int,int,com.avrix.ui.NanoColor)">
 <h3>drawText</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawText</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
  <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fontName,
  int&nbsp;x,
  int&nbsp;y,
  int&nbsp;fontSize,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</span></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</span></div>
 <div class="block">Draws text on the screen using NanoVG.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -1590,14 +1614,14 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="drawRoundedRect(int,int,int,int,float,com.avrix.ui.NVGColor)">
+<section class="detail" id="drawRoundedRect(int,int,int,int,float,com.avrix.ui.NanoColor)">
 <h3>drawRoundedRect</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawRoundedRect</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height,
  float&nbsp;radius,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</span></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</span></div>
 <div class="block">Draws a filled rectangle with rounded corners with the specified position, size, radius, and color.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -1611,13 +1635,13 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="drawEllipse(int,int,int,int,com.avrix.ui.NVGColor)">
+<section class="detail" id="drawEllipse(int,int,int,int,com.avrix.ui.NanoColor)">
 <h3>drawEllipse</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawEllipse</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y,
  int&nbsp;width,
  int&nbsp;height,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</span></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</span></div>
 <div class="block">Draws an ellipse at the specified position with the given size and color.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -1630,14 +1654,14 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="drawLine(int,int,int,int,float,com.avrix.ui.NVGColor)">
+<section class="detail" id="drawLine(int,int,int,int,float,com.avrix.ui.NanoColor)">
 <h3>drawLine</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawLine</span><wbr><span class="parameters">(int&nbsp;x1,
  int&nbsp;y1,
  int&nbsp;x2,
  int&nbsp;y2,
  float&nbsp;width,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</span></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</span></div>
 <div class="block">Draws a line from (x1, y1) to (x2, y2) with the specified color and thickness.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -1651,12 +1675,12 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="drawCircle(int,int,float,com.avrix.ui.NVGColor)">
+<section class="detail" id="drawCircle(int,int,float,com.avrix.ui.NanoColor)">
 <h3>drawCircle</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawCircle</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y,
  float&nbsp;radius,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</span></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</span></div>
 <div class="block">Draws a circle at the specified position with the given radius and color.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -1668,14 +1692,14 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="drawArc(int,int,float,float,float,com.avrix.ui.NVGColor)">
+<section class="detail" id="drawArc(int,int,float,float,float,com.avrix.ui.NanoColor)">
 <h3>drawArc</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawArc</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y,
  float&nbsp;radius,
  float&nbsp;startAngle,
  float&nbsp;endAngle,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</span></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</span></div>
 <div class="block">Draws an arc segment with the specified center, radius, start angle, and end angle.</div>
 <dl class="notes">
 <dt>Parameters:</dt>
@@ -1689,7 +1713,7 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
-<section class="detail" id="drawArc(int,int,float,float,float,float,com.avrix.ui.NVGColor)">
+<section class="detail" id="drawArc(int,int,float,float,float,float,com.avrix.ui.NanoColor)">
 <h3>drawArc</h3>
 <div class="member-signature"><span class="modifiers">public</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">drawArc</span><wbr><span class="parameters">(int&nbsp;x,
  int&nbsp;y,
@@ -1697,7 +1721,7 @@ loadScripts(document, 'script');</script>
  float&nbsp;thickness,
  float&nbsp;startAngle,
  float&nbsp;endAngle,
- <a href="../NVGColor.html" title="class in com.avrix.ui">NVGColor</a>&nbsp;color)</span></div>
+ <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;color)</span></div>
 <div class="block">Draws an arc segment with the specified center, radius, start angle, end angle, and thickness.</div>
 <dl class="notes">
 <dt>Parameters:</dt>

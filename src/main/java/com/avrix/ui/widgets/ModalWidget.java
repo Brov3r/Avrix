@@ -1,6 +1,6 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
+import com.avrix.ui.NanoColor;
 import com.avrix.utils.WindowUtils;
 
 /**
@@ -11,7 +11,7 @@ public class ModalWidget extends Widget {
     /**
      * The background color of the modal widget.
      */
-    protected NVGColor backgroundColor = NVGColor.BLACK.alpha(0.85f);
+    protected NanoColor backgroundColor = NanoColor.BLACK.alpha(0.85f);
 
     /**
      * The content panel displayed within the modal.
@@ -58,7 +58,7 @@ public class ModalWidget extends Widget {
      *
      * @return the background color
      */
-    public NVGColor getBackgroundColor() {
+    public NanoColor getBackgroundColor() {
         return backgroundColor;
     }
 
@@ -67,7 +67,7 @@ public class ModalWidget extends Widget {
      *
      * @param backgroundColor the new background color
      */
-    public void setBackgroundColor(NVGColor backgroundColor) {
+    public void setBackgroundColor(NanoColor backgroundColor) {
         this.backgroundColor = backgroundColor;
     }
 

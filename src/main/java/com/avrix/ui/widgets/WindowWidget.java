@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
-import com.avrix.ui.NVGDrawer;
+import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.NanoColor;
 import org.joml.Vector2f;
 import zombie.input.Mouse;
 
@@ -33,7 +33,7 @@ public class WindowWidget extends ScrollPanelWidget {
     /**
      * The color of the {@link Widget}'s header.
      */
-    protected NVGColor headerColor = NVGColor.LIGHT_BLACK.multiply(1.7f);
+    protected NanoColor headerColor = NanoColor.LIGHT_BLACK.multiply(1.7f);
 
     /**
      * The height of the {@link Widget}'s header.
@@ -144,10 +144,10 @@ public class WindowWidget extends ScrollPanelWidget {
     public void onInitialize() {
         super.onInitialize();
 
-        closeButton = new ButtonWidget("\uf00d", getWidth() - closeButtonSize - closeButtonOffset, closeButtonOffset, closeButtonSize, closeButtonSize, closeButtonSize, new NVGColor("#e74c3c"), this::closeWindow);
+        closeButton = new ButtonWidget("\uf00d", getWidth() - closeButtonSize - closeButtonOffset, closeButtonOffset, closeButtonSize, closeButtonSize, closeButtonSize, new NanoColor("#e74c3c"), this::closeWindow);
         closeButton.setDrawBorder(false);
         closeButton.setFontSize(12);
-        closeButton.setTextColor(NVGColor.WHITE);
+        closeButton.setTextColor(NanoColor.WHITE);
         closeButton.setFontName("FontAwesome");
         closeButton.setScrollLock(true);
         addChild(closeButton);
@@ -284,7 +284,7 @@ public class WindowWidget extends ScrollPanelWidget {
      *
      * @param headerColor the color to use for the header
      */
-    public final void setHeaderColor(NVGColor headerColor) {
+    public final void setHeaderColor(NanoColor headerColor) {
         this.headerColor = headerColor;
     }
 
@@ -404,8 +404,8 @@ public class WindowWidget extends ScrollPanelWidget {
 
             // Limitation for scroll bars
             if (!child.equals(horizontalScrollbar) && !child.equals(verticalScrollbar) && !child.equals(closeButton)) {
-                NVGDrawer.saveRenderState();
-                NVGDrawer.intersectScissor(getX(), getY() + headerHeight,
+                NanoDrawer.saveRenderState();
+                NanoDrawer.intersectScissor(getX(), getY() + headerHeight,
                         verticalScrollbar.isVisible() ? getWidth() - verticalScrollbar.width - verticalScrollbar.borderOffset * 2 : getWidth(),
                         horizontalScrollbar.isVisible() ? getHeight() - horizontalScrollbar.height - horizontalScrollbar.borderOffset * 2 - headerHeight : getHeight() - headerHeight);
             }
@@ -426,8 +426,8 @@ public class WindowWidget extends ScrollPanelWidget {
             child.setX(absoluteX);
             child.setY(absoluteY);
 
-            NVGDrawer.saveRenderState();
-            NVGDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
+            NanoDrawer.saveRenderState();
+            NanoDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
 
             // Render child and its children
             child.preRender();
@@ -437,13 +437,13 @@ public class WindowWidget extends ScrollPanelWidget {
             child.postRender();
 
             // Restore the original positions
-            NVGDrawer.restoreRenderState();
+            NanoDrawer.restoreRenderState();
             child.setX(originalX);
             child.setY(originalY);
 
             // Limitation for scroll bars
             if (!child.equals(horizontalScrollbar) && !child.equals(verticalScrollbar) && !child.equals(closeButton)) {
-                NVGDrawer.restoreRenderState();
+                NanoDrawer.restoreRenderState();
             }
         }
     }
@@ -468,8 +468,8 @@ public class WindowWidget extends ScrollPanelWidget {
      */
     @Override
     public void postRender() {
-        Vector2f titleSize = NVGDrawer.getTextSize(title, fontName, titleFontSize);
-        drawText(title, fontName, (int) ((getWidth() - titleSize.x) / 2), (int) (headerHeight - titleSize.y) / 2, titleFontSize, NVGColor.WHITE);
+        Vector2f titleSize = NanoDrawer.getTextSize(title, fontName, titleFontSize);
+        drawText(title, fontName, (int) ((getWidth() - titleSize.x) / 2), (int) (headerHeight - titleSize.y) / 2, titleFontSize, NanoColor.WHITE);
 
         // Border
         if (drawBorder) {
@@ -481,8 +481,8 @@ public class WindowWidget extends ScrollPanelWidget {
         }
 
         if (resizable) {
-            Vector2f iconSize = NVGDrawer.getTextSize(resizeIcon, iconFontName, resizeIconSize);
-            drawText(resizeIcon, iconFontName, (int) (width - iconSize.x - resizeIconOffset), (int) (height - iconSize.y - resizeIconOffset), resizeIconSize, NVGColor.WHITE);
+            Vector2f iconSize = NanoDrawer.getTextSize(resizeIcon, iconFontName, resizeIconSize);
+            drawText(resizeIcon, iconFontName, (int) (width - iconSize.x - resizeIconOffset), (int) (height - iconSize.y - resizeIconOffset), resizeIconSize, NanoColor.WHITE);
         }
     }
 }

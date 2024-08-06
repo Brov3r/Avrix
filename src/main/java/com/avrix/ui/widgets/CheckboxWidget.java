@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NVGColor;
-import com.avrix.ui.NVGDrawer;
+import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.NanoColor;
 import org.joml.Vector2f;
 
 import java.util.function.Consumer;
@@ -69,12 +69,12 @@ public class CheckboxWidget extends Widget {
     /**
      * The color of the title text.
      */
-    protected NVGColor titleColor = NVGColor.WHITE;
+    protected NanoColor titleColor = NanoColor.WHITE;
 
     /**
      * The color of the checkbox icon when checked.
      */
-    protected NVGColor checkColor = NVGColor.GREEN;
+    protected NanoColor checkColor = NanoColor.GREEN;
 
     /**
      * Constructs a new {@link Widget} with the specified position and size.
@@ -104,12 +104,12 @@ public class CheckboxWidget extends Widget {
      */
     @Override
     public void onLeftMouseUp(int x, int y) {
-        super.onLeftMouseUp(x, y);
-
-        if (x > 0 && x < width && y > 0 && y < height && enable) {
+        if (x > 0 && x < width && y > 0 && y < height && enable && lmbPressed) {
             checked = !checked;
             onCheckAction.accept(checked);
         }
+
+        super.onLeftMouseUp(x, y);
     }
 
     /**
@@ -279,7 +279,7 @@ public class CheckboxWidget extends Widget {
      *
      * @return the title color
      */
-    public final NVGColor getTitleColor() {
+    public final NanoColor getTitleColor() {
         return titleColor;
     }
 
@@ -288,7 +288,7 @@ public class CheckboxWidget extends Widget {
      *
      * @param titleColor the title color to set
      */
-    public final void setTitleColor(NVGColor titleColor) {
+    public final void setTitleColor(NanoColor titleColor) {
         this.titleColor = titleColor;
     }
 
@@ -297,7 +297,7 @@ public class CheckboxWidget extends Widget {
      *
      * @return the check color
      */
-    public final NVGColor getCheckColor() {
+    public final NanoColor getCheckColor() {
         return checkColor;
     }
 
@@ -306,7 +306,7 @@ public class CheckboxWidget extends Widget {
      *
      * @param checkColor the check color to set
      */
-    public final void setCheckColor(NVGColor checkColor) {
+    public final void setCheckColor(NanoColor checkColor) {
         this.checkColor = checkColor;
     }
 
@@ -327,19 +327,19 @@ public class CheckboxWidget extends Widget {
      * @return the truncated text with an ellipsis if it exceeds the maximum width
      */
     private String truncateText(String text, int maxWidth) {
-        Vector2f textSize = NVGDrawer.getTextSize(text, fontName, fontSize);
+        Vector2f textSize = NanoDrawer.getTextSize(text, fontName, fontSize);
         if (textSize.x <= maxWidth) {
             return text;
         }
 
         String ellipsis = "...";
-        Vector2f ellipsisSize = NVGDrawer.getTextSize(ellipsis, fontName, fontSize);
+        Vector2f ellipsisSize = NanoDrawer.getTextSize(ellipsis, fontName, fontSize);
         int availableWidth = maxWidth - (int) ellipsisSize.x;
 
         String truncatedText = text;
         while (textSize.x > availableWidth && !truncatedText.isEmpty()) {
             truncatedText = truncatedText.substring(0, truncatedText.length() - 1);
-            textSize = NVGDrawer.getTextSize(truncatedText + ellipsis, fontName, fontSize);
+            textSize = NanoDrawer.getTextSize(truncatedText + ellipsis, fontName, fontSize);
         }
 
         return truncatedText + ellipsis;
@@ -350,9 +350,9 @@ public class CheckboxWidget extends Widget {
      */
     @Override
     public void render() {
-        Vector2f textSize = NVGDrawer.getTextSize(titleText, fontName, fontSize);
-        drawRect(0, 0, checkBoxSize, checkBoxSize, NVGColor.BLACK);
-        drawRectOutline(0, 0, checkBoxSize, checkBoxSize, 1, NVGColor.WHITE);
+        Vector2f textSize = NanoDrawer.getTextSize(titleText, fontName, fontSize);
+        drawRect(0, 0, checkBoxSize, checkBoxSize, NanoColor.BLACK);
+        drawRectOutline(0, 0, checkBoxSize, checkBoxSize, 1, NanoColor.WHITE);
 
         // Truncate the text if it exceeds the maximum width
         String displayText = truncateText(titleText, maxTitleWidth);
@@ -362,7 +362,7 @@ public class CheckboxWidget extends Widget {
 
         if (checked) {
             int checkBoxOffset = 4;
-            Vector2f checkSize = NVGDrawer.getTextSize(checkIcon, iconFontName, checkBoxSize - checkBoxOffset);
+            Vector2f checkSize = NanoDrawer.getTextSize(checkIcon, iconFontName, checkBoxSize - checkBoxOffset);
             drawText(checkIcon, iconFontName, (int) (checkBoxSize - checkSize.x) / 2, (int) (checkBoxSize - checkSize.y) / 2 - titleOffset / 2, checkBoxSize - checkBoxOffset, checkColor);
         }
     }

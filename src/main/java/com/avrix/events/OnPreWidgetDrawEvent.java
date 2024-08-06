@@ -1,6 +1,6 @@
 package com.avrix.events;
 
-import com.avrix.ui.NVGContext;
+import com.avrix.ui.NanoContext;
 
 /**
  * Trigger before widgets are drawn, but after NanoVG frame creation begins
@@ -19,7 +19,7 @@ public abstract class OnPreWidgetDrawEvent extends Event {
     /**
      * Called Event Handling Method
      *
-     * @param context {@link NVGContext} in which NanoVG is initialized
+     * @param context {@link NanoContext} in which NanoVG is initialized
      */
-    public abstract void handleEvent(NVGContext context);
+    public abstract void handleEvent(NanoContext context);
 }
