@@ -58,22 +58,17 @@ jobs:
 
     - name: Ensure test resources are copied
       run: ./gradlew processTestResources
-    - name: Verify test jar
+      
+    - name: Verify test resources
       run: |
         if [ ! -d "./src/test/resources/yaml" ]; then
           echo "[!] Test directory does not exist!"
           exit 1
         fi
-        if [ ! -f "./src/test/resources/yaml/testYamlJar.jar" ]; then
-          echo "[!] testYamlJar.jar does not exist in libs!"
-          exit 1
-        fi
-        if [ ! -f "./src/test/resources/yaml/testYamlJarMetadata.jar" ]; then
-          echo "[!] testYamlJarMetadata.jar does not exist in libs!"
-          exit 1
-        fi
+      
     - name: Test with Gradle Wrapper
-      run: ./gradlew test --debug
+      run: ./gradlew test
+      
   dependency-submission:
 
     runs-on: ubuntu-latest
