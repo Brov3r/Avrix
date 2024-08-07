@@ -73,7 +73,7 @@ jobs:
           exit 1
         fi
     - name: Test with Gradle Wrapper
-      run: ./gradlew test --info
+      run: ./gradlew test --debug
   dependency-submission:
 
     runs-on: ubuntu-latest
