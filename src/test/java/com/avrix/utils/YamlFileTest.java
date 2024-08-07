@@ -31,11 +31,19 @@ public class YamlFileTest {
      */
     @Test
     void testLoadFromJar() throws IOException, URISyntaxException {
-        String resourceUrl = new File(YamlFileTest.class.getClassLoader().getResource("yaml/testYamlJAR.jar").toURI()).getPath();
-        if (resourceUrl == null) {
+        URL url = YamlFileTest.class.getClassLoader().getResource("yaml/testYamlJAR.jar");
+        if (url == null) {
             throw new FileNotFoundException("testYamlJAR.jar not found in resources");
         }
-        YamlFile yamlFile = new YamlFile(resourceUrl, "test.yml");
+
+        Path path = Paths.get(url.toURI());
+        if (!path.toFile().exists()) {
+            throw new FileNotFoundException("Invalid resource URL for testYamlJAR.jar");
+        }
+
+        String resourcePath = path.toString();
+
+        YamlFile yamlFile = new YamlFile(resourcePath, "test.yml");
 
         assertEquals("String Test", yamlFile.getString("test"));
     }
