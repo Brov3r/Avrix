@@ -162,7 +162,7 @@ public class MetadataTest {
             throw new FileNotFoundException("testYamlJar.jar not found in resources");
         }
         File jarFile = new File(resourceUrl.toURI());
-        
+
         assertThrows(NullPointerException.class, () -> Metadata.createFromJar(jarFile, "test.yml"));
     }
 
@@ -172,6 +172,7 @@ public class MetadataTest {
     @Test
     void testYamlValidMetadataFromJar() throws IOException, URISyntaxException {
         URL resourceUrl = YamlFileTest.class.getClassLoader().getResource("yaml/testYamlJarMetadata.jar");
+        System.out.println("[#] Test load Metadata from jar: " + resourceUrl);
         if (resourceUrl == null) {
             throw new FileNotFoundException("testYamlJarMetadata.jar not found in resources");
         }
