@@ -99,9 +99,33 @@ test {
 }
 
 /**
+ * Configures the source sets for the project.
+ */
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+    test {
+        resources {
+            srcDir 'src/test/resources'
+        }
+    }
+}
+
+/**
+ * Configures the processTestResources task to handle duplicate resources.
+ */
+processTestResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+/**
  * Replacing data with current ones
  */
 processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
     filesMatching('**/avrix.properties') {
         filter {
             it.replace('%PROJECT_VERSION%', version)
