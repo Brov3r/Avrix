@@ -32,6 +32,7 @@ public class YamlFileTest {
     @Test
     void testLoadFromJar() throws IOException, URISyntaxException {
         URL resourceUrl = YamlFileTest.class.getClassLoader().getResource("yaml/testYamlJAR.jar");
+        System.out.println("[#] Test load YAML from jar: " + resourceUrl);
         if (resourceUrl == null) {
             throw new FileNotFoundException("testYamlJAR.jar not found in resources");
         }
