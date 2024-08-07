@@ -73,7 +73,8 @@ dependencies {
     implementation('org.javassist:javassist:3.30.2-GA')
     implementation('org.tinylog:tinylog-api:2.7.0')
     implementation('org.tinylog:tinylog-impl:2.7.0')
-
+    implementation 'org.json:json:20240303'
+    testImplementation 'org.json:json:20240303'
 
     implementation platform("org.lwjgl:lwjgl-bom:3.3.4")
     implementation "org.lwjgl:lwjgl-nanovg"

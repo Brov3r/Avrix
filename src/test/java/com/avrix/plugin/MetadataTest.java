@@ -159,13 +159,11 @@ public class MetadataTest {
     void testYamlInvalidMetadataFromJar() throws IOException, URISyntaxException {
         URL resourceUrl = YamlFileTest.class.getClassLoader().getResource("yaml/testYamlJar.jar");
         if (resourceUrl == null) {
-            throw new FileNotFoundException("test.yml not found in resources");
+            throw new FileNotFoundException("testYamlJar.jar not found in resources");
         }
         File jarFile = new File(resourceUrl.toURI());
-
-        Metadata metadata = Metadata.createFromJar(jarFile, "test.yml");
-
-        assertNull(metadata);
+        
+        assertThrows(NullPointerException.class, () -> Metadata.createFromJar(jarFile, "test.yml"));
     }
 
     /**
@@ -175,7 +173,7 @@ public class MetadataTest {
     void testYamlValidMetadataFromJar() throws IOException, URISyntaxException {
         URL resourceUrl = YamlFileTest.class.getClassLoader().getResource("yaml/testYamlJarMetadata.jar");
         if (resourceUrl == null) {
-            throw new FileNotFoundException("test.yml not found in resources");
+            throw new FileNotFoundException("testYamlJarMetadata.jar not found in resources");
         }
         File jarFile = new File(resourceUrl.toURI());
 

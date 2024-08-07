@@ -41,13 +41,47 @@ public class VersionChecker {
     }
 
     /**
-     * Normalizes a version string by removing any non-numeric suffixes.
+     * Normalizes the version string, leaving only numbers, dashes, periods and underscores.
+     * Removes the last character if it is not a number.
      *
      * @param version The version string to normalize.
      * @return The normalized version string.
      */
-    private static String normalizeVersion(String version) {
-        return version.replace("-", ".").replace(",", ".").split("[^\\d.]")[0];
+    public static String normalizeVersion(String version) {
+        if (version == null || version.isEmpty()) {
+            return "";
+        }
+
+        // We remove all characters except numbers, dots, dashes and underscores
+        String normalized = version.replaceAll("[^\\d\\-\\.\\_\\,]", "");
+
+        // Replace all dashes and underscores with dots
+        normalized = normalized.replaceAll("[\\-\\_\\,]", ".");
+
+        // Removing all duplicate points
+        normalized = normalized.replaceAll("\\.+", ".");
+
+        if (!normalized.isEmpty() && !Character.isDigit(normalized.charAt(normalized.length() - 1))) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+
+        String[] parts = normalized.split("\\.");
+        StringBuilder versionBuilder = new StringBuilder();
+
+        for (String part : parts) {
+            if (part.isEmpty() || part.equals("0")) {
+                versionBuilder.append("0");
+            } else {
+                versionBuilder.append(part.replaceFirst("^0+(?!$)", ""));
+            }
+            versionBuilder.append(".");
+        }
+
+        if (!versionBuilder.isEmpty()) {
+            versionBuilder.setLength(versionBuilder.length() - 1);
+        }
+
+        return versionBuilder.toString();
     }
 
     /**
@@ -67,14 +101,22 @@ public class VersionChecker {
 
     /**
      * Compares two version strings.
+     * <p>
+     * The comparison is based on the normalized versions, where non-numeric characters
+     * except for dots (.), dashes (-), and underscores (_) are removed, and
+     * dashes and underscores are replaced by dots. If a version segment is empty,
+     * it is considered as zero (0). If the last character of a version is not a digit,
+     * it is removed.
      *
-     * @param versionOne Version 1.
-     * @param versionTwo Version 2.
-     * @return 0, if v1 == v2; value < 0 if v1 < v2; value > 0 if v1 > v2.
+     * @param versionOne the first version string to compare.
+     * @param versionTwo the second version string to compare.
+     * @return {@code 0} if both versions are equal, a value less than {@code 0}
+     * if {@code versionOne} is less than {@code versionTwo}, and a value
+     * greater than {@code 0} if {@code versionOne} is greater than {@code versionTwo}.
      */
-    private static int compareVersions(String versionOne, String versionTwo) {
-        String[] v1Parts = versionOne.split("\\.");
-        String[] v2Parts = versionTwo.split("\\.");
+    public static int compareVersions(String versionOne, String versionTwo) {
+        String[] v1Parts = normalizeVersion(versionOne).split("\\.");
+        String[] v2Parts = normalizeVersion(versionTwo).split("\\.");
 
         int length = Math.max(v1Parts.length, v2Parts.length);
         for (int i = 0; i < length; i++) {

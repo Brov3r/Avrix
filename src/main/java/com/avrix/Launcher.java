@@ -5,6 +5,7 @@ import com.avrix.logs.LineReadingOutputStream;
 import com.avrix.plugin.PluginManager;
 import com.avrix.plugin.ResourceManager;
 import com.avrix.utils.PatchUtils;
+import com.avrix.utils.ReleaseUtils;
 import org.tinylog.Logger;
 import zombie.gameStates.MainScreenState;
 import zombie.network.GameServer;
@@ -25,6 +26,8 @@ public class Launcher {
         System.setOut(new PrintStream(new LineReadingOutputStream(Logger::info), true));
         System.setErr(new PrintStream(new LineReadingOutputStream(Logger::error), true));
 
+        ReleaseUtils.checkLatestVersion();
+        
         AgentLoader.loadAgent();
 
         PatchUtils.applyDefaultPatches();

@@ -29,6 +29,16 @@ public class Constants {
     public static final String PLUGINS_DEFAULT_CONFIG_NAME = "config.yml";
 
     /**
+     * Avrix repository owner
+     */
+    public static final String REPO_OWNER = "Brov3r";
+
+    /**
+     * Avrix repository name
+     */
+    public static final String REPO_NAME = "Avrix";
+
+    /**
      * Project version
      */
     public static final String AVRIX_VERSION;
