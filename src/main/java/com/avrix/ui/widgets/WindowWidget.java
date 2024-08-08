@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NanoDrawer;
 import com.avrix.ui.NanoColor;
+import com.avrix.ui.NanoDrawer;
 import org.joml.Vector2f;
 import zombie.input.Mouse;
 
@@ -426,18 +426,21 @@ public class WindowWidget extends ScrollPanelWidget {
             child.setX(absoluteX);
             child.setY(absoluteY);
 
-            NanoDrawer.saveRenderState();
-            NanoDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
+            if (child.isVisibleWithinParent() && child.isVisibleWithinWindow()) {
+                NanoDrawer.saveRenderState();
+                NanoDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
 
-            // Render child and its children
-            child.preRender();
-            child.update();
-            child.render();
-            child.renderChildren();
-            child.postRender();
+                // Render child and its children
+                child.preRender();
+                child.update();
+                child.render();
+                child.renderChildren();
+                child.postRender();
 
-            // Restore the original positions
-            NanoDrawer.restoreRenderState();
+                // Restore the original positions
+                NanoDrawer.restoreRenderState();
+            }
+
             child.setX(originalX);
             child.setY(originalY);
 

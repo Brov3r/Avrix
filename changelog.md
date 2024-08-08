@@ -6,6 +6,7 @@
 - Added client side plugin example
 - Added `.exe` executable files for Windows, allowing launch from Steam
 - Added new logging system `TinyLog2`
+- Added checking for new Avrix releases
 - Added a GUI system based on `NanoVG`
 - Added `onWidgetManagerInitialized`, `OnPreWidgetRender`, `OnPostWidgetRender` events
 - Added default fonts: `Arial-Regular`, `Roboto-Regular`, `Montserrat-Regular`, `FontAwesome`

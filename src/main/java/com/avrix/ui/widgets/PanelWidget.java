@@ -212,6 +212,9 @@ public class PanelWidget extends Widget {
 
             setX(mouseX - dragOffsetX);
             setY(mouseY - dragOffsetY);
+            
+            setXA(parent == null ? x : parent.absoluteX + x);
+            setYA(parent == null ? y : parent.absoluteY + y);
         }
     }
 

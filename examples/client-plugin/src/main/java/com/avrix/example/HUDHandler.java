@@ -1,10 +1,11 @@
 package com.avrix.example;
 
 import com.avrix.events.OnPreWidgetDrawEvent;
-import com.avrix.ui.NanoDrawer;
 import com.avrix.ui.NanoColor;
 import com.avrix.ui.NanoContext;
+import com.avrix.ui.NanoDrawer;
 import com.avrix.utils.WindowUtils;
+import zombie.GameWindow;
 
 /**
  * Draw HUD
@@ -15,6 +16,9 @@ public class HUDHandler extends OnPreWidgetDrawEvent {
     private float phase = 0.0f; // Sine wave phase to calculate vertical position
     private long lastTime = System.currentTimeMillis();
 
+    private float smoothedFPS = GameWindow.averageFPS;
+    private static final float SMOOTHING_FACTOR = 0.01f;
+
 
     /**
      * Called Event Handling Method
@@ -23,8 +27,10 @@ public class HUDHandler extends OnPreWidgetDrawEvent {
      */
     @Override
     public void handleEvent(NanoContext context) {
+        smoothedFPS += SMOOTHING_FACTOR * (GameWindow.averageFPS - smoothedFPS);
+        String fps = String.format("FPS: %.0f", smoothedFPS);
         NanoDrawer.drawText("Hello client plugin!", "Endeavourforever", 10, 10, 32, NanoColor.ORANGE);
-        NanoDrawer.drawText("Another hello", "Montserrat-Regular", 10, WindowUtils.getWindowHeight() - 24, 14, NanoColor.ORANGE);
+        NanoDrawer.drawText(fps, "Montserrat-Regular", 10, WindowUtils.getWindowHeight() - 24, 14, NanoColor.ORANGE);
 
         long currentTime = System.currentTimeMillis();
         float deltaTime = (currentTime - lastTime) / 1000.0f;

@@ -46,21 +46,15 @@ public class Main extends Plugin {
         HorizontalBoxWidget hbForButtons = new HorizontalBoxWidget(0, 0, 0, 0, true);
         vb.addChild(hbForButtons);
 
-        PopupWidget pw = new PopupWidget(0, 0, 100, 100);
-        for (int i = 0; i < 10; i++) {
-            int index = i;
-            pw.addChild(new ButtonWidget("Hey" + i, 0, i * 50, 100, 40, 0, NanoColor.CORAL, () -> {
-                System.out.println("Popup click " + index);
-            }));
-        }
-
-        ModalWidget mw = new ModalWidget(300, 100);
-        mw.getContentPanel().addChild(new ButtonWidget("Close", 10, 10, 100, 30, 0, NanoColor.BABY_BLUE, mw::close));
-
         ButtonWidget btn = new ButtonWidget("Add btn", 0, 0, 100, 32, 0, NanoColor.BABY_BLUE, () -> {
             ButtonWidget btn2 = new ButtonWidget("Click", 0, 0, 100, 32, 0, NanoColor.BABY_BLUE, () -> {
-                pw.setX(Mouse.getXA());
-                pw.setY(Mouse.getYA());
+                PopupWidget pw = new PopupWidget(Mouse.getXA(), Mouse.getYA(), 100, 100);
+                for (int i = 0; i < 10; i++) {
+                    int index = i;
+                    pw.addChild(new ButtonWidget("Hey" + i, 0, i * 50, 100, 40, 0, NanoColor.CORAL, () -> {
+                        System.out.println("Popup click " + index);
+                    }));
+                }
                 pw.show();
             });
             btn2.setDrawBorder(false);
@@ -68,6 +62,8 @@ public class Main extends Plugin {
         });
 
         ButtonWidget modalBtn = new ButtonWidget("Modal", 0, 0, 100, 32, 0, NanoColor.BABY_BLUE, () -> {
+            ModalWidget mw = new ModalWidget(300, 100);
+            mw.getContentPanel().addChild(new ButtonWidget("Close", 10, 10, 100, 30, 0, NanoColor.BABY_BLUE, mw::close));
             mw.show();
         });
 

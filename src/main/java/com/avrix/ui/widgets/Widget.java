@@ -1,8 +1,9 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NanoDrawer;
 import com.avrix.ui.NanoColor;
+import com.avrix.ui.NanoDrawer;
 import com.avrix.ui.WidgetManager;
+import com.avrix.utils.WindowUtils;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -179,6 +180,22 @@ public abstract class Widget {
     }
 
     /**
+     * Returns the absolute (root) parent of this {@link Widget}.
+     * If the {@link Widget} has no parent, it returns {@code null} or itself, depending on the desired behavior.
+     *
+     * @return the absolute parent of this {@link Widget}, or {@code null} if the {@link Widget} has no parent.
+     */
+    public Widget getAbsoluteParent() {
+        Widget current = parent;
+
+        while (current.getParent() != null) {
+            current = current.getParent();
+        }
+
+        return current;
+    }
+
+    /**
      * Gets the current horizontal scroll offset of the widget.
      *
      * @return the current horizontal scroll offset
@@ -299,18 +316,21 @@ public abstract class Widget {
             child.setX(absoluteX);
             child.setY(absoluteY);
 
-            NanoDrawer.saveRenderState();
-            NanoDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
+            if (child.isVisibleWithinParent() && child.isVisibleWithinWindow()) {
+                NanoDrawer.saveRenderState();
+                NanoDrawer.intersectScissor(absoluteX, absoluteY, child.getWidth(), child.getHeight());
 
-            // Render child and its children
-            child.preRender();
-            child.update();
-            child.render();
-            child.renderChildren();
-            child.postRender();
+                // Render child and its children
+                child.preRender();
+                child.update();
+                child.render();
+                child.renderChildren();
+                child.postRender();
 
-            // Restore the original positions
-            NanoDrawer.restoreRenderState();
+                // Restore the original positions
+                NanoDrawer.restoreRenderState();
+            }
+
             child.setX(originalX);
             child.setY(originalY);
         }
@@ -780,6 +800,33 @@ public abstract class Widget {
      */
     public boolean isVisible() {
         return visible;
+    }
+
+    /**
+     * Checks if this {@link Widget} is at least partially visible within the boundaries of its absolute parent {@link Widget}.
+     * If the {@link Widget} has no absolute parent (i.e., it is the root widget), it is considered fully visible by default.
+     *
+     * @return {@code true} if any part of the widget is within the visible bounds of its absolute parent, {@code false} otherwise.
+     */
+    public boolean isVisibleWithinParent() {
+        if (getAbsoluteParent() == null) return true;
+
+        return absoluteX < getAbsoluteParent().absoluteX + getAbsoluteParent().width &&
+                absoluteY < getAbsoluteParent().absoluteY + getAbsoluteParent().height &&
+                absoluteX + width > getAbsoluteParent().absoluteX &&
+                absoluteY + height > getAbsoluteParent().absoluteY;
+    }
+
+    /**
+     * Checks if the {@link Widget} is at least partially within the visible bounds of the window.
+     *
+     * @return {@code true} if any part of the {@link Widget} is within the window bounds, {@code false} otherwise.
+     */
+    public boolean isVisibleWithinWindow() {
+        return absoluteX < WindowUtils.getWindowWidth() &&
+                absoluteY < WindowUtils.getWindowHeight() &&
+                absoluteX + width > 0 &&
+                absoluteY + height > 0;
     }
 
     /**

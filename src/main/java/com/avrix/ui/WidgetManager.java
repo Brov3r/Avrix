@@ -52,6 +52,8 @@ public class WidgetManager {
         for (Widget widget : widgetList) {
             if (!widget.isVisible()) continue;
 
+            if (!widget.isVisibleWithinWindow()) continue;
+
             NanoDrawer.saveRenderState();
             NanoDrawer.intersectScissor(widget.getX(), widget.getY(), widget.getWidth(), widget.getHeight());
 
