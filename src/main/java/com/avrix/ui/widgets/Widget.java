@@ -552,19 +552,6 @@ public abstract class Widget {
      * @param delta direction of mouse wheel movement - (1 - up, -1 - down)
      */
     public void onMouseWheel(int x, int y, int delta) {
-        // Update scroll position
-        if (scrollable) {
-            scrollY -= delta * scrollSpeed;
-            onMouseMove(x, y);
-        }
-
-        // Limit the scroll values
-        if (scrollY < 0) {
-            scrollY = 0;
-        } else if (scrollY > maxScrollY) {
-            scrollY = maxScrollY;
-        }
-
         // Update child widgets based on the new scroll values
         List<Widget> childrenCopy = getChildren();
         for (int i = childrenCopy.size() - 1; i >= 0; i--) {
@@ -577,9 +564,21 @@ public abstract class Widget {
 
             if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && child.hovered) {
                 child.onMouseWheel(childRelativeX, childRelativeY, delta);
-            } else {
-                child.onMouseWheelOutside(x, y, delta);
+                return;
             }
+        }
+
+        // Update scroll position
+        if (scrollable) {
+            scrollY -= delta * scrollSpeed;
+            onMouseMove(x, y);
+        }
+
+        // Limit the scroll values
+        if (scrollY < 0) {
+            scrollY = 0;
+        } else if (scrollY > maxScrollY) {
+            scrollY = maxScrollY;
         }
     }
 
@@ -688,19 +687,6 @@ public abstract class Widget {
         }
 
         rmbPressed = false;
-    }
-
-    /**
-     * Handles the mouse wheel event outside any visible widget
-     *
-     * @param x     absolute x-coordinate of the mouse position
-     * @param y     absolute y-coordinate of the mouse position
-     * @param delta the amount of wheel movement
-     */
-    public void onMouseWheelOutside(int x, int y, int delta) {
-        for (Widget child : getChildren()) {
-            child.onMouseWheelOutside(x, y, delta);
-        }
     }
 
     /**
@@ -1103,6 +1089,22 @@ public abstract class Widget {
      */
     public void drawImage(int imageId, int x, int y, int width, int height, float opacity) {
         NanoDrawer.drawImage(imageId, getX() + x, getY() + y, width, height, opacity);
+    }
+
+    /**
+     * Intersects current scissor rectangle with the specified rectangle.
+     * The scissor rectangle is transformed by the current transform.
+     * <p>
+     * Saves the current render state before starting.
+     *
+     * @param x      relative x-coordinate of the intersecting scissor region.
+     * @param y      relative y-coordinate of the intersecting scissor region.
+     * @param width  the width of the intersecting scissor region.
+     * @param height the height of the intersecting scissor region.
+     */
+    public void intersectScissor(int x, int y, int width, int height) {
+        NanoDrawer.saveRenderState();
+        NanoDrawer.intersectScissor(x + absoluteX, y + absoluteY, width, height);
     }
 
     /**

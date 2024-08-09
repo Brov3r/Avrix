@@ -143,8 +143,6 @@ public class InputWidgetHandler {
             if (currentWheel != 0) {
                 if (isPointOverTop) {
                     widget.onMouseWheel(relativeX, relativeY, currentWheel);
-                } else {
-                    widget.onMouseWheelOutside(mouseX, mouseY, currentWheel);
                 }
             }
         }

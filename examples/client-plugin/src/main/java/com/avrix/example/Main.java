@@ -120,6 +120,41 @@ public class Main extends Plugin {
         vb.addChild(hb2);
 
 
+        TableWidget tw = new TableWidget(0, 0, vb.getWidth(), 200);
+        tw.setOnDoubleSelectAction((map) -> {
+            System.out.println("Double left click");
+            map.forEach((key, value) -> {
+                System.out.println("Key: " + key + ", Value: " + value);
+            });
+        });
+
+        tw.setOnSelectAction((map) -> {
+            System.out.println("Left click");
+            map.forEach((key, value) -> {
+                System.out.println("Key: " + key + ", Value: " + value);
+            });
+        });
+
+        tw.setOnRightClickAction((map) -> {
+            System.out.println("Right click");
+            map.forEach((key, value) -> {
+                System.out.println("Key: " + key + ", Value: " + value);
+            });
+        });
+
+        tw.addColumn("ID");
+        tw.addColumn("Name");
+        tw.addColumn("Description");
+        tw.addColumn("Version");
+
+        tw.addRow("Looooooooooooooong ID", "Hello worldDDDDDDDDDDDDDDDDDDD!");
+        tw.addRow("id<", "name>", "desc");
+        tw.addRow("id<", "name>", null, "ver");
+        for (int i = 0; i < 10; i++) {
+            tw.addRow(String.valueOf(i), "Hello world $" + i);
+        }
+
+        vb.addChild(tw);
         root.addToScreen();
     }
 }
