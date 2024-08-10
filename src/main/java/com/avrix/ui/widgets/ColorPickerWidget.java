@@ -19,7 +19,7 @@ public class ColorPickerWidget extends Widget {
     /**
      * The offset used for the border of the widget.
      */
-    private int borderOffset = 2;
+    protected int borderOffset = 2;
 
     /**
      * The name of the font used for displaying text.
@@ -182,7 +182,7 @@ public class ColorPickerWidget extends Widget {
      * Opens a popup window for color selection and adjustment.
      * The popup includes sliders for red, green, blue, and alpha values, a preview panel, and a hexadecimal input field.
      */
-    private void openPopup() {
+    protected void openPopup() {
         int popupWidth = 200;
         int popupHeight = 330;
         int margin = 10;
@@ -263,7 +263,7 @@ public class ColorPickerWidget extends Widget {
      * @param previewColor the {@link PanelWidget} used to preview the color
      * @param hexInput     the {@link InputTextWidget} used to display the color in HEX format
      */
-    private void updateColor(NanoColor newColor, PanelWidget previewColor, InputTextWidget hexInput) {
+    protected void updateColor(NanoColor newColor, PanelWidget previewColor, InputTextWidget hexInput) {
         value = newColor;
         previewColor.setBackgroundColor(value);
         hexInput.setValue(value.toHEX());

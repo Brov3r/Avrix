@@ -68,12 +68,12 @@ public class WindowWidget extends ScrollPanelWidget {
     /**
      * The size of the close button in pixels.
      */
-    private final int closeButtonSize = 16;
+    protected final int closeButtonSize = 16;
 
     /**
      * The offset of the close button from the edge of the widget in pixels.
      */
-    private final int closeButtonOffset = 5;
+    protected final int closeButtonOffset = 5;
 
     /**
      * The original width of the widget before resizing.
@@ -98,12 +98,12 @@ public class WindowWidget extends ScrollPanelWidget {
     /**
      * Window close button object
      */
-    private ButtonWidget closeButton;
+    protected ButtonWidget closeButton;
 
     /**
      * The original vertical position of the scrollbar before any transformation.
      */
-    private int originalVerticalScrollBarY;
+    protected int originalVerticalScrollBarY;
 
     /**
      * Indicates whether the widget can be resized.
@@ -113,7 +113,7 @@ public class WindowWidget extends ScrollPanelWidget {
     /**
      * Indicates whether the widget is currently being resized.
      */
-    private boolean resizing = false;
+    protected boolean resizing = false;
 
     /**
      * Constructs a new {@link Widget} with the specified position and size.
@@ -236,7 +236,7 @@ public class WindowWidget extends ScrollPanelWidget {
      *
      * @param isAnotherWidget flag pointing to other widgets
      */
-    private synchronized void raiseCloseButton(boolean isAnotherWidget) {
+    protected synchronized void raiseCloseButton(boolean isAnotherWidget) {
         if (isAnotherWidget && closeButton != null) {
             children.remove(closeButton);
             children.add(closeButton);

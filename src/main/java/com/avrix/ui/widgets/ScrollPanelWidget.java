@@ -123,7 +123,7 @@ public class ScrollPanelWidget extends PanelWidget {
      *
      * @param isAnotherWidget flag pointing to other widgets
      */
-    private synchronized void raiseScrollbars(boolean isAnotherWidget) {
+    protected synchronized void raiseScrollbars(boolean isAnotherWidget) {
         if (isAnotherWidget && horizontalScrollbar != null && verticalScrollbar != null) {
             children.remove(horizontalScrollbar);
             children.remove(verticalScrollbar);

@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NanoDrawer;
 import com.avrix.ui.NanoColor;
+import com.avrix.ui.NanoDrawer;
 import org.joml.Vector2f;
 
 import java.util.List;
@@ -115,7 +115,7 @@ public class ComboBoxWidget extends PanelWidget {
     /**
      * Opens the popup to display the list of values.
      */
-    private void openPopup() {
+    protected void openPopup() {
         PopupWidget popup = new PopupWidget(absoluteX, absoluteY + height, width, popupHeight);
         for (int i = 0; i < valueList.size(); i++) {
             int index = i;
@@ -475,7 +475,7 @@ public class ComboBoxWidget extends PanelWidget {
         /**
          * Indicates whether this popup button is currently selected.
          */
-        private boolean selected = false;
+        protected boolean selected = false;
 
         /**
          * Constructs a new {@link ButtonWidget} with the specified text, position, size, border radius,

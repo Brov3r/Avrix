@@ -18,7 +18,7 @@ public class BoxLayoutWidget extends Widget {
     /**
      * Indicates if the layout is currently being updated to avoid recursive updates.
      */
-    private boolean updatingLayout = false;
+    protected boolean updatingLayout = false;
 
     /**
      * Last saved {@link Widget} height

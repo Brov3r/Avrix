@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NanoDrawer;
 import com.avrix.ui.NanoColor;
+import com.avrix.ui.NanoDrawer;
 import org.joml.Vector2f;
 import zombie.input.Mouse;
 
@@ -65,7 +65,7 @@ public class SliderWidget extends Widget {
     /**
      * The previous value of the slider, used to detect changes.
      */
-    private int prevValue;
+    protected int prevValue;
 
     /**
      * Indicates whether the slider is enabled.
@@ -378,7 +378,7 @@ public class SliderWidget extends Widget {
      * @param mouseX absolute x-coordinate of the mouse position
      * @param mouseY absolute y-coordinate of the mouse position
      */
-    private void updateValue(int mouseX, int mouseY) {
+    protected void updateValue(int mouseX, int mouseY) {
         int relativeMouseX = mouseX - x;
 
         int barWidth = width - thumbWidth;

@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NanoDrawer;
 import com.avrix.ui.NanoColor;
+import com.avrix.ui.NanoDrawer;
 import org.joml.Vector2f;
 
 import java.util.function.Consumer;
@@ -326,7 +326,7 @@ public class CheckboxWidget extends Widget {
      * @param maxWidth the maximum width available for the text
      * @return the truncated text with an ellipsis if it exceeds the maximum width
      */
-    private String truncateText(String text, int maxWidth) {
+    protected String truncateText(String text, int maxWidth) {
         Vector2f textSize = NanoDrawer.getTextSize(text, fontName, fontSize);
         if (textSize.x <= maxWidth) {
             return text;

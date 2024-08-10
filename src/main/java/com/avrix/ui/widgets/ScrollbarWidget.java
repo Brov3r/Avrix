@@ -11,12 +11,12 @@ public class ScrollbarWidget extends PanelWidget {
     /**
      * The default width for a vertical scrollbar.
      */
-    private final int DEFAULT_VERTICAL_WIDTH = 6;
+    protected final int DEFAULT_VERTICAL_WIDTH = 6;
 
     /**
      * The default height for a horizontal scrollbar.
      */
-    private final int DEFAULT_HORIZONTAL_HEIGHT = 6;
+    protected final int DEFAULT_HORIZONTAL_HEIGHT = 6;
 
     /**
      * Number of pixels to set back from the edge of the widget
@@ -36,7 +36,7 @@ public class ScrollbarWidget extends PanelWidget {
     /**
      * Default background color
      */
-    private final NanoColor DEFAULT_BACKGROUND_COLOR = new NanoColor("#1e272e");
+    protected final NanoColor DEFAULT_BACKGROUND_COLOR = new NanoColor("#1e272e");
 
     /**
      * Thumb color
@@ -52,31 +52,31 @@ public class ScrollbarWidget extends PanelWidget {
      * Indicates whether the scrollbar is currently being dragged by the user.
      * This flag is used to track the dragging state of the scrollbar.
      */
-    private boolean dragging = false;
+    protected boolean dragging = false;
 
     /**
      * The x-coordinate of the mouse position when the dragging of the scrollbar started.
      * This is used to calculate the amount of movement and update the scrollbar position accordingly.
      */
-    private int dragStartX;
+    protected int dragStartX;
 
     /**
      * The y-coordinate of the mouse position when the dragging of the scrollbar started.
      * This is used to calculate the amount of movement and update the scrollbar position accordingly.
      */
-    private int dragStartY;
+    protected int dragStartY;
 
     /**
      * The initial x-coordinate of the scrollbar's scroll position when dragging started.
      * This value helps in calculating the new scroll position based on the mouse movement.
      */
-    private int scrollStartX;
+    protected int scrollStartX;
 
     /**
      * The initial y-coordinate of the scrollbar's scroll position when dragging started.
      * This value helps in calculating the new scroll position based on the mouse movement.
      */
-    private int scrollStartY;
+    protected int scrollStartY;
 
     /**
      * Constructs a {@link ScrollbarWidget} with the specified orientation.
@@ -242,7 +242,7 @@ public class ScrollbarWidget extends PanelWidget {
      * @param mouseX absolute x-coordinate of the mouse position
      * @param mouseY absolute y-coordinate of the mouse position
      */
-    private void updateScrollbarPosition(int mouseX, int mouseY) {
+    protected void updateScrollbarPosition(int mouseX, int mouseY) {
         if (!horizontal) {
             int deltaY = mouseY - dragStartY;
             int contentHeight = height - 2 * thumbOffset;

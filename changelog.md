@@ -1,3 +1,7 @@
+# AvrixLoader v1.5.0
+
+- Fixed visibility area of fields, classes and methods in Widgets
+
 # AvrixLoader v1.4.0
 
 - Launch scripts updated

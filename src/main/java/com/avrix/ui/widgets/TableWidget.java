@@ -156,12 +156,12 @@ public class TableWidget extends ScrollPanelWidget {
     /**
      * The timestamp of the last mouse click.
      */
-    private long lastClickTime = 0;
+    protected long lastClickTime = 0;
 
     /**
      * The threshold time for detecting a double click in milliseconds.
      */
-    private final long DOUBLE_CLICK_THRESHOLD = 300;
+    protected final long DOUBLE_CLICK_THRESHOLD = 300;
 
     /**
      * Constructs a new {@link TableWidget} with the specified position and size.

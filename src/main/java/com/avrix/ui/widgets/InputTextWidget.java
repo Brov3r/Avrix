@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
-import com.avrix.ui.NanoDrawer;
 import com.avrix.ui.NanoColor;
+import com.avrix.ui.NanoDrawer;
 import org.joml.Vector2f;
 import org.lwjglx.input.Keyboard;
 import zombie.core.Clipboard;
@@ -50,7 +50,7 @@ public class InputTextWidget extends PanelWidget {
     /**
      * The maximum width of the text area.
      */
-    private int maxTextWidth;
+    protected int maxTextWidth;
 
     /**
      * The font size used for displaying text.
@@ -70,37 +70,37 @@ public class InputTextWidget extends PanelWidget {
     /**
      * The current position of the cursor in the text.
      */
-    private int cursorPosition = 0;
+    protected int cursorPosition = 0;
 
     /**
      * The offset of the text within the widget.
      */
-    private int textOffset = 0;
+    protected int textOffset = 0;
 
     /**
      * The starting position of the selection.
      */
-    private int selectionStart = -1;
+    protected int selectionStart = -1;
 
     /**
      * The ending position of the selection.
      */
-    private int selectionEnd = -1;
+    protected int selectionEnd = -1;
 
     /**
      * The current key value being processed.
      */
-    private char currentKeyValue;
+    protected char currentKeyValue;
 
     /**
      * The last time the cursor blinked.
      */
-    private long lastBlinkTime = 0;
+    protected long lastBlinkTime = 0;
 
     /**
      * The last time a key repeat event was processed.
      */
-    private long lastRepeatTime = 0;
+    protected long lastRepeatTime = 0;
 
     /**
      * Indicates if the text can be edited.
@@ -541,7 +541,7 @@ public class InputTextWidget extends PanelWidget {
      * Executes the action specified for text change, if any.
      * This method triggers the `onTextChangeAction` callback.
      */
-    private void onTextChange() {
+    protected void onTextChange() {
         if (onTextChangeAction == null) return;
 
         onTextChangeAction.accept(value);
@@ -552,7 +552,7 @@ public class InputTextWidget extends PanelWidget {
      *
      * @param key The key code of the key being processed.
      */
-    private void handleKeyInput(int key) {
+    protected void handleKeyInput(int key) {
         if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)) {
             switch (key) {
                 case Keyboard.KEY_V -> {
@@ -622,7 +622,7 @@ public class InputTextWidget extends PanelWidget {
      *
      * @param direction The direction of the arrow key: 1 for left, -1 for right.
      */
-    private void updateSelectionOnArrow(int direction) {
+    protected void updateSelectionOnArrow(int direction) {
         if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
             if (selectionStart == -1)
                 selectionStart = Math.min(value.length(), Math.max(0, cursorPosition + direction));
@@ -636,7 +636,7 @@ public class InputTextWidget extends PanelWidget {
     /**
      * Clears any active text selection.
      */
-    private void clearSelection() {
+    protected void clearSelection() {
         selectionStart = -1;
         selectionEnd = -1;
         selecting = false;
@@ -645,7 +645,7 @@ public class InputTextWidget extends PanelWidget {
     /**
      * Deletes the selected text range from the widget's value.
      */
-    private void deleteSelection() {
+    protected void deleteSelection() {
         int start = Math.min(selectionStart, selectionEnd);
         int end = Math.max(selectionStart, selectionEnd);
         value = new StringBuilder(value).delete(start, end).toString();
@@ -659,7 +659,7 @@ public class InputTextWidget extends PanelWidget {
      * @param mouseX The x-coordinate of the mouse position.
      * @return The calculated cursor position.
      */
-    private int getCursorPositionFromMouse(int mouseX) {
+    protected int getCursorPositionFromMouse(int mouseX) {
         int position = 0;
         String text = secure ? value.replaceAll(".", "*") : value;
         float offsetX = borderOffset - textOffset;
