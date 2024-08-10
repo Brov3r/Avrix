@@ -2,6 +2,7 @@
 
 - Fixed visibility area of fields, classes and methods in Widgets
 - Fixed bugs when scrolling widgets
+- Fixed a bug with absolute positioning of widgets
 
 # AvrixLoader v1.4.0
 

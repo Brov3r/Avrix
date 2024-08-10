@@ -887,6 +887,10 @@ public abstract class Widget {
      */
     public void setX(int x) {
         this.x = x;
+
+        if (parent == null) {
+            setXA(x);
+        }
     }
 
     /**
@@ -896,6 +900,10 @@ public abstract class Widget {
      */
     public void setY(int y) {
         this.y = y;
+        
+        if (parent == null) {
+            setYA(y);
+        }
     }
 
     /**
