@@ -2,6 +2,7 @@ package com.avrix.patches;
 
 import com.avrix.agent.ClassTransformer;
 import com.avrix.events.EventManager;
+import com.avrix.lua.LuaManager;
 import javassist.CannotCompileException;
 
 /**
@@ -32,10 +33,8 @@ public class PatchLuaManager extends ClassTransformer {
             }
         }).modifyMethod("RunLuaInternal", (ctClass, ctMethod) -> {
             try {
-                String classCode = "{" +
-                        EventManager.class.getName() + ".invokeEvent(\"onLuaScriptExecute\", $args);" +
-                        "}";
-                ctMethod.insertBefore(classCode);
+                ctMethod.insertBefore(EventManager.class.getName() + ".invokeEvent(\"onLuaScriptExecute\", $args);");
+                ctMethod.insertBefore("if (" + LuaManager.class.getName() + ".isLuaBlocked($1)) return null;");
             } catch (CannotCompileException e) {
                 throw new RuntimeException(e);
             }

@@ -9,15 +9,49 @@ import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Provides utility methods for managing Lua scripts.
  */
 public class LuaManager {
+    /**
+     * A set of Lua file names that are blocked. The set is shared across all instances of {@code LuaManager}.
+     */
+    private static final Set<String> blockedLua = new HashSet<>();
+
+    /**
+     * Adds a Lua file name to the blocked list.
+     *
+     * @param luaFileName the full (or partial) name of the Lua file to be blocked
+     */
+    public synchronized static void addBlockLua(String luaFileName) {
+        blockedLua.add(luaFileName);
+    }
+
+    /**
+     * Retrieves the set of blocked Lua file names.
+     *
+     * @return a {@link Set} containing the names of blocked Lua files
+     */
+    public synchronized static Set<String> getBlockedLua() {
+        return blockedLua;
+    }
+
+    /**
+     * Checks if a Lua file name is blocked by performing a partial match against the blocked Lua file names.
+     *
+     * @param luaFileName the name of the Lua file to check
+     * @return {@code true} if a partial match is found in the blocked list, otherwise {@code false}
+     */
+    public synchronized static boolean isLuaBlocked(String luaFileName) {
+        boolean isBlocked = blockedLua.stream().anyMatch(luaFileName::contains);
+        if (isBlocked) {
+            System.out.println("[#] Lua loading blocked: " + ZomboidFileSystem.instance.getRelativeFile(luaFileName));
+        }
+        return isBlocked;
+    }
+
     /**
      * Executes a Lua script located at the specified path.
      *
