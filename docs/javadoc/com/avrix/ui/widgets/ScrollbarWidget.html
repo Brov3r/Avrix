@@ -105,10 +105,50 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color">
 <div class="block">Compressed width for horizontal scrollbar</div>
 </div>
+<div class="col-first even-row-color"><code>protected final <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a></code></div>
+<div class="col-second even-row-color"><code><a href="#DEFAULT_BACKGROUND_COLOR" class="member-name-link">DEFAULT_BACKGROUND_COLOR</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Default background color</div>
+</div>
+<div class="col-first odd-row-color"><code>protected final int</code></div>
+<div class="col-second odd-row-color"><code><a href="#DEFAULT_HORIZONTAL_HEIGHT" class="member-name-link">DEFAULT_HORIZONTAL_HEIGHT</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">The default height for a horizontal scrollbar.</div>
+</div>
+<div class="col-first even-row-color"><code>protected final int</code></div>
+<div class="col-second even-row-color"><code><a href="#DEFAULT_VERTICAL_WIDTH" class="member-name-link">DEFAULT_VERTICAL_WIDTH</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">The default width for a vertical scrollbar.</div>
+</div>
+<div class="col-first odd-row-color"><code>protected boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#dragging" class="member-name-link">dragging</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">Indicates whether the scrollbar is currently being dragged by the user.</div>
+</div>
+<div class="col-first even-row-color"><code>protected int</code></div>
+<div class="col-second even-row-color"><code><a href="#dragStartX" class="member-name-link">dragStartX</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">The x-coordinate of the mouse position when the dragging of the scrollbar started.</div>
+</div>
+<div class="col-first odd-row-color"><code>protected int</code></div>
+<div class="col-second odd-row-color"><code><a href="#dragStartY" class="member-name-link">dragStartY</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">The y-coordinate of the mouse position when the dragging of the scrollbar started.</div>
+</div>
 <div class="col-first even-row-color"><code>protected boolean</code></div>
 <div class="col-second even-row-color"><code><a href="#horizontal" class="member-name-link">horizontal</a></code></div>
 <div class="col-last even-row-color">
 <div class="block">Indicates whether the scrollbar is horizontal.</div>
+</div>
+<div class="col-first odd-row-color"><code>protected int</code></div>
+<div class="col-second odd-row-color"><code><a href="#scrollStartX" class="member-name-link">scrollStartX</a></code></div>
+<div class="col-last odd-row-color">
+<div class="block">The initial x-coordinate of the scrollbar's scroll position when dragging started.</div>
+</div>
+<div class="col-first even-row-color"><code>protected int</code></div>
+<div class="col-second even-row-color"><code><a href="#scrollStartY" class="member-name-link">scrollStartY</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">The initial y-coordinate of the scrollbar's scroll position when dragging started.</div>
 </div>
 <div class="col-first odd-row-color"><code>protected <a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a></code></div>
 <div class="col-second odd-row-color"><code><a href="#thumbColor" class="member-name-link">thumbColor</a></code></div>
@@ -126,7 +166,7 @@ loadScripts(document, 'script');</script>
 <code><a href="PanelWidget.html#backgroundColor">backgroundColor</a>, <a href="PanelWidget.html#borderColor">borderColor</a>, <a href="PanelWidget.html#borderRadius">borderRadius</a>, <a href="PanelWidget.html#borderWidth">borderWidth</a>, <a href="PanelWidget.html#draggable">draggable</a>, <a href="PanelWidget.html#dragOffsetX">dragOffsetX</a>, <a href="PanelWidget.html#dragOffsetY">dragOffsetY</a>, <a href="PanelWidget.html#drawBorder">drawBorder</a></code></div>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.avrix.ui.widgets.Widget">Fields inherited from class&nbsp;com.avrix.ui.widgets.<a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></h3>
-<code><a href="Widget.html#absoluteX">absoluteX</a>, <a href="Widget.html#absoluteY">absoluteY</a>, <a href="Widget.html#alwaysOnTop">alwaysOnTop</a>, <a href="Widget.html#children">children</a>, <a href="Widget.html#height">height</a>, <a href="Widget.html#hovered">hovered</a>, <a href="Widget.html#lmbPressed">lmbPressed</a>, <a href="Widget.html#maxScrollX">maxScrollX</a>, <a href="Widget.html#maxScrollY">maxScrollY</a>, <a href="Widget.html#parent">parent</a>, <a href="Widget.html#rmbPressed">rmbPressed</a>, <a href="Widget.html#scrollable">scrollable</a>, <a href="Widget.html#scrollLock">scrollLock</a>, <a href="Widget.html#scrollSpeed">scrollSpeed</a>, <a href="Widget.html#scrollX">scrollX</a>, <a href="Widget.html#scrollY">scrollY</a>, <a href="Widget.html#visible">visible</a>, <a href="Widget.html#width">width</a>, <a href="Widget.html#x">x</a>, <a href="Widget.html#y">y</a></code></div>
+<code><a href="Widget.html#absoluteX">absoluteX</a>, <a href="Widget.html#absoluteY">absoluteY</a>, <a href="Widget.html#alwaysOnTop">alwaysOnTop</a>, <a href="Widget.html#children">children</a>, <a href="Widget.html#height">height</a>, <a href="Widget.html#hovered">hovered</a>, <a href="Widget.html#lmbPressed">lmbPressed</a>, <a href="Widget.html#maxScrollX">maxScrollX</a>, <a href="Widget.html#maxScrollY">maxScrollY</a>, <a href="Widget.html#parent">parent</a>, <a href="Widget.html#rmbPressed">rmbPressed</a>, <a href="Widget.html#scrollable">scrollable</a>, <a href="Widget.html#scrollHandled">scrollHandled</a>, <a href="Widget.html#scrollLock">scrollLock</a>, <a href="Widget.html#scrollSpeed">scrollSpeed</a>, <a href="Widget.html#scrollX">scrollX</a>, <a href="Widget.html#scrollY">scrollY</a>, <a href="Widget.html#visible">visible</a>, <a href="Widget.html#width">width</a>, <a href="Widget.html#x">x</a>, <a href="Widget.html#y">y</a></code></div>
 </section>
 </li>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
@@ -222,6 +262,12 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Update the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> position</div>
 </div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#updateScrollbarPosition(int,int)" class="member-name-link">updateScrollbarPosition</a><wbr>(int&nbsp;mouseX,
+ int&nbsp;mouseY)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Update the scrollbar position based on the mouse position.</div>
+</div>
 </div>
 </div>
 </div>
@@ -246,6 +292,36 @@ loadScripts(document, 'script');</script>
 <h2>Field Details</h2>
 <ul class="member-list">
 <li>
+<section class="detail" id="DEFAULT_VERTICAL_WIDTH">
+<h3>DEFAULT_VERTICAL_WIDTH</h3>
+<div class="member-signature"><span class="modifiers">protected final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEFAULT_VERTICAL_WIDTH</span></div>
+<div class="block">The default width for a vertical scrollbar.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="see-list">
+<li><a href="../../../../constant-values.html#com.avrix.ui.widgets.ScrollbarWidget.DEFAULT_VERTICAL_WIDTH">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="DEFAULT_HORIZONTAL_HEIGHT">
+<h3>DEFAULT_HORIZONTAL_HEIGHT</h3>
+<div class="member-signature"><span class="modifiers">protected final</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">DEFAULT_HORIZONTAL_HEIGHT</span></div>
+<div class="block">The default height for a horizontal scrollbar.</div>
+<dl class="notes">
+<dt>See Also:</dt>
+<dd>
+<ul class="see-list">
+<li><a href="../../../../constant-values.html#com.avrix.ui.widgets.ScrollbarWidget.DEFAULT_HORIZONTAL_HEIGHT">Constant Field Values</a></li>
+</ul>
+</dd>
+</dl>
+</section>
+</li>
+<li>
 <section class="detail" id="borderOffset">
 <h3>borderOffset</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">borderOffset</span></div>
@@ -267,6 +343,13 @@ loadScripts(document, 'script');</script>
 </section>
 </li>
 <li>
+<section class="detail" id="DEFAULT_BACKGROUND_COLOR">
+<h3>DEFAULT_BACKGROUND_COLOR</h3>
+<div class="member-signature"><span class="modifiers">protected final</span>&nbsp;<span class="return-type"><a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a></span>&nbsp;<span class="element-name">DEFAULT_BACKGROUND_COLOR</span></div>
+<div class="block">Default background color</div>
+</section>
+</li>
+<li>
 <section class="detail" id="thumbColor">
 <h3>thumbColor</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a></span>&nbsp;<span class="element-name">thumbColor</span></div>
@@ -278,6 +361,46 @@ loadScripts(document, 'script');</script>
 <h3>horizontal</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">horizontal</span></div>
 <div class="block">Indicates whether the scrollbar is horizontal. If <code>false</code>, the scrollbar is vertical.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="dragging">
+<h3>dragging</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">dragging</span></div>
+<div class="block">Indicates whether the scrollbar is currently being dragged by the user.
+ This flag is used to track the dragging state of the scrollbar.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="dragStartX">
+<h3>dragStartX</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">dragStartX</span></div>
+<div class="block">The x-coordinate of the mouse position when the dragging of the scrollbar started.
+ This is used to calculate the amount of movement and update the scrollbar position accordingly.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="dragStartY">
+<h3>dragStartY</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">dragStartY</span></div>
+<div class="block">The y-coordinate of the mouse position when the dragging of the scrollbar started.
+ This is used to calculate the amount of movement and update the scrollbar position accordingly.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="scrollStartX">
+<h3>scrollStartX</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">scrollStartX</span></div>
+<div class="block">The initial x-coordinate of the scrollbar's scroll position when dragging started.
+ This value helps in calculating the new scroll position based on the mouse movement.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="scrollStartY">
+<h3>scrollStartY</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">scrollStartY</span></div>
+<div class="block">The initial y-coordinate of the scrollbar's scroll position when dragging started.
+ This value helps in calculating the new scroll position based on the mouse movement.</div>
 </section>
 </li>
 </ul>
@@ -440,6 +563,19 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="PanelWidget.html#update()">update</a></code>&nbsp;in class&nbsp;<code><a href="PanelWidget.html" title="class in com.avrix.ui.widgets">PanelWidget</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="updateScrollbarPosition(int,int)">
+<h3>updateScrollbarPosition</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">updateScrollbarPosition</span><wbr><span class="parameters">(int&nbsp;mouseX,
+ int&nbsp;mouseY)</span></div>
+<div class="block">Update the scrollbar position based on the mouse position.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>mouseX</code> - absolute x-coordinate of the mouse position</dd>
+<dd><code>mouseY</code> - absolute y-coordinate of the mouse position</dd>
 </dl>
 </section>
 </li>

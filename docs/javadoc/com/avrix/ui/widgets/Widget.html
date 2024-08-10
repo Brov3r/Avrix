@@ -156,43 +156,48 @@ loadScripts(document, 'script');</script>
 <div class="block">Signals whether the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> can scroll child elements</div>
 </div>
 <div class="col-first even-row-color"><code>protected boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#scrollLock" class="member-name-link">scrollLock</a></code></div>
+<div class="col-second even-row-color"><code><a href="#scrollHandled" class="member-name-link">scrollHandled</a></code></div>
 <div class="col-last even-row-color">
+<div class="block">Indicates whether the current mouse wheel event has been handled by a child widget.</div>
+</div>
+<div class="col-first odd-row-color"><code>protected boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#scrollLock" class="member-name-link">scrollLock</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">Indicates whether the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> will respond to scrolling</div>
 </div>
-<div class="col-first odd-row-color"><code>protected int</code></div>
-<div class="col-second odd-row-color"><code><a href="#scrollSpeed" class="member-name-link">scrollSpeed</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code>protected int</code></div>
+<div class="col-second even-row-color"><code><a href="#scrollSpeed" class="member-name-link">scrollSpeed</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">The speed at which the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> scrolls in response to mouse wheel movements.</div>
 </div>
-<div class="col-first even-row-color"><code>protected int</code></div>
-<div class="col-second even-row-color"><code><a href="#scrollX" class="member-name-link">scrollX</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><code>protected int</code></div>
+<div class="col-second odd-row-color"><code><a href="#scrollX" class="member-name-link">scrollX</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">The current horizontal scroll offset of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first odd-row-color"><code>protected int</code></div>
-<div class="col-second odd-row-color"><code><a href="#scrollY" class="member-name-link">scrollY</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code>protected int</code></div>
+<div class="col-second even-row-color"><code><a href="#scrollY" class="member-name-link">scrollY</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">The current vertical scroll offset of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first even-row-color"><code>protected boolean</code></div>
-<div class="col-second even-row-color"><code><a href="#visible" class="member-name-link">visible</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><code>protected boolean</code></div>
+<div class="col-second odd-row-color"><code><a href="#visible" class="member-name-link">visible</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">Indicates whether the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> is currently visible.</div>
 </div>
-<div class="col-first odd-row-color"><code>protected int</code></div>
-<div class="col-second odd-row-color"><code><a href="#width" class="member-name-link">width</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code>protected int</code></div>
+<div class="col-second even-row-color"><code><a href="#width" class="member-name-link">width</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">The width of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first even-row-color"><code>protected int</code></div>
-<div class="col-second even-row-color"><code><a href="#x" class="member-name-link">x</a></code></div>
-<div class="col-last even-row-color">
+<div class="col-first odd-row-color"><code>protected int</code></div>
+<div class="col-second odd-row-color"><code><a href="#x" class="member-name-link">x</a></code></div>
+<div class="col-last odd-row-color">
 <div class="block">The relative x-coordinate of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s position (if not a child, coincides with absolute coordinates).</div>
 </div>
-<div class="col-first odd-row-color"><code>protected int</code></div>
-<div class="col-second odd-row-color"><code><a href="#y" class="member-name-link">y</a></code></div>
-<div class="col-last odd-row-color">
+<div class="col-first even-row-color"><code>protected int</code></div>
+<div class="col-second even-row-color"><code><a href="#y" class="member-name-link">y</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">The relative y-coordinate of the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s position (if not a child, coincides with absolute coordinates).</div>
 </div>
 </div>
@@ -747,6 +752,13 @@ loadScripts(document, 'script');</script>
 <h3>rmbPressed</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">rmbPressed</span></div>
 <div class="block">Signal indicating whether <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> is currently right-clicked</div>
+</section>
+</li>
+<li>
+<section class="detail" id="scrollHandled">
+<h3>scrollHandled</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">scrollHandled</span></div>
+<div class="block">Indicates whether the current mouse wheel event has been handled by a child widget.</div>
 </section>
 </li>
 <li>

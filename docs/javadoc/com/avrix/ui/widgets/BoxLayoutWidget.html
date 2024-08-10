@@ -117,10 +117,15 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color">
 <div class="block">The margin between the child <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s.</div>
 </div>
+<div class="col-first even-row-color"><code>protected boolean</code></div>
+<div class="col-second even-row-color"><code><a href="#updatingLayout" class="member-name-link">updatingLayout</a></code></div>
+<div class="col-last even-row-color">
+<div class="block">Indicates if the layout is currently being updated to avoid recursive updates.</div>
+</div>
 </div>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.avrix.ui.widgets.Widget">Fields inherited from class&nbsp;com.avrix.ui.widgets.<a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></h3>
-<code><a href="Widget.html#absoluteX">absoluteX</a>, <a href="Widget.html#absoluteY">absoluteY</a>, <a href="Widget.html#alwaysOnTop">alwaysOnTop</a>, <a href="Widget.html#children">children</a>, <a href="Widget.html#height">height</a>, <a href="Widget.html#hovered">hovered</a>, <a href="Widget.html#lmbPressed">lmbPressed</a>, <a href="Widget.html#maxScrollX">maxScrollX</a>, <a href="Widget.html#maxScrollY">maxScrollY</a>, <a href="Widget.html#parent">parent</a>, <a href="Widget.html#rmbPressed">rmbPressed</a>, <a href="Widget.html#scrollable">scrollable</a>, <a href="Widget.html#scrollLock">scrollLock</a>, <a href="Widget.html#scrollSpeed">scrollSpeed</a>, <a href="Widget.html#scrollX">scrollX</a>, <a href="Widget.html#scrollY">scrollY</a>, <a href="Widget.html#visible">visible</a>, <a href="Widget.html#width">width</a>, <a href="Widget.html#x">x</a>, <a href="Widget.html#y">y</a></code></div>
+<code><a href="Widget.html#absoluteX">absoluteX</a>, <a href="Widget.html#absoluteY">absoluteY</a>, <a href="Widget.html#alwaysOnTop">alwaysOnTop</a>, <a href="Widget.html#children">children</a>, <a href="Widget.html#height">height</a>, <a href="Widget.html#hovered">hovered</a>, <a href="Widget.html#lmbPressed">lmbPressed</a>, <a href="Widget.html#maxScrollX">maxScrollX</a>, <a href="Widget.html#maxScrollY">maxScrollY</a>, <a href="Widget.html#parent">parent</a>, <a href="Widget.html#rmbPressed">rmbPressed</a>, <a href="Widget.html#scrollable">scrollable</a>, <a href="Widget.html#scrollHandled">scrollHandled</a>, <a href="Widget.html#scrollLock">scrollLock</a>, <a href="Widget.html#scrollSpeed">scrollSpeed</a>, <a href="Widget.html#scrollX">scrollX</a>, <a href="Widget.html#scrollY">scrollY</a>, <a href="Widget.html#visible">visible</a>, <a href="Widget.html#width">width</a>, <a href="Widget.html#x">x</a>, <a href="Widget.html#y">y</a></code></div>
 </section>
 </li>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
@@ -236,6 +241,13 @@ loadScripts(document, 'script');</script>
 <h3>autoresize</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">autoresize</span></div>
 <div class="block">Whether the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> should automatically resize to fit its children.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="updatingLayout">
+<h3>updatingLayout</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">updatingLayout</span></div>
+<div class="block">Indicates if the layout is currently being updated to avoid recursive updates.</div>
 </section>
 </li>
 <li>

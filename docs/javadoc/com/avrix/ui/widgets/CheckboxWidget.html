@@ -161,7 +161,7 @@ loadScripts(document, 'script');</script>
 </div>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.avrix.ui.widgets.Widget">Fields inherited from class&nbsp;com.avrix.ui.widgets.<a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></h3>
-<code><a href="Widget.html#absoluteX">absoluteX</a>, <a href="Widget.html#absoluteY">absoluteY</a>, <a href="Widget.html#alwaysOnTop">alwaysOnTop</a>, <a href="Widget.html#children">children</a>, <a href="Widget.html#height">height</a>, <a href="Widget.html#hovered">hovered</a>, <a href="Widget.html#lmbPressed">lmbPressed</a>, <a href="Widget.html#maxScrollX">maxScrollX</a>, <a href="Widget.html#maxScrollY">maxScrollY</a>, <a href="Widget.html#parent">parent</a>, <a href="Widget.html#rmbPressed">rmbPressed</a>, <a href="Widget.html#scrollable">scrollable</a>, <a href="Widget.html#scrollLock">scrollLock</a>, <a href="Widget.html#scrollSpeed">scrollSpeed</a>, <a href="Widget.html#scrollX">scrollX</a>, <a href="Widget.html#scrollY">scrollY</a>, <a href="Widget.html#visible">visible</a>, <a href="Widget.html#width">width</a>, <a href="Widget.html#x">x</a>, <a href="Widget.html#y">y</a></code></div>
+<code><a href="Widget.html#absoluteX">absoluteX</a>, <a href="Widget.html#absoluteY">absoluteY</a>, <a href="Widget.html#alwaysOnTop">alwaysOnTop</a>, <a href="Widget.html#children">children</a>, <a href="Widget.html#height">height</a>, <a href="Widget.html#hovered">hovered</a>, <a href="Widget.html#lmbPressed">lmbPressed</a>, <a href="Widget.html#maxScrollX">maxScrollX</a>, <a href="Widget.html#maxScrollY">maxScrollY</a>, <a href="Widget.html#parent">parent</a>, <a href="Widget.html#rmbPressed">rmbPressed</a>, <a href="Widget.html#scrollable">scrollable</a>, <a href="Widget.html#scrollHandled">scrollHandled</a>, <a href="Widget.html#scrollLock">scrollLock</a>, <a href="Widget.html#scrollSpeed">scrollSpeed</a>, <a href="Widget.html#scrollX">scrollX</a>, <a href="Widget.html#scrollY">scrollY</a>, <a href="Widget.html#visible">visible</a>, <a href="Widget.html#width">width</a>, <a href="Widget.html#x">x</a>, <a href="Widget.html#y">y</a></code></div>
 </section>
 </li>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
@@ -320,6 +320,12 @@ loadScripts(document, 'script');</script>
 <div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTitleText(java.lang.String)" class="member-name-link">setTitleText</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;titleText)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the title text for the checkbox.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#truncateText(java.lang.String,int)" class="member-name-link">truncateText</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
+ int&nbsp;maxWidth)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Truncates the given text with an ellipsis if it exceeds the specified width.</div>
 </div>
 </div>
 </div>
@@ -734,6 +740,21 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Parameters:</dt>
 <dd><code>onCheckAction</code> - the action to perform</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="truncateText(java.lang.String,int)">
+<h3>truncateText</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type"><a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a></span>&nbsp;<span class="element-name">truncateText</span><wbr><span class="parameters">(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;text,
+ int&nbsp;maxWidth)</span></div>
+<div class="block">Truncates the given text with an ellipsis if it exceeds the specified width.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>text</code> - the text to be truncated</dd>
+<dd><code>maxWidth</code> - the maximum width available for the text</dd>
+<dt>Returns:</dt>
+<dd>the truncated text with an ellipsis if it exceeds the maximum width</dd>
 </dl>
 </section>
 </li>

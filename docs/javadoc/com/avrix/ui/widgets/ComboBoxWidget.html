@@ -188,7 +188,7 @@ loadScripts(document, 'script');</script>
 <code><a href="PanelWidget.html#backgroundColor">backgroundColor</a>, <a href="PanelWidget.html#borderColor">borderColor</a>, <a href="PanelWidget.html#borderRadius">borderRadius</a>, <a href="PanelWidget.html#borderWidth">borderWidth</a>, <a href="PanelWidget.html#draggable">draggable</a>, <a href="PanelWidget.html#dragging">dragging</a>, <a href="PanelWidget.html#dragOffsetX">dragOffsetX</a>, <a href="PanelWidget.html#dragOffsetY">dragOffsetY</a>, <a href="PanelWidget.html#drawBorder">drawBorder</a></code></div>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.avrix.ui.widgets.Widget">Fields inherited from class&nbsp;com.avrix.ui.widgets.<a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></h3>
-<code><a href="Widget.html#absoluteX">absoluteX</a>, <a href="Widget.html#absoluteY">absoluteY</a>, <a href="Widget.html#alwaysOnTop">alwaysOnTop</a>, <a href="Widget.html#children">children</a>, <a href="Widget.html#height">height</a>, <a href="Widget.html#hovered">hovered</a>, <a href="Widget.html#lmbPressed">lmbPressed</a>, <a href="Widget.html#maxScrollX">maxScrollX</a>, <a href="Widget.html#maxScrollY">maxScrollY</a>, <a href="Widget.html#parent">parent</a>, <a href="Widget.html#rmbPressed">rmbPressed</a>, <a href="Widget.html#scrollable">scrollable</a>, <a href="Widget.html#scrollLock">scrollLock</a>, <a href="Widget.html#scrollSpeed">scrollSpeed</a>, <a href="Widget.html#scrollX">scrollX</a>, <a href="Widget.html#scrollY">scrollY</a>, <a href="Widget.html#visible">visible</a>, <a href="Widget.html#width">width</a>, <a href="Widget.html#x">x</a>, <a href="Widget.html#y">y</a></code></div>
+<code><a href="Widget.html#absoluteX">absoluteX</a>, <a href="Widget.html#absoluteY">absoluteY</a>, <a href="Widget.html#alwaysOnTop">alwaysOnTop</a>, <a href="Widget.html#children">children</a>, <a href="Widget.html#height">height</a>, <a href="Widget.html#hovered">hovered</a>, <a href="Widget.html#lmbPressed">lmbPressed</a>, <a href="Widget.html#maxScrollX">maxScrollX</a>, <a href="Widget.html#maxScrollY">maxScrollY</a>, <a href="Widget.html#parent">parent</a>, <a href="Widget.html#rmbPressed">rmbPressed</a>, <a href="Widget.html#scrollable">scrollable</a>, <a href="Widget.html#scrollHandled">scrollHandled</a>, <a href="Widget.html#scrollLock">scrollLock</a>, <a href="Widget.html#scrollSpeed">scrollSpeed</a>, <a href="Widget.html#scrollX">scrollX</a>, <a href="Widget.html#scrollY">scrollY</a>, <a href="Widget.html#visible">visible</a>, <a href="Widget.html#width">width</a>, <a href="Widget.html#x">x</a>, <a href="Widget.html#y">y</a></code></div>
 </section>
 </li>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
@@ -311,89 +311,94 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Called when the left mouse button is released over the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#removeValue(int)" class="member-name-link">removeValue</a><wbr>(int&nbsp;index)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#openPopup()" class="member-name-link">openPopup</a>()</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
-<div class="block">Remove a value from a ComboBox.</div>
+<div class="block">Opens the popup to display the list of values.</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#removeValue(java.lang.String)" class="member-name-link">removeValue</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;value)</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#removeValue(int)" class="member-name-link">removeValue</a><wbr>(int&nbsp;index)</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Remove a value from a ComboBox.</div>
 </div>
 <div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#render()" class="member-name-link">render</a>()</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#removeValue(java.lang.String)" class="member-name-link">removeValue</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;value)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Remove a value from a ComboBox.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#render()" class="member-name-link">render</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Renders the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setAccentColor(com.avrix.ui.NanoColor)" class="member-name-link">setAccentColor</a><wbr>(<a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;accentColor)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setAccentColor(com.avrix.ui.NanoColor)" class="member-name-link">setAccentColor</a><wbr>(<a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;accentColor)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the accent color.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setBorderOffset(int)" class="member-name-link">setBorderOffset</a><wbr>(int&nbsp;borderOffset)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setBorderOffset(int)" class="member-name-link">setBorderOffset</a><wbr>(int&nbsp;borderOffset)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the border offset.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setDropButtonWidth(int)" class="member-name-link">setDropButtonWidth</a><wbr>(int&nbsp;dropButtonWidth)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setDropButtonWidth(int)" class="member-name-link">setDropButtonWidth</a><wbr>(int&nbsp;dropButtonWidth)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the width of the drop button.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setDropIcon(java.lang.String)" class="member-name-link">setDropIcon</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;dropIcon)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setDropIcon(java.lang.String)" class="member-name-link">setDropIcon</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;dropIcon)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the drop icon.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFontName(java.lang.String)" class="member-name-link">setFontName</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fontName)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFontName(java.lang.String)" class="member-name-link">setFontName</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;fontName)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the name of the font.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFontSize(int)" class="member-name-link">setFontSize</a><wbr>(int&nbsp;fontSize)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setFontSize(int)" class="member-name-link">setFontSize</a><wbr>(int&nbsp;fontSize)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the font size.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setIconColor(com.avrix.ui.NanoColor)" class="member-name-link">setIconColor</a><wbr>(<a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;iconColor)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setIconColor(com.avrix.ui.NanoColor)" class="member-name-link">setIconColor</a><wbr>(<a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;iconColor)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the icon color.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setIconFontName(java.lang.String)" class="member-name-link">setIconFontName</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;iconFontName)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setIconFontName(java.lang.String)" class="member-name-link">setIconFontName</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&nbsp;iconFontName)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the name of the icon font.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setIconSize(int)" class="member-name-link">setIconSize</a><wbr>(int&nbsp;iconSize)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setIconSize(int)" class="member-name-link">setIconSize</a><wbr>(int&nbsp;iconSize)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the drop icon size.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPopupButtonHeight(int)" class="member-name-link">setPopupButtonHeight</a><wbr>(int&nbsp;popupButtonHeight)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPopupButtonHeight(int)" class="member-name-link">setPopupButtonHeight</a><wbr>(int&nbsp;popupButtonHeight)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the popup button height.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPopupHeight(int)" class="member-name-link">setPopupHeight</a><wbr>(int&nbsp;popupHeight)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setPopupHeight(int)" class="member-name-link">setPopupHeight</a><wbr>(int&nbsp;popupHeight)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the popup height.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTextColor(com.avrix.ui.NanoColor)" class="member-name-link">setTextColor</a><wbr>(<a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;textColor)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setTextColor(com.avrix.ui.NanoColor)" class="member-name-link">setTextColor</a><wbr>(<a href="../NanoColor.html" title="class in com.avrix.ui">NanoColor</a>&nbsp;textColor)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the text color.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setValueIndex(int)" class="member-name-link">setValueIndex</a><wbr>(int&nbsp;valueIndex)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setValueIndex(int)" class="member-name-link">setValueIndex</a><wbr>(int&nbsp;valueIndex)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the value index.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setValueList(java.util.List)" class="member-name-link">setValueList</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;valueList)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setValueList(java.util.List)" class="member-name-link">setValueList</a><wbr>(<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/List.html" title="class or interface in java.util" class="external-link">List</a>&lt;<a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/lang/String.html" title="class or interface in java.lang" class="external-link">String</a>&gt;&nbsp;valueList)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the value list.</div>
 </div>
 </div>
@@ -564,6 +569,13 @@ loadScripts(document, 'script');</script>
 <dd><code>x</code> - relative x-coordinate of the mouse position</dd>
 <dd><code>y</code> - relative y-coordinate of the mouse position</dd>
 </dl>
+</section>
+</li>
+<li>
+<section class="detail" id="openPopup()">
+<h3>openPopup</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">openPopup</span>()</div>
+<div class="block">Opens the popup to display the list of values.</div>
 </section>
 </li>
 <li>

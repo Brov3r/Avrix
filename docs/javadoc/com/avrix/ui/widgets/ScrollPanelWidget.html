@@ -125,7 +125,7 @@ loadScripts(document, 'script');</script>
 <code><a href="PanelWidget.html#backgroundColor">backgroundColor</a>, <a href="PanelWidget.html#borderColor">borderColor</a>, <a href="PanelWidget.html#borderRadius">borderRadius</a>, <a href="PanelWidget.html#borderWidth">borderWidth</a>, <a href="PanelWidget.html#draggable">draggable</a>, <a href="PanelWidget.html#dragging">dragging</a>, <a href="PanelWidget.html#dragOffsetX">dragOffsetX</a>, <a href="PanelWidget.html#dragOffsetY">dragOffsetY</a>, <a href="PanelWidget.html#drawBorder">drawBorder</a></code></div>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.avrix.ui.widgets.Widget">Fields inherited from class&nbsp;com.avrix.ui.widgets.<a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></h3>
-<code><a href="Widget.html#absoluteX">absoluteX</a>, <a href="Widget.html#absoluteY">absoluteY</a>, <a href="Widget.html#alwaysOnTop">alwaysOnTop</a>, <a href="Widget.html#children">children</a>, <a href="Widget.html#height">height</a>, <a href="Widget.html#hovered">hovered</a>, <a href="Widget.html#lmbPressed">lmbPressed</a>, <a href="Widget.html#maxScrollX">maxScrollX</a>, <a href="Widget.html#maxScrollY">maxScrollY</a>, <a href="Widget.html#parent">parent</a>, <a href="Widget.html#rmbPressed">rmbPressed</a>, <a href="Widget.html#scrollable">scrollable</a>, <a href="Widget.html#scrollLock">scrollLock</a>, <a href="Widget.html#scrollSpeed">scrollSpeed</a>, <a href="Widget.html#scrollX">scrollX</a>, <a href="Widget.html#scrollY">scrollY</a>, <a href="Widget.html#visible">visible</a>, <a href="Widget.html#width">width</a>, <a href="Widget.html#x">x</a>, <a href="Widget.html#y">y</a></code></div>
+<code><a href="Widget.html#absoluteX">absoluteX</a>, <a href="Widget.html#absoluteY">absoluteY</a>, <a href="Widget.html#alwaysOnTop">alwaysOnTop</a>, <a href="Widget.html#children">children</a>, <a href="Widget.html#height">height</a>, <a href="Widget.html#hovered">hovered</a>, <a href="Widget.html#lmbPressed">lmbPressed</a>, <a href="Widget.html#maxScrollX">maxScrollX</a>, <a href="Widget.html#maxScrollY">maxScrollY</a>, <a href="Widget.html#parent">parent</a>, <a href="Widget.html#rmbPressed">rmbPressed</a>, <a href="Widget.html#scrollable">scrollable</a>, <a href="Widget.html#scrollHandled">scrollHandled</a>, <a href="Widget.html#scrollLock">scrollLock</a>, <a href="Widget.html#scrollSpeed">scrollSpeed</a>, <a href="Widget.html#scrollX">scrollX</a>, <a href="Widget.html#scrollY">scrollY</a>, <a href="Widget.html#visible">visible</a>, <a href="Widget.html#width">width</a>, <a href="Widget.html#x">x</a>, <a href="Widget.html#y">y</a></code></div>
 </section>
 </li>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
@@ -187,34 +187,39 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Initializes the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#removeChild(com.avrix.ui.widgets.Widget)" class="member-name-link">removeChild</a><wbr>(<a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</code></div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#raiseScrollbars(boolean)" class="member-name-link">raiseScrollbars</a><wbr>(boolean&nbsp;isAnotherWidget)</code></div>
 <div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Raising scrollbars to the top of rendering</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#removeChild(com.avrix.ui.widgets.Widget)" class="member-name-link">removeChild</a><wbr>(<a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Removes a child widget from this <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>'s list of children.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderChildren()" class="member-name-link">renderChildren</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#renderChildren()" class="member-name-link">renderChildren</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Updates and renders all child widgets of this <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setMaxScrollX(int)" class="member-name-link">setMaxScrollX</a><wbr>(int&nbsp;maxScrollX)</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setMaxScrollX(int)" class="member-name-link">setMaxScrollX</a><wbr>(int&nbsp;maxScrollX)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the maximum horizontal scroll offset of the widget.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setMaxScrollY(int)" class="member-name-link">setMaxScrollY</a><wbr>(int&nbsp;maxScrollY)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#setMaxScrollY(int)" class="member-name-link">setMaxScrollY</a><wbr>(int&nbsp;maxScrollY)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Sets the maximum vertical scroll offset of the widget.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update()" class="member-name-link">update</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#update()" class="member-name-link">update</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Updates the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#updateMaxScrollOffset()" class="member-name-link">updateMaxScrollOffset</a>()</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#updateMaxScrollOffset()" class="member-name-link">updateMaxScrollOffset</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Updates the maximum scroll offsets based on the coordinates and sizes of child <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s.</div>
 </div>
 </div>
@@ -383,6 +388,17 @@ loadScripts(document, 'script');</script>
 <dd><code><a href="Widget.html#addChild(com.avrix.ui.widgets.Widget)">addChild</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></code></dd>
 <dt>Parameters:</dt>
 <dd><code>widget</code> - the widget to add as a child</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="raiseScrollbars(boolean)">
+<h3>raiseScrollbars</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">raiseScrollbars</span><wbr><span class="parameters">(boolean&nbsp;isAnotherWidget)</span></div>
+<div class="block">Raising scrollbars to the top of rendering</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>isAnotherWidget</code> - flag pointing to other widgets</dd>
 </dl>
 </section>
 </li>

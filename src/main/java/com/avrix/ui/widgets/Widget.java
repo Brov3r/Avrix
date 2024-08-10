@@ -49,6 +49,11 @@ public abstract class Widget {
     protected boolean rmbPressed = false;
 
     /**
+     * Indicates whether the current mouse wheel event has been handled by a child widget.
+     */
+    protected boolean scrollHandled = false;
+
+    /**
      * The relative x-coordinate of the {@link Widget}'s position (if not a child, coincides with absolute coordinates).
      */
     protected int x;
@@ -552,6 +557,8 @@ public abstract class Widget {
      * @param delta direction of mouse wheel movement - (1 - up, -1 - down)
      */
     public void onMouseWheel(int x, int y, int delta) {
+        scrollHandled = false;
+
         // Update child widgets based on the new scroll values
         List<Widget> childrenCopy = getChildren();
         for (int i = childrenCopy.size() - 1; i >= 0; i--) {
@@ -564,12 +571,16 @@ public abstract class Widget {
 
             if (child.isPointOver(scrollAbsoluteX, scrollAbsoluteY) && child.hovered) {
                 child.onMouseWheel(childRelativeX, childRelativeY, delta);
-                return;
+
+                if (child.scrollable || child.scrollHandled) {
+                    scrollHandled = true;
+                    break;
+                }
             }
         }
 
         // Update scroll position
-        if (scrollable) {
+        if (scrollable && !scrollHandled) {
             scrollY -= delta * scrollSpeed;
             onMouseMove(x, y);
         }

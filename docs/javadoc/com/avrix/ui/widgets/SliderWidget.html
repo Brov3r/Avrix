@@ -149,24 +149,29 @@ loadScripts(document, 'script');</script>
 <div class="block">A callback action to be executed when the slider value changes.</div>
 </div>
 <div class="col-first odd-row-color"><code>protected int</code></div>
-<div class="col-second odd-row-color"><code><a href="#textOffset" class="member-name-link">textOffset</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#prevValue" class="member-name-link">prevValue</a></code></div>
 <div class="col-last odd-row-color">
-<div class="block">The offset for rendering text relative to the bar.</div>
+<div class="block">The previous value of the slider, used to detect changes.</div>
 </div>
 <div class="col-first even-row-color"><code>protected int</code></div>
-<div class="col-second even-row-color"><code><a href="#thumbWidth" class="member-name-link">thumbWidth</a></code></div>
+<div class="col-second even-row-color"><code><a href="#textOffset" class="member-name-link">textOffset</a></code></div>
 <div class="col-last even-row-color">
-<div class="block">The width of the slider's thumb.</div>
+<div class="block">The offset for rendering text relative to the bar.</div>
 </div>
 <div class="col-first odd-row-color"><code>protected int</code></div>
-<div class="col-second odd-row-color"><code><a href="#value" class="member-name-link">value</a></code></div>
+<div class="col-second odd-row-color"><code><a href="#thumbWidth" class="member-name-link">thumbWidth</a></code></div>
 <div class="col-last odd-row-color">
+<div class="block">The width of the slider's thumb.</div>
+</div>
+<div class="col-first even-row-color"><code>protected int</code></div>
+<div class="col-second even-row-color"><code><a href="#value" class="member-name-link">value</a></code></div>
+<div class="col-last even-row-color">
 <div class="block">The current value of the slider.</div>
 </div>
 </div>
 <div class="inherited-list">
 <h3 id="fields-inherited-from-class-com.avrix.ui.widgets.Widget">Fields inherited from class&nbsp;com.avrix.ui.widgets.<a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></h3>
-<code><a href="Widget.html#absoluteX">absoluteX</a>, <a href="Widget.html#absoluteY">absoluteY</a>, <a href="Widget.html#alwaysOnTop">alwaysOnTop</a>, <a href="Widget.html#children">children</a>, <a href="Widget.html#height">height</a>, <a href="Widget.html#hovered">hovered</a>, <a href="Widget.html#lmbPressed">lmbPressed</a>, <a href="Widget.html#maxScrollX">maxScrollX</a>, <a href="Widget.html#maxScrollY">maxScrollY</a>, <a href="Widget.html#parent">parent</a>, <a href="Widget.html#rmbPressed">rmbPressed</a>, <a href="Widget.html#scrollable">scrollable</a>, <a href="Widget.html#scrollLock">scrollLock</a>, <a href="Widget.html#scrollSpeed">scrollSpeed</a>, <a href="Widget.html#scrollX">scrollX</a>, <a href="Widget.html#scrollY">scrollY</a>, <a href="Widget.html#visible">visible</a>, <a href="Widget.html#width">width</a>, <a href="Widget.html#x">x</a>, <a href="Widget.html#y">y</a></code></div>
+<code><a href="Widget.html#absoluteX">absoluteX</a>, <a href="Widget.html#absoluteY">absoluteY</a>, <a href="Widget.html#alwaysOnTop">alwaysOnTop</a>, <a href="Widget.html#children">children</a>, <a href="Widget.html#height">height</a>, <a href="Widget.html#hovered">hovered</a>, <a href="Widget.html#lmbPressed">lmbPressed</a>, <a href="Widget.html#maxScrollX">maxScrollX</a>, <a href="Widget.html#maxScrollY">maxScrollY</a>, <a href="Widget.html#parent">parent</a>, <a href="Widget.html#rmbPressed">rmbPressed</a>, <a href="Widget.html#scrollable">scrollable</a>, <a href="Widget.html#scrollHandled">scrollHandled</a>, <a href="Widget.html#scrollLock">scrollLock</a>, <a href="Widget.html#scrollSpeed">scrollSpeed</a>, <a href="Widget.html#scrollX">scrollX</a>, <a href="Widget.html#scrollY">scrollY</a>, <a href="Widget.html#visible">visible</a>, <a href="Widget.html#width">width</a>, <a href="Widget.html#x">x</a>, <a href="Widget.html#y">y</a></code></div>
 </section>
 </li>
 <!-- ======== CONSTRUCTOR SUMMARY ======== -->
@@ -349,6 +354,12 @@ loadScripts(document, 'script');</script>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
 <div class="block">Updates the <a href="Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a></div>
 </div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code>protected void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4"><code><a href="#updateValue(int,int)" class="member-name-link">updateValue</a><wbr>(int&nbsp;mouseX,
+ int&nbsp;mouseY)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab2 method-summary-table-tab4">
+<div class="block">Updates the slider value based on the mouse position.</div>
+</div>
 </div>
 </div>
 </div>
@@ -437,6 +448,13 @@ loadScripts(document, 'script');</script>
 <h3>thumbWidth</h3>
 <div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">thumbWidth</span></div>
 <div class="block">The width of the slider's thumb.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="prevValue">
+<h3>prevValue</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">int</span>&nbsp;<span class="element-name">prevValue</span></div>
+<div class="block">The previous value of the slider, used to detect changes.</div>
 </section>
 </li>
 <li>
@@ -820,6 +838,19 @@ loadScripts(document, 'script');</script>
 <dl class="notes">
 <dt>Overrides:</dt>
 <dd><code><a href="Widget.html#update()">update</a></code>&nbsp;in class&nbsp;<code><a href="Widget.html" title="class in com.avrix.ui.widgets">Widget</a></code></dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="updateValue(int,int)">
+<h3>updateValue</h3>
+<div class="member-signature"><span class="modifiers">protected</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">updateValue</span><wbr><span class="parameters">(int&nbsp;mouseX,
+ int&nbsp;mouseY)</span></div>
+<div class="block">Updates the slider value based on the mouse position.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>mouseX</code> - absolute x-coordinate of the mouse position</dd>
+<dd><code>mouseY</code> - absolute y-coordinate of the mouse position</dd>
 </dl>
 </section>
 </li>
