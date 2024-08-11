@@ -18,6 +18,7 @@ version = '1.5.0'
  * Path to the compiled Jar file
  */
 def buildPath = System.getenv('BUILD_PATH') ?: 'build';
+def baseArchiveName = "${rootProject.name.capitalize()}-Core";
 
 /**
  * Repositories for project dependencies
@@ -129,7 +130,7 @@ processResources {
     filesMatching('**/avrix.properties') {
         filter {
             it.replace('%PROJECT_VERSION%', version)
-                    .replace('%PROJECT_NAME%', rootProject.name + " Loader")
+                    .replace('%PROJECT_NAME%', rootProject.name.capitalize() + " Loader")
         }
     }
 }
@@ -138,12 +139,14 @@ processResources {
  * Creating a Jar file wrapper (core) to run a game server
  */
 shadowJar {
-    archiveFileName.set("${rootProject.name}-Core-${version}.jar")
+    archiveBaseName.set(baseArchiveName)
+    archiveClassifier.set('')
+
     destinationDirectory.set(file(buildPath))
 
     manifest {
         attributes(
-                'Implementation-Title': rootProject.name,
+                'Implementation-Title': rootProject.name.capitalize(),
                 'Implementation-Version': version,
                 'Agent-Class': 'com.avrix.agent.Agent',
                 'Can-Redefine-Classes': 'true',
@@ -153,11 +156,40 @@ shadowJar {
 }
 
 /**
+ * Building a release Jars archive with documentation and sources
+ */
+tasks.register('releaseBuildJar') {
+    dependsOn javadocJar, sourceJar
+    finalizedBy buildJar
+}
+
+/**
  * Building a Jar archive with documentation
  */
 tasks.register('buildJar') {
-    dependsOn generateJavaDoc
     finalizedBy shadowJar
+}
+
+/**
+ * Creating javadoc in jar archive
+ */
+tasks.register('javadocJar', Jar) {
+    dependsOn(tasks.generateJavaDoc)
+    archiveBaseName.set(baseArchiveName)
+    archiveClassifier.set('javadoc')
+    from(file("docs/javadoc"))
+    destinationDirectory.set(file(buildPath))
+}
+
+/**
+ * Packaging source code in a Jar archive
+ */
+tasks.register('sourceJar', Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveBaseName.set(baseArchiveName)
+    archiveClassifier.set('sources')
+    from(sourceSets.main.allSource)
+    destinationDirectory.set(file(buildPath))
 }
 
 /**
@@ -174,9 +206,15 @@ tasks.register('buildZomboidDependencies') {
  * Generating JavaDoc for Jar archive
  */
 tasks.register('generateJavaDoc', Javadoc) {
-    source = sourceSets.main.java.srcDirs
-    classpath = configurations.compileClasspath
+    source = sourceSets.main.allJava
+    classpath = sourceSets.main.compileClasspath
     destinationDir = file("docs/javadoc")
+    options {
+        encoding = 'UTF-8'
+        charSet = 'UTF-8'
+        links("https://docs.oracle.com/en/java/javase/17/docs/api/")
+        memberLevel = JavadocMemberLevel.PUBLIC
+    }
 }
 
 /**
