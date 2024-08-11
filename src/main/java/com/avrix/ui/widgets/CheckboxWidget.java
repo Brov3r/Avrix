@@ -320,32 +320,6 @@ public class CheckboxWidget extends Widget {
     }
 
     /**
-     * Truncates the given text with an ellipsis if it exceeds the specified width.
-     *
-     * @param text     the text to be truncated
-     * @param maxWidth the maximum width available for the text
-     * @return the truncated text with an ellipsis if it exceeds the maximum width
-     */
-    protected String truncateText(String text, int maxWidth) {
-        Vector2f textSize = NanoDrawer.getTextSize(text, fontName, fontSize);
-        if (textSize.x <= maxWidth) {
-            return text;
-        }
-
-        String ellipsis = "...";
-        Vector2f ellipsisSize = NanoDrawer.getTextSize(ellipsis, fontName, fontSize);
-        int availableWidth = maxWidth - (int) ellipsisSize.x;
-
-        String truncatedText = text;
-        while (textSize.x > availableWidth && !truncatedText.isEmpty()) {
-            truncatedText = truncatedText.substring(0, truncatedText.length() - 1);
-            textSize = NanoDrawer.getTextSize(truncatedText + ellipsis, fontName, fontSize);
-        }
-
-        return truncatedText + ellipsis;
-    }
-
-    /**
      * Renders the {@link Widget}
      */
     @Override
@@ -355,7 +329,7 @@ public class CheckboxWidget extends Widget {
         drawRectOutline(0, 0, checkBoxSize, checkBoxSize, 1, NanoColor.WHITE);
 
         // Truncate the text if it exceeds the maximum width
-        String displayText = truncateText(titleText, maxTitleWidth);
+        String displayText = NanoDrawer.truncateText(titleText, fontName, fontSize, maxTitleWidth);
 
         int textY = (int) ((height - textSize.y) / 2) - titleOffset / 2;
         drawText(displayText, fontName, checkBoxSize + titleOffset, textY, fontSize, titleColor);

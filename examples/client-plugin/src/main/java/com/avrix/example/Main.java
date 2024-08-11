@@ -4,6 +4,7 @@ import com.avrix.events.EventManager;
 import com.avrix.plugin.Metadata;
 import com.avrix.plugin.Plugin;
 import com.avrix.ui.NanoColor;
+import com.avrix.ui.notify.Notify;
 import com.avrix.ui.widgets.*;
 import zombie.input.Mouse;
 
@@ -53,6 +54,15 @@ public class Main extends Plugin {
                     int index = i;
                     pw.addChild(new ButtonWidget("Hey" + i, 0, i * 50, 100, 40, 0, NanoColor.CORAL, () -> {
                         System.out.println("Popup click " + index);
+                        Notify.info("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", 10);
+                        Notify.info("Info notify loooooooooooooooooooong meeeeeeeeeeeeesssssssssssaaaaaaaaaggge", 10);
+                        Notify.info("Looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong", 10);
+                        Notify.info("Info notify", 10);
+                        Notify.success("Success notify", 12);
+                        Notify.warn("Warn notify", 14);
+                        Notify.error("Error notify", 16);
+                        Notify.critical("Critical notify", 18);
+                        Notify.hint("Hint notify", 20);
                     }));
                 }
                 pw.show();

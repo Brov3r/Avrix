@@ -19,6 +19,34 @@ public class NanoDrawer {
     }
 
     /**
+     * Truncates the given text with an ellipsis if it exceeds the specified width.
+     *
+     * @param text     the text to be truncated
+     * @param fontName text font name
+     * @param fontSize drawable text size
+     * @param maxWidth the maximum width available for the text
+     * @return the truncated text with an ellipsis if it exceeds the maximum width
+     */
+    public static String truncateText(String text, String fontName, int fontSize, int maxWidth) {
+        Vector2f textSize = NanoDrawer.getTextSize(text, fontName, fontSize);
+        if (textSize.x <= maxWidth) {
+            return text;
+        }
+
+        String ellipsis = "...";
+        Vector2f ellipsisSize = NanoDrawer.getTextSize(ellipsis, fontName, fontSize);
+        int availableWidth = maxWidth - (int) ellipsisSize.x;
+
+        String truncatedText = text;
+        while (textSize.x > availableWidth && !truncatedText.isEmpty()) {
+            truncatedText = truncatedText.substring(0, truncatedText.length() - 1);
+            textSize = NanoDrawer.getTextSize(truncatedText + ellipsis, fontName, fontSize);
+        }
+
+        return truncatedText + ellipsis;
+    }
+
+    /**
      * Sets the current scissor rectangle.
      * The scissor rectangle is transformed by the current transform.
      *

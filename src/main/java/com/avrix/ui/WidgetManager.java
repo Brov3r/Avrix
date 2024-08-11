@@ -1,6 +1,7 @@
 package com.avrix.ui;
 
 import com.avrix.events.EventManager;
+import com.avrix.ui.notify.Notify;
 import com.avrix.ui.widgets.Widget;
 import com.avrix.utils.WindowUtils;
 import zombie.core.opengl.RenderThread;
@@ -69,6 +70,8 @@ public class WidgetManager {
         }
 
         EventManager.invokeEvent("onPostWidgetRender", NanoContext);
+
+        Notify.render();
 
         NanoContext.endFrame();
     }
