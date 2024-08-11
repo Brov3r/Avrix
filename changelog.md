@@ -1,3 +1,7 @@
+# AvrixLoader v1.5.1
+
+- Fixed latest release notification link
+
 # AvrixLoader v1.5.0
 
 - Added notification system

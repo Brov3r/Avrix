@@ -19,6 +19,11 @@ public class ReleaseUtils {
     public static final String API_URL = "https://api.github.com/repos/" + Constants.REPO_OWNER + "/" + Constants.REPO_NAME + "/releases/latest";
 
     /**
+     * URL latest release pages
+     */
+    public static final String RELEASE_URL = "https://github.com/" + Constants.REPO_OWNER + "/" + Constants.REPO_NAME + "/releases/latest";
+
+    /**
      * Checks the latest version of Avrix available on GitHub.
      * If a newer version is found, prints a message to the console.
      */
@@ -29,7 +34,7 @@ public class ReleaseUtils {
 
             if (VersionChecker.compareVersions(Constants.AVRIX_VERSION, releaseVersion) < 0) {
                 System.out.println("[#] A new Avrix update has been released: " + releaseVersion);
-                System.out.println("[#] You can download it from the link: " + API_URL);
+                System.out.println("[#] You can download it from the link: " + RELEASE_URL);
             }
         } catch (Exception e) {
             System.out.println("[!] Failed to get information about the latest version of Avrix: " + e.getMessage());
