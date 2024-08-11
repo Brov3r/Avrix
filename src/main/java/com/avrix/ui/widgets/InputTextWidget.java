@@ -2,9 +2,13 @@ package com.avrix.ui.widgets;
 
 import com.avrix.ui.NanoColor;
 import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.WidgetManager;
 import org.joml.Vector2f;
 import org.lwjglx.input.Keyboard;
 import zombie.core.Clipboard;
+import zombie.core.Core;
+import zombie.ui.UIFont;
+import zombie.ui.UITextBox2;
 
 import java.util.function.Consumer;
 
@@ -126,6 +130,11 @@ public class InputTextWidget extends PanelWidget {
      * Protect input text (all characters are displayed as '*')
      */
     protected boolean secure = false;
+
+    /**
+     * Default InputText UI element for blocking game input
+     */
+    protected UITextBox2 blockBox;
 
     /**
      * Constructs an InputTextWidget with the specified position and size.
@@ -411,6 +420,19 @@ public class InputTextWidget extends PanelWidget {
     }
 
     /**
+     * Getting the default InputText UI Element to block game input
+     *
+     * @return the default InputText UI element
+     */
+    public UITextBox2 getBlockBox() {
+        if (blockBox == null) {
+            blockBox = new UITextBox2(UIFont.Code, 0, 0, 0, 0, "", false);
+            blockBox.setEditable(true);
+        }
+        return blockBox;
+    }
+
+    /**
      * Handles the event when the left mouse button is released outside the widget.
      * This method clears any active selection and deactivates the widget.
      *
@@ -423,6 +445,12 @@ public class InputTextWidget extends PanelWidget {
         clearSelection();
         selecting = false;
         active = false;
+
+        WidgetManager.setBlockInputKeyboard(false);
+
+        if (Core.CurrentTextEntryBox == getBlockBox()) {
+            getBlockBox().unfocus();
+        }
     }
 
     /**
@@ -441,6 +469,11 @@ public class InputTextWidget extends PanelWidget {
         cursorPosition = getCursorPositionFromMouse(x);
         selectionStart = cursorPosition;
         selectionEnd = cursorPosition;
+
+        WidgetManager.setBlockInputKeyboard(true);
+        Core.UnfocusActiveTextEntryBox();
+
+        getBlockBox().focus();
     }
 
     /**

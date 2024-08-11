@@ -15,8 +15,9 @@ public class InputWidgetHandler {
      *
      * @param key the code of the key that was pressed
      */
-    public static void onKeyPress(int key) {
+    public static boolean onKeyPress(int key) {
         handleKeyEvent(key, KeyEventType.PRESS);
+        return true;
     }
 
     /**
@@ -24,8 +25,9 @@ public class InputWidgetHandler {
      *
      * @param key the code of the key that is being repeatedly pressed
      */
-    public static void onKeyRepeat(int key) {
+    public static boolean onKeyRepeat(int key) {
         handleKeyEvent(key, KeyEventType.REPEAT);
+        return true;
     }
 
     /**
@@ -33,8 +35,9 @@ public class InputWidgetHandler {
      *
      * @param key the code of the key that was released
      */
-    public static void onKeyRelease(int key) {
+    public static boolean onKeyRelease(int key) {
         handleKeyEvent(key, KeyEventType.RELEASE);
+        return true;
     }
 
     /**

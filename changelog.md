@@ -1,6 +1,8 @@
 # AvrixLoader v1.5.1
 
 - Fixed latest release notification link
+- Fixed keyboard input interception in InputText
+- Fixed keyboard input handler
 
 # AvrixLoader v1.5.0
 

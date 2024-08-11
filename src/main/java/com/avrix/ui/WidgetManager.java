@@ -15,8 +15,22 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Manages a collection of {@link Widget} instances, handling rendering and updates.
  */
 public class WidgetManager {
+    /**
+     * A static link to a {@link NanoContext} instance that is used for the global application context.
+     */
     private static NanoContext NanoContext;
+
+    /**
+     * Static list of widgets, which is used to manage interface elements.
+     * Implemented a {@link CopyOnWriteArrayList} to ensure thread safety.
+     */
     private static final List<Widget> widgetList = new CopyOnWriteArrayList<>();
+
+    /**
+     * Flag to block keyboard input.
+     * If {@code is true}, then keyboard input will be blocked.
+     */
+    private static boolean blockInputKeyboard = false;
 
     /**
      * Initializing the {@link WidgetManager} (creating NanoVG contexts)
@@ -74,6 +88,24 @@ public class WidgetManager {
         NanoContext.endFrame();
     }
 
+    /**
+     * Returns the current keyboard input blocking state.
+     *
+     * @return {@code true} if keyboard input is disabled, otherwise {@code false}.
+     */
+    public static boolean isBlockInputKeyboard() {
+        return blockInputKeyboard;
+    }
+
+    /**
+     * Sets the keyboard input blocking state.
+     *
+     * @param block {@code true} to block keyboard input, {@code false} to unlock.
+     */
+    public static void setBlockInputKeyboard(boolean block) {
+        blockInputKeyboard = block;
+    }
+    
     /**
      * Getting the NanoVG rendering context
      *

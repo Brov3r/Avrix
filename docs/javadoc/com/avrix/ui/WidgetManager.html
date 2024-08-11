@@ -131,19 +131,29 @@ loadScripts(document, 'script');</script>
 <div class="block">Initializing the <a href="WidgetManager.html" title="class in com.avrix.ui"><code>WidgetManager</code></a> (creating NanoVG contexts)</div>
 </div>
 <div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#isOverCustomUI()" class="member-name-link">isOverCustomUI</a>()</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#isBlockInputKeyboard()" class="member-name-link">isBlockInputKeyboard</a>()</code></div>
 <div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Returns the current keyboard input blocking state.</div>
+</div>
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static boolean</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#isOverCustomUI()" class="member-name-link">isOverCustomUI</a>()</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Checks if the mouse pointer is over a custom UI element.</div>
 </div>
-<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#onRender()" class="member-name-link">onRender</a>()</code></div>
-<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#onRender()" class="member-name-link">onRender</a>()</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Renders all <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s and processes input events.</div>
 </div>
-<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
-<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#removeWidget(com.avrix.ui.widgets.Widget)" class="member-name-link">removeWidget</a><wbr>(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</code></div>
-<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="col-first even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#removeWidget(com.avrix.ui.widgets.Widget)" class="member-name-link">removeWidget</a><wbr>(<a href="widgets/Widget.html" title="class in com.avrix.ui.widgets">Widget</a>&nbsp;widget)</code></div>
+<div class="col-last even-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
 <div class="block">Removes a <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a> from the list of <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s to be managed and displayed.</div>
+</div>
+<div class="col-first odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code>static void</code></div>
+<div class="col-second odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4"><code><a href="#setBlockInputKeyboard(boolean)" class="member-name-link">setBlockInputKeyboard</a><wbr>(boolean&nbsp;block)</code></div>
+<div class="col-last odd-row-color method-summary-table method-summary-table-tab1 method-summary-table-tab4">
+<div class="block">Sets the keyboard input blocking state.</div>
 </div>
 </div>
 </div>
@@ -190,6 +200,28 @@ loadScripts(document, 'script');</script>
 <div class="block">Renders all <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>s and processes input events.
  Initializes the UI context if it is not already set.
  Updates mouse events and renders each visible <a href="widgets/Widget.html" title="class in com.avrix.ui.widgets"><code>Widget</code></a>.</div>
+</section>
+</li>
+<li>
+<section class="detail" id="isBlockInputKeyboard()">
+<h3>isBlockInputKeyboard</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">boolean</span>&nbsp;<span class="element-name">isBlockInputKeyboard</span>()</div>
+<div class="block">Returns the current keyboard input blocking state.</div>
+<dl class="notes">
+<dt>Returns:</dt>
+<dd><code>true</code> if keyboard input is disabled, otherwise <code>false</code>.</dd>
+</dl>
+</section>
+</li>
+<li>
+<section class="detail" id="setBlockInputKeyboard(boolean)">
+<h3>setBlockInputKeyboard</h3>
+<div class="member-signature"><span class="modifiers">public static</span>&nbsp;<span class="return-type">void</span>&nbsp;<span class="element-name">setBlockInputKeyboard</span><wbr><span class="parameters">(boolean&nbsp;block)</span></div>
+<div class="block">Sets the keyboard input blocking state.</div>
+<dl class="notes">
+<dt>Parameters:</dt>
+<dd><code>block</code> - <code>true</code> to block keyboard input, <code>false</code> to unlock.</dd>
+</dl>
 </section>
 </li>
 <li>
