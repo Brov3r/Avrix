@@ -29,8 +29,6 @@ public class WidgetManager {
 
             NanoFont.loadDefaultFonts();
 
-            NanoImage.loadCacheImages(NanoContext);
-
             EventManager.invokeEvent("onWidgetManagerInitialized", NanoContext);
         });
     }

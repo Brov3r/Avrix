@@ -2,6 +2,7 @@
 
 - Added notification system
 - Added the ability to block the loading of lua files (useful for replacing Lua with Java)
+- Fixed image loading logic
 - Fixed visibility area of fields, classes and methods in Widgets
 - Fixed bugs when scrolling widgets
 - Fixed a bug with absolute positioning of widgets

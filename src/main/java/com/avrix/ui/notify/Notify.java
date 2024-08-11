@@ -1,6 +1,7 @@
 package com.avrix.ui.notify;
 
 import com.avrix.enums.NotificationType;
+import com.avrix.ui.WidgetManager;
 import com.avrix.utils.WindowUtils;
 
 import java.util.Iterator;
@@ -150,6 +151,8 @@ public class Notify {
      * Notifications are rendered from the bottom of the screen upwards.
      */
     public static void render() {
+        if (WidgetManager.getContext() == null) return;
+        
         synchronized (notifications) {
             int posY = WindowUtils.getWindowHeight() - borderOffsetBottom;
             int displayedCount = 0;

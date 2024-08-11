@@ -4,6 +4,7 @@ import com.avrix.events.OnPreWidgetDrawEvent;
 import com.avrix.ui.NanoColor;
 import com.avrix.ui.NanoContext;
 import com.avrix.ui.NanoDrawer;
+import com.avrix.ui.NanoImage;
 import com.avrix.utils.WindowUtils;
 import zombie.GameWindow;
 
@@ -45,7 +46,7 @@ public class HUDHandler extends OnPreWidgetDrawEvent {
         float x = 120 + AMPLITUDE * (float) Math.cos(phase);
 
 
-        NanoDrawer.drawImage(WidgetManagerInitHandler.testImageID, 10, (int) y, 100, 100, 1);
-        NanoDrawer.drawImage(WidgetManagerInitHandler.urlImageID, (int) x, (int) y, 100, 100, 1);
+        NanoDrawer.drawImage(NanoImage.loadImage(WidgetManagerInitHandler.jarCoreFile.getAbsolutePath(), "media/image_test.jpg"), 10, (int) y, 100, 100, 1);
+        NanoDrawer.drawImage(NanoImage.loadImage("https://gas-kvas.com/uploads/posts/2023-02/1675462147_gas-kvas-com-p-fonovii-risunok-2k-2.jpg"), (int) x, (int) y, 100, 100, 1);
     }
 }
