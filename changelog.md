@@ -1,5 +1,6 @@
 # AvrixLoader v1.5.2
 
+- Fixed release version check exception text
 - Fixed a UI bug when resizing the game window
 
 # AvrixLoader v1.5.1
