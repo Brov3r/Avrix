@@ -323,6 +323,13 @@ public class WindowWidget extends ScrollPanelWidget {
             return;
         }
 
+        if (x < width - closeButton.width - closeButtonOffset && x > 0 && y > 0 && y < headerHeight) {
+            dragging = true;
+            dragOffsetX = x;
+            dragOffsetY = y;
+            return;
+        }
+
         super.onLeftMouseDown(x, y);
     }
 
