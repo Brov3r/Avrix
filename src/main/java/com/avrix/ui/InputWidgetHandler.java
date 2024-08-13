@@ -14,6 +14,7 @@ public class InputWidgetHandler {
      * Handles key press events for all visible widgets.
      *
      * @param key the code of the key that was pressed
+     * @return returns true by default.
      */
     public static boolean onKeyPress(int key) {
         handleKeyEvent(key, KeyEventType.PRESS);
@@ -24,6 +25,7 @@ public class InputWidgetHandler {
      * Handles key repeat events for all visible widgets.
      *
      * @param key the code of the key that is being repeatedly pressed
+     * @return returns true by default.
      */
     public static boolean onKeyRepeat(int key) {
         handleKeyEvent(key, KeyEventType.REPEAT);
@@ -34,6 +36,7 @@ public class InputWidgetHandler {
      * Handles key release events for all visible widgets.
      *
      * @param key the code of the key that was released
+     * @return returns true by default.
      */
     public static boolean onKeyRelease(int key) {
         handleKeyEvent(key, KeyEventType.RELEASE);

@@ -1,3 +1,7 @@
+# AvrixLoader v1.5.2
+
+- Fixed a UI bug when resizing the game window
+
 # AvrixLoader v1.5.1
 
 - Fixed latest release notification link

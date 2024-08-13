@@ -8,6 +8,7 @@ import org.lwjgl.opengl.GL40;
 
 import static org.lwjgl.nanovg.NanoVG.nvgBeginFrame;
 import static org.lwjgl.nanovg.NanoVG.nvgEndFrame;
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * The NanoContext class encapsulates a NanoVG context and provides utility methods for managing
@@ -16,6 +17,7 @@ import static org.lwjgl.nanovg.NanoVG.nvgEndFrame;
 public class NanoContext {
     private final boolean modernOpenGL;
     private final long context;
+    private int lastWidth, lastHeight;
 
     /**
      * Initializes a NanoVG context and returns this object.
@@ -49,7 +51,29 @@ public class NanoContext {
      * @param pxRatio      the pixel ratio, which is typically the ratio of the framebuffer size to the window size
      */
     public void beginFrame(int windowWidth, int windowHeight, float pxRatio) {
+        updateMatrix(windowWidth, windowHeight);
+
         nvgBeginFrame(context, windowWidth, windowHeight, pxRatio);
+    }
+
+    /**
+     * Updates the projection matrix and viewport if the window dimensions have changed.
+     * This method checks if the window width or height has been modified since the last update,
+     * and if so, it updates the viewport and the projection matrix accordingly.
+     *
+     * @param windowWidth  The current width of the window.
+     * @param windowHeight The current height of the window.
+     */
+    private void updateMatrix(int windowWidth, int windowHeight) {
+        if (lastWidth == windowWidth && lastHeight == windowHeight) return;
+        
+        glViewport(0, 0, windowWidth, windowHeight);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0, windowWidth, 0, windowHeight, -1, 1);
+
+        lastWidth = windowWidth;
+        lastHeight = windowHeight;
     }
 
     /**
