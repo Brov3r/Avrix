@@ -51,18 +51,18 @@ public class PlayerUtils {
      */
     public static void setAccessLevel(UdpConnection connection, AccessLevel accessLevel) {
         if (connection == null) {
-            System.out.println("[!] UdpConnection is null. Unable to set access level.");
+            System.out.println("[?] UdpConnection is null. Unable to set access level.");
             return;
         }
 
         IsoPlayer player = getPlayerByUdpConnection(connection);
         if (player == null) {
-            System.out.printf("[!] IsoPlayer not found for UdpConnection: %s%n", connection.username);
+            System.out.printf("[?] IsoPlayer not found for UdpConnection: %s%n", connection.username);
             return;
         }
 
         if (!ServerWorldDatabase.instance.containsUser(connection.username)) {
-            System.out.printf("[!] Player '%s' is not in the whitelist!%n", connection.username);
+            System.out.printf("[?] Player '%s' is not in the whitelist!%n", connection.username);
             return;
         }
 
@@ -388,7 +388,7 @@ public class PlayerUtils {
 
         String kickMessage = String.format("[!] You have been kicked from this server by `%s`", reason);
 
-        System.out.printf("[!] Player `%s` (IP: %s, SteamID: %s) was kicked from this server for the following reason: `%s`%n",
+        System.out.printf("[?] Player `%s` (IP: %s, SteamID: %s) was kicked from this server for the following reason: `%s`%n",
                 connection.username, connection.ip, connection.steamID, reason);
 
         GameServer.kick(connection, kickMessage, null);
@@ -422,7 +422,7 @@ public class PlayerUtils {
 
         EventManager.invokeEvent("onPlayerBan", connection, "Console", reason);
 
-        System.out.printf("[!] Player `%s` (IP: %s, SteamID: %s) was banned from this server for the following reason: `%s`%n",
+        System.out.printf("[?] Player `%s` (IP: %s, SteamID: %s) was banned from this server for the following reason: `%s`%n",
                 connection.username, connection.ip, connection.steamID, reason);
 
         ServerWorldDatabase.instance.addUserlog(connection.username, Userlog.UserlogType.Banned, reason, "Server", 1);

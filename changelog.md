@@ -1,5 +1,6 @@
 # AvrixLoader v1.5.2
 
+- Fixed logging levels in PlayerUtils
 - Fixed clicking through the WindowWidget header
 - Fixed release version check exception text
 - Fixed a UI bug when resizing the game window
