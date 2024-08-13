@@ -37,7 +37,7 @@ public class ReleaseUtils {
                 System.out.println("[#] You can download it from the link: " + RELEASE_URL);
             }
         } catch (Exception e) {
-            System.out.println("[!] Failed to retrieve the latest Avrix version due to a server or network issue. Please check your internet connection or try again later.");
+            System.out.println("[?] Failed to retrieve the latest Avrix version due to a server or network issue. Please check your internet connection or try again later.");
         }
     }
 
