@@ -1,4 +1,5 @@
 #!/bin/bash
+chcp 65001 > /dev/null
 set -e
 
 echo ======================= Avrix Launcher =======================
