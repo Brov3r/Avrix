@@ -1,4 +1,4 @@
-package com.avrix.utils;
+package com.avrix.api.shared;
 
 import zombie.iso.IsoObject;
 

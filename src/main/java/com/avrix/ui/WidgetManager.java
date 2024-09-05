@@ -1,9 +1,9 @@
 package com.avrix.ui;
 
+import com.avrix.api.client.WindowUtils;
 import com.avrix.events.EventManager;
 import com.avrix.ui.notify.Notify;
 import com.avrix.ui.widgets.Widget;
-import com.avrix.utils.WindowUtils;
 import zombie.core.opengl.RenderThread;
 import zombie.input.Mouse;
 
@@ -105,7 +105,7 @@ public class WidgetManager {
     public static void setBlockInputKeyboard(boolean block) {
         blockInputKeyboard = block;
     }
-    
+
     /**
      * Getting the NanoVG rendering context
      *

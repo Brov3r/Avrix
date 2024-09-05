@@ -1,4 +1,4 @@
-package com.avrix.utils;
+package com.avrix.api.server;
 
 import zombie.core.Color;
 import zombie.core.raknet.UdpConnection;

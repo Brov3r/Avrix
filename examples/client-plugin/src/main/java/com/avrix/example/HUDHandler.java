@@ -1,11 +1,11 @@
 package com.avrix.example;
 
+import com.avrix.api.client.WindowUtils;
 import com.avrix.events.OnPreWidgetDrawEvent;
 import com.avrix.ui.NanoColor;
 import com.avrix.ui.NanoContext;
 import com.avrix.ui.NanoDrawer;
 import com.avrix.ui.NanoImage;
-import com.avrix.utils.WindowUtils;
 import zombie.GameWindow;
 
 /**

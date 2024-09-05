@@ -1,14 +1,12 @@
 package com.avrix.agent;
 
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtMethod;
-import javassist.NotFoundException;
+import javassist.*;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
@@ -68,6 +66,130 @@ public final class ClassModifier {
         }
 
         /**
+         * Applies a modification to a given CtClass using a BiConsumer.
+         *
+         * @param modifier     A BiConsumer that accepts a CtClass and an object of type T to apply modifications.
+         * @param modifyClass  The CtClass object to be modified.
+         * @param modifyObject The object of type T used in the modification.
+         * @param <T>          The type of the object to be modified.
+         */
+        private <T> void applyBiConsumer(BiConsumer<CtClass, T> modifier, CtClass modifyClass, T modifyObject) {
+            if (modifyClass.isFrozen()) {
+                modifyClass.defrost();
+            }
+
+            modifier.accept(modifyClass, modifyObject);
+
+            modifyClass.detach();
+
+            this.classModifier.ctClass = modifyClass;
+        }
+
+        /**
+         * Modifies a constructor of the class using a specified signature and constructor modifier.
+         *
+         * @param descriptor          The signature of the constructor to be modified (e.g., "()V" for a no-arg constructor).
+         * @param constructorModifier A BiConsumer that accepts a CtClass and CtConstructor to apply modifications.
+         * @return The current instance of ClassModifierBuilder.
+         */
+        public ClassModifierBuilder modifyConstructor(String descriptor, BiConsumer<CtClass, CtConstructor> constructorModifier) {
+            try {
+                CtClass modifyClass = getCtClass(this.classModifier.className);
+                CtConstructor constructor = modifyClass.getConstructor(descriptor);
+                applyBiConsumer(constructorModifier, modifyClass, constructor);
+            } catch (Exception e) {
+                System.out.printf("[!] An error occurred while modifying constructor '%s' of class '%s'. Reason: %s%n", descriptor, this.classModifier.className, e.getMessage());
+                throw new RuntimeException(e);
+            }
+
+            return this;
+        }
+
+        /**
+         * Modifies a declared constructor of the class using a specified signature and constructor modifier.
+         *
+         * @param paramTypes          An array of CtClass objects representing the parameter types of the constructor.
+         * @param constructorModifier A BiConsumer that accepts a CtClass and CtConstructor to apply modifications.
+         * @return The current instance of ClassModifierBuilder.
+         */
+        public ClassModifierBuilder modifyDeclaredConstructor(CtClass[] paramTypes, BiConsumer<CtClass, CtConstructor> constructorModifier) {
+            try {
+                CtClass modifyClass = getCtClass(this.classModifier.className);
+                CtConstructor constructor = modifyClass.getDeclaredConstructor(paramTypes);
+                applyBiConsumer(constructorModifier, modifyClass, constructor);
+            } catch (Exception e) {
+                System.out.printf("[!] An error occurred while modifying declared constructor '%s' of class '%s'. Reason: %s%n", Arrays.asList(paramTypes), this.classModifier.className, e.getMessage());
+                throw new RuntimeException(e);
+            }
+
+            return this;
+        }
+
+        /**
+         * Modifies a declared field of the class using a specified field modifier.
+         *
+         * @param fieldName     The name of the field to be modified.
+         * @param fieldModifier A BiConsumer that accepts a CtClass and CtField to apply modifications.
+         * @return The current instance of ClassModifierBuilder.
+         */
+        public ClassModifierBuilder modifyDeclaredField(String fieldName, BiConsumer<CtClass, CtField> fieldModifier) {
+            return modifyDeclaredField(fieldName, "", fieldModifier);
+        }
+
+        /**
+         * Modifies a declared field of the class using a specified field modifier and description.
+         *
+         * @param fieldName     The name of the field to be modified.
+         * @param descriptor    The descriptor of the field type. If empty, it will search without descriptor.
+         * @param fieldModifier A BiConsumer that accepts a CtClass and CtField to apply modifications.
+         * @return The current instance of ClassModifierBuilder.
+         */
+        public ClassModifierBuilder modifyDeclaredField(String fieldName, String descriptor, BiConsumer<CtClass, CtField> fieldModifier) {
+            try {
+                CtClass modifyClass = getCtClass(this.classModifier.className);
+                CtField field = !descriptor.isEmpty() ? modifyClass.getDeclaredField(fieldName, descriptor) : modifyClass.getDeclaredField(fieldName);
+                applyBiConsumer(fieldModifier, modifyClass, field);
+            } catch (Exception e) {
+                System.out.printf("[!] An error occurred while patching class '%s'. Reason: %s%n", this.classModifier.className, e.getMessage());
+                throw new RuntimeException(e);
+            }
+
+            return this;
+        }
+
+        /**
+         * Modifies a field of the class using a specified field modifier.
+         *
+         * @param fieldName     The name of the field to be modified.
+         * @param fieldModifier A BiConsumer that accepts a CtClass and CtField to apply modifications.
+         * @return The current instance of ClassModifierBuilder.
+         */
+        public ClassModifierBuilder modifyField(String fieldName, BiConsumer<CtClass, CtField> fieldModifier) {
+            return modifyField(fieldName, "", fieldModifier);
+        }
+
+        /**
+         * Modifies a field of the class using a specified field modifier and description.
+         *
+         * @param fieldName     The name of the field to be modified.
+         * @param descriptor    The descriptor of the field type. If empty, it will search without descriptor.
+         * @param fieldModifier A BiConsumer that accepts a CtClass and CtField to apply modifications.
+         * @return The current instance of ClassModifierBuilder.
+         */
+        public ClassModifierBuilder modifyField(String fieldName, String descriptor, BiConsumer<CtClass, CtField> fieldModifier) {
+            try {
+                CtClass modifyClass = getCtClass(this.classModifier.className);
+                CtField field = !descriptor.isEmpty() ? modifyClass.getField(fieldName, descriptor) : modifyClass.getField(fieldName);
+                applyBiConsumer(fieldModifier, modifyClass, field);
+            } catch (Exception e) {
+                System.out.printf("[!] An error occurred while patching class '%s'. Reason: %s%n", this.classModifier.className, e.getMessage());
+                throw new RuntimeException(e);
+            }
+
+            return this;
+        }
+
+        /**
          * Applying modifications to a method by its name using a set of instructions.
          *
          * @param methodName     name of the method being modified
@@ -97,14 +219,7 @@ public final class ClassModifier {
                     ctMethod = modifyClass.getDeclaredMethod(methodName, getMethodParameterTypes(modifyClass.getClassPool(), methodSignature));
                 }
 
-                if (modifyClass.isFrozen()) {
-                    modifyClass.defrost();
-                }
-
-                methodModifier.accept(modifyClass, ctMethod);
-                modifyClass.detach();
-
-                this.classModifier.ctClass = modifyClass;
+                applyBiConsumer(methodModifier, modifyClass, ctMethod);
             } catch (Exception e) {
                 System.out.printf("[!] An error occurred while patching class '%s'. Reason: %s%n", this.classModifier.className, e.getMessage());
                 throw new RuntimeException(e);

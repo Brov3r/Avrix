@@ -1,7 +1,7 @@
 package com.avrix.ui.widgets;
 
+import com.avrix.api.client.WindowUtils;
 import com.avrix.ui.NanoColor;
-import com.avrix.utils.WindowUtils;
 
 /**
  * The {@code ModalWidget} class represents a modal window widget that can display

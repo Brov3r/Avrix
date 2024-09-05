@@ -1,5 +1,8 @@
 com.avrix
 com.avrix.agent
+com.avrix.api.client
+com.avrix.api.server
+com.avrix.api.shared
 com.avrix.commands
 com.avrix.enums
 com.avrix.events

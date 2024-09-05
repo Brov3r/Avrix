@@ -1,4 +1,4 @@
-package com.avrix.utils;
+package com.avrix.api.client;
 
 import zombie.core.Core;
 

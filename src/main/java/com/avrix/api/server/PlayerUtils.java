@@ -1,4 +1,4 @@
-package com.avrix.utils;
+package com.avrix.api.server;
 
 import com.avrix.enums.AccessLevel;
 import com.avrix.events.EventManager;

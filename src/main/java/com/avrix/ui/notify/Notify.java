@@ -1,8 +1,8 @@
 package com.avrix.ui.notify;
 
+import com.avrix.api.client.WindowUtils;
 import com.avrix.enums.NotificationType;
 import com.avrix.ui.WidgetManager;
-import com.avrix.utils.WindowUtils;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -152,7 +152,7 @@ public class Notify {
      */
     public static void render() {
         if (WidgetManager.getContext() == null) return;
-        
+
         synchronized (notifications) {
             int posY = WindowUtils.getWindowHeight() - borderOffsetBottom;
             int displayedCount = 0;

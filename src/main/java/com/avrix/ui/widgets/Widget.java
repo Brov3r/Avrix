@@ -1,9 +1,9 @@
 package com.avrix.ui.widgets;
 
+import com.avrix.api.client.WindowUtils;
 import com.avrix.ui.NanoColor;
 import com.avrix.ui.NanoDrawer;
 import com.avrix.ui.WidgetManager;
-import com.avrix.utils.WindowUtils;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -900,7 +900,7 @@ public abstract class Widget {
      */
     public void setY(int y) {
         this.y = y;
-        
+
         if (parent == null) {
             setYA(y);
         }

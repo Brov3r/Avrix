@@ -1,8 +1,8 @@
 package com.avrix.ui.notify;
 
+import com.avrix.api.client.WindowUtils;
 import com.avrix.ui.NanoColor;
 import com.avrix.ui.NanoDrawer;
-import com.avrix.utils.WindowUtils;
 import org.joml.Vector2f;
 
 import java.util.ArrayList;

@@ -1,3 +1,8 @@
+# AvrixLoader v1.6.0
+
+- API tools are divided into separate folders
+- Added new patch tools
+
 # AvrixLoader v1.5.2
 
 - Fixed logging levels in PlayerUtils
