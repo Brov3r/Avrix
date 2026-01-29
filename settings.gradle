@@ -1,5 +1,3 @@
 rootProject.name = 'Avrix'
-include 'examples:server-plugin'
-findProject(':examples:server-plugin')?.name = 'server-plugin'
-include 'examples:client-plugin'
-findProject(':examples:client-plugin')?.name = 'client-plugin'
+include 'avrix-loader'
+include 'avrix-pz-api'

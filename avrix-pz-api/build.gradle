@@ -1,0 +1,37 @@
+version = '1.0.0'
+
+def baseSuffix = "PZ-API"
+def baseArchiveName = "${rootProject.name.capitalize()}-${baseSuffix}"
+
+dependencies {
+    compileOnly project(":avrix-loader")
+
+    compileOnly 'org.tinylog:tinylog-api:2.7.0'
+    compileOnly 'org.tinylog:tinylog-impl:2.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+processResources {
+    filesMatching('**/metadata.yml') {
+        filter {
+            it.replace('%PROJECT_VERSION%', version)
+        }
+    }
+}
+
+shadowJar {
+    archiveBaseName.set(baseArchiveName)
+    archiveClassifier.set('')
+
+    destinationDirectory.set(layout.buildDirectory)
+
+    manifest {
+        attributes(
+                'Implementation-Title': "${rootProject.name.capitalize()}-${baseSuffix}",
+                'Implementation-Version': version
+        )
+    }
+}

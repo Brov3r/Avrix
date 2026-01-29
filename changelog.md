@@ -1,3 +1,7 @@
+# Avrix Framework v2.0
+
+- In development
+
 # AvrixLoader v1.6.0
 
 - API tools are divided into separate folders
