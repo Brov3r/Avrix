@@ -1,4 +1,4 @@
-package com.avrix.logs;
+package com.avrix.logging;
 
 import org.tinylog.Logger;
 

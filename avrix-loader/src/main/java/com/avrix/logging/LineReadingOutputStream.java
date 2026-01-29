@@ -1,4 +1,4 @@
-package com.avrix.logs;
+package com.avrix.logging;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

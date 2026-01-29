@@ -1,8 +1,9 @@
-package com.avrix.logs;
+package com.avrix.logging;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.tinylog.Logger;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -21,11 +22,6 @@ public class ZomboidLogLineParserTest {
 
     @BeforeEach
     public void setUp() {
-        System.setProperty("tinylog.level", "trace");
-        System.setProperty("tinylog.writer", "console");
-        System.setProperty("tinylog.writer.stream", "out");
-        System.setProperty("tinylog.writer.format", "{date:dd-MM-yyyy HH:mm:ss.SSS} [ {thread} ] {level}  > {message}");
-
         originalOut = System.out;
         originalErr = System.err;
 
@@ -44,7 +40,7 @@ public class ZomboidLogLineParserTest {
 
     @Test
     public void routesLevelsAndMessages_asExpected() {
-        ZomboidLogLineParser parser = new ZomboidLogLineParser(org.tinylog.Logger::info);
+        ZomboidLogLineParser parser = new ZomboidLogLineParser(Logger::info);
 
         parser.accept("LOG  : Custom       f:0, t:1769544320272> [!] Error message");
         parser.accept("LOG  : General      f:0, t:1769544306381> texturepack: loading WeatherFx");
@@ -72,7 +68,7 @@ public class ZomboidLogLineParserTest {
 
     @Test
     public void unknownFormat_goesToFallbackSink() {
-        ZomboidLogLineParser parser = new ZomboidLogLineParser(org.tinylog.Logger::info);
+        ZomboidLogLineParser parser = new ZomboidLogLineParser(Logger::info);
 
         parser.accept("some random line");
         System.out.flush();
@@ -83,7 +79,7 @@ public class ZomboidLogLineParserTest {
 
     @Test
     public void nullOrBlank_isIgnored() {
-        ZomboidLogLineParser parser = new ZomboidLogLineParser(org.tinylog.Logger::info);
+        ZomboidLogLineParser parser = new ZomboidLogLineParser(Logger::info);
 
         parser.accept(null);
         parser.accept("");

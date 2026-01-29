@@ -3,8 +3,8 @@ package com.avrix.provider;
 import com.avrix.enums.Environment;
 import com.avrix.enums.PluginType;
 import com.avrix.loaders.AvrixClassLoader;
-import com.avrix.logs.LineReadingOutputStream;
-import com.avrix.logs.ZomboidLogLineParser;
+import com.avrix.logging.LineReadingOutputStream;
+import com.avrix.logging.ZomboidLogLineParser;
 import com.avrix.plugins.Metadata;
 import org.tinylog.Logger;
 
