@@ -1,3 +1,1 @@
 rootProject.name = 'Avrix'
-include 'avrix-loader'
-include 'avrix-pz-api'

@@ -3,39 +3,70 @@ plugins {
     id 'com.gradleup.shadow' version '9.3.1'
 }
 
+group = 'com.avrix'
+version = '2.0.0'
+
 def buildPath = System.getenv('BUILD_PATH') ?: 'build'
+def baseSuffix = "Loader"
+def baseArchiveName = "${rootProject.name.capitalize()}-${baseSuffix}"
 
-allprojects {
-    group = 'com.avrix'
+repositories {
+    mavenCentral()
+}
 
-    repositories {
-        mavenCentral()
+dependencies {
+    /**
+     * Logger
+     */
+    implementation('org.slf4j:slf4j-api:2.0.17')
+    implementation('org.tinylog:slf4j-tinylog:2.7.0')
+    implementation('org.tinylog:tinylog-impl:2.7.0')
+
+    /**
+     * Runtime modification
+     */
+    implementation("net.bytebuddy:byte-buddy:1.18.3")
+
+    /**
+     * Utils
+     */
+    implementation('org.yaml:snakeyaml:2.2')
+
+    /**
+     * Test
+     */
+    testImplementation platform('org.junit:junit-bom:6.0.2')
+    testImplementation('org.junit.jupiter:junit-jupiter')
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    filesMatching('**/avrix.properties') {
+        filter {
+            it.replace('%PROJECT_VERSION%', version)
+                    .replace('%PROJECT_NAME%', rootProject.name.capitalize() + " " + baseSuffix)
+        }
     }
 }
 
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'com.gradleup.shadow'
-
-    test {
-        useJUnitPlatform()
-    }
+test {
+    useJUnitPlatform()
 }
 
-tasks.register('collectAllJars', Copy) {
-    group = 'build'
-    description = 'Collects all shadow JARs from subprojects into the root build directory'
+shadowJar {
+    archiveBaseName.set(baseArchiveName)
+    archiveClassifier.set('')
 
-    def shadowTaskProviders = subprojects.collect { proj ->
-        proj.tasks.named('shadowJar')
+    destinationDirectory.set(file(buildPath))
+
+    manifest {
+        attributes(
+                'Implementation-Title': "${rootProject.name.capitalize()}-${baseSuffix}",
+                'Implementation-Version': version,
+                'Main-Class': 'com.avrix.Main',
+                'Can-Redefine-Classes': 'true',
+                'Can-Retransform-Classes': 'true'
+        )
     }
-
-    dependsOn(shadowTaskProviders)
-
-    from(shadowTaskProviders.collect { tp ->
-        tp.flatMap { it.archiveFile }
-    })
-
-    into(file(buildPath))
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

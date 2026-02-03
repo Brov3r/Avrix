@@ -1,3 +1,5 @@
-# Avrix v2.0
+# Avrix 2.0
 
-In development
+In development =)
+
+Coming soon...
