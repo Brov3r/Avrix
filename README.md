@@ -15,6 +15,9 @@
     <img alt="Java CI with Gradle" src="https://github.com/Brov3r/Avrix/actions/workflows/gradle.yml/badge.svg">
 </p>
 
+!!! Archive !!!
+This project is being archived. Modding in project zomboid is quite difficult, especially with unstable versions. The community is not ready to switch to java mods yet (maybe it won't), but this project will forever remain here for other enthusiasts.
+
 **Avrix** - a fundamentally new wrapper for running the Project Zomboid server and client with plugins (modifications).
 
 To run the client/server with this wrapper, you must first
