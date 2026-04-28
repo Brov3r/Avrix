@@ -1,0 +1,17 @@
+schema: 1
+name: "Avrix-API"
+description: "Project Zomboid API"
+id: "avrix-api"
+version: %API_VERSION%
+environment: "*"
+authors:
+  - "Brov3r"
+licence: "GNU GPLv3"
+contacts:
+  - "https://github.com/Brov3r/Avrix"
+dependencies:
+  avrix-loader: ">=2.0.0"
+  project-zomboid: "42.17.0"
+entrypoint: ""
+mixins:
+  - ""

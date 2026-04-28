@@ -1,16 +1,22 @@
 package com.avrix.provider;
 
-import com.avrix.enums.Environment;
-import com.avrix.loaders.CoreClassLoader;
-import com.avrix.logging.LineReadingOutputStream;
-import com.avrix.logging.ZomboidLogLineParser;
+import com.avrix.core.BaseClassLoader;
+import com.avrix.core.Environment;
+import com.avrix.logger.LineReadingOutputStream;
+import com.avrix.logger.ZomboidLogLineParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
+import java.lang.classfile.*;
+import java.lang.classfile.instruction.*;
 import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -21,6 +27,9 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Provider for loading the Project Zomboid client/server application
+ */
 public class ZomboidGameProvider implements GameProvider {
     private static final Logger log = LoggerFactory.getLogger(ZomboidGameProvider.class);
 
@@ -29,104 +38,77 @@ public class ZomboidGameProvider implements GameProvider {
             "zomboid.znetlog", "1"
     );
 
-    private static final Pattern VERSION_PATTERN = Pattern.compile("(\\d+\\.\\d+\\.\\d+)");
-    private static final String UNKNOWN_VERSION = "??.??.??";
-
-    private String rawVersionCache;
-    private String normalizedVersionCache;
-    private CoreClassLoader classLoader;
-
-    private String[] launchArgs;
-
+    private URLClassLoader classLoader;
     private volatile Class<?> gameClass;
 
-    private boolean streamRedirected = false;
-    private boolean serverDetectCache = false;
-    private boolean serverDetect = false;
-    private boolean initialized = false;
+    private String[] launchArgs;
+    private String rawVersion;
+    private String normalizedVersion;
+
+    private Boolean isServerDetect;
+    private Boolean isInitialized;
+    private Boolean isStreamRedirected;
+
 
     /**
-     * Initializes the provider with the given class loader.
-     * <p>
-     * This method should set up the necessary class loader and prepare any required resources, such as libraries or
-     * native paths.
-     * </p>
+     * Prepares the provider with an isolated classloader.
+     * Invoked once before {@link #launch(String[])}.
      *
-     * @param classLoader the {@link CoreClassLoader} used for game execution; must not be {@code null}.
+     * @param classLoader the loader for game and extension classes
      */
     @Override
-    public synchronized void initialize(CoreClassLoader classLoader) {
-        Objects.requireNonNull(classLoader, "CoreClassLoader must not be null");
+    public void initialize(BaseClassLoader classLoader) {
+        Objects.requireNonNull(classLoader, "ClassLoader must not be null");
 
-        if (initialized) {
+        if (isInitialized != null) {
             log.debug("{} provider already initialized. Skipping.", getName());
             return;
         }
 
         log.info("Initializing provider '{}'", getId());
 
+        Map<String, String> props = getProviderArgs();
+        if (!props.isEmpty()) {
+            props.forEach(System::setProperty);
+            log.debug("Applied {} system properties for '{}'", props.size(), getId());
+        }
+
+        List<Path> natives = getNativeLibsPath();
+        if (!natives.isEmpty()) {
+            classLoader.addNativePaths(natives);
+            log.debug("Registered {} native search path(s) for '{}'", natives.size(), getId());
+        }
+
+        List<Path> libs = getJavaLibsPath();
+        if (!libs.isEmpty()) {
+            for (Path jar : libs) {
+                try {
+                    classLoader.addURL(jar.toUri().toURL());
+                } catch (Exception e) {
+                    log.warn("Failed to add JAR to classloader: '{}'", jar, e);
+                }
+            }
+            log.debug("Added {} classpath URL(s) for '{}'", libs.size(), getId());
+        }
+
+        isInitialized = true;
         this.classLoader = classLoader;
 
-        Thread thread = Thread.currentThread();
-        ClassLoader previous = thread.getContextClassLoader();
-
-        try {
-            thread.setContextClassLoader(classLoader);
-
-            Map<String, String> props = getProviderCoreArgs();
-            if (!props.isEmpty()) {
-                props.forEach(System::setProperty);
-                log.debug("Applied {} system properties for '{}'", props.size(), getId());
-            }
-
-            List<Path> natives = getNativePaths();
-            if (!natives.isEmpty()) {
-                classLoader.addNativePaths(natives);
-                log.debug("Registered {} native search path(s) for '{}'", natives.size(), getId());
-            }
-
-            List<Path> libs = getJavaLibs();
-            if (!libs.isEmpty()) {
-                for (Path jar : libs) {
-                    classLoader.addURL(jar.toUri().toURL());
-                }
-                log.debug("Added {} classpath URL(s) for '{}'", libs.size(), getId());
-            }
-
-            String entry = getEntrypoint();
-            gameClass = classLoader.loadClass(entry);
-
-            initialized = true;
-            log.info("Provider '{}' initialized successfully. Environment={}", getId(), getEnvironment());
-
-        } catch (Exception e) {
-            this.gameClass = null;
-            this.classLoader = null;
-            this.initialized = false;
-
-            log.error("Failed to initialize provider '{}'", getId(), e);
-            throw new IllegalStateException("Failed to initialize provider: " + getId(), e);
-        } finally {
-            thread.setContextClassLoader(previous);
-        }
+        log.info("Provider '{}' initialized successfully. (Environment={})", getId(), getEnvironment());
     }
 
     /**
-     * Launches the game by invoking the entry point.
-     * <p>
-     * This method should be called after the provider has been initialized. It typically launches the game by
-     * invoking the `main(String[])` method of the game entry point class.
-     * </p>
+     * Starts the game or runtime with the final merged arguments.
      *
-     * @param args command-line arguments to pass to the game entry point; may be {@code null}.
+     * @param args resolved command-line arguments including provider defaults and user overrides
      */
     @Override
     public synchronized void launch(String[] args) {
-        if (!initialized) {
+        if (isInitialized == null) {
             throw new IllegalStateException("Provider must be initialized before launch. Call initialize() first.");
         }
-        if (classLoader == null || gameClass == null) {
-            throw new IllegalStateException("Provider is in an invalid state: game classloader or entrypoint class is null.");
+        if (classLoader == null) {
+            throw new IllegalStateException("Provider is in an invalid state: game classloader is null.");
         }
 
         launchArgs = (args == null) ? new String[0] : args;
@@ -136,6 +118,8 @@ public class ZomboidGameProvider implements GameProvider {
 
         try {
             thread.setContextClassLoader(classLoader);
+
+            gameClass = classLoader.loadClass(getEntrypoint());
 
             log.info("Launching {} (env={}, version={}) via {}",
                     getName(), getEnvironment(), getNormalizedVersion(), getEntrypoint());
@@ -156,22 +140,9 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
-     * Returns the contacts of the game provider.
+     * Provides the default command-line arguments required by this provider.
      *
-     * @return the contacts of the game provider.
-     */
-    @Override
-    public String getContacts() {
-        return "https://projectzomboid.com";
-    }
-
-    /**
-     * Returns the launch arguments passed to the game provider.
-     * <p>
-     * This method can be used to retrieve any arguments provided when launching the game.
-     * </p>
-     *
-     * @return the launch arguments, never {@code null}.
+     * @return an array of default arguments, may be empty
      */
     @Override
     public String[] getLaunchArgs() {
@@ -179,9 +150,9 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
-     * Returns the name of the game provider.
+     * Returns the human-readable display name of the game or provider.
      *
-     * @return the name of the game provider.
+     * @return the display name
      */
     @Override
     public String getName() {
@@ -189,9 +160,9 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
-     * Returns the unique identifier for the game provider.
+     * Returns the unique human-readable identifier used for internal routing.
      *
-     * @return the identifier of the game provider.
+     * @return the identifier (lowercase, no spaces)
      */
     @Override
     public String getId() {
@@ -199,19 +170,19 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
-     * Returns the author of the game provider.
+     * Returns the list of authors or maintainers responsible for this provider.
      *
-     * @return the author of the game provider.
+     * @return list of author names
      */
     @Override
-    public String getAuthor() {
-        return "The Indie Stone";
+    public List<String> getAuthors() {
+        return List.of("The Indie Stone");
     }
 
     /**
-     * Returns the license type of the game provider.
+     * Returns the license identifier under which the provider is distributed.
      *
-     * @return the license of the game provider.
+     * @return SPDX identifier or short license name
      */
     @Override
     public String getLicense() {
@@ -219,79 +190,118 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
-     * Returns the normalized version string of the game.
-     * <p>
-     * This method returns the version in a standard format (e.g., major.minor.patch). If the version cannot
-     * be determined, a default value will be returned.
-     * </p>
+     * Returns the list of contact references for support or source access.
      *
-     * @return the normalized version of the game, never {@code null}.
+     * @return list of URLs, emails, or repository links
+     */
+    @Override
+    public List<String> getContacts() {
+        return List.of("https://projectzomboid.com");
+    }
+
+    /**
+     * Returns the normalized version string formatted for dependency resolution.
+     *
+     * @return semver-compatible version
      */
     @Override
     public synchronized String getNormalizedVersion() {
-        if (normalizedVersionCache != null) return normalizedVersionCache;
+        if (normalizedVersion != null) return normalizedVersion;
 
         String raw = getRawVersion();
-
-        if (raw.isBlank()) {
-            log.debug("Raw version is empty; using '{}' for '{}'", UNKNOWN_VERSION, getId());
-            return UNKNOWN_VERSION;
+        Matcher matcher = Pattern.compile("^(\\d+)\\.(\\d+)(?:\\+[^.]*)?\\.(\\d+)").matcher(raw);
+        if (matcher.find()) {
+            normalizedVersion = matcher.group(1) + "." + matcher.group(2) + "." + matcher.group(3);
+        } else {
+            log.warn("Failed to parse normalized version from '{}'. Defaulting to ??.??.??", raw);
+            return "??.??.??";
         }
-
-        Matcher matcher = VERSION_PATTERN.matcher(raw);
-        normalizedVersionCache = matcher.find() ? matcher.group(1) : raw;
-        return normalizedVersionCache;
+        return normalizedVersion;
     }
 
     /**
-     * Returns the raw version string of the game.
-     * <p>
-     * This method returns the version string as retrieved directly from the game runtime. It may include extra
-     * metadata or an unprocessed version string.
-     * </p>
+     * Returns the original version string exactly as defined by the distribution.
      *
-     * @return the raw version string of the game, or {@code null} if unavailable.
+     * @return raw version string
      */
     @Override
-    public String getRawVersion() {
-        if (rawVersionCache != null) return rawVersionCache;
+    public synchronized String getRawVersion() {
+        if (rawVersion != null) return rawVersion;
 
-        if (classLoader == null) {
-            throw new IllegalStateException("ClassLoader not initialized. Call initialize() first.");
-        }
+        try (InputStream stream = classLoader.getResourceAsStream("zombie/core/Core.class")) {
+            if (stream == null) throw new IOException("Class 'zombie/core/Core.class' not found");
 
-        try {
-            Class<?> coreClass = classLoader.loadClass("zombie.core.Core");
+            ClassModel model = ClassFile.of().parse(stream.readAllBytes());
 
-            Method getInstance = coreClass.getDeclaredMethod("getInstance");
-            getInstance.setAccessible(true);
-            Object coreInstance = getInstance.invoke(null);
+            int major = 0, minor = 0;
+            String extra = "";
+            String patch = "0";
+            String revision = null;
 
-            Method getVersion = coreClass.getDeclaredMethod("getVersion");
-            getVersion.setAccessible(true);
-            Object version = getVersion.invoke(coreInstance);
+            // Extract GameVersion(major, minor, extra) from <clinit>
+            for (MethodModel method : model.methods()) {
+                if (!method.methodName().stringValue().equals("<clinit>")) continue;
+                Optional<CodeModel> codeOpt = method.code();
+                if (codeOpt.isEmpty()) continue;
 
-            rawVersionCache = (version instanceof String s) ? s : "";
-            return rawVersionCache;
+                Deque<Object> args = new ArrayDeque<>(3);
+                for (CodeElement el : codeOpt.get()) {
+                    if (!(el instanceof Instruction)) continue; // skip LineNumber/LocalVariable
 
-        } catch (ClassNotFoundException e) {
-            log.warn("Cannot load 'zombie.core.Core'. Version is unavailable.");
-            rawVersionCache = "";
-            return rawVersionCache;
-        } catch (Exception e) {
-            log.warn("Failed to retrieve raw version for '{}'.", getId(), e);
-            rawVersionCache = "";
-            return rawVersionCache;
+                    if (el instanceof ConstantInstruction ci) {
+                        args.addLast(ci.constantValue());
+                        if (args.size() > 3) args.removeFirst();
+                    } else if (el instanceof InvokeInstruction inv) {
+                        if (inv.name().stringValue().equals("<init>") &&
+                                inv.owner().asInternalName().equals("zombie/core/GameVersion") &&
+                                args.size() == 3) {
+                            Object[] a = args.toArray();
+                            if (a[0] instanceof Integer i1 && a[1] instanceof Integer i2 && a[2] instanceof String s) {
+                                major = i1;
+                                minor = i2;
+                                extra = s;
+                            }
+                        }
+                        args.clear();
+                    } else if (!(el instanceof NewObjectInstruction || el instanceof StackInstruction || el instanceof NopInstruction)) {
+                        args.clear();
+                    }
+                }
+            }
+
+            // Scan all methods for patch suffix and git revision constants
+            for (MethodModel method : model.methods()) {
+                Optional<CodeModel> codeOpt = method.code();
+                if (codeOpt.isEmpty()) continue;
+                for (CodeElement el : codeOpt.get()) {
+                    if (el instanceof ConstantInstruction ci && ci.constantValue() instanceof String str) {
+                        // Patch: e.g., ".0 ", ".1"
+                        if (patch.equals("0") && str.length() >= 2 && str.charAt(0) == '.' && Character.isDigit(str.charAt(1))) {
+                            patch = str.replaceAll("\\D", "");
+                        }
+                        // Revision: 40 hex chars + space + metadata
+                        if (revision == null && str.length() > 45 && str.matches("^[0-9a-f]{40} .+")) {
+                            revision = str;
+                        }
+                    }
+                }
+            }
+
+            // Format & cache
+            String extraPart = extra.isBlank() ? "" : "+" + extra;
+            rawVersion = String.format("%d.%d%s.%s %s", major, minor, extraPart, patch, revision);
+            return rawVersion;
+
+        } catch (IOException e) {
+            rawVersion = null;
+            throw new UncheckedIOException(e);
         }
     }
 
     /**
-     * Returns the launch directory for the game.
-     * <p>
-     * This method returns the directory where the game executable or core files are located.
-     * </p>
+     * Returns the base working directory used for assets, configurations, and logs.
      *
-     * @return the path to the launch directory.
+     * @return the launch directory path
      */
     @Override
     public Path getLaunchDirectory() {
@@ -305,9 +315,11 @@ public class ZomboidGameProvider implements GameProvider {
             Path jarOrDir = Paths.get(location.toURI()).toAbsolutePath().normalize();
 
             Path parent = jarOrDir.getParent();
+
             if (parent == null) {
                 throw new IllegalStateException("Cannot resolve parent directory from: " + jarOrDir);
             }
+
             return parent;
 
         } catch (URISyntaxException e) {
@@ -316,12 +328,9 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
-     * Returns the entry point class name for the game.
-     * <p>
-     * This method returns the class name that contains the main method used to launch the game.
-     * </p>
+     * Returns the fully qualified class name of the main entry point to invoke.
      *
-     * @return the entry point class name.
+     * @return entrypoint class name
      */
     @Override
     public String getEntrypoint() {
@@ -329,12 +338,9 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
-     * Returns the environment type of the game.
-     * <p>
-     * This method returns whether the game is running in a server or client environment.
-     * </p>
+     * Returns the target execution environment for this provider instance.
      *
-     * @return the environment type (either {@link Environment#CLIENT} or {@link Environment#SERVER}).
+     * @return environment type (e.g., {@code CLIENT}, {@code SERVER})
      */
     @Override
     public Environment getEnvironment() {
@@ -342,16 +348,13 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
-     * Returns a list of Java library paths required by the game.
-     * <p>
-     * This method returns a list of JAR file paths that are required to run the game. By default, it returns
-     * an empty list.
-     * </p>
+     * Provides additional directories or JAR files to append to the runtime classpath.
      *
-     * @return a list of paths to Java libraries, possibly empty.
+     * @return list of paths to Java libraries
+     * @implSpec Default returns an immutable empty list.
      */
     @Override
-    public List<Path> getJavaLibs() {
+    public List<Path> getJavaLibsPath() {
         Path baseDir;
         try {
             baseDir = isServer() ? getLaunchDirectory().resolve("java") : getLaunchDirectory();
@@ -366,6 +369,7 @@ public class ZomboidGameProvider implements GameProvider {
         }
 
         List<Path> jars = new ArrayList<>();
+
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(baseDir, "*.jar")) {
             for (Path path : stream) {
                 if (Files.isRegularFile(path)) {
@@ -383,105 +387,126 @@ public class ZomboidGameProvider implements GameProvider {
         return List.copyOf(jars);
     }
 
-
     /**
-     * Returns a list of native library search paths required by the game.
-     * <p>
-     * This method returns a list of directories that contain native libraries required by the game. By default,
-     * it returns an empty list.
-     * </p>
+     * Provides directories containing platform-specific native libraries.
      *
-     * @return a list of paths to native library directories, possibly empty.
+     * @return list of paths to native library directories
+     * @implSpec Default returns an immutable empty list.
      */
     @Override
-    public List<Path> getNativePaths() {
-        Set<Path> result = new LinkedHashSet<>();
+    public List<Path> getNativeLibsPath() {
         Path launchDir;
-
         try {
             launchDir = getLaunchDirectory().toAbsolutePath().normalize();
         } catch (Exception e) {
-            log.warn("Failed to resolve launch directory while discovering native paths for '{}'.", getId(), e);
+            log.warn("Failed to resolve launch directory for native discovery in '{}'.", getId(), e);
             return List.of();
         }
 
-        if (Files.isDirectory(launchDir)) {
-            result.add(launchDir);
+        if (!Files.isDirectory(launchDir)) {
+            log.debug("Launch directory is not accessible: '{}'", launchDir);
+            return List.of();
         }
+
+        Set<Path> natives = new LinkedHashSet<>();
+        natives.add(launchDir);
 
         if (isServer()) {
-            Path nativesRoot = launchDir.resolve("natives");
-            if (Files.isDirectory(nativesRoot)) {
-                result.add(nativesRoot);
-
-                try (DirectoryStream<Path> stream = Files.newDirectoryStream(nativesRoot)) {
-                    for (Path path : stream) {
-                        if (Files.isDirectory(path)) {
-                            result.add(path.toAbsolutePath().normalize());
-                        }
-                    }
-                } catch (Exception e) {
-                    log.warn("Failed to enumerate server natives in '{}'.", nativesRoot, e);
-                }
-            } else {
-                log.debug("Server natives directory not found: '{}'", nativesRoot);
-            }
+            collectServerNatives(launchDir, natives);
         } else {
-            Path nativeDir = determineClientNativeDir(launchDir);
-            if (nativeDir != null && Files.isDirectory(nativeDir)) {
-                result.add(nativeDir.toAbsolutePath().normalize());
-            } else if (nativeDir != null) {
-                log.debug("Client native directory not found: '{}'", nativeDir);
-            }
+            collectClientNatives(launchDir, natives);
         }
 
-        log.debug("Discovered {} native path(s) for '{}'", result.size(), getId());
-        return List.copyOf(result);
+        log.debug("Discovered {} native path(s) for '{}'", natives.size(), getId());
+        return List.copyOf(natives);
     }
 
     /**
-     * Returns the core arguments used by the game provider.
-     * <p>
-     * This method returns any additional system properties or arguments that are required for the game provider
-     * to function correctly. By default, it returns an empty map.
-     * </p>
+     * Scans the server-specific natives directory and its immediate subdirectories.
      *
-     * @return a map of core arguments, possibly empty.
+     * @param launchDir the normalized base launch directory
+     * @param natives   the mutable set to populate with discovered paths
+     */
+    private void collectServerNatives(Path launchDir, Set<Path> natives) {
+        Path nativesRoot = launchDir.resolve("natives");
+        if (!Files.isDirectory(nativesRoot)) {
+            log.debug("Server natives directory not found: '{}'", nativesRoot);
+            return;
+        }
+
+        natives.add(nativesRoot);
+        try (var stream = Files.list(nativesRoot)) {
+            stream.filter(Files::isDirectory)
+                    .map(Path::toAbsolutePath)
+                    .map(Path::normalize)
+                    .forEach(natives::add);
+        } catch (IOException e) {
+            log.warn("Failed to enumerate server natives in '{}'.", nativesRoot, e);
+        }
+    }
+
+    /**
+     * Resolves and adds the client-specific native directory if available.
+     *
+     * @param launchDir the normalized base launch directory
+     * @param natives   the mutable set to populate with discovered paths
+     */
+    private void collectClientNatives(Path launchDir, Set<Path> natives) {
+        Path nativeDir = determineClientNativeDir(launchDir);
+        if (nativeDir == null) return;
+
+        if (Files.isDirectory(nativeDir)) {
+            natives.add(nativeDir.toAbsolutePath().normalize());
+        } else {
+            log.debug("Client native directory not found: '{}'", nativeDir);
+        }
+    }
+
+    /**
+     * Provides internal key-value configuration arguments injected before launch.
+     *
+     * @return map of provider-specific arguments
+     * @implSpec Default returns an immutable empty map.
      */
     @Override
-    public Map<String, String> getProviderCoreArgs() {
+    public Map<String, String> getProviderArgs() {
         if (isServer()) {
-            return Map.of(
-                    BASE_CORE_ARGS.keySet().toArray(new String[0])[0], BASE_CORE_ARGS.values().toArray(new String[0])[0],
-                    BASE_CORE_ARGS.keySet().toArray(new String[0])[1], BASE_CORE_ARGS.values().toArray(new String[0])[1],
-                    "java.awt.headless", "true"
-            );
+            Map<String, String> serverArgs = new HashMap<>(BASE_CORE_ARGS);
+            serverArgs.put("java.awt.headless", "true");
+            return serverArgs;
         }
         return BASE_CORE_ARGS;
     }
 
     /**
-     * Determines whether this installation should be treated as a dedicated server.
-     *
+     * Redirects system output streams (stdout and stderr) to a logger.
      * <p>
-     * The detection is performed once and cached. The current heuristic checks whether
-     * {@code &lt;launchDir&gt;/java} exists and is a directory.
+     * This method can be overridden to redirect the system output streams to a logging system. By default, this
+     * method does nothing (no-op).
      * </p>
-     *
-     * @return {@code true} if this is a server installation, otherwise {@code false}
      */
-    public boolean isServer() {
-        if (serverDetectCache) return serverDetect;
+    @Override
+    public synchronized void redirectSystemStreamsToLogger() {
+        if (isStreamRedirected != null) return;
 
         try {
-            Path launchDir = getLaunchDirectory();
-            serverDetect = Files.isDirectory(launchDir.resolve("java"));
-            serverDetectCache = true;
+            System.setOut(new PrintStream(
+                    new LineReadingOutputStream(new ZomboidLogLineParser(org.tinylog.Logger::info)),
+                    true,
+                    StandardCharsets.UTF_8
+            ));
+            System.setErr(new PrintStream(
+                    new LineReadingOutputStream(new ZomboidLogLineParser(org.tinylog.Logger::error)),
+                    true,
+                    StandardCharsets.UTF_8
+            ));
+            log.info("System streams redirected to logger for '{}'.", getId());
+
+            isStreamRedirected = true;
         } catch (Exception e) {
-            log.warn("Failed to detect server install mode for '{}'. Defaulting to CLIENT.", getId(), e);
-            serverDetectCache = false;
+            log.error("Failed to redirect system streams for '{}'.", getId(), e);
+            throw new IllegalStateException("Failed to redirect system streams for: " + getId(), e);
         }
-        return serverDetect;
     }
 
     /**
@@ -520,33 +545,20 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
-     * Redirects system output streams (stdout and stderr) to a logger.
-     * <p>
-     * This method can be overridden to redirect the system output streams to a logging system. By default, this
-     * method does nothing (no-op).
-     * </p>
+     * Determines whether this installation should be treated as a dedicated server.
+     *
+     * @return {@code true} if this is a server installation, otherwise {@code false}
      */
-    @Override
-    public synchronized void redirectSystemStreamsToLogger() {
-        if (streamRedirected) return;
+    public boolean isServer() {
+        if (isServerDetect != null) return isServerDetect;
 
         try {
-            System.setOut(new PrintStream(
-                    new LineReadingOutputStream(new ZomboidLogLineParser(org.tinylog.Logger::info)),
-                    true,
-                    StandardCharsets.UTF_8
-            ));
-            System.setErr(new PrintStream(
-                    new LineReadingOutputStream(new ZomboidLogLineParser(org.tinylog.Logger::error)),
-                    true,
-                    StandardCharsets.UTF_8
-            ));
-            log.info("System streams redirected to logger for '{}'.", getId());
-
-            streamRedirected = true;
+            isServerDetect = Files.isDirectory(getLaunchDirectory().resolve("java"));
         } catch (Exception e) {
-            log.error("Failed to redirect system streams for '{}'.", getId(), e);
-            throw new IllegalStateException("Failed to redirect system streams for: " + getId(), e);
+            log.warn("Failed to detect server mode for '{}'. Defaulting to CLIENT.", getId(), e);
+            isServerDetect = false;
         }
+
+        return isServerDetect;
     }
 }

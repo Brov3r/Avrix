@@ -1,0 +1,49 @@
+plugins {
+    id 'java'
+    id 'com.gradleup.shadow' version '9.4.1'
+}
+
+group = 'com.avrix'
+version = '1.0.0'
+
+def buildPath = System.getenv('BUILD_PATH') ?: 'build'
+def baseSuffix = "API"
+def baseArchiveName = "${rootProject.name.capitalize()}-${baseSuffix}"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // AvrixLoader
+    compileOnly(rootProject)
+
+    // Test
+    testImplementation platform('org.junit:junit-bom:6.0.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+processResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    filesMatching('**/metadata.yml') {
+        filter { String line -> line.replace('%API_VERSION%', version.toString()) }
+    }
+}
+
+shadowJar {
+    archiveBaseName.set(baseArchiveName)
+    archiveClassifier.set('')
+    destinationDirectory.set(file(buildPath))
+
+    manifest {
+        attributes(
+                'Implementation-Title': "${rootProject.name.capitalize()}-${baseSuffix}",
+                'Implementation-Version': version
+        )
+    }
+}

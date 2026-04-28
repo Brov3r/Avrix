@@ -1,4 +1,4 @@
-package com.avrix.logging;
+package com.avrix.logger;
 
 import org.tinylog.Level;
 import org.tinylog.core.ConfigurationParser;

@@ -1,39 +1,39 @@
-package com.avrix.enums;
+package com.avrix.core;
 
 /**
- * An enumeration representing the execution environment, such as server, client or both
+ * An enumeration representing the execution {@link Environment}, such as server, client or both
  */
 public enum Environment {
     /**
-     * Client environment.
+     * Client {@link Environment}.
      */
     CLIENT("client"),
 
     /**
-     * Server environment.
+     * Server {@link Environment}.
      */
     SERVER("server"),
 
     /**
-     * Both client and server environments.
+     * Both client and server {@link Environment}.
      */
     BOTH("both");
 
     private final String value;
 
     /**
-     * Constructor to initialize the environment with a specific value.
+     * Constructor to initialize the {@link Environment} with a specific value.
      *
-     * @param value the string representation of the environment
+     * @param value the string representation of the {@link Environment}
      */
     Environment(String value) {
         this.value = value;
     }
 
     /**
-     * Gets the string representation of the environment.
+     * Gets the string representation of the {@link Environment}.
      *
-     * @return the string representation of the environment
+     * @return the string representation of the {@link Environment}
      */
     public String getValue() {
         return value;

@@ -1,7 +1,9 @@
 package com.avrix.utils;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -9,9 +11,34 @@ import java.util.Properties;
  */
 public class Constants {
     /**
-     * Extension for Jar archives
+     * Name of the flag to disable log redirection
      */
-    public static final String JAR_EXTENSION = ".jar";
+    public static final String NO_REDIRECT_FLAG_NAME = "-no-redirect-log";
+
+    /**
+     * File name for metadata
+     */
+    public static final String METADATA_NAME = "metadata.yml";
+
+    /**
+     * File name for plugin icon
+     */
+    public static final String PLUGINS_ICON_NAME = "icon.png";
+
+    /**
+     * Metadata schema version
+     */
+    public static final int METADATA_SCHEMA = 1;
+
+    /**
+     * Extension for Plugin archives
+     */
+    public static final String PLUGIN_EXTENSION = ".jar";
+
+    /**
+     * Name of the directory with plugins
+     */
+    public static final String PLUGINS_FOLDER_NAME = "plugins";
 
     /**
      * Project version
@@ -47,17 +74,14 @@ public class Constants {
     Initializing data and configuration file
    */
     static {
-        Properties properties = new Properties();
-        try (InputStream input = Constants.class.getClassLoader().getResourceAsStream("avrix.properties")) {
-            if (input == null) {
-                throw new IOException("Loader metadata file not found");
-            }
-            properties.load(input);
-
-            LOADER_VERSION = properties.getProperty("version");
-            LOADER_NAME = properties.getProperty("projectName");
+        try (var in = Constants.class.getClassLoader().getResourceAsStream("avrix.properties")) {
+            if (in == null) throw new ExceptionInInitializerError("File 'avrix.properties' not found in classpath");
+            var props = new Properties();
+            props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+            LOADER_VERSION = Objects.requireNonNull(props.getProperty("version"), "Missing 'version'");
+            LOADER_NAME = Objects.requireNonNull(props.getProperty("projectName"), "Missing 'projectName'");
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load configuration file", e);
+            throw new ExceptionInInitializerError(e);
         }
     }
 }

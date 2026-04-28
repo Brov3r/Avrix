@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'com.gradleup.shadow' version '9.3.1'
+    id 'com.gradleup.shadow' version '9.4.1'
 }
 
 group = 'com.avrix'
@@ -15,37 +15,33 @@ repositories {
 }
 
 dependencies {
-    /**
-     * Logger
-     */
-    implementation('org.slf4j:slf4j-api:2.0.17')
-    implementation('org.tinylog:slf4j-tinylog:2.7.0')
-    implementation('org.tinylog:tinylog-impl:2.7.0')
+    // Logger
+    implementation 'org.slf4j:slf4j-api:2.0.17'
+    implementation 'org.tinylog:slf4j-tinylog:2.7.0'
+    implementation 'org.tinylog:tinylog-impl:2.7.0'
 
-    /**
-     * Runtime modification
-     */
-    implementation("net.bytebuddy:byte-buddy:1.18.3")
+    // Mixin
+    implementation 'net.lenni0451.classtransform:core:1.14.1'
+    implementation 'net.lenni0451.classtransform:mixinstranslator:1.14.1'
+    implementation 'net.lenni0451.classtransform:mixinsdummy:1.14.1'
 
-    /**
-     * Utils
-     */
-    implementation('org.yaml:snakeyaml:2.2')
+    // Util
+    implementation 'org.spongepowered:configurate-yaml:4.2.0'
+    implementation 'com.github.zafarkhaja:java-semver:0.10.2'
+    implementation 'org.jgrapht:jgrapht-core:1.5.3'
 
-    /**
-     * Test
-     */
+    // Test
     testImplementation platform('org.junit:junit-bom:6.0.2')
-    testImplementation('org.junit.jupiter:junit-jupiter')
-    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 processResources {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
     filesMatching('**/avrix.properties') {
-        filter {
-            it.replace('%PROJECT_VERSION%', version)
-                    .replace('%PROJECT_NAME%', rootProject.name.capitalize() + " " + baseSuffix)
+        filter { String line ->
+            line.replace('%PROJECT_VERSION%', version.toString())
+                    .replace('%PROJECT_NAME%', "${rootProject.name.capitalize()} ${baseSuffix}")
         }
     }
 }
@@ -57,7 +53,6 @@ test {
 shadowJar {
     archiveBaseName.set(baseArchiveName)
     archiveClassifier.set('')
-
     destinationDirectory.set(file(buildPath))
 
     manifest {
@@ -65,6 +60,7 @@ shadowJar {
                 'Implementation-Title': "${rootProject.name.capitalize()}-${baseSuffix}",
                 'Implementation-Version': version,
                 'Main-Class': 'com.avrix.Main',
+                'Agent-Class': 'com.avrix.mixin.MixinAgent',
                 'Can-Redefine-Classes': 'true',
                 'Can-Retransform-Classes': 'true'
         )
