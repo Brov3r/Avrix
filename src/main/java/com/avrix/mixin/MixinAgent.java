@@ -1,6 +1,5 @@
 package com.avrix.mixin;
 
-import com.avrix.core.Bootstrap;
 import net.lenni0451.classtransform.TransformerManager;
 import net.lenni0451.classtransform.mixinstranslator.MixinsTranslator;
 import net.lenni0451.classtransform.utils.tree.BasicClassProvider;
@@ -35,7 +34,7 @@ public class MixinAgent {
 
         instrumentation = inst;
 
-        manager = new TransformerManager(new BasicClassProvider(Bootstrap.getClassLoader()));
+        manager = new TransformerManager(new BasicClassProvider(MixinAgentBootstrap.getClassLoader()));
         manager.addTransformerPreprocessor(new MixinsTranslator());
 
         try {

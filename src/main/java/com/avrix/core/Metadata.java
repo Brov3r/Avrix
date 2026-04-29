@@ -9,9 +9,6 @@ import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.*;
@@ -87,16 +84,6 @@ public class Metadata {
     private final List<String> mixins;
 
     /**
-     * Physical plugin file (JAR/directory)
-     */
-    private File pluginFile;
-
-    /**
-     * Optional plugin icon url (path to the icon, including the plugin's JAR file)
-     */
-    private URL iconUrl;
-
-    /**
      * Creates a new Metadata instance.
      *
      * @param schema       metadata schema version
@@ -114,7 +101,7 @@ public class Metadata {
      */
     public Metadata(int schema, String name, String description, String id, String version,
                     Environment environment, List<String> authors, String license, List<String> contacts,
-                    Map<String, String> dependencies, String entrypoint, List<String> mixins, File pluginFile, URL iconUrl) {
+                    Map<String, String> dependencies, String entrypoint, List<String> mixins) {
         this.schema = schema;
         this.name = name;
         this.description = description;
@@ -127,8 +114,6 @@ public class Metadata {
         this.dependencies = dependencies;
         this.entrypoint = entrypoint;
         this.mixins = mixins;
-        this.pluginFile = pluginFile;
-        this.iconUrl = iconUrl;
     }
 
     /**
@@ -240,39 +225,20 @@ public class Metadata {
     }
 
     /**
-     * Returns the physical plugin file reference.
+     * Creates metadata from an existing {@link Bootstrap} instance.
      *
-     * @return plugin {@link File}, or {@code null} if not set
-     */
-    public File getPluginFile() {
-        return pluginFile;
-    }
-
-    /**
-     * Returns the optional plugin icon url reference (path to the icon, including the plugin's JAR file)
-     *
-     * @return icon {@link URL}, or {@code null} if not set
-     */
-    public URL getIconFileURL() {
-        return iconUrl;
-    }
-
-    /**
-     * Creates metadata for the Avrix loader itself.
-     * Initializes all fields using predefined framework constants.
-     *
+     * @param bootstrap the source {@link Bootstrap}
      * @return loader {@link Metadata} instance
      */
-    public static Metadata getLoaderMetadata() {
+    public static Metadata fromBootstrap(Bootstrap bootstrap) {
         return new Builder()
                 .schema(Constants.METADATA_SCHEMA)
-                .authors(Constants.LOADER_AUTHOR)
-                .name(Constants.LOADER_NAME)
-                .id(Constants.LOADER_ID)
-                .license(Constants.LOADER_LICENSE)
-                .contacts(Constants.LOADER_CONTACTS)
-                .version(Constants.LOADER_VERSION)
-                .environment(Environment.BOTH)
+                .authors(bootstrap.getAuthors())
+                .name(bootstrap.getName())
+                .id(bootstrap.getId())
+                .license(bootstrap.getLicense())
+                .contacts(bootstrap.getContacts())
+                .version(bootstrap.getVersion())
                 .build();
     }
 
@@ -280,9 +246,8 @@ public class Metadata {
      * Creates metadata from an existing {@link GameProvider} instance.
      * Maps provider properties to the corresponding metadata fields.
      *
-     * @param provider the source game provider
+     * @param provider the source {@link GameProvider}
      * @return configured {@link Metadata} instance
-     * @throws RuntimeException if required provider fields are null or blank
      */
     public static Metadata fromGameProvider(GameProvider provider) {
         return new Builder()
@@ -308,7 +273,7 @@ public class Metadata {
      * @throws FileNotFoundException if the specified entry does not exist
      */
     public static Metadata fromJarFile(File jarFile, String entryPath) throws IOException {
-        log.debug("Loading metadata from JAR '{}' (entry: {})", jarFile, entryPath);
+        log.debug("Loading metadata from JAR '{}'", jarFile);
         try (JarFile jar = new JarFile(jarFile)) {
             JarEntry entry = jar.getJarEntry(entryPath);
             if (entry == null) {
@@ -320,15 +285,8 @@ public class Metadata {
                         .source(() -> new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8)))
                         .build();
                 Metadata jarMeta = fromNode(loader.load());
-                jarMeta.pluginFile = jarFile;
 
-                try {
-                    jarMeta.iconUrl = new URI("jar:" + jarFile.toURI() + "!/" + Constants.PLUGINS_ICON_NAME).toURL();
-                } catch (URISyntaxException e) {
-                    throw new IOException("Invalid icon URI for " + jarFile.getName(), e);
-                }
-
-                log.info("Metadata loaded for plugin '{}' from {}", jarMeta.getId(), jarFile.getName());
+                log.debug("Metadata loaded for plugin '{}'", jarMeta.getId());
                 return jarMeta;
             }
         } catch (FileNotFoundException e) {
@@ -427,7 +385,7 @@ public class Metadata {
         /**
          * Target {@link Environment}
          */
-        private Environment environment;
+        private Environment environment = Environment.BOTH;
 
         /**
          * List of author names.
@@ -458,16 +416,6 @@ public class Metadata {
          * List of Mixin configuration fully-qualified class name.
          */
         private List<String> mixins = new ArrayList<>();
-
-        /**
-         * Physical plugin file (JAR/directory)
-         */
-        private File pluginFile;
-
-        /**
-         * Optional plugin icon url
-         */
-        private URL iconUrl;
 
         /**
          * Sets the metadata schema version.
@@ -680,28 +628,6 @@ public class Metadata {
         }
 
         /**
-         * Sets the physical plugin file reference.
-         *
-         * @param file plugin {@link File}
-         * @return this builder for method chaining
-         */
-        public Metadata.Builder pluginFile(File file) {
-            this.pluginFile = file;
-            return this;
-        }
-
-        /**
-         * Sets the optional plugin icon url reference (path to the icon, including the plugin's JAR file).
-         *
-         * @param url icon {@link URL}
-         * @return this builder for method chaining
-         */
-        public Metadata.Builder iconUrl(URL url) {
-            this.iconUrl = url;
-            return this;
-        }
-
-        /**
          * Validates required fields and constructs an immutable {@link Metadata} instance.
          *
          * @return the fully initialized {@link Metadata} object
@@ -725,7 +651,7 @@ public class Metadata {
             }
 
             return new Metadata(schema, name, description, id, version, environment, authors, license,
-                    contacts, dependencies, entrypoint, mixins, pluginFile, iconUrl);
+                    contacts, dependencies, entrypoint, mixins);
         }
     }
 }

@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 800 110" width="800" height="110">
+    <defs>
+        <linearGradient id="wireGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8bbbfa"/>
+            <stop offset="100%" stop-color="#09d99b"/>
+        </linearGradient>
+        <pattern id="techGrid" width="50" height="50" patternUnits="userSpaceOnUse">
+            <path d="M50 0 L0 0 0 50" fill="none" stroke="#8bbbfa" stroke-width="0.25" opacity="0.08"/>
+        </pattern>
+    </defs>
+
+    <!-- Background -->
+    <rect width="800" height="110" fill="url(#techGrid)"/>
+
+    <foreignObject width="100%" height="100%">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            <style>
+                @keyframes shimmer {
+                0% { background-position: 0% 50%; }
+                100% { background-position: 200% 50%; }
+                }
+                /* Seamless stroke draw loop */
+                @keyframes wireDraw {
+                0% { stroke-dashoffset: 200; opacity: 0.15; }
+                50% { opacity: 0.4; }
+                100% { stroke-dashoffset: 0; opacity: 0.15; }
+                }
+                /* Continuous float - symmetric */
+                @keyframes float {
+                0%, 100% { transform: translateY(0) rotate(0deg); }
+                25% { transform: translateY(-4px) rotate(0.5deg); }
+                75% { transform: translateY(2px) rotate(-0.3deg); }
+                }
+                /* Smooth pulse - identical start/end */
+                @keyframes pulse {
+                0%, 100% { opacity: 0.2; r: 1.5; }
+                50% { opacity: 0.5; r: 2.5; }
+                }
+                /* Continuous rotation */
+                @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+                }
+                /* Grid drift */
+                @keyframes gridMove {
+                0% { background-position: 0 0; }
+                100% { background-position: 50px 50px; }
+                }
+                * {
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                }
+                .header {
+                margin: 0;
+                font-size: 2.8em;
+                font-weight: 800;
+                letter-spacing: -.04em;
+                text-align: center;
+                background: linear-gradient(90deg, #8bbbfa, #09d99b, #8bbbfa);
+                background-size: 200%;
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                animation: shimmer 4s linear infinite;
+                position: relative; z-index: 3;
+                }
+                .subtitle {
+                margin: 0;
+                font-size: 1em;
+                font-weight: 400;
+                letter-spacing: -.02em;
+                text-align: center;
+                padding-top: 0.4em;
+                color: #888;
+                position: relative; z-index: 3;
+                }
+                .wire {
+                stroke: url(#wireGradient);
+                stroke-width: 0.9;
+                fill: none;
+                stroke-dasharray: 200;
+                animation: wireDraw 8s ease-in-out infinite;
+                opacity: 0.15;
+                }
+                .float {
+                animation: float 6s ease-in-out infinite;
+                transform-origin: center;
+                }
+                .pulse {
+                animation: pulse 3s ease-in-out infinite;
+                fill: url(#wireGradient);
+                }
+                .spin {
+                animation: spin 20s linear infinite;
+                transform-origin: center;
+                }
+            </style>
+            <h1 class="header">Avrix</h1>
+            <p class="subtitle">Modding • Mixins • Project Zomboid</p>
+        </div>
+    </foreignObject>
+
+    <!-- Animated wireframe polygons -->
+    <g class="wire float" style="animation-delay: 0s;">
+        <polygon points="60,25 100,45 80,80"/>
+    </g>
+    <g class="wire float" style="animation-delay: 2s;">
+        <polygon points="720,20 760,40 740,75 700,60"/>
+    </g>
+    <g class="wire float" style="animation-delay: 4s;">
+        <polygon points="140,85 180,95 160,105"/>
+    </g>
+    <g class="wire float" style="animation-delay: 1.5s;">
+        <polygon points="640,82 680,92 660,105 630,96"/>
+    </g>
+
+    <!-- Central rotating wireframe -->
+    <g class="wire spin" style="opacity: 0.12;">
+        <polygon points="400,35 425,50 410,72 390,68"/>
+        <polygon points="400,35 390,55 405,65 420,52"/>
+    </g>
+
+    <!-- Pulsing nodes -->
+    <circle class="pulse" cx="70" cy="30" r="1.5"/>
+    <circle class="pulse" cx="730" cy="28" r="1.5" style="animation-delay: 0.8s;"/>
+    <circle class="pulse" cx="150" cy="90" r="1.5" style="animation-delay: 1.2s;"/>
+    <circle class="pulse" cx="650" cy="88" r="1.5" style="animation-delay: 0.4s;"/>
+    <circle class="pulse" cx="400" cy="55" r="1.2" style="animation-delay: 1.6s; opacity: 0.3;"/>
+
+
+    <!-- Subtle corner markers - continuous micro-float -->
+    <g class="float" style="animation-duration: 9s; animation-delay: 0.5s;">
+        <path d="M15,12 L32,16 M15,12 L15,28" stroke="#8bbbfa" stroke-width="1" opacity="0.5"/>
+    </g>
+    <g class="float" style="animation-duration: 7s; animation-delay: 2s;">
+        <path d="M785,12 L768,12 M785,12 L785,28" stroke="#09d99b" stroke-width="1" opacity="0.5"/>
+    </g>
+
+    <!-- Tiny floating particles -->
+    <circle cx="200" cy="40" r="0.8" fill="#8bbbfa" opacity="0.4" class="float" style="animation-duration: 5s;"/>
+    <circle cx="600" cy="35" r="0.8" fill="#09d99b" opacity="0.4" class="float"
+            style="animation-duration: 5.5s; animation-delay: 1s;"/>
+    <circle cx="300" cy="75" r="0.8" fill="#8bbbfa" opacity="0.3" class="float"
+            style="animation-duration: 6s; animation-delay: 0.3s;"/>
+    <circle cx="500" cy="80" r="0.8" fill="#09d99b" opacity="0.3" class="float"
+            style="animation-duration: 5.2s; animation-delay: 1.8s;"/>
+</svg>

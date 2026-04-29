@@ -13,7 +13,7 @@ public class Constants {
     /**
      * Name of the flag to disable log redirection
      */
-    public static final String NO_REDIRECT_FLAG_NAME = "-no-redirect-log";
+    public static final String NO_REDIRECT_FLAG_NAME = "--no-redirect-log";
 
     /**
      * File name for metadata
@@ -63,7 +63,7 @@ public class Constants {
     /**
      * Project license
      */
-    public static final String LOADER_LICENSE = "GNU GPLv3";
+    public static final String LOADER_LICENSE = "MIT";
 
     /**
      * Project license

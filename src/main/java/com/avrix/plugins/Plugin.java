@@ -1,8 +1,9 @@
 package com.avrix.plugins;
 
-import com.avrix.core.Bootstrap;
 import com.avrix.core.Metadata;
-import com.avrix.provider.GameProvider;
+
+import java.io.File;
+import java.net.URI;
 
 /**
  * Base class for all Avrix plugins.
@@ -16,12 +17,44 @@ public abstract class Plugin {
     protected final Metadata metadata;
 
     /**
-     * Creates a new {@link Plugin} instance.
-     *
-     * @param metadata {@link Plugin} {@link Metadata}, must not be {@code null}
+     * Plugin jar file
      */
-    public Plugin(Metadata metadata) {
+    protected final File pluginFile;
+
+    /**
+     * Plugin icon file URI. May be {@code null}.
+     */
+    protected final URI iconURI;
+
+    /**
+     * Plugin constructor, arguments are passed dynamically
+     *
+     * @param metadata   plugin {@link Metadata}
+     * @param pluginFile plugin jar file
+     * @param iconURI    plugin icon URI. May be {@code null}.
+     */
+    public Plugin(Metadata metadata, File pluginFile, URI iconURI) {
         this.metadata = metadata;
+        this.pluginFile = pluginFile;
+        this.iconURI = iconURI;
+    }
+
+    /**
+     * Returns the jar plugin file reference.
+     *
+     * @return plugin jar {@link File}
+     */
+    public final File getPluginFile() {
+        return pluginFile;
+    }
+
+    /**
+     * Returns the jar plugin icon URI reference.
+     *
+     * @return plugin icon {@link URI}. May be {@code null}.
+     */
+    public final URI getIconURI() {
+        return iconURI;
     }
 
     /**
@@ -31,15 +64,6 @@ public abstract class Plugin {
      */
     public final Metadata getMetadata() {
         return metadata;
-    }
-
-    /**
-     * Returns the main {@link GameProvider}.
-     *
-     * @return immutable {@link GameProvider} descriptor
-     */
-    public final GameProvider getProvider() {
-        return Bootstrap.getGameProvider();
     }
 
     /**

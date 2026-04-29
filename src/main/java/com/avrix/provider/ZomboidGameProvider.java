@@ -430,7 +430,7 @@ public class ZomboidGameProvider implements GameProvider {
     private void collectServerNatives(Path launchDir, Set<Path> natives) {
         Path nativesRoot = launchDir.resolve("natives");
         if (!Files.isDirectory(nativesRoot)) {
-            log.debug("Server natives directory not found: '{}'", nativesRoot);
+            log.warn("Server natives directory not found: '{}'", nativesRoot);
             return;
         }
 
@@ -458,7 +458,7 @@ public class ZomboidGameProvider implements GameProvider {
         if (Files.isDirectory(nativeDir)) {
             natives.add(nativeDir.toAbsolutePath().normalize());
         } else {
-            log.debug("Client native directory not found: '{}'", nativeDir);
+            log.warn("Client native directory not found: '{}'", nativeDir);
         }
     }
 
