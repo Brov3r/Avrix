@@ -1,146 +1,196 @@
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 800 110" width="800" height="110">
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 800 110" width="800" height="110" role="img" aria-label="Avrix - Modding, Mixins, Project Zomboid">
+    <title>Avrix Banner</title>
     <defs>
         <linearGradient id="wireGradient" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#8bbbfa"/>
+            <stop offset="50%" stop-color="#3de0c2"/>
             <stop offset="100%" stop-color="#09d99b"/>
         </linearGradient>
-        <pattern id="techGrid" width="50" height="50" patternUnits="userSpaceOnUse">
-            <path d="M50 0 L0 0 0 50" fill="none" stroke="#8bbbfa" stroke-width="0.25" opacity="0.08"/>
-        </pattern>
+
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+            </feMerge>
+        </filter>
+
+        <filter id="textGlow" x="-100%" y="-100%" width="300%" height="300%">
+            <feDropShadow dx="0" dy="2" stdDeviation="10" flood-color="rgba(0,0,0,0.8)"/>
+        </filter>
     </defs>
 
-    <!-- Background -->
-    <rect width="800" height="110" fill="url(#techGrid)"/>
+    <style>
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(2deg); }
+        }
+        @keyframes floatReverse {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(5px) rotate(-2deg); }
+        }
+        @keyframes pulseNode {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+        @keyframes spinRight {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes spinLeft {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+        @keyframes stream {
+            0% { stroke-dashoffset: 800; opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { stroke-dashoffset: 0; opacity: 0.3; }
+        }
+        @keyframes drawCircuit {
+            0%, 100% { stroke-dashoffset: 100; opacity: 0.2; }
+            50% { stroke-dashoffset: 0; opacity: 0.6; }
+        }
 
+        .float {
+            animation: float 6s ease-in-out infinite;
+            transform-origin: center;
+            will-change: transform;
+        }
+        .float-rev {
+            animation: floatReverse 7s ease-in-out infinite;
+            transform-origin: center;
+            will-change: transform;
+        }
+        .spin-r {
+            animation: spinRight 20s linear infinite;
+            transform-origin: center;
+            will-change: transform;
+        }
+        .spin-l {
+            animation: spinLeft 25s linear infinite;
+            transform-origin: center;
+            will-change: transform;
+        }
+        .pulse {
+            animation: pulseNode 3s ease-in-out infinite;
+            transform-origin: center;
+            will-change: transform, opacity;
+        }
+
+        .data-stream {
+            stroke: url(#wireGradient);
+            stroke-width: 1.5;
+            stroke-dasharray: 200 600;
+            animation: stream 4s linear infinite;
+            will-change: stroke-dashoffset, opacity;
+        }
+        .circuit {
+            stroke-dasharray: 100;
+            animation: drawCircuit 6s ease-in-out infinite;
+            will-change: stroke-dashoffset, opacity;
+        }
+
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            box-sizing: border-box;
+        }
+        .header {
+            margin: 0;
+            font-size: 2.8em;
+            font-weight: 800;
+            letter-spacing: -.04em;
+            text-align: center;
+            background: linear-gradient(90deg, #8bbbfa, #09d99b, #8bbbfa);
+            background-size: 200%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 4s linear infinite;
+            position: relative;
+            z-index: 3;
+            filter: url(#textGlow);
+        }
+        .subtitle {
+            margin: 0;
+            font-size: 1em;
+            font-weight: 400;
+            letter-spacing: -.01em;
+            text-align: center;
+            padding-top: 0.2em;
+            color: #999;
+            text-shadow: 0px 2px 4px rgba(0,0,0,0.8);
+        }
+    </style>
+
+    <!-- Circuit lines -->
+    <g class="circuit" fill="none" stroke="#8bbbfa" stroke-width="1.5" opacity="0.5">
+        <path d="M0,60 L30,60 L50,80 L90,80" />
+        <path d="M0,110 L20,110 L40,90 L70,90" stroke-width="0.75" />
+    </g>
+
+    <g class="circuit" fill="none" stroke="#09d99b" stroke-width="1.5" opacity="0.5" style="animation-delay: -3s;">
+        <path d="M800,70 L770,70 L750,50 L710,50" />
+        <path d="M800,25 L780,25 L760,40 L720,40" stroke-width="0.75" />
+    </g>
+
+    <!-- Data streams -->
+    <line x1="0" y1="20" x2="800" y2="20" class="data-stream" style="animation-duration: 4s;" />
+    <line x1="800" y1="90" x2="0" y2="90" class="data-stream" style="animation-duration: 3.5s; animation-delay: 1.5s;" />
+    <line x1="0" y1="50" x2="800" y2="50" class="data-stream" style="animation-duration: 5s; animation-delay: 0.5s; stroke-width: 0.5; opacity: 0.5;" />
+
+    <!-- Central spinning elements -->
+
+    <g class="spin-l" opacity="0.2">
+        <polygon points="400,10 440,75 360,75" fill="none" stroke="#09d99b" stroke-width="1"/>
+        <polygon points="400,100 440,35 360,35" fill="none" stroke="#8bbbfa" stroke-width="1"/>
+    </g>
+
+    <!-- Left hexagon -->
+    <g class="float" style="animation-delay: 0s;" filter="url(#glow)">
+        <polygon points="120,40 133,47.5 133,62.5 120,70 107,62.5 107,47.5" fill="none" stroke="#8bbbfa" stroke-width="1.5" opacity="0.6"/>
+    </g>
+
+    <!-- Right hexagon -->
+    <g class="float-rev" style="animation-delay: -1.5s;" filter="url(#glow)">
+        <polygon points="680,40 693,47.5 693,62.5 680,70 667,62.5 667,47.5" fill="none" stroke="#09d99b" stroke-width="1.5" opacity="0.6"/>
+
+    </g>
+
+    <!-- Corner markers -->
+    <g class="float" style="animation-duration: 8s; opacity: 0.7;">
+        <path d="M15,28 L32,28 M15,28 L15,45" stroke="#8bbbfa" stroke-width="1.5"/>
+    </g>
+    <g class="float-rev" style="animation-duration: 9s; animation-delay: -2s; opacity: 0.7;">
+        <path d="M785,100 L770,100 M785,100 L785,85" stroke="#09d99b" stroke-width="1.5"/>
+    </g>
+
+    <!-- Text content -->
     <foreignObject width="100%" height="100%">
-        <div xmlns="http://www.w3.org/1999/xhtml">
-            <style>
-                @keyframes shimmer {
-                0% { background-position: 0% 50%; }
-                100% { background-position: 200% 50%; }
-                }
-                /* Seamless stroke draw loop */
-                @keyframes wireDraw {
-                0% { stroke-dashoffset: 200; opacity: 0.15; }
-                50% { opacity: 0.4; }
-                100% { stroke-dashoffset: 0; opacity: 0.15; }
-                }
-                /* Continuous float - symmetric */
-                @keyframes float {
-                0%, 100% { transform: translateY(0) rotate(0deg); }
-                25% { transform: translateY(-4px) rotate(0.5deg); }
-                75% { transform: translateY(2px) rotate(-0.3deg); }
-                }
-                /* Smooth pulse - identical start/end */
-                @keyframes pulse {
-                0%, 100% { opacity: 0.2; r: 1.5; }
-                50% { opacity: 0.5; r: 2.5; }
-                }
-                /* Continuous rotation */
-                @keyframes spin {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-                }
-                /* Grid drift */
-                @keyframes gridMove {
-                0% { background-position: 0 0; }
-                100% { background-position: 50px 50px; }
-                }
-                * {
-                font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                }
-                .header {
-                margin: 0;
-                font-size: 2.8em;
-                font-weight: 800;
-                letter-spacing: -.04em;
-                text-align: center;
-                background: linear-gradient(90deg, #8bbbfa, #09d99b, #8bbbfa);
-                background-size: 200%;
-                background-clip: text;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                animation: shimmer 4s linear infinite;
-                position: relative; z-index: 3;
-                }
-                .subtitle {
-                margin: 0;
-                font-size: 1em;
-                font-weight: 400;
-                letter-spacing: -.02em;
-                text-align: center;
-                padding-top: 0.4em;
-                color: #888;
-                position: relative; z-index: 3;
-                }
-                .wire {
-                stroke: url(#wireGradient);
-                stroke-width: 0.9;
-                fill: none;
-                stroke-dasharray: 200;
-                animation: wireDraw 8s ease-in-out infinite;
-                opacity: 0.15;
-                }
-                .float {
-                animation: float 6s ease-in-out infinite;
-                transform-origin: center;
-                }
-                .pulse {
-                animation: pulse 3s ease-in-out infinite;
-                fill: url(#wireGradient);
-                }
-                .spin {
-                animation: spin 20s linear infinite;
-                transform-origin: center;
-                }
-            </style>
+        <div xmlns="http://www.w3.org/1999/xhtml" style="display: flex; flex-direction: column; justify-content: center; height: 100%; align-items: center;">
             <h1 class="header">Avrix</h1>
             <p class="subtitle">Modding • Mixins • Project Zomboid</p>
         </div>
     </foreignObject>
 
-    <!-- Animated wireframe polygons -->
-    <g class="wire float" style="animation-delay: 0s;">
-        <polygon points="60,25 100,45 80,80"/>
-    </g>
-    <g class="wire float" style="animation-delay: 2s;">
-        <polygon points="720,20 760,40 740,75 700,60"/>
-    </g>
-    <g class="wire float" style="animation-delay: 4s;">
-        <polygon points="140,85 180,95 160,105"/>
-    </g>
-    <g class="wire float" style="animation-delay: 1.5s;">
-        <polygon points="640,82 680,92 660,105 630,96"/>
-    </g>
+    <!-- Floating particles -->
+    <circle cx="250" cy="30" r="1.5" fill="#8bbbfa" class="float">
+        <animate attributeName="opacity" values="0.4;1;0.4" dur="4s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="550" cy="80" r="1.5" fill="#09d99b" class="float-rev" style="animation-delay: -2s;">
+        <animate attributeName="opacity" values="0.4;1;0.4" dur="5s" repeatCount="indefinite" begin="-2s"/>
+    </circle>
+    <circle cx="380" cy="20" r="1" fill="#fff" class="float" opacity="0.4" style="animation-duration: 3s;" />
+    <circle cx="420" cy="90" r="1" fill="#fff" class="float" opacity="0.4" style="animation-duration: 3.5s; animation-delay: -1s;" />
 
-    <!-- Central rotating wireframe -->
-    <g class="wire spin" style="opacity: 0.12;">
-        <polygon points="400,35 425,50 410,72 390,68"/>
-        <polygon points="400,35 390,55 405,65 420,52"/>
-    </g>
-
-    <!-- Pulsing nodes -->
-    <circle class="pulse" cx="70" cy="30" r="1.5"/>
-    <circle class="pulse" cx="730" cy="28" r="1.5" style="animation-delay: 0.8s;"/>
-    <circle class="pulse" cx="150" cy="90" r="1.5" style="animation-delay: 1.2s;"/>
-    <circle class="pulse" cx="650" cy="88" r="1.5" style="animation-delay: 0.4s;"/>
-    <circle class="pulse" cx="400" cy="55" r="1.2" style="animation-delay: 1.6s; opacity: 0.3;"/>
-
-
-    <!-- Subtle corner markers - continuous micro-float -->
-    <g class="float" style="animation-duration: 9s; animation-delay: 0.5s;">
-        <path d="M15,12 L32,16 M15,12 L15,28" stroke="#8bbbfa" stroke-width="1" opacity="0.5"/>
-    </g>
-    <g class="float" style="animation-duration: 7s; animation-delay: 2s;">
-        <path d="M785,12 L768,12 M785,12 L785,28" stroke="#09d99b" stroke-width="1" opacity="0.5"/>
-    </g>
-
-    <!-- Tiny floating particles -->
-    <circle cx="200" cy="40" r="0.8" fill="#8bbbfa" opacity="0.4" class="float" style="animation-duration: 5s;"/>
-    <circle cx="600" cy="35" r="0.8" fill="#09d99b" opacity="0.4" class="float"
-            style="animation-duration: 5.5s; animation-delay: 1s;"/>
-    <circle cx="300" cy="75" r="0.8" fill="#8bbbfa" opacity="0.3" class="float"
-            style="animation-duration: 6s; animation-delay: 0.3s;"/>
-    <circle cx="500" cy="80" r="0.8" fill="#09d99b" opacity="0.3" class="float"
-            style="animation-duration: 5.2s; animation-delay: 1.8s;"/>
+    <!-- Additional particles -->
+    <circle cx="150" cy="65" r="0.8" fill="#3de0c2" opacity="0.5">
+        <animate attributeName="opacity" values="0.3;0.7;0.3" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="650" cy="45" r="0.8" fill="#3de0c2" opacity="0.5">
+        <animate attributeName="opacity" values="0.3;0.7;0.3" dur="3.5s" repeatCount="indefinite" begin="-1s"/>
+    </circle>
 </svg>
