@@ -28,13 +28,17 @@ public class MixinAgent {
      * @param inst      the instrumentation instance provided by the JVM
      */
     public static void agentmain(String agentArgs, Instrumentation inst) {
-        instrumentation = inst;
-
         log.info("Attaching MixinAgent...");
 
+        ClassLoader loader = MixinAgentBootstrap.getClassLoader();
+        if (loader == null) {
+            log.error("MixinAgent cannot be attached because the ClassLoader is null. Call 'MixinAgentBootstrap.loadAgent()' first.");
+            return;
+        }
+
         instrumentation = inst;
 
-        manager = new TransformerManager(new BasicClassProvider(MixinAgentBootstrap.getClassLoader()));
+        manager = new TransformerManager(new BasicClassProvider());
         manager.addTransformerPreprocessor(new MixinsTranslator());
 
         try {
@@ -75,7 +79,7 @@ public class MixinAgent {
     }
 
     /**
-     * Returns {@code true} if the agent is successfully attached and hooked.
+     * Returns {@code true} if the {@link MixinAgent} is successfully attached and hooked.
      *
      * @return attachment status
      */

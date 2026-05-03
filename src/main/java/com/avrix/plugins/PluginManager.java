@@ -1,5 +1,6 @@
 package com.avrix.plugins;
 
+import com.avrix.core.BaseClassLoader;
 import com.avrix.core.Metadata;
 
 import java.util.List;
@@ -12,8 +13,10 @@ public interface PluginManager {
     /**
      * Initializes the plugin manager subsystem.
      * Must be called before any plugin operations.
+     *
+     * @param classLoader the loader for plugin manager
      */
-    void init();
+    void init(BaseClassLoader classLoader);
 
     /**
      * Scans configured directories and loads all discovered plugins.

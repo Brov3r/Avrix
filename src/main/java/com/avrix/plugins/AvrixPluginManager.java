@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
@@ -34,8 +35,12 @@ import java.util.stream.Stream;
  */
 public class AvrixPluginManager implements PluginManager {
     private static final Logger log = LoggerFactory.getLogger(AvrixPluginManager.class);
-    private final Map<String, PluginContainer> PLUGINS = new HashMap<>();
+    private final Map<String, PluginContainer> PLUGINS = new ConcurrentHashMap<>();
     private final List<Metadata> CORE_PLUGINS = new CopyOnWriteArrayList<>();
+
+    private volatile Map<String, PluginContainer> cachedPlugins = Map.of();
+
+    private static BaseClassLoader classLoader;
 
     private static volatile boolean initialized = false;
 
@@ -46,10 +51,12 @@ public class AvrixPluginManager implements PluginManager {
      * @throws UncheckedIOException  if directory creation fails
      */
     @Override
-    public void init() {
+    public void init(BaseClassLoader loader) {
         if (initialized) {
             throw new IllegalStateException("PluginManager is already initialized");
         }
+
+        classLoader = Objects.requireNonNull(loader, "ClassLoader must not be null");
 
         CORE_PLUGINS.add(Metadata.fromGameProvider(AvrixBootstrap.getInstance().getGameProvider()));
         CORE_PLUGINS.add(Metadata.fromBootstrap(AvrixBootstrap.getInstance()));
@@ -76,7 +83,21 @@ public class AvrixPluginManager implements PluginManager {
      */
     @Override
     public Map<String, PluginContainer> getPlugins() {
-        return PLUGINS;
+        if (cachedPlugins.isEmpty()) {
+            Map<String, PluginContainer> merged = new ConcurrentHashMap<>(PLUGINS);
+            CORE_PLUGINS.forEach(meta -> merged.putIfAbsent(meta.getId(), new PluginContainer(meta)));
+            cachedPlugins = Collections.unmodifiableMap(merged);
+        }
+
+        return cachedPlugins;
+    }
+
+    /**
+     * Reset plugin cache, used when adding/removing plugins
+     */
+    private void invalidateCache() {
+        if (cachedPlugins.isEmpty()) return;
+        cachedPlugins = Map.of();
     }
 
     /**
@@ -91,13 +112,14 @@ public class AvrixPluginManager implements PluginManager {
         }
 
         GameProvider provider = AvrixBootstrap.getInstance().getGameProvider();
-        BaseClassLoader classLoader = AvrixBootstrap.getInstance().getClassLoader();
         Environment targetEnv = provider.getEnvironment();
 
         List<File> pluginPaths = getPluginFiles();
         List<Metadata> candidates = new ArrayList<>(pluginPaths.size());
         Map<String, File> candidatesFiles = new HashMap<>();
 
+        if (pluginPaths.isEmpty()) return;
+        
         for (File pluginFile : pluginPaths) {
             try {
                 Metadata meta = Metadata.fromJarFile(pluginFile, Constants.METADATA_NAME);
@@ -122,14 +144,7 @@ public class AvrixPluginManager implements PluginManager {
         for (Metadata meta : sortedPlugins) {
             File pluginFile = candidatesFiles.get(meta.getId());
 
-            URI iconUri = null;
-            try {
-                iconUri = new URI("jar:" + pluginFile.toURI() + "!/" + Constants.PLUGINS_ICON_NAME);
-            } catch (URISyntaxException e) {
-                log.debug("Invalid icon URI for plugin: {}", meta.getId());
-            }
-
-            PluginContainer container = new PluginContainer(meta.getId(), pluginFile, iconUri, meta);
+            PluginContainer container = new PluginContainer(pluginFile, buildIconUri(pluginFile), null, meta);
 
             try {
                 classLoader.addURL(pluginFile.toURI().toURL());
@@ -140,6 +155,21 @@ public class AvrixPluginManager implements PluginManager {
         }
 
         log.info("Plugin manager has launched with {} user plugins and {} core plugins...", PLUGINS.size(), CORE_PLUGINS.size());
+    }
+
+    /**
+     * Building the URI of the plugin icon
+     *
+     * @param file JAR file plugin
+     * @return a ready-made plugin icon URI, or null if there is no file or the icon does not exist.
+     */
+    private URI buildIconUri(File file) {
+        if (file == null) return null;
+        try {
+            return new URI("jar:" + file.toURI() + "!/" + Constants.PLUGINS_ICON_NAME);
+        } catch (URISyntaxException e) {
+            return null;
+        }
     }
 
     /**
@@ -160,6 +190,7 @@ public class AvrixPluginManager implements PluginManager {
         }
 
         long start = System.nanoTime();
+        Plugin instance = null;
 
         try {
             if (meta.getMixins() != null && !meta.getMixins().isEmpty()) {
@@ -168,22 +199,25 @@ public class AvrixPluginManager implements PluginManager {
             }
 
             if (entrypoint != null && !entrypoint.isBlank()) {
-                ClassLoader cl = AvrixBootstrap.getInstance().getClassLoader();
-                Class<?> pluginClass = Class.forName(entrypoint, true, cl);
+                Class<?> pluginClass = Class.forName(entrypoint, true, classLoader);
 
                 if (!Plugin.class.isAssignableFrom(pluginClass)) {
                     throw new RuntimeException("Entrypoint '" + entrypoint + "' does not implement Plugin");
                 }
 
-                Plugin pluginInstance = (Plugin) pluginClass
+                instance = (Plugin) pluginClass
                         .getDeclaredConstructor(Metadata.class, File.class, URI.class)
                         .newInstance(meta, container.getPluginFile(), container.getPluginIconURI());
 
-                pluginInstance.onInitialize();
+                instance.onInitialize();
                 log.debug("Initialized entrypoint class '{}' for plugin {}", entrypoint, id);
             }
 
-            PLUGINS.put(id, container);
+            PLUGINS.put(id, instance != null
+                    ? new PluginContainer(container.getPluginFile(), container.getPluginIconURI(), instance, meta)
+                    : container);
+
+            invalidateCache();
 
             long duration = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
             String type = (entrypoint != null && !entrypoint.isBlank()) ? "plugin" : "library";

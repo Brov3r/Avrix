@@ -12,31 +12,38 @@ import java.util.Objects;
  * @see Metadata
  */
 public final class PluginContainer {
-
     private final String id;
     private final File pluginFile;
     private final URI iconURI;
+    private final Plugin instance;
     private final Metadata metadata;
 
     /**
      * Creates a validated plugin container.
      *
-     * @param id         Unique plugin identifier. Must not be {@code null} or blank.
-     * @param pluginFile Main plugin artifact (e.g. {@code .jar}). Must not be {@code null}.
+     * @param pluginFile Main plugin artifact (e.g. {@code .jar}). May be {@code null}.
      * @param iconURI    Optional icon URI. May be {@code null}.
+     * @param instance   Loaded plugin instance. May be {@code null} (e.g. for libraries).
      * @param metadata   Parsed plugin metadata. Must not be {@code null}.
-     * @throws NullPointerException     if {@code id}, {@code pluginFile} or {@code metadata} is {@code null}.
-     * @throws IllegalArgumentException if {@code id} is blank.
+     * @throws NullPointerException if {@code metadata} is {@code null}.
      */
-    public PluginContainer(String id, File pluginFile, URI iconURI, Metadata metadata) {
-        this.id = Objects.requireNonNull(id, "id");
-        this.pluginFile = Objects.requireNonNull(pluginFile, "pluginFile");
+    public PluginContainer(File pluginFile, URI iconURI, Plugin instance, Metadata metadata) {
+        this.id = metadata.getId();
+        this.pluginFile = pluginFile;
         this.iconURI = iconURI;
-        this.metadata = Objects.requireNonNull(metadata, "metadata");
+        this.instance = instance;
+        this.metadata = Objects.requireNonNull(metadata, "Metadata cannot be null!");
+    }
 
-        if (id.isBlank()) {
-            throw new IllegalArgumentException("id cannot be blank");
-        }
+    /**
+     * Convenience constructor for metadata-only containers.
+     * Delegates to {@link #PluginContainer(File, URI, Plugin, Metadata)}.
+     *
+     * @param metadata Parsed plugin metadata. Must not be {@code null}.
+     * @throws NullPointerException if {@code metadata} is {@code null}.
+     */
+    public PluginContainer(Metadata metadata) {
+        this(null, null, null, metadata);
     }
 
     /**
@@ -47,23 +54,30 @@ public final class PluginContainer {
     }
 
     /**
-     * @return Primary plugin file (never {@code null}).
+     * @return Primary plugin {@link File}, or {@code null} if absent.
      */
     public File getPluginFile() {
         return pluginFile;
     }
 
     /**
-     * @return Optional icon URI, or {@code null} if absent.
+     * @return Optional icon {@link URI}, or {@code null} if absent.
      */
     public URI getPluginIconURI() {
         return iconURI;
     }
 
     /**
-     * @return Parsed plugin metadata (never {@code null}).
+     * @return Parsed plugin {@link Metadata} (never {@code null}).
      */
     public Metadata getMetadata() {
         return metadata;
+    }
+
+    /**
+     * @return Instance of the loaded {@link Plugin}, or {@code null} if absent.
+     */
+    public Plugin getPluginInstance() {
+        return instance;
     }
 }

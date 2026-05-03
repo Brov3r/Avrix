@@ -381,7 +381,7 @@ class MetadataTest {
         }
 
         @Override
-        public void initialize(BaseClassLoader classLoader) {
+        public void init(BaseClassLoader classLoader) {
 
         }
 

@@ -114,13 +114,13 @@ public final class ZomboidLogLineParser implements Consumer<String> {
 
     /**
      * Internal representation of supported logging levels.
-     * Maps engine-specific tokens and prefixes to standard TinyLog levels.
+     * Maps engine-specific tokens and prefixes to default TinyLog levels.
      */
     private enum Level {
         ERROR, WARN, INFO, DEBUG, TRACE;
 
         /**
-         * Resolves a header token extracted from the log line to a standard level.
+         * Resolves a header token extracted from the log line to a default level.
          *
          * @param token raw level token (e.g., {@code LOG}, {@code ERROR})
          * @return corresponding internal level; defaults to {@link #INFO}
@@ -136,7 +136,7 @@ public final class ZomboidLogLineParser implements Consumer<String> {
         }
 
         /**
-         * Resolves an embedded message prefix to a standard level.
+         * Resolves an embedded message prefix to a default level.
          *
          * @param prefix raw prefix string (e.g., {@code [!]}, {@code [?]})
          * @return corresponding internal level; defaults to {@link #INFO}

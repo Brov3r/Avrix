@@ -12,7 +12,7 @@ import java.net.URL;
 
 /**
  * Application entry point for the Avrix loader.
- * Delegates initialization and launch to the {@link AvrixBootstrap} lifecycle manager.
+ * Delegates initialization and launch to the {@link Bootstrap} lifecycle manager.
  */
 public final class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);

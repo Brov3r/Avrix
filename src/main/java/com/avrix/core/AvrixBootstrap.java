@@ -43,9 +43,9 @@ public class AvrixBootstrap implements Bootstrap {
     }
 
     /**
-     * Retrieves the singleton Bootstrap instance.
+     * Retrieves the singleton {@link Bootstrap} instance.
      *
-     * @return Active Bootstrap instance.
+     * @return Active {@link Bootstrap} instance.
      * @throws IllegalStateException if the instance is missing.
      */
     public static Bootstrap getInstance() {
@@ -57,13 +57,13 @@ public class AvrixBootstrap implements Bootstrap {
 
 
     /**
-     * Initializes the bootstrap context.
+     * Initializes the {@link Bootstrap} context.
      * Must be called before {@link #launch(String[])}.
      */
     @Override
     public void init() {
         if (isInitialized) {
-            log.warn("Bootstrap already initialized – skipping");
+            log.warn("Bootstrap already initialized. Skipping...");
             return;
         }
 
@@ -73,9 +73,9 @@ public class AvrixBootstrap implements Bootstrap {
         try {
             MixinAgentBootstrap.loadAgent(classLoader);
 
-            provider.initialize(classLoader);
+            provider.init(classLoader);
 
-            pluginManager.init();
+            pluginManager.init(classLoader);
             pluginManager.loadPlugins();
 
             isInitialized = true;
@@ -96,7 +96,7 @@ public class AvrixBootstrap implements Bootstrap {
      * Launches the target game/application via the configured {@link GameProvider}.
      *
      * <p>Before delegation, this method optionally redirects {@link System#out} and {@link System#err}
-     * to the SLF4J logger, unless the {@link  Constants#NO_REDIRECT_FLAG_NAME} argument is present.
+     * to the SLF4J logger, unless the {@link Constants#NO_REDIRECT_FLAG_NAME} argument is present.
      *
      * @param args command-line arguments to pass to the game provider; may be empty but not {@code null}
      * @throws RuntimeException if the provider's {@code launch} method throws any exception,
@@ -133,7 +133,7 @@ public class AvrixBootstrap implements Bootstrap {
     /**
      * Returns the active {@link GameProvider} instance.
      *
-     * @return the initialized {@link GameProvider}, or {@code null} if {@link #init()} has not been called
+     * @return the initialized {@link GameProvider}, or {@code null} if a {@link Bootstrap} instance has not been created
      */
     @Override
     public GameProvider getGameProvider() {
@@ -143,7 +143,7 @@ public class AvrixBootstrap implements Bootstrap {
     /**
      * Returns the custom {@link BaseClassLoader} used by the Avrix.
      *
-     * @return the initialized {@link BaseClassLoader}, or {@code null} if {@link #init()} has not been called
+     * @return the initialized {@link BaseClassLoader}, or {@code null} if a {@link Bootstrap} instance has not been created
      */
     @Override
     public BaseClassLoader getClassLoader() {
@@ -153,7 +153,7 @@ public class AvrixBootstrap implements Bootstrap {
     /**
      * Returns the custom {@link PluginManager} used by the Avrix.
      *
-     * @return The active {@link PluginManager} instance, or {@code null} if {@link #init()} has not been called
+     * @return The active {@link PluginManager} instance, or {@code null} if a {@link Bootstrap} instance has not been created
      */
     @Override
     public PluginManager getPluginManager() {

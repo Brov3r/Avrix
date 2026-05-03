@@ -18,7 +18,7 @@ public interface GameProvider {
      *
      * @param classLoader the loader for game and extension classes
      */
-    void initialize(BaseClassLoader classLoader);
+    void init(BaseClassLoader classLoader);
 
     /**
      * Starts the game or runtime with the final merged arguments.

@@ -57,9 +57,7 @@ public class ZomboidGameProvider implements GameProvider {
      * @param classLoader the loader for game and extension classes
      */
     @Override
-    public void initialize(BaseClassLoader classLoader) {
-        Objects.requireNonNull(classLoader, "ClassLoader must not be null");
-
+    public void init(BaseClassLoader classLoader) {
         if (isInitialized != null) {
             log.debug("{} provider already initialized. Skipping.", getName());
             return;
@@ -92,7 +90,7 @@ public class ZomboidGameProvider implements GameProvider {
         }
 
         isInitialized = true;
-        this.classLoader = classLoader;
+        this.classLoader = Objects.requireNonNull(classLoader, "ClassLoader must not be null");
 
         log.info("Provider '{}' initialized successfully. (Environment={})", getId(), getEnvironment());
     }
@@ -105,10 +103,7 @@ public class ZomboidGameProvider implements GameProvider {
     @Override
     public synchronized void launch(String[] args) {
         if (isInitialized == null) {
-            throw new IllegalStateException("Provider must be initialized before launch. Call initialize() first.");
-        }
-        if (classLoader == null) {
-            throw new IllegalStateException("Provider is in an invalid state: game classloader is null.");
+            throw new IllegalStateException("Provider must be initialized before launch. Call 'initialize()' first.");
         }
 
         launchArgs = (args == null) ? new String[0] : args;
@@ -206,14 +201,14 @@ public class ZomboidGameProvider implements GameProvider {
      */
     @Override
     public synchronized String getNormalizedVersion() {
-        if (normalizedVersion != null) return normalizedVersion;
+        if (normalizedVersion != null && !normalizedVersion.isBlank()) return normalizedVersion;
 
         String raw = getRawVersion();
         Matcher matcher = Pattern.compile("^(\\d+)\\.(\\d+)(?:\\+[^.]*)?\\.(\\d+)").matcher(raw);
         if (matcher.find()) {
             normalizedVersion = matcher.group(1) + "." + matcher.group(2) + "." + matcher.group(3);
         } else {
-            log.warn("Failed to parse normalized version from '{}'. Defaulting to ??.??.??", raw);
+            log.warn("Failed to parse normalized version from '{}'. Defaulting to '??.??.??'", raw);
             return "??.??.??";
         }
         return normalizedVersion;
@@ -226,7 +221,7 @@ public class ZomboidGameProvider implements GameProvider {
      */
     @Override
     public synchronized String getRawVersion() {
-        if (rawVersion != null) return rawVersion;
+        if (rawVersion != null && !rawVersion.isBlank()) return rawVersion;
 
         try (InputStream stream = classLoader.getResourceAsStream("zombie/core/Core.class")) {
             if (stream == null) throw new IOException("Class 'zombie/core/Core.class' not found");
@@ -256,10 +251,10 @@ public class ZomboidGameProvider implements GameProvider {
                                 inv.owner().asInternalName().equals("zombie/core/GameVersion") &&
                                 args.size() == 3) {
                             Object[] a = args.toArray();
-                            if (a[0] instanceof Integer i1 && a[1] instanceof Integer i2 && a[2] instanceof String s) {
-                                major = i1;
-                                minor = i2;
-                                extra = s;
+                            if (a[0] instanceof Integer rawMajor && a[1] instanceof Integer rawMinor && a[2] instanceof String rawExtra) {
+                                major = rawMajor;
+                                minor = rawMinor;
+                                extra = rawExtra;
                             }
                         }
                         args.clear();
@@ -301,7 +296,7 @@ public class ZomboidGameProvider implements GameProvider {
     /**
      * Returns the base working directory used for assets, configurations, and logs.
      *
-     * @return the launch directory path
+     * @return the launch directory {@link Path}
      */
     @Override
     public Path getLaunchDirectory() {
@@ -350,7 +345,7 @@ public class ZomboidGameProvider implements GameProvider {
     /**
      * Provides additional directories or JAR files to append to the runtime classpath.
      *
-     * @return list of paths to Java libraries
+     * @return list of {@link Path}'s to Java libraries
      * @implSpec Default returns an immutable empty list.
      */
     @Override
@@ -390,7 +385,7 @@ public class ZomboidGameProvider implements GameProvider {
     /**
      * Provides directories containing platform-specific native libraries.
      *
-     * @return list of paths to native library directories
+     * @return list of {@link Path}'s to native library directories
      * @implSpec Default returns an immutable empty list.
      */
     @Override

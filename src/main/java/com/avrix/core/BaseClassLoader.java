@@ -3,6 +3,7 @@ package com.avrix.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -34,6 +35,9 @@ public class BaseClassLoader extends URLClassLoader {
     /**
      * Creates a new classloader with the specified URLs and parent.
      * URLs are added via {@link #addURL(URL)} to enforce deduplication.
+     *
+     * @param urls   the {@link URL} from which to load classes and resources
+     * @param parent the parent {@link ClassLoader} for delegation
      */
     public BaseClassLoader(URL[] urls, ClassLoader parent) {
         super(new URL[0], Objects.requireNonNull(parent, "Parent classloader must not be null"));
@@ -45,7 +49,9 @@ public class BaseClassLoader extends URLClassLoader {
 
     /**
      * Resolves a native library by searching {@link #nativePaths}.
-     * Falls back to standard {@link URLClassLoader} resolution if not found locally.
+     * Falls back to default {@link URLClassLoader} resolution if not found locally.
+     *
+     * @param libname library name, cannot be {@code null}
      */
     @Override
     protected String findLibrary(String libname) {
@@ -72,7 +78,9 @@ public class BaseClassLoader extends URLClassLoader {
     }
 
     /**
-     * Adds a URL to the classpath. Duplicate URLs (by normalized URI) are ignored.
+     * Adds a {@link URL} to the classpath. Duplicate {@link URL}s (by normalized {@link URI}) are ignored.
+     *
+     * @param url the {@link URL} to be added to the search path of {@link URL}s
      */
     @Override
     public void addURL(URL url) {
@@ -97,6 +105,7 @@ public class BaseClassLoader extends URLClassLoader {
     /**
      * Registers a directory for native library resolution.
      *
+     * @param path custom {@link Path} to the native library, cannot be {@code null}
      * @throws IllegalArgumentException if the path is not an existing directory
      */
     public void addNativePath(Path path) {
@@ -114,6 +123,8 @@ public class BaseClassLoader extends URLClassLoader {
 
     /**
      * Batch-registers directories for native library resolution.
+     *
+     * @param paths custom native library {@link Path} {@link Collection}
      */
     public void addNativePaths(Collection<Path> paths) {
         Objects.requireNonNull(paths, "Paths collection must not be null");
@@ -123,7 +134,7 @@ public class BaseClassLoader extends URLClassLoader {
     }
 
     /**
-     * Extracts a concise file name from a URL for logging.
+     * Extracts a concise file name from a {@link URL} for logging.
      * Falls back to {@link URL#toExternalForm()} on parsing failure.
      */
     private static String displayName(URL url) {

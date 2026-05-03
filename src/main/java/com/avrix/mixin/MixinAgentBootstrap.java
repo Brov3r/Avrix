@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.net.URISyntaxException;
+import java.util.Objects;
 
 /**
  * Bootstrap to dynamically load the Java agent via the Attach API.
@@ -30,7 +31,7 @@ public class MixinAgentBootstrap {
     public synchronized static void loadAgent(BaseClassLoader loader, String agentJarPath) {
         if (MixinAgent.isAttached()) return;
 
-        classLoader = loader;
+        classLoader = Objects.requireNonNull(loader, "ClassLoader must not be null");
 
         try {
             String nameOfRunningVM = ManagementFactory.getRuntimeMXBean().getName();
@@ -53,8 +54,6 @@ public class MixinAgentBootstrap {
      * @throws URISyntaxException if the path to the agent could not be determined or loaded
      */
     public synchronized static void loadAgent(BaseClassLoader loader) throws URISyntaxException {
-        classLoader = loader;
-
         loadAgent(loader, new File(MixinAgentBootstrap.class.getProtectionDomain()
                 .getCodeSource()
                 .getLocation()
