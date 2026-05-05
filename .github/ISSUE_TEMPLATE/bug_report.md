@@ -17,9 +17,10 @@ assignees: ''
 What happens? What were you doing right before it occurred?
 
 **🔄 Steps to Reproduce**
-1. 
-2. 
-3. 
+1. ...
+2. ...
+3. ...
+
 *(Specify exact menus, settings, or key presses.)*
 
 **✅ Expected vs ❌ Actual**
