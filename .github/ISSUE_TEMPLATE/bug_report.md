@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-description: Report a reproducible issue to help us fix it faster
+about: Report a reproducible issue to help us fix it faster
 title: "[Bug] "
 labels: bug
 assignees: ''
