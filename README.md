@@ -30,9 +30,7 @@ technology.
 ## 📚 WIKI and important information
 
 > [!IMPORTANT]  
-> Avrix Loader requires:
-> [JDK 25+](https://www.oracle.com/java/technologies/downloads/)
-> Project Zomboid - beta 42+
+> Avrix Loader requires: [JDK 25+](https://www.oracle.com/java/technologies/downloads/) and Project Zomboid - beta 42+
 
 TODO: Later, there will be a detailed description of how to start developing plugins (although the loader is already
 capable of loading and executing modifications)
