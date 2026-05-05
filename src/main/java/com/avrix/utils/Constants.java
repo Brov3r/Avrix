@@ -1,7 +1,9 @@
 package com.avrix.utils;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -9,66 +11,77 @@ import java.util.Properties;
  */
 public class Constants {
     /**
-     * Name of the file cache directory
+     * Name of the flag to disable log redirection
      */
-    public static final String CACHE_DIR_NAME = "avrix/cache";
+    public static final String NO_REDIRECT_FLAG_NAME = "--no-redirect-log";
 
     /**
-     * Folder name for plugins
+     * File name for metadata
+     */
+    public static final String METADATA_NAME = "metadata.yml";
+
+    /**
+     * File name for plugin icon
+     */
+    public static final String PLUGINS_ICON_NAME = "icon.png";
+
+    /**
+     * Metadata schema version
+     */
+    public static final int METADATA_SCHEMA = 1;
+
+    /**
+     * Extension for Plugin archives
+     */
+    public static final String PLUGIN_EXTENSION = ".jar";
+
+    /**
+     * Name of the directory with plugins
      */
     public static final String PLUGINS_FOLDER_NAME = "plugins";
 
     /**
-     * Plugin metadata file name
-     */
-    public static final String PLUGINS_METADATA_NAME = "metadata.yml";
-
-    /**
-     * Name of the default plugin config
-     */
-    public static final String PLUGINS_DEFAULT_CONFIG_NAME = "config.yml";
-
-    /**
-     * Avrix repository owner
-     */
-    public static final String REPO_OWNER = "Brov3r";
-
-    /**
-     * Avrix repository name
-     */
-    public static final String REPO_NAME = "Avrix";
-
-    /**
      * Project version
      */
-    public static final String AVRIX_VERSION;
+    public static final String LOADER_VERSION;
 
     /**
      * Project name
      */
-    public static final String AVRIX_NAME;
+    public static final String LOADER_NAME;
 
     /**
-     * Maximum cache folder size (in megabytes).
-     * If exceeded, it will be cleared at the next start.
+     * Project ID
      */
-    public static final int MAX_CACHE_SIZE = 256;
+    public static final String LOADER_ID = "avrix-loader";
+
+    /**
+     * Project author
+     */
+    public static final String LOADER_AUTHOR = "Brov3r";
+
+    /**
+     * Project license
+     */
+    public static final String LOADER_LICENSE = "MIT";
+
+    /**
+     * Project license
+     */
+    public static final String LOADER_CONTACTS = "https://github.com/Brov3r/Avrix";
 
     /*
-     Initializing data and configuration file
-    */
+    Initializing data and configuration file
+   */
     static {
-        Properties properties = new Properties();
-        try (InputStream input = Constants.class.getClassLoader().getResourceAsStream("metadata/avrix.properties")) {
-            if (input == null) {
-                throw new IOException("[!] Loader metadata file not found");
-            }
-            properties.load(input);
-
-            AVRIX_VERSION = properties.getProperty("version");
-            AVRIX_NAME = properties.getProperty("projectName");
+        try (var in = Constants.class.getClassLoader().getResourceAsStream("avrix.properties")) {
+            if (in == null) throw new ExceptionInInitializerError("File 'avrix.properties' not found in classpath");
+            var props = new Properties();
+            props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+            LOADER_VERSION = Objects.requireNonNull(props.getProperty("version"), "Missing 'version'");
+            LOADER_NAME = Objects.requireNonNull(props.getProperty("projectName"), "Missing 'projectName'");
         } catch (IOException e) {
-            throw new RuntimeException("[!] Failed to load configuration file", e);
+            throw new ExceptionInInitializerError(e);
         }
     }
 }
