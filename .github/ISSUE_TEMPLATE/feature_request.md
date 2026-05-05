@@ -1,22 +1,26 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
-title: ''
+name: Feature Request
+about: Suggest a new feature or improvement
+title: "[Feature] "
 labels: enhancement
 assignees: ''
-
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**🎯 Problem / Motivation**
+What's missing or frustrating? Why is this needed?
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+**💡 Proposed Solution**
+What exactly should happen? Describe the desired behavior or UI.
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+**⚙️ Alternatives Considered**
+Any workarounds or other approaches you've thought about?
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+**🔗 References**
+Links to Discord discussions, vanilla features, or similar mods *(optional)*.
 
-- [ ] I confirm that the proposed feature does not exist in the form described in the issue
+**📌 Scope & Impact**
+- Affects: `[Client / Server / Both]`
+- Complexity: `[Low / Medium / High]` *(your estimate)*
+
+- [ ] I checked existing issues and this feature isn't already tracked
+- [ ] This idea aligns with the project's scope and design goals
