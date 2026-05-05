@@ -1,37 +1,38 @@
 ---
-name: Bug report
-about: Create a report to help us improve
-title: ''
+name: Bug Report
+description: Report a reproducible issue to help us fix it faster
+title: "[Bug] "
 labels: bug
 assignees: ''
-
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**🖥️ Environment**
+- OS: 
+- Avrix Version: 
+- Project Zomboid Version: 
+- Mode: `[Singleplayer / Multiplayer]`
+- Other Active Mods: 
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**📝 Issue**
+What happens? What were you doing right before it occurred?
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**🔄 Steps to Reproduce**
+1. 
+2. 
+3. 
+*(Specify exact menus, settings, or key presses.)*
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**✅ Expected vs ❌ Actual**
+- Expected: 
+- Actual: 
 
-**Log**
-Attach the log file after reproducing the error (in any convenient way). It is located on the path `{rootGameFolder}/avrix/logs`
+**📎 Logs & Attachments**
+- Console/Log: *(Paste relevant lines or provide path)*
+- Screenshot/Video: *(Link or attach)*
+- Save File: *(Optional, if bug is save-specific)*
 
-**Desktop (please complete the following information):**
- - OS: [e.g. Windows x64]
- - Avrix Version [e.g. 1.4.0]
- - Project Zomboid Version [e.g. 41.76.16]
+**💡 Notes**
+*(Frequency, workarounds tried, crash vs visual glitch, etc.)*
 
-**Additional context**
-Add any other context about the problem here.
-
-- [ ] I confirm that I have filled in all the necessary fields in the template and the bug can be reproduced
+- [ ] Tested on a clean save/vanilla mod list (if applicable)
+- [ ] Logs and environment details are provided
