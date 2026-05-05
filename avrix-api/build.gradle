@@ -17,6 +17,7 @@ repositories {
 dependencies {
     // AvrixLoader
     compileOnly(rootProject)
+    compileOnly(fileTree(dir: 'libs', include: '*.jar'))
 
     // Test
     testImplementation platform('org.junit:junit-bom:6.0.2')

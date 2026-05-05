@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'com.gradleup.shadow' version '9.4.1'
 }
 
@@ -16,19 +16,19 @@ repositories {
 
 dependencies {
     // Logger
-    implementation 'org.slf4j:slf4j-api:2.0.17'
+    api 'org.slf4j:slf4j-api:2.0.17'
     implementation 'org.tinylog:slf4j-tinylog:2.7.0'
     implementation 'org.tinylog:tinylog-impl:2.7.0'
 
     // Mixin
-    implementation 'net.lenni0451.classtransform:core:1.14.1'
+    api 'net.lenni0451.classtransform:core:1.14.1'
     implementation 'net.lenni0451.classtransform:mixinstranslator:1.14.1'
-    implementation 'net.lenni0451.classtransform:mixinsdummy:1.14.1'
+    api 'net.lenni0451.classtransform:mixinsdummy:1.14.1'
 
     // Util
-    implementation 'org.spongepowered:configurate-yaml:4.2.0'
-    implementation 'com.github.zafarkhaja:java-semver:0.10.2'
-    implementation 'org.jgrapht:jgrapht-core:1.5.3'
+    api 'org.spongepowered:configurate-yaml:4.2.0'
+    api 'com.github.zafarkhaja:java-semver:0.10.2'
+    api 'org.jgrapht:jgrapht-core:1.5.3'
 
     // Test
     testImplementation platform('org.junit:junit-bom:6.0.2')
@@ -39,12 +39,18 @@ dependencies {
 
 processResources {
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    filteringCharset = 'UTF-8'
     filesMatching('**/avrix.properties') {
         filter { String line ->
             line.replace('%PROJECT_VERSION%', version.toString())
                     .replace('%PROJECT_NAME%', "${rootProject.name.capitalize()} ${baseSuffix}")
         }
     }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 test {
@@ -55,6 +61,8 @@ shadowJar {
     archiveBaseName.set(baseArchiveName)
     archiveClassifier.set('')
     destinationDirectory.set(file(buildPath))
+
+    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
 
     manifest {
         attributes(

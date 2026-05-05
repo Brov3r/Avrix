@@ -24,8 +24,6 @@ public class AvrixBootstrap implements Bootstrap {
     private static boolean isLaunched = false;
     private static boolean isInitialized = false;
 
-    private static Bootstrap instance;
-
     /**
      * Initializes core components and registers this instance as the global singleton.
      *
@@ -38,21 +36,6 @@ public class AvrixBootstrap implements Bootstrap {
         this.classLoader = Objects.requireNonNull(classLoader, "ClassLoader can't be null!");
         this.pluginManager = Objects.requireNonNull(pluginManager, "PluginManager can't be null!");
         this.provider = Objects.requireNonNull(provider, "GameProvider can't be null!");
-
-        instance = this;
-    }
-
-    /**
-     * Retrieves the singleton {@link Bootstrap} instance.
-     *
-     * @return Active {@link Bootstrap} instance.
-     * @throws IllegalStateException if the instance is missing.
-     */
-    public static Bootstrap getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException("Bootstrap not created!");
-        }
-        return instance;
     }
 
 
@@ -87,7 +70,7 @@ public class AvrixBootstrap implements Bootstrap {
             long duration = System.currentTimeMillis() - startTime;
             log.error("Bootstrap failed after {} ms", duration, e);
             log.debug("State at failure – classLoader: {}, provider: {}, initialized: {}",
-                    classLoader != null, provider != null, isInitialized);
+                    classLoader.getClass().getName(), provider.getClass().getName(), isInitialized);
             throw new RuntimeException("Bootstrap initialization failed!", e);
         }
     }

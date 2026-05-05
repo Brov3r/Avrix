@@ -1,5 +1,6 @@
 package com.avrix;
 
+import com.avrix.core.ApplicationContext;
 import com.avrix.core.AvrixBootstrap;
 import com.avrix.core.BaseClassLoader;
 import com.avrix.core.Bootstrap;
@@ -26,6 +27,8 @@ public final class Main {
         Bootstrap bootstrap = new AvrixBootstrap(new BaseClassLoader(new URL[0], ClassLoader.getSystemClassLoader()),
                 new AvrixPluginManager(), new ZomboidGameProvider());
         try {
+            ApplicationContext.init(bootstrap);
+
             bootstrap.init();
             bootstrap.launch(args);
         } catch (Exception e) {

@@ -1,6 +1,6 @@
 package com.avrix.plugins;
 
-import com.avrix.core.AvrixBootstrap;
+import com.avrix.core.ApplicationContext;
 import com.avrix.core.BaseClassLoader;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;
@@ -58,8 +58,8 @@ public class AvrixPluginManager implements PluginManager {
 
         classLoader = Objects.requireNonNull(loader, "ClassLoader must not be null");
 
-        CORE_PLUGINS.add(Metadata.fromGameProvider(AvrixBootstrap.getInstance().getGameProvider()));
-        CORE_PLUGINS.add(Metadata.fromBootstrap(AvrixBootstrap.getInstance()));
+        CORE_PLUGINS.add(Metadata.fromGameProvider(ApplicationContext.getInstance().getGameProvider()));
+        CORE_PLUGINS.add(Metadata.fromBootstrap(ApplicationContext.getInstance().getBootstrap()));
 
         Path pluginsDir = Path.of(Constants.PLUGINS_FOLDER_NAME).toAbsolutePath();
         try {
@@ -111,7 +111,7 @@ public class AvrixPluginManager implements PluginManager {
             throw new IllegalStateException("PluginManager is not initialized. Call init() first.");
         }
 
-        GameProvider provider = AvrixBootstrap.getInstance().getGameProvider();
+        GameProvider provider = ApplicationContext.getInstance().getGameProvider();
         Environment targetEnv = provider.getEnvironment();
 
         List<File> pluginPaths = getPluginFiles();
@@ -119,7 +119,7 @@ public class AvrixPluginManager implements PluginManager {
         Map<String, File> candidatesFiles = new HashMap<>();
 
         if (pluginPaths.isEmpty()) return;
-        
+
         for (File pluginFile : pluginPaths) {
             try {
                 Metadata meta = Metadata.fromJarFile(pluginFile, Constants.METADATA_NAME);
@@ -195,7 +195,7 @@ public class AvrixPluginManager implements PluginManager {
         try {
             if (meta.getMixins() != null && !meta.getMixins().isEmpty()) {
                 MixinAgent.addMixins(meta.getMixins());
-                log.debug("Registered {} mixin configs for plugin {}", meta.getMixins().size(), id);
+                log.debug("Registered {} mixin transformers for plugin '{}'", meta.getMixins().size(), id);
             }
 
             if (entrypoint != null && !entrypoint.isBlank()) {

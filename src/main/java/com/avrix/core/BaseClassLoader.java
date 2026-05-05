@@ -48,32 +48,36 @@ public class BaseClassLoader extends URLClassLoader {
     }
 
     /**
-     * Resolves a native library by searching {@link #nativePaths}.
-     * Falls back to default {@link URLClassLoader} resolution if not found locally.
+     * Resolves a native library by searching registered custom paths first.
+     * Falls back to the parent classloader if not found locally.
+     * Logs a warning only when the library is unavailable in both locations.
      *
-     * @param libname library name, cannot be {@code null}
+     * @param libname library name without platform-specific prefixes/suffixes
+     * @return absolute path to the library file, or {@code null} if not found
+     * @throws NullPointerException if {@code libname} is {@code null}
      */
     @Override
     protected String findLibrary(String libname) {
         Objects.requireNonNull(libname, "Library name must not be null");
+
         String mapped = System.mapLibraryName(libname);
 
         for (Path dir : nativePaths) {
             Path candidate = dir.resolve(mapped);
             if (Files.isRegularFile(candidate)) {
                 Path abs = candidate.toAbsolutePath().normalize();
-                log.trace("Library '{}' found at '{}'", libname, abs);
+                log.trace("Library '{}' found in custom path: '{}'", libname, abs);
                 return abs.toString();
             }
         }
 
         String fallback = super.findLibrary(libname);
         if (fallback != null) {
-            log.trace("Library '{}' resolved via parent/URLs: '{}'", libname, fallback);
+            log.trace("Library '{}' resolved via parent: '{}'", libname, fallback);
             return fallback;
         }
 
-        log.warn("Library '{}' not found in any registered native path.", libname);
+        log.warn("Native library '{}' not found in custom paths or parent classloader.", libname);
         return null;
     }
 

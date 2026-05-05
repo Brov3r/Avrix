@@ -38,7 +38,7 @@ public class MixinAgent {
 
         instrumentation = inst;
 
-        manager = new TransformerManager(new BasicClassProvider());
+        manager = new TransformerManager(new BasicClassProvider(loader));
         manager.addTransformerPreprocessor(new MixinsTranslator());
 
         try {
@@ -63,7 +63,7 @@ public class MixinAgent {
 
         manager.addTransformer(mixin);
 
-        log.debug("Registered mixin config: {}", mixin);
+        log.debug("Registered mixin transformer: {}", mixin);
     }
 
     /**

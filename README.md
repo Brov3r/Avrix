@@ -11,15 +11,31 @@
 </p>
 
 
-**Avrix** - TODO: Make a description
+**Avrix** - is a modern Java-based mod(plugin) loader for Project Zomboid (client and server), powered by mixin
+technology.
+
+> [!NOTE]
+> Avrix-Loader is a plugin and mixin loader only — it does not provide a Project Zomboid API. All game-specific
+> utilities, events, and helpers are shipped in the optional [Avrix-API](./avrix-api) plugin.
 
 ## ✨ Features
 
-TODO: Describe features...
+* Powered by [mixin technology](https://github.com/SpongePowered/Mixin) (implementation
+  via [ClassTransform](https://github.com/Lenni0451/ClassTransform))
+* Designed for both client and server environments
+* Simple mod installation: just drop the JAR file into the `plugins/` folder
+* Streamlined mod development, following the same patterns as [FabricMC](https://github.com/FabricMC/fabric-loader)
+* Essential API, events, commands, and utilities for mod development — [Avrix-API](./avrix-api)
 
-## 📚 WIKI
+## 📚 WIKI and important information
 
-TODO: Make a wiki =)...
+> [!IMPORTANT]  
+> Avrix Loader requires:
+> [JDK 25+](https://www.oracle.com/java/technologies/downloads/)
+> Project Zomboid - beta 42+
+
+TODO: Later, there will be a detailed description of how to start developing plugins (although the loader is already
+capable of loading and executing modifications)
 
 ## 🚀Quick Start
 
@@ -37,9 +53,8 @@ java "-Djdk.attach.allowAttachSelf=true" -XX:+EnableDynamicAgentLoading -jar ./A
 We welcome any help in the development of this project! How can you help:
 
 - 🧪 **Test** - install the loader and just play. Mods are not necessary to install, so you will help find hidden bugs.
-  If
-  something turns up, please report it to [Issue](https://github.com/Brov3r/Avrix/issues) so that other developers know
-  what needs to be fixed.
+  If something turns up, please report it to [Issue](https://github.com/Brov3r/Avrix/issues) so that other developers
+  know what needs to be fixed.
 - 🔌 **[Create plugins](https://github.com/search?q=avrix-loader&type=repositories)** - is a good way to develop our
   community and bring new functionality to the game.
 - 💻 **Take part in the development** - you can always create a fork and make corrections by sending them for

@@ -6,12 +6,12 @@ version: %API_VERSION%
 environment: "*"
 authors:
   - "Brov3r"
-licence: "GNU GPLv3"
+licence: "MIT"
 contacts:
   - "https://github.com/Brov3r/Avrix"
 dependencies:
   avrix-loader: ">=2.0.0"
-  project-zomboid: "42.17.0"
+  project-zomboid: "~42.17"
 entrypoint: ""
 mixins:
   - ""
