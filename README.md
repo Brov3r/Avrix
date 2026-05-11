@@ -10,13 +10,13 @@
     <img alt="GitHub License" src="https://img.shields.io/github/license/Brov3r/Avrix">
 </p>
 
-
 **Avrix** - is a modern Java-based mod(plugin) loader for Project Zomboid (client and server), powered by mixin
 technology.
 
 > [!NOTE]
-> Avrix-Loader is a plugin and mixin loader only — it does not provide a Project Zomboid API. All game-specific
-> utilities, events, and helpers are shipped in the optional [Avrix-API](./avrix-api) plugin.
+> Avrix Loader is a plugin and mixin loader only — it does not provide a Project Zomboid API.
+>
+> All game-specific utilities, events, and helpers are shipped in the optional [Avrix-API](./avrix-api) plugin.
 
 ## ✨ Features
 
@@ -27,18 +27,16 @@ technology.
 * Streamlined mod development, following the same patterns as [FabricMC](https://github.com/FabricMC/fabric-loader)
 * Essential API, events, commands, and utilities for mod development — [Avrix-API](./avrix-api)
 
-## 📚 WIKI and important information
+## 📚 WIKI
 
-> [!IMPORTANT]  
-> Avrix Loader requires: [JDK 25+](https://www.oracle.com/java/technologies/downloads/) and Project Zomboid - beta 42+
+In the documentation section, you can select the language that suits you and find out how to quickly start working with Avrix.
 
-TODO: Later, there will be a detailed description of how to start developing plugins (although the loader is already
-capable of loading and executing modifications)
+[📄Open the documentation](./wiki/wiki-language.md "Wiki")
 
 ## 🚀Quick Start
 
 1) ⬇️ Download the executable Jar file from
-   the [releases page](https://github.com/Brov3r/Avrix/releases )
+   the [releases page](https://github.com/Brov3r/Avrix/releases "Release")
 2) 📁 Move the downloaded files to the root folder of the client/server
 3) 💡 Run the downloaded `JAR file` using the CMD run command:
 
