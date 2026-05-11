@@ -75,3 +75,21 @@ shadowJar {
         )
     }
 }
+
+tasks.register('buildJar') {
+    finalizedBy shadowJar
+}
+
+tasks.register('releaseBuildJar') {
+    dependsOn sourceJar
+    finalizedBy buildJar
+}
+
+
+tasks.register('sourceJar', Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveBaseName.set(baseArchiveName)
+    archiveClassifier.set('sources')
+    from(sourceSets.main.allSource)
+    destinationDirectory.set(file(buildPath))
+}
