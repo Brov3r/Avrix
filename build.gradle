@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     // Logger
-    api 'org.slf4j:slf4j-api:2.0.17'
+    api 'org.slf4j:slf4j-api:2.0.18'
     implementation 'org.tinylog:slf4j-tinylog:2.7.0'
     implementation 'org.tinylog:tinylog-impl:2.7.0'
 
