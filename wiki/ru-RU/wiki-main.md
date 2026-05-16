@@ -25,6 +25,7 @@
 ### 📁 Разделы
 
 - [🏃Быстрый старт](wiki-quick-start.md)
-- [⚡Миксины](./loader/wiki-mixin.md)
+- [⚡ Миксины](./loader/wiki-mixin.md)
 - [🎈 События](./api/wiki-events.md)
+- [🔧 Сервисы](./api/wiki-services.md)
 - [🧩 Lua](./api/wiki-lua.md)
