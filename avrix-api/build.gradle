@@ -25,6 +25,7 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:3.27.7'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation("org.slf4j:slf4j-simple:2.0.18")
+    testImplementation("org.spongepowered:configurate-yaml:4.2.0")
 }
 
 test {

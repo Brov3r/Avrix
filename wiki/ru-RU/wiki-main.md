@@ -29,3 +29,4 @@
 - [🎈 События](./api/wiki-events.md)
 - [🔧 Сервисы](./api/wiki-services.md)
 - [🧩 Lua](./api/wiki-lua.md)
+- [⚙️ Конфиги](./api/wiki-config.md)
