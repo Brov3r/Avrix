@@ -410,7 +410,16 @@ public final class EventManager {
             }
 
             String normalizedName = normalizeEventName(name);
+            if (!normalizedName.equals(name)) {
+                log.warn("The event name '{}' does not match PascalCase. Converted to: '{}'", name, normalizedName);
+            }
+
             if (normalizedName.isBlank()) {
+                throw new IllegalArgumentException(
+                        "name must contain at least one Latin letter after normalization: '" + name + "'");
+            }
+
+            if (!containsLatinLetter(normalizedName)) {
                 throw new IllegalArgumentException(
                         "name must contain at least one Latin letter after normalization: '" + name + "'");
             }
@@ -426,54 +435,106 @@ public final class EventManager {
         }
 
         /**
+         * Checks if a string contains at least one Latin letter (A-Z or a-z).
+         *
+         * @param s the string to check
+         * @return {@code true} if at least one Latin letter is present
+         */
+        private static boolean containsLatinLetter(String s) {
+            if (s == null || s.isEmpty()) return false;
+            for (int i = 0; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
          * Normalizes an event name to PascalCase using only Latin letters, digits, and underscores.
-         *
-         * <p>Transformation rules:
-         * <ol>
-         *   <li>Trim leading/trailing whitespace</li>
-         *   <li>Remove all characters except {@code [A-Za-z0-9_]}</li>
-         *   <li>Split by underscores ({@code _}) into word parts</li>
-         *   <li>Capitalize first letter of each part, lowercase the rest</li>
-         *   <li>Concatenate parts without separators (PascalCase)</li>
-         * </ol>
-         *
-         * <p><strong>Examples:</strong>
-         * <ul>
-         *   <li>{@code "my-event_123"} → {@code "MyEvent123"}</li>
-         *   <li>{@code "test event"} → {@code "TestEvent"}</li>
-         *   <li>{@code "snake_case_name"} → {@code "SnakeCaseName"}</li>
-         *   <li>{@code "AlreadyPascalCase"} → {@code "AlreadyPascalCase"}</li>
-         *   <li>{@code "123_test"} → {@code "123Test"}</li>
-         *   <li>{@code "___multiple___underscores___"} → {@code "MultipleUnderscores"}</li>
-         * </ul>
          *
          * @param name the raw event name
          * @return normalized PascalCase name containing only Latin letters and digits
          */
         private static String normalizeEventName(String name) {
+            if (name == null) return "";
+
             name = name.trim();
             if (name.isEmpty()) {
                 return "";
             }
 
-            String filtered = name.replaceAll("[^A-Za-z0-9_]", "");
-            if (filtered.isEmpty()) {
-                return "";
-            }
+            // Split by any sequence of non-alphanumeric characters
+            String[] parts = name.split("[^A-Za-z0-9]+");
 
-            String[] parts = filtered.split("_+");
-
-            StringBuilder result = new StringBuilder(filtered.length());
+            StringBuilder result = new StringBuilder(name.length());
             for (String part : parts) {
-                if (!part.isEmpty()) {
-                    // Capitalize first character, lowercase the rest
-                    result.append(Character.toUpperCase(part.charAt(0)));
-                    if (part.length() > 1) {
-                        result.append(part.substring(1).toLowerCase(Locale.ROOT));
+                if (part.isEmpty()) continue;
+
+                // Handle parts starting with digits: keep digits, normalize the rest
+                int digitEnd = 0;
+                while (digitEnd < part.length() && Character.isDigit(part.charAt(digitEnd))) {
+                    digitEnd++;
+                }
+
+                if (digitEnd > 0) {
+                    result.append(part, 0, digitEnd);
+                    if (digitEnd < part.length()) {
+                        result.append(normalizeWord(part.substring(digitEnd)));
                     }
+                } else {
+                    result.append(normalizeWord(part));
                 }
             }
             return result.toString();
+        }
+
+        /**
+         * Normalizes a single word part: preserves proper PascalCase, otherwise applies
+         * first-uppercase-rest-lowercase transformation.
+         */
+        private static String normalizeWord(String word) {
+            if (word.isEmpty()) return word;
+
+            // Preserve if already proper PascalCase
+            if (isProperPascalCase(word)) {
+                return word;
+            }
+
+            // Otherwise: uppercase first char, lowercase the rest
+            return Character.toUpperCase(word.charAt(0)) +
+                    (word.length() > 1 ? word.substring(1).toLowerCase(Locale.ROOT) : "");
+        }
+
+        /**
+         * Heuristic check: is the word already in proper PascalCase form?
+         * Proper PascalCase: starts with uppercase; any subsequent uppercase must be
+         * preceded by lowercase AND followed by at least two lowercase letters.
+         */
+        private static boolean isProperPascalCase(String word) {
+            if (word.isEmpty() || !Character.isUpperCase(word.charAt(0))) {
+                return false;
+            }
+            if (word.length() == 1) {
+                return true; // Single uppercase letter is proper
+            }
+
+            for (int i = 1; i < word.length(); i++) {
+                if (Character.isUpperCase(word.charAt(i))) {
+                    // Must be preceded by lowercase (word boundary)
+                    if (!Character.isLowerCase(word.charAt(i - 1))) {
+                        return false;
+                    }
+                    // Must be followed by at least two lowercase letters
+                    if (i + 2 >= word.length() ||
+                            !Character.isLowerCase(word.charAt(i + 1)) ||
+                            !Character.isLowerCase(word.charAt(i + 2))) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     }
 }

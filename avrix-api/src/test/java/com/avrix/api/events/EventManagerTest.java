@@ -2,13 +2,20 @@ package com.avrix.api.events;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("EventManager")
 class EventManagerTest {
@@ -463,5 +470,194 @@ class EventManagerTest {
 
         assertThat(listener.called).isTrue();
         assertThat(listener.captured).isNull();
+    }
+
+    @Nested
+    @DisplayName("CustomEvent.normalizeEventName")
+    class CustomEventNormalizeEventNameTest {
+
+        private static final Method NORMALIZE_METHOD;
+
+        static {
+            try {
+                NORMALIZE_METHOD = EventManager.CustomEvent.class.getDeclaredMethod("normalizeEventName", String.class);
+                NORMALIZE_METHOD.setAccessible(true);
+            } catch (NoSuchMethodException e) {
+                throw new ExceptionInInitializerError(e);
+            }
+        }
+
+        private static String invokeNormalize(String name) {
+            try {
+                return (String) NORMALIZE_METHOD.invoke(null, name);
+            } catch (java.lang.reflect.InvocationTargetException e) {
+                // Propagate original NPE for proper assertion
+                if (e.getCause() instanceof NullPointerException) {
+                    throw (NullPointerException) e.getCause();
+                }
+                throw new RuntimeException("Failed to invoke normalizeEventName", e);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to invoke normalizeEventName", e);
+            }
+        }
+
+        @Nested
+        @DisplayName("PascalCase conversion")
+        class PascalCaseConversion {
+
+            @ParameterizedTest(name = "\"{0}\" → \"{1}\"")
+            @CsvSource({
+                    "my-event_123, MyEvent123",
+                    "test event, TestEvent",
+                    "snake_case_name, SnakeCaseName",
+                    "AlreadyPascalCase, AlreadyPascalCase",
+                    "123_test, 123Test",
+                    "___multiple___underscores___, MultipleUnderscores",
+                    "simple, Simple",
+                    "a, A",
+                    "test_123_event, Test123Event",
+                    "UPPERCASE, Uppercase",
+                    "MiXeD_CaSe, MixedCase",
+                    "_leading_underscore, LeadingUnderscore",
+                    "trailing_underscore_, TrailingUnderscore",
+                    "a_b_c, ABC",
+                    "event-name_with-mixed!@#, EventNameWithMixed"
+            })
+            void transformsToPascalCase(String input, String expected) {
+                assertThat(invokeNormalize(input)).isEqualTo(expected);
+            }
+        }
+
+        @Nested
+        @DisplayName("Edge cases")
+        class EdgeCases {
+            @ParameterizedTest
+            @NullAndEmptySource
+            @ValueSource(strings = {" ", "  ", "\t", "\n", "_", "__", "___", "!@#", "___!!!___"})
+            @DisplayName("blank or non-Latin input returns empty string")
+            void blankOrInvalidInputReturnsEmpty(String input) {
+                assertThat(invokeNormalize(input)).isEmpty();
+            }
+
+            @Test
+            @DisplayName("whitespace trimming is applied before normalization")
+            void trimsWhitespace() {
+                assertThat(invokeNormalize("  test event  ")).isEqualTo("TestEvent");
+                assertThat(invokeNormalize("\t\ntest_event\n\t")).isEqualTo("TestEvent");
+            }
+        }
+
+        @Nested
+        @DisplayName("Character handling")
+        class CharacterHandling {
+
+            @Test
+            @DisplayName("non-Latin characters are removed and act as separators")
+            void removesNonLatinCharacters() {
+                assertThat(invokeNormalize("test_событие_event")).isEqualTo("TestEvent");
+                assertThat(invokeNormalize("Hello_世界_World")).isEqualTo("HelloWorld");
+                // Non-Latin 'é' is removed (not in [A-Za-z0-9])
+                assertThat(invokeNormalize("Café")).isEqualTo("Caf");
+            }
+
+            @Test
+            @DisplayName("digits are preserved and not capitalized")
+            void preservesDigits() {
+                assertThat(invokeNormalize("event_123")).isEqualTo("Event123");
+                assertThat(invokeNormalize("123_event_456")).isEqualTo("123Event456");
+                assertThat(invokeNormalize("a1_b2_c3")).isEqualTo("A1B2C3");
+            }
+
+            @Test
+            @DisplayName("underscores and other separators act as word boundaries")
+            void separatorsAsWordBoundaries() {
+                assertThat(invokeNormalize("a_b_c")).isEqualTo("ABC");
+                assertThat(invokeNormalize("_test_")).isEqualTo("Test");
+                assertThat(invokeNormalize("test___event")).isEqualTo("TestEvent");
+                assertThat(invokeNormalize("event-name_with-mixed!@#")).isEqualTo("EventNameWithMixed");
+            }
+        }
+
+        @Nested
+        @DisplayName("Constructor integration")
+        class ConstructorIntegration {
+
+            @ParameterizedTest(name = "\"{0}\" → normalized name \"{1}\"")
+            @CsvSource({
+                    "my-event, MyEvent",
+                    "snake_case, SnakeCase",
+                    "AlreadyPascalCase, AlreadyPascalCase",
+                    "123_test, 123Test"
+            })
+            void constructorUsesNormalizedName(String rawName, String expectedNormalizedName) {
+                EventManager.CustomEvent event = new EventManager.CustomEvent(rawName, List.of(), List.of());
+                assertThat(event.name()).isEqualTo(expectedNormalizedName);
+            }
+
+            @ParameterizedTest
+            @ValueSource(strings = {"", " ", "\t", "\n"})
+            @DisplayName("constructor rejects blank names with 'cannot be blank' message")
+            void rejectsBlankNames(String invalidName) {
+                IllegalArgumentException ex = assertThrows(
+                        IllegalArgumentException.class,
+                        () -> new EventManager.CustomEvent(invalidName, List.of(), List.of())
+                );
+                assertThat(ex.getMessage()).isEqualTo("name cannot be blank");
+            }
+
+            @ParameterizedTest
+            @ValueSource(strings = {"___", "!@#", "___!!!___", "123", "___123___"})
+            @DisplayName("constructor rejects names without Latin letters after normalization")
+            void rejectsNoLatinLettersAfterNormalization(String invalidName) {
+                IllegalArgumentException ex = assertThrows(
+                        IllegalArgumentException.class,
+                        () -> new EventManager.CustomEvent(invalidName, List.of(), List.of())
+                );
+                assertThat(ex.getMessage())
+                        .contains("must contain at least one Latin letter after normalization");
+            }
+
+            @Test
+            @DisplayName("normalized name is stored immutably in record")
+            void normalizedNameIsImmutable() {
+                EventManager.CustomEvent event = new EventManager.CustomEvent("test_event", List.of(), List.of());
+                assertThat(event.name()).isEqualTo("TestEvent")
+                        .isNotEqualTo("test_event")
+                        .isNotEqualTo("TEST_EVENT");
+            }
+        }
+
+        @Nested
+        @DisplayName("Idempotency and consistency")
+        class Idempotency {
+
+            @Test
+            @DisplayName("normalization is idempotent for already-normalized names")
+            void idempotentForPascalCase() {
+                String input = "MyEventName123";
+                String first = invokeNormalize(input);
+                String second = invokeNormalize(first);
+                assertThat(second).isEqualTo(first).isEqualTo(input);
+            }
+
+            @Test
+            @DisplayName("repeated calls yield consistent result")
+            void consistentAcrossMultipleCalls() {
+                String input = "test_event_name";
+                String expected = "TestEventName";
+                for (int i = 0; i < 50; i++) {
+                    assertThat(invokeNormalize(input)).isEqualTo(expected);
+                }
+            }
+
+            @Test
+            @DisplayName("proper PascalCase input is preserved unchanged")
+            void preservesProperPascalCase() {
+                assertThat(invokeNormalize("AlreadyPascalCase")).isEqualTo("AlreadyPascalCase");
+                assertThat(invokeNormalize("Simple")).isEqualTo("Simple");
+                assertThat(invokeNormalize("A")).isEqualTo("A");
+            }
+        }
+
     }
 }
