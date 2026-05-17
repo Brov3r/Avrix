@@ -84,7 +84,7 @@ public class ExamplePlugin extends Plugin {
                 /**
                  * Загрузка Lua скриптов из Jar архива плагина.
                  */
-                LuaExtension.loadLuaFolderFromJar(pluginFile, "lua");
+                LuaExtension.loadLuaFolderFromJar(pluginFile, "lua", false);
 
                 /**
                  * Пример загрузки одиночных файлов Lua
@@ -93,14 +93,14 @@ public class ExamplePlugin extends Plugin {
                  */
 
                 LuaExtension.registerLuaContent(Paths.get(".../lua"));
-                LuaExtension.loadLua(Paths.get(".../lua/main.lua"), true);
+                LuaExtension.loadLua(Paths.get(".../lua/main.lua"), false);
 
 
                 /**
                  * Загрузка скриптов из папки (рекомендованный способ).
                  * `loadLuaFolder` рекурсивно загружает все Lua скрипты из данной папки с регистрацией (позволяет использовать 'require' к вложенным Lua скриптам данной папки или другим зарегистрированным)
                  */
-                LuaExtension.loadLuaFolder(Paths.get(".../lua"), true);
+                LuaExtension.loadLuaFolder(Paths.get(".../lua"), false);
 
             }
         });

@@ -49,10 +49,11 @@ public final class LuaExtension {
     /**
      * Searches for a folder inside the JAR archive, unpacks it into a temporary directory and load it.
      *
-     * @param jarFile      JAR archive file
-     * @param internalPath path inside the JAR (e.g. "media/lua")
+     * @param jarFile       JAR archive file
+     * @param internalPath  path inside the JAR (e.g. "media/lua")
+     * @param rewriteEvents whether to enable event rewriting during compilation
      */
-    public static void loadLuaFolderFromJar(File jarFile, String internalPath) {
+    public static void loadLuaFolderFromJar(File jarFile, String internalPath, boolean rewriteEvents) {
         Objects.requireNonNull(jarFile, "JarFile must not be null");
         Objects.requireNonNull(internalPath, "InternalPath must not be null");
 
@@ -94,7 +95,7 @@ public final class LuaExtension {
                             }
                         });
                     }
-                    loadLuaFolder(tempDir, true);
+                    loadLuaFolder(tempDir, rewriteEvents);
                 } finally {
                     deleteRecursivelyQuietly(tempDir);
                 }

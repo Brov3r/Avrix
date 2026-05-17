@@ -1,7 +1,10 @@
 package com.avrix.api.events;
 
+import com.avrix.api.lua.ExposedToLua;
+import com.avrix.api.lua.LuaExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import zombie.Lua.LuaEventManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -22,9 +25,103 @@ public final class EventManager {
 
     private static final Map<String, CopyOnWriteArrayList<EventListener>> listeners = new ConcurrentHashMap<>();
     private static final Map<MethodCacheKey, List<Method>> methodCache = new ConcurrentHashMap<>();
+    private static final Map<String, CustomEvent> customEvents = new ConcurrentHashMap<>();
 
     private EventManager() {
         // Utility class: prevent instantiation
+    }
+
+    /**
+     * Registers a custom event with default empty exposure lists.
+     *
+     * @param name the unique name of the event (case-sensitive for Lua side)
+     * @throws IllegalArgumentException if {@code name} is {@code null} or blank
+     */
+    public static void addCustomEvent(String name) {
+        addCustomEvent(name, Collections.emptyList(), Collections.emptyList());
+    }
+
+    /**
+     * Registers a custom event with exposed classes and global objects for Lua access.
+     *
+     * @param name           the unique name of the event (case-sensitive for Lua)
+     * @param exposedClasses immutable list of {@code Class} objects to expose to Lua;
+     *                       must not contain {@code null} elements
+     * @param exposedObjects immutable list of global objects to expose to Lua;
+     *                       must not contain {@code null} elements
+     * @throws IllegalArgumentException if {@code name} is {@code null}/blank,
+     *                                  or if any list contains {@code null} elements
+     * @throws NullPointerException     if {@code exposedClasses} or {@code exposedObjects}
+     *                                  is {@code null}
+     */
+    public static void addCustomEvent(String name, List<Class<? extends ExposedToLua>> exposedClasses, List<Object> exposedObjects) {
+        addCustomEvent(new CustomEvent(name, exposedClasses, exposedObjects));
+    }
+
+    /**
+     * Registers a pre-built {@link CustomEvent} instance.
+     *
+     * @param event the {@code CustomEvent} instance to register
+     * @throws NullPointerException if {@code event} is {@code null}
+     * @see CustomEvent
+     * @see #registerCustomEvents()
+     */
+    public static void addCustomEvent(CustomEvent event) {
+        Objects.requireNonNull(event, "event must not be null");
+        customEvents.put(event.name, event);
+    }
+
+    /**
+     * Registers all pending custom events with the Lua environment.
+     * Automatically invoked when LuaManager is initialized.
+     */
+    public static void registerCustomEvents() {
+        for (CustomEvent event : customEvents.values()) {
+            try {
+                LuaEventManager.AddEvent(event.name);
+
+                for (Class<? extends ExposedToLua> clazz : event.exposedClasses()) {
+                    if (clazz == null) continue;
+                    LuaExtension.addExposedClass(clazz);
+                }
+                for (Object object : event.exposedObjects()) {
+                    if (object == null) continue;
+                    LuaExtension.addExposedGlobalObject(object);
+                }
+                log.debug("Registered custom event: '{}'", event.name);
+
+            } catch (Exception e) {
+                log.error("Failed to register custom event '{}': {}", event.name, e.getMessage(), e);
+            }
+        }
+    }
+
+    /**
+     * Triggers a custom event, invoking both Java listeners and Lua callbacks.
+     *
+     * @param eventName the name of the event to trigger (case-sensitive for Lua)
+     * @param args      arguments to pass to listeners (0–8 supported)
+     * @throws NullPointerException if {@code eventName} is {@code null}
+     */
+    public static void invokeCustomEvent(String eventName, Object... args) {
+        if (args.length > 8) {
+            args = Arrays.copyOf(args, 8);
+            log.warn("Truncated event '{}' arguments to 8 (LuaEventManager limit)", eventName);
+        }
+        switch (args.length) {
+            case 0 -> LuaEventManager.triggerEvent(eventName);
+            case 1 -> LuaEventManager.triggerEvent(eventName, args[0]);
+            case 2 -> LuaEventManager.triggerEvent(eventName, args[0], args[1]);
+            case 3 -> LuaEventManager.triggerEvent(eventName, args[0], args[1], args[2]);
+            case 4 -> LuaEventManager.triggerEvent(eventName, args[0], args[1], args[2], args[3]);
+            case 5 -> LuaEventManager.triggerEvent(eventName, args[0], args[1], args[2], args[3], args[4]);
+            case 6 -> LuaEventManager.triggerEvent(eventName, args[0], args[1], args[2], args[3], args[4], args[5]);
+            case 7 ->
+                    LuaEventManager.triggerEvent(eventName, args[0], args[1], args[2], args[3], args[4], args[5], args[6]);
+            case 8 ->
+                    LuaEventManager.triggerEvent(eventName, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7]);
+            default -> log.error("Unexpected argument count {} for event '{}'", args.length, eventName);
+        }
     }
 
     /**
@@ -286,6 +383,97 @@ public final class EventManager {
             if (handleMethods.isEmpty()) {
                 throw new IllegalArgumentException("No 'handle' methods found in " + handler.getClass());
             }
+        }
+    }
+
+    /**
+     * Immutable descriptor for a custom event with Lua exposure configuration.
+     *
+     * @param name           the unique event name (case-sensitive for Lua)
+     * @param exposedClasses immutable list of classes to expose to Lua; no null elements
+     * @param exposedObjects immutable list of global objects to expose to Lua; no null elements
+     */
+    public record CustomEvent(String name, List<Class<? extends ExposedToLua>> exposedClasses,
+                              List<Object> exposedObjects) {
+        /**
+         * Compact constructor enforcing validity constraints.
+         *
+         * @throws IllegalArgumentException if {@code name} is blank or any list contains null
+         * @throws NullPointerException     if any component is {@code null}
+         */
+        public CustomEvent {
+            Objects.requireNonNull(name, "name must not be null");
+            Objects.requireNonNull(exposedClasses, "exposedClasses must not be null");
+            Objects.requireNonNull(exposedObjects, "exposedObjects must not be null");
+            if (name.isBlank()) {
+                throw new IllegalArgumentException("name cannot be blank");
+            }
+
+            String normalizedName = normalizeEventName(name);
+            if (normalizedName.isBlank()) {
+                throw new IllegalArgumentException(
+                        "name must contain at least one Latin letter after normalization: '" + name + "'");
+            }
+
+            for (Class<?> clazz : exposedClasses) {
+                if (clazz != null && !ExposedToLua.class.isAssignableFrom(clazz)) {
+                    throw new IllegalArgumentException(
+                            "Class " + clazz.getName() + " does not implement ExposedToLua");
+                }
+            }
+
+            name = normalizedName;
+        }
+
+        /**
+         * Normalizes an event name to PascalCase using only Latin letters, digits, and underscores.
+         *
+         * <p>Transformation rules:
+         * <ol>
+         *   <li>Trim leading/trailing whitespace</li>
+         *   <li>Remove all characters except {@code [A-Za-z0-9_]}</li>
+         *   <li>Split by underscores ({@code _}) into word parts</li>
+         *   <li>Capitalize first letter of each part, lowercase the rest</li>
+         *   <li>Concatenate parts without separators (PascalCase)</li>
+         * </ol>
+         *
+         * <p><strong>Examples:</strong>
+         * <ul>
+         *   <li>{@code "my-event_123"} → {@code "MyEvent123"}</li>
+         *   <li>{@code "test event"} → {@code "TestEvent"}</li>
+         *   <li>{@code "snake_case_name"} → {@code "SnakeCaseName"}</li>
+         *   <li>{@code "AlreadyPascalCase"} → {@code "AlreadyPascalCase"}</li>
+         *   <li>{@code "123_test"} → {@code "123Test"}</li>
+         *   <li>{@code "___multiple___underscores___"} → {@code "MultipleUnderscores"}</li>
+         * </ul>
+         *
+         * @param name the raw event name
+         * @return normalized PascalCase name containing only Latin letters and digits
+         */
+        private static String normalizeEventName(String name) {
+            name = name.trim();
+            if (name.isEmpty()) {
+                return "";
+            }
+
+            String filtered = name.replaceAll("[^A-Za-z0-9_]", "");
+            if (filtered.isEmpty()) {
+                return "";
+            }
+
+            String[] parts = filtered.split("_+");
+
+            StringBuilder result = new StringBuilder(filtered.length());
+            for (String part : parts) {
+                if (!part.isEmpty()) {
+                    // Capitalize first character, lowercase the rest
+                    result.append(Character.toUpperCase(part.charAt(0)));
+                    if (part.length() > 1) {
+                        result.append(part.substring(1).toLowerCase(Locale.ROOT));
+                    }
+                }
+            }
+            return result.toString();
         }
     }
 }

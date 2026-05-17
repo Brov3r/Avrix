@@ -1,5 +1,6 @@
-package com.avrix.api.events;
+package com.avrix.api.mixins;
 
+import com.avrix.api.events.EventManager;
 import net.lenni0451.classtransform.annotations.CTarget;
 import net.lenni0451.classtransform.annotations.CTransformer;
 import net.lenni0451.classtransform.annotations.injection.CInject;
