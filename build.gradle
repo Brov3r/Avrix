@@ -21,9 +21,9 @@ dependencies {
     implementation 'org.tinylog:tinylog-impl:2.7.0'
 
     // Mixin
-    api 'net.lenni0451.classtransform:core:1.15.0'
-    implementation 'net.lenni0451.classtransform:mixinstranslator:1.15.0'
-    api 'net.lenni0451.classtransform:mixinsdummy:1.15.0'
+    api 'net.lenni0451.classtransform:core:1.15.1'
+    implementation 'net.lenni0451.classtransform:mixinstranslator:1.15.1'
+    api 'net.lenni0451.classtransform:mixinsdummy:1.15.1'
 
     // Util
     api 'org.spongepowered:configurate-yaml:4.2.0'
