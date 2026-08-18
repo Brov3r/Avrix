@@ -167,7 +167,11 @@ public class KnotClassLoader extends URLClassLoader {
             // Delegate strict JVM runtime and protected loader/logging libraries directly to the parent
             for (String prefix : parentDelegatedPrefixes) {
                 if (name.startsWith(prefix)) {
-                    return getParent().loadClass(name);
+                    try {
+                        return getParent().loadClass(name);
+                    } catch (ClassNotFoundException _) {
+                        break;
+                    }
                 }
             }
 

@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.avrix'
-version = '2.1.0'
+version = '2.1.1'
 
 def baseSuffix = 'Loader'
 def baseArchiveName = "${rootProject.name.capitalize()}-${baseSuffix}"
