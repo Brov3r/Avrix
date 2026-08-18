@@ -20,7 +20,7 @@ repositories {
 dependencies {
     // Logging API and provider
     api 'org.slf4j:slf4j-api:2.0.18'
-    implementation 'ch.qos.logback:logback-classic:1.6.1'
+    implementation 'ch.qos.logback:logback-classic:1.6.3'
 
     // Class transformation and mixin translation
     implementation 'net.lenni0451.classtransform:core:1.15.1'
