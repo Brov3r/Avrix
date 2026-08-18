@@ -1,9 +1,13 @@
 package com.avrix.core;
 
+import java.util.Locale;
+import java.util.Objects;
+
 /**
- * An enumeration representing the execution {@link Environment}, such as server, client or both
+ * An enumeration representing the execution {@link Environment}, such as server, client, or both.
  */
 public enum Environment {
+
     /**
      * Client {@link Environment}.
      */
@@ -40,17 +44,35 @@ public enum Environment {
     }
 
     /**
+     * Checks whether this target environment constraint is compatible with the active runtime environment.
+     *
+     * @param activeEnvironment the active running environment, cannot be null
+     * @return {@code true} if this environment matches or is {@link #BOTH}; {@code false} otherwise
+     * @throws NullPointerException if {@code activeEnvironment} is null
+     */
+    public boolean isCompatibleWith(Environment activeEnvironment) {
+        Objects.requireNonNull(activeEnvironment, "Active environment cannot be null");
+        return this == BOTH || this == activeEnvironment;
+    }
+
+    /**
      * Converts a string to the corresponding {@link Environment} enum value.
+     * Maps {@code "*"} and unknown values to {@link Environment#BOTH}.
      *
      * @param text the string to convert
-     * @return the corresponding {@link Environment} enum value. If the value could not be determined, it returns {@link Environment#BOTH}
+     * @return the corresponding {@link Environment} enum value, or {@link Environment#BOTH} if undetermined
      */
     public static Environment fromString(String text) {
-        for (Environment env : Environment.values()) {
-            if (env.value.equalsIgnoreCase(text)) {
-                return env;
-            }
+        if (text == null || text.isBlank()) {
+            return BOTH;
         }
-        return Environment.BOTH;
+
+        String normalized = text.trim().toLowerCase(Locale.ROOT);
+
+        return switch (normalized) {
+            case "client" -> CLIENT;
+            case "server" -> SERVER;
+            default -> BOTH;
+        };
     }
 }

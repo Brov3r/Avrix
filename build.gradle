@@ -1,95 +1,137 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.apache.tools.ant.filters.ReplaceTokens
+
 plugins {
     id 'java-library'
     id 'com.gradleup.shadow' version '9.6.1'
 }
 
 group = 'com.avrix'
-version = '2.0.0'
+version = '2.1.0'
 
-def buildPath = System.getenv('BUILD_PATH') ?: 'build'
-def baseSuffix = "Loader"
+def baseSuffix = 'Loader'
 def baseArchiveName = "${rootProject.name.capitalize()}-${baseSuffix}"
+def customBuildPath = System.getenv('BUILD_PATH') ?: layout.buildDirectory.get().asFile
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    // Logger
+    // Logging API and provider
     api 'org.slf4j:slf4j-api:2.0.18'
-    implementation 'org.tinylog:slf4j-tinylog:2.7.0'
-    implementation 'org.tinylog:tinylog-impl:2.7.0'
+    implementation 'ch.qos.logback:logback-classic:1.6.1'
 
-    // Mixin
-    api 'net.lenni0451.classtransform:core:1.15.1'
+    // Class transformation and mixin translation
+    implementation 'net.lenni0451.classtransform:core:1.15.1'
     implementation 'net.lenni0451.classtransform:mixinstranslator:1.15.1'
-    api 'net.lenni0451.classtransform:mixinsdummy:1.15.1'
+    implementation 'net.lenni0451.classtransform:mixinsdummy:1.15.1'
 
-    // Util
-    api 'org.spongepowered:configurate-yaml:4.2.0'
-    api 'com.github.zafarkhaja:java-semver:0.10.2'
-    api 'org.jgrapht:jgrapht-core:1.5.3'
+    // Configuration and semantic versioning
+    implementation 'org.spongepowered:configurate-yaml:4.2.0'
+    implementation 'com.github.zafarkhaja:java-semver:0.10.2'
 
-    // Test
+    // Testing
     testImplementation platform('org.junit:junit-bom:6.1.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core:3.27.7'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-processResources {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-    filteringCharset = 'UTF-8'
-    filesMatching('**/avrix.properties') {
-        filter { String line ->
-            line.replace('%PROJECT_VERSION%', version.toString())
-                    .replace('%PROJECT_NAME%', "${rootProject.name.capitalize()} ${baseSuffix}")
-        }
-    }
-}
-
 java {
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+
+    withSourcesJar()
 }
 
-test {
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+    options.addStringOption('Xdoclint:none', '-quiet')
+}
+
+tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }
 
-shadowJar {
+tasks.named('processResources', ProcessResources) {
+    filteringCharset = 'UTF-8'
+
+    def currentVersion = project.version.toString()
+    def currentName = baseArchiveName.toString()
+
+    inputs.property('PROJECT_VERSION', currentVersion)
+    inputs.property('PROJECT_NAME', currentName)
+
+    filesMatching('**/avrix.properties') {
+        filter(
+                [
+                        beginToken: '%',
+                        endToken  : '%',
+                        tokens    : [
+                                PROJECT_VERSION: currentVersion,
+                                PROJECT_NAME   : currentName
+                        ]
+                ],
+                ReplaceTokens
+        )
+    }
+}
+
+tasks.named('shadowJar', ShadowJar) {
     archiveBaseName.set(baseArchiveName)
     archiveClassifier.set('')
-    destinationDirectory.set(file(buildPath))
+    destinationDirectory.set(file(customBuildPath))
 
-    exclude 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA'
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    mergeServiceFiles()
+
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    exclude 'META-INF/INDEX.LIST'
+    exclude 'module-info.class'
+    exclude 'META-INF/versions/*/module-info.class'
 
     manifest {
         attributes(
-                'Implementation-Title': "${rootProject.name.capitalize()}-${baseSuffix}",
-                'Implementation-Version': version,
+                'Implementation-Title': baseArchiveName.toString(),
+                'Implementation-Version': project.version.toString(),
+                'Implementation-Vendor': 'Avrix',
                 'Main-Class': 'com.avrix.Main',
-                'Agent-Class': 'com.avrix.mixin.MixinAgent',
-                'Can-Redefine-Classes': 'true',
-                'Can-Retransform-Classes': 'true'
+                'Enable-Native-Access': 'ALL-UNNAMED'
         )
     }
 }
 
 tasks.register('buildJar') {
-    finalizedBy shadowJar
+    group = 'build'
+    description = 'Builds the executable shaded Avrix loader JAR.'
+    dependsOn tasks.named('shadowJar')
+}
+
+tasks.register('sourceJar', Jar) {
+    group = 'build'
+    description = 'Builds the Avrix loader sources JAR.'
+
+    archiveBaseName.set(baseArchiveName)
+    archiveClassifier.set('sources')
+    destinationDirectory.set(file(customBuildPath))
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(sourceSets.main.allSource)
 }
 
 tasks.register('releaseBuildJar') {
-    dependsOn sourceJar
-    finalizedBy buildJar
-}
+    group = 'build'
+    description = 'Builds the executable and sources JARs for release.'
 
-
-tasks.register('sourceJar', Jar) {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    archiveBaseName.set(baseArchiveName)
-    archiveClassifier.set('sources')
-    from(sourceSets.main.allSource)
-    destinationDirectory.set(file(buildPath))
+    dependsOn tasks.named('shadowJar')
+    dependsOn tasks.named('sourceJar')
 }

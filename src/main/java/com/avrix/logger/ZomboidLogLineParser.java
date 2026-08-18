@@ -1,7 +1,5 @@
 package com.avrix.logger;
 
-import org.tinylog.Logger;
-
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -9,61 +7,66 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Parses raw Project Zomboid console output lines and routes them to TinyLog.
- * Strips engine-specific metadata (log level, category, frame counters, source locations)
- * and forwards normalized messages to the appropriate logging level.
- * Unrecognized lines are delegated to a configurable fallback consumer.
+ * Parses Project Zomboid log lines and routes them to appropriate log level consumers.
+ * <p>
+ * It identifies the log level from the line header or message prefix and strips formatting
+ * before passing the clean message to the corresponding sink.
  */
 public final class ZomboidLogLineParser implements Consumer<String> {
 
     /**
-     * Matches the primary PZ log header, extracting the level token and message body.
+     * Regex pattern to match and extract components from a Zomboid log header.
      */
     private static final Pattern HEADER_PATTERN =
-            Pattern.compile("^(?<lvl>LOG|ERROR|WARN|DEBUG|TRACE)\\s*:?\\s*(?:\\S+\\s+)?(?:f:\\d+(?:,[^>]*)?\\s*)?(?:st:[^>]+\\s*)?(?:at\\s+\\S+\\s*)?>\\s*(?<msg>.*)$");
+            Pattern.compile("^[ \t]*(?<lvl>LOG|ERROR|WARN|DEBUG|TRACE)\\s*:?\\s*(?:\\S+\\s+)?(?:f:\\d+(?:,[^>]*)?\\s*)?(?:st:[^>]+\\s*)?(?:at\\s+\\S+\\s*)?>[ \t]?(?:\\d+\\s+)?(?<msg>.*)$");
+    
     /**
-     * Detects embedded level prefixes (e.g., {@code [!]}, {@code [?]}) within message bodies.
-     */
-    private static final Pattern PREFIX_LEVEL_PATTERN =
-            Pattern.compile("^(\\[!\\]|\\[#\\]|\\[\\?\\]|\\[\\$\\]|\\[-\\])\\s*(.*)$");
-
-    /**
-     * Removes leading numeric timestamps that occasionally appear in PZ log messages.
-     */
-    private static final Pattern LEADING_NUMBER_TS_PATTERN =
-            Pattern.compile("^\\d+\\s+(.*)$");
-
-    /**
-     * Normalizes excessive whitespace around the {@code >} separator.
+     * Regex pattern to normalize spaces around the '>' arrow in log messages.
      */
     private static final Pattern SPACES_AROUND_ARROW_PATTERN =
-            Pattern.compile("\\s+>\\s+");
+            Pattern.compile("\\s+>\\s?");
 
-    /**
-     * Consumer for lines that do not match the expected PZ log format.
-     */
+    private final Consumer<String> errorSink;
+    private final Consumer<String> warnSink;
+    private final Consumer<String> infoSink;
+    private final Consumer<String> debugSink;
+    private final Consumer<String> traceSink;
     private final Consumer<String> fallbackSink;
 
     /**
-     * Creates a parser instance with a designated fallback handler.
+     * Creates a new parser with the specified log level sinks.
      *
-     * @param fallbackSink consumer for unrecognized or malformed lines; must not be {@code null}
-     * @throws NullPointerException if {@code fallbackSink} is {@code null}
+     * @param errorSink    consumer for ERROR level messages
+     * @param warnSink     consumer for WARN level messages
+     * @param infoSink     consumer for INFO level messages
+     * @param debugSink    consumer for DEBUG level messages
+     * @param traceSink    consumer for TRACE level messages
+     * @param fallbackSink consumer for unparsed or unrecognized messages
      */
-    public ZomboidLogLineParser(Consumer<String> fallbackSink) {
+    public ZomboidLogLineParser(Consumer<String> errorSink,
+                                Consumer<String> warnSink,
+                                Consumer<String> infoSink,
+                                Consumer<String> debugSink,
+                                Consumer<String> traceSink,
+                                Consumer<String> fallbackSink) {
+        this.errorSink = Objects.requireNonNull(errorSink, "errorSink must not be null");
+        this.warnSink = Objects.requireNonNull(warnSink, "warnSink must not be null");
+        this.infoSink = Objects.requireNonNull(infoSink, "infoSink must not be null");
+        this.debugSink = Objects.requireNonNull(debugSink, "debugSink must not be null");
+        this.traceSink = Objects.requireNonNull(traceSink, "traceSink must not be null");
         this.fallbackSink = Objects.requireNonNull(fallbackSink, "fallbackSink must not be null");
     }
 
     /**
-     * Processes a single raw console line, extracts structured log data, and routes it to TinyLog.
-     * Blank lines are silently ignored. Unparseable content is forwarded to the fallback sink.
+     * Parses a raw log line and routes it to the appropriate sink.
      *
-     * @param rawLine the raw console output line to process
+     * @param rawLine the raw log line to process
      */
     @Override
     public void accept(String rawLine) {
         if (rawLine == null) return;
-        String line = rawLine.trim();
+
+        String line = rawLine.stripTrailing();
         if (line.isEmpty()) return;
 
         Parsed parsed = parse(line);
@@ -71,59 +74,59 @@ public final class ZomboidLogLineParser implements Consumer<String> {
             fallbackSink.accept(line);
             return;
         }
-        if (parsed.message.isBlank()) return;
 
-        switch (parsed.level) {
-            case ERROR -> Logger.error(parsed.message);
-            case WARN -> Logger.warn(parsed.message);
-            case DEBUG -> Logger.debug(parsed.message);
-            case TRACE -> Logger.trace(parsed.message);
-            case INFO -> Logger.info(parsed.message);
+        if (parsed.message().isBlank()) return;
+
+        switch (parsed.level()) {
+            case ERROR -> errorSink.accept(parsed.message());
+            case WARN -> warnSink.accept(parsed.message());
+            case DEBUG -> debugSink.accept(parsed.message());
+            case TRACE -> traceSink.accept(parsed.message());
+            case INFO -> infoSink.accept(parsed.message());
         }
     }
 
     /**
-     * Attempts to parse a trimmed log line into its level and message components.
-     * Applies sequential normalization: header extraction, prefix resolution, and whitespace cleanup.
+     * Extracts the log level and message from a formatted log line.
      *
-     * @param line a non-blank, trimmed console line
-     * @return parsed log entry, or {@code null} if the format is unsupported
+     * @param line the log line to parse
+     * @return a {@link Parsed} record containing the level and message, or {@code null} if unrecognized
      */
     private static Parsed parse(String line) {
         Matcher header = HEADER_PATTERN.matcher(line);
         if (!header.matches()) return null;
 
         Level level = Level.fromHeader(header.group("lvl"));
-        String message = header.group("msg").trim();
+        String message = header.group("msg");
 
-        Matcher prefix = PREFIX_LEVEL_PATTERN.matcher(message);
-        if (prefix.matches()) {
-            level = Level.fromPrefix(prefix.group(1));
-            message = prefix.group(2).trim();
+        String checkMsg = message.stripLeading();
+        if (checkMsg.length() >= 3 && checkMsg.charAt(0) == '[' && checkMsg.charAt(2) == ']') {
+            Level prefixLevel = Level.fromPrefix(checkMsg.charAt(1));
+            if (prefixLevel != null) {
+                level = prefixLevel;
+                int closeBracketIdx = checkMsg.indexOf(']');
+                message = checkMsg.substring(closeBracketIdx + 1).stripLeading();
+            }
         }
 
-        message = SPACES_AROUND_ARROW_PATTERN.matcher(message).replaceAll(" > ");
-
-        Matcher ts = LEADING_NUMBER_TS_PATTERN.matcher(message);
-        if (ts.matches()) {
-            message = ts.group(1).trim();
+        if (message.contains(">")) {
+            message = SPACES_AROUND_ARROW_PATTERN.matcher(message).replaceAll(" > ");
         }
 
         return new Parsed(level, message);
     }
 
     /**
-     * Internal representation of supported logging levels.
-     * Maps engine-specific tokens and prefixes to default TinyLog levels.
+     * Represents the supported log levels and provides parsing utilities.
      */
     private enum Level {
         ERROR, WARN, INFO, DEBUG, TRACE;
 
         /**
-         * Resolves a header token extracted from the log line to a default level.
+         * Resolves a log level from a header token.
          *
-         * @param token raw level token (e.g., {@code LOG}, {@code ERROR})
-         * @return corresponding internal level; defaults to {@link #INFO}
+         * @param token the header token
+         * @return the corresponding log level
          */
         static Level fromHeader(String token) {
             return switch (token.toUpperCase(Locale.ROOT)) {
@@ -136,27 +139,28 @@ public final class ZomboidLogLineParser implements Consumer<String> {
         }
 
         /**
-         * Resolves an embedded message prefix to a default level.
+         * Resolves a log level from a message prefix character.
          *
-         * @param prefix raw prefix string (e.g., {@code [!]}, {@code [?]})
-         * @return corresponding internal level; defaults to {@link #INFO}
+         * @param prefix the prefix character
+         * @return the corresponding log level, or {@code null} if unrecognized
          */
-        static Level fromPrefix(String prefix) {
+        static Level fromPrefix(char prefix) {
             return switch (prefix) {
-                case "[!]" -> ERROR;
-                case "[?]" -> WARN;
-                case "[$]" -> DEBUG;
-                case "[-]" -> TRACE;
-                default -> INFO;
+                case '!' -> ERROR;
+                case '?' -> WARN;
+                case '$' -> DEBUG;
+                case '-' -> TRACE;
+                case '#' -> INFO;
+                default -> null;
             };
         }
     }
 
     /**
-     * Holds the result of a successful log line parsing operation.
+     * Holds the result of parsing a log line.
      *
-     * @param level   resolved logging level
-     * @param message normalized message content ready for output
+     * @param level   the detected log level
+     * @param message the extracted log message
      */
     private record Parsed(Level level, String message) {
     }

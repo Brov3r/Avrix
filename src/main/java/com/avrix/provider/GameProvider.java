@@ -1,6 +1,5 @@
 package com.avrix.provider;
 
-import com.avrix.core.BaseClassLoader;
 import com.avrix.core.Environment;
 
 import java.nio.file.Path;
@@ -8,140 +7,132 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Contract for game-specific integration within the Avrix loader.
- * Defines lifecycle hooks, metadata, and environment configuration.
+ * Defines the contract for a game provider.
+ * <p>
+ * Implementations are responsible for discovering game resources, setting up the environment,
+ * and launching the game executable or entrypoint.
  */
 public interface GameProvider {
-    /**
-     * Prepares the provider with an isolated classloader.
-     * Invoked once before {@link #launch(String[])}.
-     *
-     * @param classLoader the loader for game and extension classes
-     */
-    void init(BaseClassLoader classLoader);
 
     /**
-     * Starts the game or runtime with the final merged arguments.
+     * Initializes the game environment, class loaders, and required paths.
+     */
+    void init();
+
+    /**
+     * Launches the game with the specified arguments.
      *
-     * @param args resolved command-line arguments including provider defaults and user overrides
+     * @param args command-line arguments to pass to the game
      */
     void launch(String[] args);
 
     /**
-     * Provides the default command-line arguments required by this provider.
+     * Returns the arguments used to launch the game.
      *
-     * @return an array of default arguments, may be empty
+     * @return an array of launch arguments
      */
     String[] getLaunchArgs();
 
     /**
-     * Returns the human-readable display name of the game or provider.
+     * Returns the display name of the game.
      *
-     * @return the display name
+     * @return the game name
      */
     String getName();
 
     /**
-     * Returns the unique human-readable identifier used for internal routing.
+     * Returns the unique identifier of the provider.
      *
-     * @return the identifier (lowercase, no spaces)
+     * @return the provider ID
      */
     String getId();
 
     /**
-     * Returns the list of authors or maintainers responsible for this provider.
+     * Returns a list of the game's authors.
      *
-     * @return list of author names
+     * @return a list of authors
      */
     List<String> getAuthors();
 
     /**
-     * Returns the license identifier under which the provider is distributed.
+     * Returns the game's license.
      *
-     * @return SPDX identifier or short license name
+     * @return the license string
      */
     String getLicense();
 
     /**
-     * Returns the list of contact references for support or source access.
+     * Returns a list of contact URLs or information for the game.
      *
-     * @return list of URLs, emails, or repository links
+     * @return a list of contacts
      */
     List<String> getContacts();
 
     /**
-     * Returns the normalized version string formatted for dependency resolution.
+     * Returns a normalized semantic version string of the game.
      *
-     * @return semver-compatible version
+     * @return the normalized version
      */
     String getNormalizedVersion();
 
     /**
-     * Returns the original version string exactly as defined by the distribution.
+     * Returns the raw version string of the game.
      *
-     * @return raw version string
+     * @return the raw version
      */
     String getRawVersion();
 
     /**
-     * Returns the base working directory used for assets, configurations, and logs.
+     * Returns the base launch directory of the game.
      *
-     * @return the launch directory path
+     * @return the path to the launch directory
      */
     Path getLaunchDirectory();
 
     /**
-     * Returns the fully qualified class name of the main entry point to invoke.
+     * Returns the fully qualified name of the game's main class.
      *
-     * @return entrypoint class name
+     * @return the entrypoint class name
      */
     String getEntrypoint();
 
     /**
-     * Returns the target execution environment for this provider instance.
+     * Returns the current execution environment (e.g., CLIENT or SERVER).
      *
-     * @return environment type (e.g., {@code CLIENT}, {@code SERVER})
+     * @return the environment
      */
     Environment getEnvironment();
 
     /**
-     * Provides additional directories or JAR files to append to the runtime classpath.
+     * Returns paths to required Java libraries (JARs).
      *
-     * @return list of paths to Java libraries
-     * @implSpec Default returns an immutable empty list.
+     * @return a list of library paths
      */
     default List<Path> getJavaLibsPath() {
         return List.of();
     }
 
     /**
-     * Provides directories containing platform-specific native libraries.
+     * Returns paths to required native libraries.
      *
-     * @return list of paths to native library directories
-     * @implSpec Default returns an immutable empty list.
+     * @return a list of native library paths
      */
     default List<Path> getNativeLibsPath() {
         return List.of();
     }
 
     /**
-     * Provides internal key-value configuration arguments injected before launch.
+     * Returns a map of system properties required for the game to run.
      *
-     * @return map of provider-specific arguments
-     * @implSpec Default returns an immutable empty map.
+     * @return a map of system properties
      */
     default Map<String, String> getProviderArgs() {
         return Map.of();
     }
 
     /**
-     * Redirects system output streams (stdout and stderr) to a logger.
-     * <p>
-     * This method can be overridden to redirect the system output streams to a logging system. By default, this
-     * method does nothing (no-op).
-     * </p>
+     * Redirects default output and error streams to the logger.
      */
     default void redirectSystemStreamsToLogger() {
-        // no-op by default
     }
 }

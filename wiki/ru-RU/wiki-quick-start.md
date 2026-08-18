@@ -1,58 +1,51 @@
 [Главная](../wiki-language.md) > [Документация](wiki-main.md) > Быстрый старт
 
-## 🏃Быстрый старт (Запуск Avrix)
+## 🏃 Быстрый старт (Запуск Avrix)
 
-Во многих аспектах Avrix очень схож с [Fabric MC](https://fabricmc.net/) для Minecraft. Если вы имеет опыт разработки
-модификаций на Fabric, то с Avrix у вас не возникнет существенных проблем.
+Во многих аспектах Avrix схож с [FabricMC](https://fabricmc.net/) для Minecraft. Если у вас есть опыт разработки
+модификаций под Fabric, освоить Avrix будет максимально просто.
 
-Для быстрого запуска игры с Avrix достаточно следовать этим простым шагам:
+Для запуска Project Zomboid с загрузчиком Avrix выполните следующие шаги:
 
-1) Скачать актуальную версию Avrix с раширением `.jar` со страницы [Release ](https://github.com/Brov3r/Avrix/releases)
-   на GitHub
-2) Переместить скачанный `.jar` файл в корневую папку с игрой/серверов. (Например,
-   `C:\Program Files (x86)\Steam\steamapps\common\ProjectZomboid`)
-3) Открыть командную строку (CMD) и прописать команду запуска:
+1. ⬇️ Скачайте актуальный релиз `Avrix-Loader-X.X.X.jar` со
+   страницы [Releases](https://github.com/Brov3r/Avrix/releases) на GitHub.
+2. 📁 Поместите скачанный `.jar` файл в корневую папку клиента или сервера Project Zomboid (например,
+   `C:\Program Files (x86)\Steam\steamapps\common\ProjectZomboid`).
+3. 💡 Запустите игру через терминал (CMD / PowerShell / Bash):
 
-   ```bash
-   java "-Djdk.attach.allowAttachSelf=true" -XX:+EnableDynamicAgentLoading -jar ./Avrix-Loader-X.X.X.jar
-   ```
+```bash
+java -jar ./Avrix-Loader-2.1.0.jar
+```
 
-   где:
+*Для запуска выделенного сервера без интеграции Steam добавьте аргумент `-nosteam`:*
 
-   Avrix-Loader-X.X.X.jar - название скачанного `.jar` файла.
-4) **Опционально:** для упрощения запуска вы можете создать `.sh` или `.bat` файл с данной командой внутри.
+```bash
+java -jar ./Avrix-Loader-2.1.0.jar -nosteam
+```
 
-> [!WARNING]
-> Обратите внимание! Аргументы **-Djdk.attach.allowAttachSelf=true** и **-XX:+EnableDynamicAgentLoading** обязательны! В
-> противном случае миксины не будут трансформировать игровые файлы.
+4. ⚙️ **Опционально:** для удобства создайте скрипт запуска `.bat` (Windows) или `.sh` (Linux) с этой командой.
 
-> [!NOTE]
-> Вы также можете вернуть стандартный вывод логов в терминал воспользовавшись флагом: **"--no-redirect-log"**
->
-> Чтобы понизить уровень логирования (например, TRACE): **"-Dtinylog.writer.level=trace"*
->
-> **writer** - Консоль
->
-> **writer2** - Файлы логов (в папке <игра>/logs)
+---
 
 ## 💻 Быстрый старт (Разработка плагинов)
 
-Чтобы начать разработку плагинов, вам необходимо привести структуру своего проекта к следующему минимальному виду:
+Минимальная рекомендуемая структура проекта плагина для Avrix:
 
-```
+```text
 ExamplePlugin/
 ├── .gitignore
 ├── README.md
 ├── build.gradle
 ├── settings.gradle
 ├── libs/
-│   ├── library.jar
-│   └── ...
+│   ├── projectzomboid.jar      # Игровые классы
+│   ├── Avrix-Loader-2.1.0.jar  # Ядро загрузчика
+│   └── avrix-api-1.0.0.jar     # API (опционально)
 └── src/
     ├── main/
     │   ├── java/com/example/exampleplugin/
-    │   │   ├── ExamplePlugin.java      # Точка входа (extends Plugin)
-    │   │   ├── ExampleMixin.java       # Точка входа для миксина
+    │   │   ├── ExamplePlugin.java      # Точка входа (implements Plugin)
+    │   │   ├── ExampleMixin.java       # Класс трансформации (Миксин)
     │   │   └── ...      
     │   └── resources/
     │       ├── metadata.yml            # Метаданные плагина
@@ -63,37 +56,43 @@ ExamplePlugin/
             └── ...
 ```
 
-### build.gradle
+---
 
-Минимальный работоспособный вид build.gradle:
+### `build.gradle`
 
-```gradle
+Минимальная production-ready конфигурация сборки на базе Gradle Groovy DSL и плагина ShadowJar:
+
+```groovy
 plugins {
     id 'java'
-    id 'com.gradleup.shadow' version '9.4.1'
+    id 'com.gradleup.shadow' version '9.6.1'
 }
 
 group = 'com.example'
 version = '1.0.0'
 
-// Название jar архива
-def baseArchiveName = "Example Plugin"
+def baseArchiveName = "ExamplePlugin"
+def buildPath = System.getenv('BUILD_PATH') ?: layout.buildDirectory.get().asFile
 
-// Место, где будет собран готовый jar архив
-def buildPath = System.getenv('BUILD_PATH') ?: 'build'
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
 
 repositories {
     mavenCentral()
+    maven { url = 'https://maven.lenni0451.net/everything' }
 }
 
 dependencies {
-	// Загрузка всех .jar библиотек из папки libs. 
-	// Для примера указано 'compileOnly', при необходимости вы можете изменить на 'implementation' и/или подключать каждую библиотеку отдельно
-	// Обратите внимание: projectzomboid.jar (игровые классы), avrix-loader-x.x.x.jar (загрузчик) и avrix-api-x.x.x.jar (API для Project Zomboid) необходимо подключать исключительно через 'compileOnly'!
+    // Внешние runtime-библиотеки плагина (будут упакованы в ShadowJar)
+    // Зависимости компиляции: ядро игры и загрузчик (НЕ упаковываются в итоговый JAR)
     compileOnly(fileTree(dir: 'libs', include: '*.jar'))
+    compileOnly 'net.lenni0451.classtransform:core:1.15.1'
 
     // Тестирование
-    testImplementation platform('org.junit:junit-bom:6.0.3')
+    testImplementation platform('org.junit:junit-bom:5.12.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core:3.27.7'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -104,111 +103,122 @@ test {
 }
 
 processResources {
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-	// Опционально. Замена версии в метаданных динамически через ключ.
+    filteringCharset = 'UTF-8'
     filesMatching('**/metadata.yml') {
-        filter { String line -> line.replace('%PLUGIN_VERSION%', version.toString()) }
+        filter { String line -> line.replace('%PLUGIN_VERSION%', project.version.toString()) }
     }
 }
 
-// Основное задание для Gradle, через которое происходит сборка jar архива плагина
 shadowJar {
     archiveBaseName.set(baseArchiveName)
     archiveClassifier.set('')
     destinationDirectory.set(file(buildPath))
 
+    mergeServiceFiles()
+
     manifest {
         attributes(
-                'Implementation-Title': "${rootProject.name.capitalize()}",
-                'Implementation-Version': version
+                'Implementation-Title': baseArchiveName,
+                'Implementation-Version': project.version.toString(),
+                'Implementation-Vendor': 'ExampleAuthor'
         )
     }
 }
 ```
 
-### metadata.yml
+---
 
-Минимальный работоспособный вид metadata.yml:
+### `metadata.yml`
+
+Манифест метаданных, размещаемый в папке `src/main/resources/metadata.yml`:
 
 ```yaml
-schema: 1                                # Идентификатор шаблона метаданных, как правило не меняется
-name: "Example Plugin"                    # Название плагина
-description: "Project Zomboid Plugin"    # Описание плагина
-id: "example-id"                        # Уникальный идентификатор плагина
-version: %PLUGIN_VERSION%                # Версия плагина, указывается вручную или через ключ (реализация в build.gradle)
-environment: "*"                        # Окружение плагина (Может быть "*" (или "Both"), "Server", "Client)
-authors: # Авторы плагина
+schema: 1                                # Версия спецификации схемы метаданных
+id: "example-plugin"                     # Уникальный строковый ID плагина
+name: "Example Plugin"                   # Человекочитаемое имя
+version: "%PLUGIN_VERSION%"              # Версия плагина (подставляется через Gradle)
+description: "Plugin for Project Zomboid" # Краткое описание
+environment: "*"                         # Целевое окружение: "*", "both", "server" или "client"
+license: "MIT"                           # Лицензия (например, MIT, Apache-2.0, PROPRIETARY)
+authors:
   - "YourName"
-licence: "MIT"                            # Лицензия плагина
-contacts: # Реквизиты для связи и прочие контакты
-  - "https://github.com/YourName/YourPlugin"
-  - "yourname@gmail.com"
-dependencies: # Зависимости плагина (ключ - ID плагина, значение - условие версии по SemVer)
-  avrix-loader: ">=2.0.0"
-  project-zomboid: "~42.17"
-entrypoint: "..."                        # (Опционально) Путь к классу плагина, например, com.example.exampleplugin.ExamplePlugin
+contacts:
+  - "https://github.com/YourName/ExamplePlugin"
+  - "contact@example.com"
+dependencies:
+  avrix-loader: ">=2.1.0"
+  project-zomboid: ">=42.20.0"
+entrypoint: "com.example.exampleplugin.ExamplePlugin" # (Опционально) Полный FQCN точки входа
 mixins:
-  - "..."                                # (Опционально) Путь к классу миксина, например, com.example.exampleplugin.ExampleMixin
+  - "com.example.exampleplugin.ExampleMixin"          # (Опционально) Список классов миксинов
 ```
 
-### ExamplePlugin.java (Точка входа)
+---
 
-В текущей реализации Avrix в каждом плагине может быть только одна точка входа, либо не быть вовсе (в таком случае
-плагин загружается как библиотека). Примерный вид реализации точки входа:
+### `ExamplePlugin.java` (Точка входа)
+
+Каждый плагин может иметь одну точку входа, реализующую интерфейс `Plugin` (либо не иметь ее вовсе, если плагин
+выполняет роль чистой библиотеки или набора миксинов):
 
 ```java
-import com.avrix.core.Metadata;
-import com.avrix.plugins.Plugin;
+package com.example.exampleplugin;
 
-// ... другие импорты
+import com.avrix.plugins.Plugin;
+import com.avrix.plugins.PluginData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Точка входа плагина, которая обязательно расширяет абстрактный класс Plugin
+ * Main entrypoint for the example Avrix plugin.
  */
-public class ExamplePlugin extends Plugin {
-    /**
-     * Конструктор плагина, все аргументы передаются динамически, в ручную указывать ничего не нужно
-     *
-     * @param metadata   метаданные плагина
-     * @param pluginFile файл плагина (файл .jar архива)
-     * @param iconURI    URI иконки плагина. Может быть null, если в архиве плагина нет иконки или возникли какие-то проблемы.
-     */
-    public ExamplePlugin(Metadata metadata, File pluginFile, URI iconURI) {
-        super(metadata, pluginFile, iconURI);
-    }
+public class ExamplePlugin implements Plugin {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExamplePlugin.class);
 
     /**
-     * Событие инициализации плагина. Основная логика реализуется именно здесь. 
-     * Используется для подписки на события, регистрации команд и прочего.
-     * Вызывается до старта игры/сервера
+     * Invoked during the loader initialization phase after classpath binding
+     * and mixin bytecode transformations, but before the game starts.
+     *
+     * @param pluginData container containing active metadata, jar path, and icon
      */
     @Override
-    public void onInitialize() {
-
+    public void onInitialize(PluginData pluginData) {
+        LOGGER.info("Example Plugin [{}] v{} initialized successfully!",
+                pluginData.getId(),
+                pluginData.getMetadata().version());
     }
 }
-
 ```
 
-### ExampleMixin.java (Пример реализации миксина)
+---
 
-Подробнее про миксины - [здесь](./loader/wiki-mixin.md).
+### `ExampleMixin.java` (Трансформация байт-кода)
 
-Пример реальной реализации миксинов, для внедрения своего вызова в метод 'LuaEventManager.triggerEvent(String)'
+Avrix поддерживает трансформации через ClassTransform, а также трансляцию стандартных аннотаций SpongePowered Mixin:
 
 ```java
+package com.example.exampleplugin;
+
 import net.lenni0451.classtransform.annotations.CTarget;
 import net.lenni0451.classtransform.annotations.CTransformer;
 import net.lenni0451.classtransform.annotations.injection.CInject;
 
-@CTransformer(value = LuaEventManager.class)
+/**
+ * Bytecode transformer targeting {@code zombie.Lua.LuaEventManager}.
+ */
+@CTransformer(name = "zombie.Lua.LuaEventManager")
 public class ExampleMixin {
+    /**
+     * Injects custom logic at the start (HEAD) of triggerEvent(String).
+     *
+     * @param eventName name of the triggered Lua event
+     */
     @CInject(
             method = "triggerEvent(Ljava/lang/String;)V",
             target = @CTarget("HEAD")
     )
-    private static void injecEvent0(String event) {
-        EventManager.invoke(event);
+    private static void injectEvent0(String eventName) {
+        System.out.printf("Intercepted Lua event trigger: [%s]%n", eventName);
     }
 }
 ```

@@ -1,47 +1,44 @@
 package com.avrix.plugins;
 
-import com.avrix.core.BaseClassLoader;
 import com.avrix.core.Metadata;
 
 import java.util.List;
 import java.util.Map;
 
 /**
- * Manages plugin lifecycle: discovery, loading, dependency resolution, and runtime access.
+ * Manages the discovery, dependency resolution, and loading of Avrix plugins.
  */
 public interface PluginManager {
-    /**
-     * Initializes the plugin manager subsystem.
-     * Must be called before any plugin operations.
-     *
-     * @param classLoader the loader for plugin manager
-     */
-    void init(BaseClassLoader classLoader);
 
     /**
-     * Scans configured directories and loads all discovered plugins.
-     * Plugins are validated, dependencies resolved, and containers registered.
+     * Initializes the plugin manager.
+     */
+    void init();
+
+    /**
+     * Discovers and loads all available plugins.
      */
     void loadPlugins();
 
     /**
-     * Loads a single plugin from the given file with pre-parsed metadata.
+     * Loads and initializes a specific plugin.
      *
-     * @param container {@link PluginContainer} containing all the necessary information for the loading
+     * @param container the plugin data container
      */
-    void loadPlugin(PluginContainer container);
+    void loadPlugin(PluginData container);
 
     /**
-     * @return Immutable map of loaded plugins keyed by plugin ID.
-     * Never {@code null}; may be empty if no plugins loaded.
+     * Returns a map of all loaded plugins, keyed by their unique ID.
+     *
+     * @return map of plugin IDs to their data containers
      */
-    Map<String, PluginContainer> getPlugins();
+    Map<String, PluginData> getPlugins();
 
     /**
-     * Resolves correct load order for plugins based on dependencies and soft/ hard requirements.
+     * Resolves the correct loading order for plugins based on their dependencies.
      *
-     * @param candidates List of plugin metadata to sort.
-     * @return Topologically sorted list respecting dependency graph.
+     * @param candidates the list of plugin metadata to sort
+     * @return a sorted list representing the correct load order
      */
     List<Metadata> resolvePluginLoadOrder(List<Metadata> candidates);
 }

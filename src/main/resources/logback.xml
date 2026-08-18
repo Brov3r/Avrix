@@ -1,0 +1,43 @@
+<configuration>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
+
+    <timestamp key="startTs" datePattern="yyyy-MM-dd_HH-mm-ss_SSS"/>
+    <property name="LOG_DIR" value="./logs"/>
+
+    <appender name="ISOLATED_CONSOLE" class="com.avrix.logger.IsolatedConsoleAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>${console.level:-INFO}</level>
+        </filter>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [ %thread ] %-5level > %msg%n%ex</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>DEBUG</level>
+        </filter>
+
+        <file>${LOG_DIR}/log_${startTs}.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/log_${startTs}.%i.log</fileNamePattern>
+            <minIndex>1</minIndex>
+            <maxIndex>199</maxIndex>
+        </rollingPolicy>
+
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <maxFileSize>10MB</maxFileSize>
+        </triggeringPolicy>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [ %thread ] %-5level > %msg%n%ex</pattern>
+        </encoder>
+    </appender>
+
+    <root level="TRACE">
+        <appender-ref ref="ISOLATED_CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+</configuration>

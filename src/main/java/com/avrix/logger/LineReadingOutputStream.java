@@ -1,185 +1,230 @@
 package com.avrix.logger;
 
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 /**
- * {@link OutputStream} that collects written bytes and emits complete text lines to a consumer.
+ * Thread-safe {@link OutputStream} that buffers incoming byte streams and emits complete lines
+ * to a {@link Consumer} upon detecting standard line delimiters ({@code \r}, {@code \n}, or {@code \r\n}).
+ * <p>
+ * Decouples line emission from the internal lock to prevent deadlocks when consumer callbacks
+ * interact with external logging subsystems.
  */
 public final class LineReadingOutputStream extends OutputStream {
 
     private static final byte CR = '\r';
     private static final byte LF = '\n';
+    private static final int INITIAL_CAPACITY = 256;
 
-    private final Object lock = new Object();
-
+    private final ReentrantLock lock = new ReentrantLock();
     private final Consumer<String> lineConsumer;
     private final Charset charset;
 
-    /**
-     * Accumulates bytes of the current (not yet terminated) line.
-     */
-    private final ByteArrayOutputStream lineBuffer = new ByteArrayOutputStream(256);
+    private byte[] buf = new byte[INITIAL_CAPACITY];
+    private int count = 0;
+    private boolean lastWasCR = false;
 
     /**
-     * Remembers whether the last processed byte was {@code '\r'} to support CRLF.
-     */
-    private boolean lastWasCR;
-
-    /**
-     * Creates a stream that emits lines to {@code lineConsumer} using the given charset.
+     * Constructs a new {@link LineReadingOutputStream} with a specified line consumer and character encoding.
      *
-     * @param lineConsumer callback invoked for each complete line; must not be {@code null}
-     * @param charset      charset used to decode line bytes; must not be {@code null}
+     * @param lineConsumer the consumer that receives emitted text lines, cannot be null
+     * @param charset      the character encoding used to decode raw bytes, cannot be null
+     * @throws NullPointerException if {@code lineConsumer} or {@code charset} is null
      */
     public LineReadingOutputStream(Consumer<String> lineConsumer, Charset charset) {
-        this.lineConsumer = Objects.requireNonNull(lineConsumer, "lineConsumer must not be null");
-        this.charset = Objects.requireNonNull(charset, "charset must not be null");
+        this.lineConsumer = Objects.requireNonNull(lineConsumer, "lineConsumer cannot be null");
+        this.charset = Objects.requireNonNull(charset, "charset cannot be null");
     }
 
     /**
-     * Creates a stream that emits lines to {@code lineConsumer} using UTF-8.
+     * Constructs a new {@link LineReadingOutputStream} using standard UTF-8 charset.
      *
-     * @param lineConsumer callback invoked for each complete line; must not be {@code null}
+     * @param lineConsumer the consumer that receives emitted text lines, cannot be null
+     * @throws NullPointerException if {@code lineConsumer} is null
      */
     public LineReadingOutputStream(Consumer<String> lineConsumer) {
         this(lineConsumer, StandardCharsets.UTF_8);
     }
 
     /**
-     * Writes a single byte to this stream.
+     * Writes a single byte to the stream and emits a line if a line delimiter is encountered.
      *
-     * <p>
-     * If the byte is a line separator, the current line (if any) is decoded and emitted.
-     * Otherwise the byte is appended to the current line buffer.
-     * </p>
-     *
-     * @param b byte to write (only low 8 bits are used)
+     * @param b the byte value to write (lower 8 bits)
      */
     @Override
     public void write(int b) {
-        byte value = (byte) b;
-        writeByte(value);
+        String lineToEmit;
+
+        lock.lock();
+        try {
+            lineToEmit = processSingleByteLocked((byte) b);
+        } finally {
+            lock.unlock();
+        }
+
+        if (lineToEmit != null) {
+            lineConsumer.accept(lineToEmit);
+        }
     }
 
     /**
-     * Writes a byte array slice to this stream.
+     * Writes a sub-array of bytes to the stream and emits all delimited lines encountered.
      *
-     * <p>
-     * The slice is scanned for line separators. Each complete line is emitted in order.
-     * </p>
-     *
-     * @param bytes  source array; must not be {@code null}
-     * @param offset start offset in array
-     * @param length number of bytes to write
-     * @throws NullPointerException      if {@code bytes} is {@code null}
-     * @throws IndexOutOfBoundsException if {@code offset/length} are invalid
+     * @param bytes  the source byte array
+     * @param offset the starting offset in the array
+     * @param length the number of bytes to write
+     * @throws NullPointerException      if {@code bytes} is null
+     * @throws IndexOutOfBoundsException if {@code offset} or {@code length} is negative,
+     *                                   or if {@code offset + length} exceeds array bounds
      */
     @Override
     public void write(byte[] bytes, int offset, int length) {
-        Objects.requireNonNull(bytes, "bytes must not be null");
-        if (offset < 0 || length < 0 || offset + length > bytes.length) {
-            throw new IndexOutOfBoundsException("Invalid offset/length: offset=" + offset + ", length=" + length);
+        Objects.requireNonNull(bytes, "bytes cannot be null");
+        Objects.checkFromIndexSize(offset, length, bytes.length);
+
+        if (length == 0) {
+            return;
         }
 
-        synchronized (lock) {
+        List<String> linesToEmit = new ArrayList<>();
+
+        lock.lock();
+        try {
             int end = offset + length;
+            int sliceStart = offset;
+
             for (int i = offset; i < end; i++) {
-                writeByteLocked(bytes[i]);
+                byte b = bytes[i];
+
+                if (b == CR) {
+                    appendBufLocked(bytes, sliceStart, i - sliceStart);
+                    extractLineLocked(linesToEmit, true);
+                    lastWasCR = true;
+                    sliceStart = i + 1;
+                } else if (b == LF) {
+                    if (!lastWasCR) {
+                        appendBufLocked(bytes, sliceStart, i - sliceStart);
+                        extractLineLocked(linesToEmit, true);
+                    }
+                    lastWasCR = false;
+                    sliceStart = i + 1;
+                } else {
+                    lastWasCR = false;
+                }
             }
+
+            if (sliceStart < end) {
+                appendBufLocked(bytes, sliceStart, end - sliceStart);
+            }
+        } finally {
+            lock.unlock();
+        }
+
+        for (String line : linesToEmit) {
+            lineConsumer.accept(line);
         }
     }
 
     /**
-     * Flushes the current buffered line (if any) without requiring a newline.
-     *
-     * <p>
-     * This behavior is useful when the upstream code calls {@link PrintStream#flush()}.
-     * </p>
+     * Flushes any uncommitted characters remaining in the buffer as a complete line.
      */
     @Override
     public void flush() {
-        synchronized (lock) {
-            emitLineLocked();
+        String lineToEmit;
+
+        lock.lock();
+        try {
+            lineToEmit = flushBufferLocked(false);
+            lastWasCR = false;
+        } finally {
+            lock.unlock();
+        }
+
+        if (lineToEmit != null) {
+            lineConsumer.accept(lineToEmit);
         }
     }
 
     /**
-     * Emits the last buffered line (if any) and releases internal resources.
-     *
-     * <p>
-     * This method does not close the provided consumer; it only ensures that all buffered content
-     * is delivered.
-     * </p>
+     * Closes the stream and flushes any pending buffered content.
      */
     @Override
-    public void close() throws IOException {
-        synchronized (lock) {
-            emitLineLocked();
-        }
+    public void close() {
+        flush();
     }
 
     /**
-     * Processes a single byte with synchronization.
-     *
-     * @param value byte to process
+     * Processes a single byte under lock and returns the decoded line if a delimiter was hit.
      */
-    private void writeByte(byte value) {
-        synchronized (lock) {
-            writeByteLocked(value);
-        }
-    }
-
-    /**
-     * Processes a single byte and updates the line buffer and CRLF state.
-     *
-     * <p>
-     * The method assumes the caller holds {@link #lock}.
-     * </p>
-     *
-     * @param value byte to process
-     */
-    private void writeByteLocked(byte value) {
+    private String processSingleByteLocked(byte value) {
         if (value == CR) {
-            emitLineLocked();
             lastWasCR = true;
-            return;
+            return flushBufferLocked(true);
         }
 
         if (value == LF) {
-            // If previous byte was CR, this is the LF part of CRLF: ignore.
-            if (!lastWasCR) {
-                emitLineLocked();
-            }
+            boolean skip = lastWasCR;
             lastWasCR = false;
-            return;
+            if (!skip) {
+                return flushBufferLocked(true);
+            }
+            return null;
         }
 
         lastWasCR = false;
-        lineBuffer.write(value);
+        ensureCapacityLocked(count + 1);
+        buf[count++] = value;
+        return null;
     }
 
     /**
-     * Decodes and emits the currently buffered line if it is non-empty.
-     *
-     * <p>
-     * The method assumes the caller holds {@link #lock}.
-     * </p>
+     * Appends a sub-slice of bytes directly to the internal buffer.
      */
-    private void emitLineLocked() {
-        if (lineBuffer.size() == 0) {
+    private void appendBufLocked(byte[] src, int off, int len) {
+        if (len <= 0) {
             return;
         }
+        ensureCapacityLocked(count + len);
+        System.arraycopy(src, off, buf, count, len);
+        count += len;
+    }
 
-        String line = lineBuffer.toString(charset);
-        lineBuffer.reset();
-        lineConsumer.accept(line);
+    /**
+     * Expands internal buffer array if additional capacity is required.
+     */
+    private void ensureCapacityLocked(int minCapacity) {
+        if (minCapacity - buf.length > 0) {
+            int newCapacity = Math.max(buf.length << 1, minCapacity);
+            buf = Arrays.copyOf(buf, newCapacity);
+        }
+    }
+
+    /**
+     * Extracts a line from the buffer and appends it to the emission collector.
+     */
+    private void extractLineLocked(List<String> accumulator, boolean isExplicitNewline) {
+        String line = flushBufferLocked(isExplicitNewline);
+        if (line != null) {
+            accumulator.add(line);
+        }
+    }
+
+    /**
+     * Decodes the buffered bytes into a string and resets the buffer index.
+     */
+    private String flushBufferLocked(boolean isExplicitNewline) {
+        if (!isExplicitNewline && count == 0) {
+            return null;
+        }
+        String line = new String(buf, 0, count, charset);
+        count = 0;
+        return line;
     }
 }

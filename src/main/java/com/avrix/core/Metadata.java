@@ -16,337 +16,205 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * Immutable metadata descriptor for an Avrix plugin.
- * Contains all declarative information parsed from a plugin's manifest file.
- * Used by the framework for validation, discovery, and runtime wiring.
+ * Immutable metadata descriptor for an Avrix plugin or game provider.
+ * <p>
+ * Encapsulates all declarative manifest information parsed from {@code plugin.yaml} or synthesized
+ * from active game runtime providers. Used for dependency resolution, environment filtering,
+ * and mixin registration.
+ *
+ * @param schema       metadata specification schema version
+ * @param name         human-readable display name of the plugin
+ * @param description  brief summary of plugin functionality
+ * @param id           unique alphanumeric identifier (e.g., {@code "crafting-overhaul"})
+ * @param version      semantic version string conforming to SemVer
+ * @param environment  target execution environment constraint (CLIENT, SERVER, BOTH)
+ * @param authors      unmodifiable list of author attribution names
+ * @param license      software licensing model descriptor (e.g., {@code "MIT"})
+ * @param contacts     unmodifiable list of contact endpoints or repository links
+ * @param dependencies map of prerequisite plugin IDs to semantic version constraint ranges
+ * @param entrypoint   fully-qualified class name of the plugin entrypoint class
+ * @param mixins       unmodifiable list of mixin configuration paths inside the plugin JAR
  */
-public class Metadata {
-    private static final Logger log = LoggerFactory.getLogger(Metadata.class);
+public record Metadata(
+        int schema,
+        String name,
+        String description,
+        String id,
+        String version,
+        Environment environment,
+        List<String> authors,
+        String license,
+        List<String> contacts,
+        Map<String, String> dependencies,
+        String entrypoint,
+        List<String> mixins
+) {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Metadata.class);
 
     /**
-     * Schema version of the metadata format.
-     */
-    private final int schema;
-
-    /**
-     * Human-readable plugin name.
-     */
-    private final String name;
-
-    /**
-     * Short plugin description.
-     */
-    private final String description;
-
-    /**
-     * Unique plugin identifier (e.g., {@code plugin-id}).
-     */
-    private final String id;
-
-    /**
-     * Plugin version string (SemVer recommended).
-     */
-    private final String version;
-
-    /**
-     * Target {@link Environment}
-     */
-    private final Environment environment;
-
-    /**
-     * List of author names.
-     */
-    private final List<String> authors;
-
-    /**
-     * License identifier (e.g., {@code "MIT"}, {@code "Apache-2.0"}).
-     */
-    private final String license;
-
-    /**
-     * Contact information (emails, URLs).
-     */
-    private final List<String> contacts;
-
-    /**
-     * Dependencies map: {@code pluginId -> versionConstraint}.
-     */
-    private final Map<String, String> dependencies;
-
-    /**
-     * Fully-qualified class name of the plugin entrypoint.
-     */
-    private final String entrypoint;
-
-    /**
-     * List of Mixin configuration fully-qualified class name.
-     */
-    private final List<String> mixins;
-
-    /**
-     * Creates a new Metadata instance.
+     * Compact constructor enforcing domain invariants and collection immutability.
      *
-     * @param schema       metadata schema version
-     * @param name         human-readable plugin name
-     * @param description  short plugin description
-     * @param id           unique plugin identifier
-     * @param version      plugin version string
-     * @param environment  target runtime environment
-     * @param authors      list of author names
-     * @param license      license identifier
-     * @param contacts     list of contact strings
-     * @param dependencies map of plugin dependencies
-     * @param entrypoint   fully-qualified entrypoint class name
-     * @param mixins       list of Mixin config paths
+     * @throws NullPointerException     if mandatory fields are null
+     * @throws IllegalArgumentException if string invariants or schema versions are violated
      */
-    public Metadata(int schema, String name, String description, String id, String version,
-                    Environment environment, List<String> authors, String license, List<String> contacts,
-                    Map<String, String> dependencies, String entrypoint, List<String> mixins) {
-        this.schema = schema;
-        this.name = name;
-        this.description = description;
-        this.id = id;
-        this.version = version;
-        this.environment = environment;
-        this.authors = authors;
-        this.license = license;
-        this.contacts = contacts;
-        this.dependencies = dependencies;
-        this.entrypoint = entrypoint;
-        this.mixins = mixins;
+    public Metadata {
+        if (schema != Constants.METADATA_SCHEMA) {
+            throw new IllegalArgumentException(
+                    "Unsupported metadata schema version (metadata: %d, supported: %d)".formatted(schema, Constants.METADATA_SCHEMA)
+            );
+        }
+
+        Objects.requireNonNull(id, "Plugin 'id' cannot be null");
+        Objects.requireNonNull(name, "Plugin 'name' cannot be null");
+        Objects.requireNonNull(version, "Plugin 'version' cannot be null");
+
+        if (id.isBlank()) {
+            throw new IllegalArgumentException("Plugin 'id' cannot be blank");
+        }
+        if (name.isBlank()) {
+            throw new IllegalArgumentException("Plugin 'name' cannot be blank");
+        }
+        if (version.isBlank()) {
+            throw new IllegalArgumentException("Plugin 'version' cannot be blank");
+        }
+
+        environment = Objects.requireNonNullElse(environment, Environment.BOTH);
+        description = Objects.requireNonNullElse(description, "");
+        license = Objects.requireNonNullElse(license, "UNLICENSED");
+        entrypoint = Objects.requireNonNullElse(entrypoint, "");
+
+        authors = (authors == null) ? List.of() : List.copyOf(authors);
+        contacts = (contacts == null) ? List.of() : List.copyOf(contacts);
+        mixins = (mixins == null) ? List.of() : List.copyOf(mixins);
+        dependencies = (dependencies == null) ? Map.of() : Map.copyOf(dependencies);
     }
 
     /**
-     * Returns the metadata schema version.
+     * Synthesizes a {@link Metadata} descriptor representing the underlying game from a {@link GameProvider}.
      *
-     * @return schema version number
-     */
-    public int getSchema() {
-        return schema;
-    }
-
-    /**
-     * Returns the human-readable plugin name.
-     *
-     * @return plugin name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Returns the short plugin description.
-     *
-     * @return description text
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * Returns the unique plugin identifier.
-     *
-     * @return plugin ID (e.g., {@code plugin-id})
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * Returns the plugin version string.
-     *
-     * @return version (e.g., {@code "1.2.3"})
-     */
-    public String getVersion() {
-        return version;
-    }
-
-    /**
-     * Returns the target {@link Environment}
-     *
-     * @return {@link Environment}
-     */
-    public Environment getEnvironment() {
-        return environment;
-    }
-
-    /**
-     * Returns the list of author names.
-     *
-     * @return immutable list of authors
-     */
-    public List<String> getAuthors() {
-        return authors;
-    }
-
-    /**
-     * Returns the license identifier.
-     *
-     * @return license name (e.g., {@code "MIT"})
-     */
-    public String getLicense() {
-        return license;
-    }
-
-    /**
-     * Returns the list of contact strings.
-     *
-     * @return immutable list of contacts
-     */
-    public List<String> getContacts() {
-        return contacts;
-    }
-
-    /**
-     * Returns the dependencies map.
-     *
-     * @return map of {@code pluginId -> versionConstraint}
-     */
-    public Map<String, String> getDependencies() {
-        return dependencies;
-    }
-
-    /**
-     * Returns the fully-qualified entrypoint class name.
-     *
-     * @return entrypoint class name
-     */
-    public String getEntrypoint() {
-        return entrypoint;
-    }
-
-    /**
-     * Returns the list of Mixin fully-qualified entrypoint class name.s.
-     *
-     * @return immutable list of Mixin fully-qualified entrypoint class name.
-     */
-    public List<String> getMixins() {
-        return mixins;
-    }
-
-    /**
-     * Creates metadata from an existing {@link Bootstrap} instance.
-     *
-     * @param bootstrap the source {@link Bootstrap}
-     * @return loader {@link Metadata} instance
-     */
-    public static Metadata fromBootstrap(Bootstrap bootstrap) {
-        return new Builder()
-                .schema(Constants.METADATA_SCHEMA)
-                .authors(bootstrap.getAuthors())
-                .name(bootstrap.getName())
-                .id(bootstrap.getId())
-                .license(bootstrap.getLicense())
-                .contacts(bootstrap.getContacts())
-                .version(bootstrap.getVersion())
-                .build();
-    }
-
-    /**
-     * Creates metadata from an existing {@link GameProvider} instance.
-     * Maps provider properties to the corresponding metadata fields.
-     *
-     * @param provider the source {@link GameProvider}
-     * @return configured {@link Metadata} instance
+     * @param provider the active game provider instance
+     * @return synthesized game metadata
+     * @throws NullPointerException if {@code provider} is null
      */
     public static Metadata fromGameProvider(GameProvider provider) {
+        Objects.requireNonNull(provider, "GameProvider cannot be null");
         return new Builder()
                 .schema(Constants.METADATA_SCHEMA)
-                .authors(provider.getAuthors())
-                .name(provider.getName())
                 .id(provider.getId())
-                .license(provider.getLicense())
-                .contacts(provider.getContacts())
+                .name(provider.getName())
                 .version(provider.getNormalizedVersion())
                 .environment(provider.getEnvironment())
+                .authors(provider.getAuthors())
+                .license(provider.getLicense())
+                .contacts(provider.getContacts())
                 .entrypoint(provider.getEntrypoint())
                 .build();
     }
 
     /**
-     * Loads plugin {@link Metadata} from a YAML entry inside a JAR file.
+     * Parses a plugin metadata manifest located inside a JAR file.
      *
-     * @param jarFile   path to the plugin JAR
-     * @param entryPath path to the metadata YAML inside the JAR
-     * @return parsed {@link Metadata} instance with resolved file paths
-     * @throws IOException           if reading the JAR or YAML fails
-     * @throws FileNotFoundException if the specified entry does not exist
+     * @param jarPath   the path to the physical JAR file on disk
+     * @param entryPath internal relative path to the YAML manifest (e.g., {@code "plugin.yaml"})
+     * @return parsed immutable metadata
+     * @throws IOException if an I/O error occurs or the specified entry is missing
      */
-    public static Metadata fromJarFile(File jarFile, String entryPath) throws IOException {
-        log.debug("Loading metadata from JAR '{}'", jarFile);
-        try (JarFile jar = new JarFile(jarFile)) {
+    public static Metadata fromJarFile(Path jarPath, String entryPath) throws IOException {
+        Objects.requireNonNull(jarPath, "JAR path cannot be null");
+        Objects.requireNonNull(entryPath, "Entry path cannot be null");
+
+        LOGGER.debug("Loading plugin metadata from JAR [{}] at entry [{}]", jarPath, entryPath);
+        try (JarFile jar = new JarFile(jarPath.toFile())) {
             JarEntry entry = jar.getJarEntry(entryPath);
             if (entry == null) {
-                throw new FileNotFoundException("Metadata entry not found in JAR: " + entryPath);
+                throw new FileNotFoundException("Metadata entry [%s] not found in JAR [%s]".formatted(entryPath, jarPath));
             }
 
             try (InputStream in = jar.getInputStream(entry)) {
                 YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
                         .source(() -> new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8)))
                         .build();
-                Metadata jarMeta = fromNode(loader.load());
 
-                log.debug("Metadata loaded for plugin '{}'", jarMeta.getId());
-                return jarMeta;
+                Metadata metadata = fromNode(loader.load());
+                LOGGER.debug("Successfully loaded metadata for plugin [{}] (v{})", metadata.id(), metadata.version());
+                return metadata;
             }
         } catch (FileNotFoundException e) {
-            log.warn("{}", e.getMessage());
+            LOGGER.warn("Metadata manifest not found: {}", e.getMessage());
             throw e;
         } catch (IOException e) {
-            log.error("Failed to load metadata from {}: {}", jarFile.getName(), e.getMessage(), e);
+            LOGGER.error("Failed to parse metadata manifest from JAR [{}]: {}", jarPath.getFileName(), e.getMessage(), e);
             throw e;
-        } catch (Exception e) {
-            log.error("Unexpected error parsing metadata from {}: {}", jarFile.getName(), e.getMessage(), e);
-            throw new IOException("Failed to parse metadata", e);
         }
     }
 
     /**
-     * Loads {@link Metadata} from a YAML file at the given path.
+     * Parses a plugin metadata manifest from a {@link File} reference.
+     *
+     * @param jarFile   the physical JAR file
+     * @param entryPath internal relative path to the YAML manifest
+     * @return parsed metadata
+     * @throws IOException if reading the manifest fails
+     */
+    public static Metadata fromJarFile(File jarFile, String entryPath) throws IOException {
+        Objects.requireNonNull(jarFile, "JarFile cannot be null");
+        return fromJarFile(jarFile.toPath(), entryPath);
+    }
+
+    /**
+     * Parses metadata from an external YAML file on the filesystem.
      *
      * @param path path to the YAML file
-     * @return parsed {@link Metadata}
-     * @throws IOException if the file cannot be read
+     * @return parsed metadata
+     * @throws IOException if reading fails or YAML structure is invalid
      */
     public static Metadata fromYaml(Path path) throws IOException {
+        Objects.requireNonNull(path, "Path cannot be null");
         YamlConfigurationLoader loader = YamlConfigurationLoader.builder().path(path).build();
         return fromNode(loader.load());
     }
 
     /**
-     * Parses {@link Metadata} from a Configurate {@link ConfigurationNode}.
+     * Deserializes a {@link Metadata} record from a Configurate {@link ConfigurationNode}.
      *
-     * @param node root {@link ConfigurationNode}
-     * @return parsed {@link Metadata}
-     * @throws SerializationException if type conversion fails
+     * @param node the root configuration node
+     * @return populated {@link Metadata}
+     * @throws SerializationException if required nodes cannot be deserialized
      */
     public static Metadata fromNode(ConfigurationNode node) throws SerializationException {
-        Metadata.Builder builder = new Builder()
-                .schema(node.node("schema").getInt(0))
-                .name(node.node("name").getString())
-                .description(node.node("description").getString())
-                .id(node.node("id").getString())
-                .version(node.node("version").getString())
-                .entrypoint(node.node("entrypoint").getString())
-                .license(node.node("license").getString());
+        Objects.requireNonNull(node, "ConfigurationNode cannot be null");
 
-        if (!node.node("authors").virtual())
-            builder.authors(node.node("authors").getList(String.class));
-        if (!node.node("contacts").virtual())
-            builder.contacts(node.node("contacts").getList(String.class));
+        Builder builder = new Builder()
+                .schema(node.node("schema").getInt(Constants.METADATA_SCHEMA))
+                .id(node.node("id").getString())
+                .name(node.node("name").getString())
+                .description(node.node("description").getString(""))
+                .version(node.node("version").getString())
+                .entrypoint(node.node("entrypoint").getString(""))
+                .license(node.node("license").getString("UNLICENSED"));
+
         if (!node.node("environment").virtual()) {
-            String env = node.node("environment").getString("both");
-            if ("*".equals(env)) env = "both";
-            builder.environment(Environment.fromString(env.toLowerCase(Locale.ROOT)));
+            builder.environment(Environment.fromString(node.node("environment").getString("both")));
         }
 
-        if (!node.node("mixins").virtual())
-            builder.mixins(node.node("mixins").getList(String.class));
+        if (!node.node("authors").virtual()) {
+            builder.authors(node.node("authors").getList(String.class, Collections.emptyList()));
+        }
 
-        ConfigurationNode depsNode = node.node("dependencies");
-        if (!depsNode.virtual() && depsNode.isMap()) {
-            for (var entry : depsNode.childrenMap().entrySet()) {
-                builder.addDependency(entry.getKey().toString(), entry.getValue().getString());
+        if (!node.node("contacts").virtual()) {
+            builder.contacts(node.node("contacts").getList(String.class, Collections.emptyList()));
+        }
+
+        if (!node.node("mixins").virtual()) {
+            builder.mixins(node.node("mixins").getList(String.class, Collections.emptyList()));
+        }
+
+        ConfigurationNode dependenciesNode = node.node("dependencies");
+        if (!dependenciesNode.virtual() && dependenciesNode.isMap()) {
+            for (var entry : dependenciesNode.childrenMap().entrySet()) {
+                String depId = String.valueOf(entry.getKey());
+                String versionConstraint = entry.getValue().getString("*");
+                builder.addDependency(depId, versionConstraint);
             }
         }
 
@@ -354,98 +222,52 @@ public class Metadata {
     }
 
     /**
-     * Class for creating new metadata for the "Builder" patern
+     * Fluent Builder for constructing immutable {@link Metadata} instances.
      */
-    public static class Builder {
-        /**
-         * Schema version of the metadata format.
-         */
-        private int schema;
+    public static final class Builder {
 
-        /**
-         * Human-readable plugin name.
-         */
+        private int schema = Constants.METADATA_SCHEMA;
         private String name;
-
-        /**
-         * Short plugin description.
-         */
-        private String description;
-
-        /**
-         * Unique plugin identifier (e.g., {@code plugin-id}).
-         */
+        private String description = "";
         private String id;
-
-        /**
-         * Plugin version string (SemVer recommended).
-         */
         private String version;
-
-        /**
-         * Target {@link Environment}
-         */
         private Environment environment = Environment.BOTH;
+        private final List<String> authors = new ArrayList<>();
+        private String license = "UNLICENSED";
+        private final List<String> contacts = new ArrayList<>();
+        private final Map<String, String> dependencies = new HashMap<>();
+        private String entrypoint = "";
+        private final List<String> mixins = new ArrayList<>();
 
         /**
-         * List of author names.
-         */
-        private List<String> authors = new ArrayList<>();
-
-        /**
-         * License identifier (e.g., {@code "MIT"}, {@code "Apache-2.0"}).
-         */
-        private String license;
-
-        /**
-         * Contact information (emails, URLs).
-         */
-        private List<String> contacts = new ArrayList<>();
-
-        /**
-         * Dependencies map: {@code pluginId -> versionConstraint}.
-         */
-        private Map<String, String> dependencies = new HashMap<>();
-
-        /**
-         * Fully-qualified class name of the plugin entrypoint.
-         */
-        private String entrypoint;
-
-        /**
-         * List of Mixin configuration fully-qualified class name.
-         */
-        private List<String> mixins = new ArrayList<>();
-
-        /**
-         * Sets the metadata schema version.
+         * Sets the schema version.
          *
-         * @param schema schema version number
-         * @return this builder for method chaining
+         * @param schema specification version number
+         * @return this builder instance
          */
-        public Metadata.Builder schema(int schema) {
+        public Builder schema(int schema) {
             this.schema = schema;
             return this;
         }
 
         /**
-         * Sets the human-readable plugin name.
+         * Sets the human-readable display name.
          *
          * @param name plugin name
-         * @return this builder for method chaining
+         * @return this builder instance
          */
-        public Metadata.Builder name(String name) {
+        public Builder name(String name) {
             this.name = name;
             return this;
         }
 
         /**
-         * Sets the short plugin description.
+         * Sets the plugin description.
          *
-         * @param description description text
-         * @return this builder for method chaining
+         * @param description summary description
+         * @return this builder instance
          */
-        public Metadata.Builder description(String description) {
+        public Builder description(String description) {
             this.description = description;
             return this;
         }
@@ -453,205 +275,223 @@ public class Metadata {
         /**
          * Sets the unique plugin identifier.
          *
-         * @param id plugin ID
-         * @return this builder for method chaining
+         * @param id plugin identifier
+         * @return this builder instance
          */
-        public Metadata.Builder id(String id) {
+        public Builder id(String id) {
             this.id = id;
             return this;
         }
 
         /**
-         * Sets the plugin version string.
+         * Sets the semantic version string.
          *
          * @param version version string
-         * @return this builder for method chaining
+         * @return this builder instance
          */
-        public Metadata.Builder version(String version) {
+        public Builder version(String version) {
             this.version = version;
             return this;
         }
 
         /**
-         * Sets the target runtime {@link Environment}. Defaults to {@link Environment#BOTH} if null.
+         * Sets the execution environment constraint.
          *
-         * @param environment target {@link Environment}
-         * @return this builder for method chaining
+         * @param environment target environment
+         * @return this builder instance
          */
-        public Metadata.Builder environment(Environment environment) {
-            this.environment = environment != null ? environment : Environment.BOTH;
+        public Builder environment(Environment environment) {
+            this.environment = Objects.requireNonNullElse(environment, Environment.BOTH);
             return this;
         }
 
         /**
-         * Sets the list of plugin authors. Replaces existing list with a copy.
+         * Appends a list of author names.
          *
-         * @param authors list of author names, or null to clear
-         * @return this builder for method chaining
+         * @param authors list of authors
+         * @return this builder instance
          */
-        public Metadata.Builder authors(List<String> authors) {
-            this.authors = authors != null ? new ArrayList<>(authors) : new ArrayList<>();
+        public Builder authors(List<String> authors) {
+            if (authors != null) {
+                this.authors.addAll(authors);
+            }
             return this;
         }
 
         /**
-         * Sets the plugin authors from a varargs array.
+         * Appends multiple author names.
          *
-         * @param authors author names
-         * @return this builder for method chaining
+         * @param authors array of author names
+         * @return this builder instance
          */
-        public Metadata.Builder authors(String... authors) {
-            this.authors = new ArrayList<>(Arrays.asList(authors));
+        public Builder authors(String... authors) {
+            if (authors != null) {
+                this.authors.addAll(Arrays.asList(authors));
+            }
             return this;
         }
 
         /**
-         * Adds a single author to the list.
+         * Appends a single author name.
          *
          * @param author author name
-         * @return this builder for method chaining
+         * @return this builder instance
          */
-        public Metadata.Builder addAuthor(String author) {
-            this.authors.add(author);
+        public Builder addAuthor(String author) {
+            if (author != null && !author.isBlank()) {
+                this.authors.add(author);
+            }
             return this;
         }
 
         /**
-         * Sets the plugin license identifier.
+         * Sets the license identifier.
          *
-         * @param license license name (e.g., "MIT")
-         * @return this builder for method chaining
+         * @param license license descriptor
+         * @return this builder instance
          */
-        public Metadata.Builder license(String license) {
+        public Builder license(String license) {
             this.license = license;
             return this;
         }
 
         /**
-         * Sets the list of contact strings. Replaces existing list with a copy.
+         * Appends a list of contact endpoints.
          *
-         * @param contacts list of contacts, or null to clear
-         * @return this builder for method chaining
+         * @param contacts list of contact URLs or strings
+         * @return this builder instance
          */
-        public Metadata.Builder contacts(List<String> contacts) {
-            this.contacts = contacts != null ? new ArrayList<>(contacts) : new ArrayList<>();
+        public Builder contacts(List<String> contacts) {
+            if (contacts != null) {
+                this.contacts.addAll(contacts);
+            }
             return this;
         }
 
         /**
-         * Sets the plugin contacts from a varargs array.
+         * Appends multiple contact endpoints.
          *
-         * @param contacts contact strings
-         * @return this builder for method chaining
+         * @param contacts array of contact strings
+         * @return this builder instance
          */
-        public Metadata.Builder contacts(String... contacts) {
-            this.contacts = new ArrayList<>(Arrays.asList(contacts));
+        public Builder contacts(String... contacts) {
+            if (contacts != null) {
+                this.contacts.addAll(Arrays.asList(contacts));
+            }
             return this;
         }
 
         /**
-         * Adds a single contact string to the list.
+         * Appends a single contact endpoint.
          *
-         * @param contact contact information
-         * @return this builder for method chaining
+         * @param contact contact URL or handle
+         * @return this builder instance
          */
-        public Metadata.Builder addContact(String contact) {
-            this.contacts.add(contact);
+        public Builder addContact(String contact) {
+            if (contact != null && !contact.isBlank()) {
+                this.contacts.add(contact);
+            }
             return this;
         }
 
         /**
-         * Sets the dependencies map. Replaces existing map with a copy.
+         * Populates the dependencies map.
          *
-         * @param map map of pluginId -> versionConstraint, or null to clear
-         * @return this builder for method chaining
+         * @param dependencies map of dependency plugin IDs to SemVer constraint ranges
+         * @return this builder instance
          */
-        public Metadata.Builder dependencies(Map<String, String> map) {
-            this.dependencies = map != null ? new HashMap<>(map) : new HashMap<>();
+        public Builder dependencies(Map<String, String> dependencies) {
+            if (dependencies != null) {
+                this.dependencies.putAll(dependencies);
+            }
             return this;
         }
 
         /**
-         * Adds a single dependency to the map.
+         * Appends a single plugin dependency constraint.
          *
-         * @param id         required plugin ID
-         * @param constrains version constraint string
-         * @return this builder for method chaining
+         * @param id                target plugin ID
+         * @param versionConstraint SemVer constraint expression (e.g., {@code ">=1.0.0"})
+         * @return this builder instance
          */
-        public Metadata.Builder addDependency(String id, String constrains) {
-            this.dependencies.put(id, constrains);
+        public Builder addDependency(String id, String versionConstraint) {
+            if (id != null && !id.isBlank() && versionConstraint != null && !versionConstraint.isBlank()) {
+                this.dependencies.put(id, versionConstraint);
+            }
             return this;
         }
 
         /**
-         * Sets the fully-qualified entrypoint class name.
+         * Sets the fully-qualified name of the main plugin entrypoint class.
          *
-         * @param entrypoint entrypoint class name
-         * @return this builder for method chaining
+         * @param entrypoint binary name of the entrypoint class
+         * @return this builder instance
          */
-        public Metadata.Builder entrypoint(String entrypoint) {
+        public Builder entrypoint(String entrypoint) {
             this.entrypoint = entrypoint;
             return this;
         }
 
         /**
-         * Sets the list of Mixin configuration paths. Replaces existing list with a copy.
+         * Appends a list of mixin configuration paths.
          *
-         * @param mixins list of Mixin file paths, or null to clear
-         * @return this builder for method chaining
+         * @param mixins list of mixin configuration JSON/YAML paths
+         * @return this builder instance
          */
-        public Metadata.Builder mixins(List<String> mixins) {
-            this.mixins = mixins != null ? new ArrayList<>(mixins) : new ArrayList<>();
+        public Builder mixins(List<String> mixins) {
+            if (mixins != null) {
+                this.mixins.addAll(mixins);
+            }
             return this;
         }
 
         /**
-         * Sets the Mixin configurations from a varargs array.
+         * Appends multiple mixin configuration paths.
          *
-         * @param mixins Mixin configuration paths
-         * @return this builder for method chaining
+         * @param mixins array of mixin configuration paths
+         * @return this builder instance
          */
-        public Metadata.Builder mixins(String... mixins) {
-            this.mixins = new ArrayList<>(Arrays.asList(mixins));
+        public Builder mixins(String... mixins) {
+            if (mixins != null) {
+                this.mixins.addAll(Arrays.asList(mixins));
+            }
             return this;
         }
 
         /**
-         * Adds a single Mixin configuration path to the list.
+         * Appends a single mixin configuration path.
          *
-         * @param mixin Mixin config path
-         * @return this builder for method chaining
+         * @param mixin relative path to mixin config inside JAR
+         * @return this builder instance
          */
-        public Metadata.Builder addMixin(String mixin) {
-            this.mixins.add(mixin);
+        public Builder addMixin(String mixin) {
+            if (mixin != null && !mixin.isBlank()) {
+                this.mixins.add(mixin);
+            }
             return this;
         }
 
         /**
-         * Validates required fields and constructs an immutable {@link Metadata} instance.
+         * Builds and validates the resulting {@link Metadata} record.
          *
-         * @return the fully initialized {@link Metadata} object
-         * @throws RuntimeException if the schema version is unsupported, or if {@code id},
-         *                          {@code name}, or {@code version} is null or blank
+         * @return validated immutable {@link Metadata} instance
+         * @throws IllegalArgumentException if domain constraints or mandatory fields are violated
          */
         public Metadata build() {
-            if (schema != Constants.METADATA_SCHEMA) {
-                throw new RuntimeException(String.format(
-                        "Unsupported metadata schema version (metadata: %d, supported: %d)",
-                        schema, Constants.METADATA_SCHEMA));
-            }
-            if (id == null || id.isBlank()) {
-                throw new RuntimeException("The 'id' cannot be null or empty!");
-            }
-            if (name == null || name.isBlank()) {
-                throw new RuntimeException("The 'name' cannot be null or empty!");
-            }
-            if (version == null || version.isBlank()) {
-                throw new RuntimeException("The 'version' cannot be null or empty!");
-            }
-
-            return new Metadata(schema, name, description, id, version, environment, authors, license,
-                    contacts, dependencies, entrypoint, mixins);
+            return new Metadata(
+                    schema,
+                    name,
+                    description,
+                    id,
+                    version,
+                    environment,
+                    authors,
+                    license,
+                    contacts,
+                    dependencies,
+                    entrypoint,
+                    mixins
+            );
         }
     }
 }
