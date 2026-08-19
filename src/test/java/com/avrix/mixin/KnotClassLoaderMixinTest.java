@@ -6,6 +6,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import test.game.FirstPipelineInjectMixin;
+import test.game.SecondPipelineInjectMixin;
 import test.game.TargetGameService;
 import test.game.TargetGameServiceMixin;
 
@@ -18,7 +20,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,7 +65,6 @@ class KnotClassLoaderMixinTest {
         MixinTransformer.addMixin(mixinClassName);
 
         Class<?> transformedClass = knotClassLoader.loadClass(targetClassName);
-
         assertThat(transformedClass.getClassLoader()).isSameAs(knotClassLoader);
 
         Object instance = transformedClass.getDeclaredConstructor().newInstance();
@@ -81,11 +84,46 @@ class KnotClassLoaderMixinTest {
     }
 
     @Test
+    @DisplayName("Should sequentially execute multiple mixin injections on the same target method")
+    @SuppressWarnings("unchecked")
+    void shouldApplyMultipleInjectionsToSameMethod() throws Throwable {
+        String targetClassName = TargetGameService.class.getName();
+
+        // Register both independent mixins targeting the same method
+        MixinTransformer.addMixin(FirstPipelineInjectMixin.class.getName());
+        MixinTransformer.addMixin(SecondPipelineInjectMixin.class.getName());
+
+        Class<?> transformedClass = knotClassLoader.loadClass(targetClassName);
+        assertThat(transformedClass.getClassLoader()).isSameAs(knotClassLoader);
+
+        Object instance = transformedClass.getDeclaredConstructor().newInstance();
+
+        MethodHandles.Lookup lookup = MethodHandles.publicLookup();
+        MethodHandle executePipelineHandle = lookup.findVirtual(
+                transformedClass,
+                "executePipeline",
+                MethodType.methodType(String.class, List.class, String.class)
+        );
+
+        List<String> executionTrace = new ArrayList<>();
+        String returnValue = (String) executePipelineHandle.invoke(instance, executionTrace, "SampleData");
+
+        // Assert return value from original method is intact
+        assertThat(returnValue).isEqualTo("PROCESSED: SampleData");
+
+        // Verify that both HEAD and TAIL mixin injections executed in proper chronological order
+        assertThat(executionTrace).containsExactly(
+                "INJECT_FIRST: SampleData",
+                "ORIGINAL_BODY: SampleData",
+                "INJECT_SECOND: SampleData"
+        );
+    }
+
+    @Test
     @DisplayName("Should load original unmodified bytecode when no mixin is registered")
     void shouldLoadUnmodifiedClassWithoutMixin() throws Throwable {
         String targetClassName = TargetGameService.class.getName();
 
-        // Load class without adding any mixins
         Class<?> rawClass = knotClassLoader.loadClass(targetClassName);
         Object instance = rawClass.getDeclaredConstructor().newInstance();
 
@@ -98,7 +136,6 @@ class KnotClassLoaderMixinTest {
 
         String result = (String) getGreetingHandle.invoke(instance, "Brov3r");
 
-        // Assert original implementation is preserved
         assertThat(result).isEqualTo("Hello, Brov3r");
     }
 
