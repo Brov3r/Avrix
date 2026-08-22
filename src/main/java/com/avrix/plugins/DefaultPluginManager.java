@@ -30,7 +30,7 @@ import java.util.stream.Stream;
  * Production-ready default implementation of the {@link PluginManager} subsystem.
  * <p>
  * Orchestrates plugin discovery from disk, environment-specific filtering, dependency graph validation
- * with topological sorting via Kahn's algorithm, flat classpath registration in {@link KnotClassLoader},
+ * with topological sorting rules, and wildcard {@code "*"} ordering), flat classpath registration in {@link KnotClassLoader},
  * mixin configuration loading, and entrypoint lifecycle invocation.
  */
 public class DefaultPluginManager implements PluginManager {
@@ -159,8 +159,12 @@ public class DefaultPluginManager implements PluginManager {
      */
     @Override
     public void loadPlugin(PluginData container) {
+        if (!initialized) {
+            throw new IllegalStateException("PluginManager is not initialized. Call init() first.");
+        }
         Objects.requireNonNull(container, "Plugin container cannot be null");
-        Metadata meta = container.getMetadata();
+        
+        Metadata meta = container.metadata();
         String id = meta.id();
         String entrypoint = meta.entrypoint();
 
@@ -201,7 +205,7 @@ public class DefaultPluginManager implements PluginManager {
             }
 
             PluginData finalizedContainer = (instance != null)
-                    ? new PluginData(jarFile, container.getPluginIconURI().orElse(null), instance, meta)
+                    ? new PluginData(jarFile, container.iconURI(), instance, meta)
                     : container;
 
             plugins.put(id, finalizedContainer);
@@ -237,12 +241,12 @@ public class DefaultPluginManager implements PluginManager {
     }
 
     /**
-     * Computes the execution order of candidate plugins using topological sorting
-     * and performs strict SemVer constraint satisfaction verification.
+     * Computes the execution order of candidate plugins using topological sorting.
+     * <p>
      *
      * @param candidates list of candidate metadata descriptors
      * @return ordered list of user plugin metadata ready for sequential initialization
-     * @throws IllegalStateException if missing dependencies, constraint violations, or cycles are detected
+     * @throws IllegalStateException if missing dependencies, constraint violations, or cycles occur
      */
     @Override
     public List<Metadata> resolvePluginLoadOrder(List<Metadata> candidates) {
@@ -255,17 +259,21 @@ public class DefaultPluginManager implements PluginManager {
             }
         }
 
-        Map<String, Integer> inDegrees = new HashMap<>();
-        Map<String, List<String>> adjacencyList = new HashMap<>();
-
+        // Initialize adjacency set to prevent duplicate directed edges
+        Map<String, Set<String>> adjacencyList = new HashMap<>();
         for (String id : registry.keySet()) {
-            inDegrees.put(id, 0);
-            adjacencyList.put(id, new ArrayList<>());
+            adjacencyList.put(id, new HashSet<>());
         }
 
-        for (Metadata meta : registry.values()) {
-            String dependentId = meta.id();
+        // Track plugins declaring wildcard rules
+        Set<String> wildcardBeforePlugins = new HashSet<>();
+        Set<String> wildcardAfterPlugins = new HashSet<>();
 
+        // Explicit hard dependencies and explicit soft ordering
+        for (Metadata meta : registry.values()) {
+            String currentId = meta.id();
+
+            // Hard dependencies (requiredId -> currentId)
             for (Map.Entry<String, String> dependency : meta.dependencies().entrySet()) {
                 String requiredId = dependency.getKey();
                 String constraint = dependency.getValue();
@@ -273,7 +281,7 @@ public class DefaultPluginManager implements PluginManager {
 
                 if (requiredMeta == null) {
                     throw new IllegalStateException(
-                            "Plugin [%s] depends on missing component [%s]".formatted(dependentId, requiredId)
+                            "Plugin [%s] depends on missing component [%s]".formatted(currentId, requiredId)
                     );
                 }
 
@@ -282,22 +290,110 @@ public class DefaultPluginManager implements PluginManager {
                     if (!actualVersion.satisfies(constraint)) {
                         throw new IllegalStateException(
                                 "Plugin [%s] requires [%s] matching [%s], but found version [%s]"
-                                        .formatted(dependentId, requiredId, constraint, requiredMeta.version())
+                                        .formatted(currentId, requiredId, constraint, requiredMeta.version())
                         );
                     }
                 } catch (Exception e) {
                     throw new IllegalStateException(
                             "Invalid version constraint in plugin [%s] for dependency [%s]: %s"
-                                    .formatted(dependentId, requiredId, e.getMessage()), e
+                                    .formatted(currentId, requiredId, e.getMessage()), e
                     );
                 }
 
-                adjacencyList.get(requiredId).add(dependentId);
-                inDegrees.put(dependentId, inDegrees.get(dependentId) + 1);
+                adjacencyList.get(requiredId).add(currentId);
+            }
+
+            // Explicit loadAfter rules (afterId -> currentId)
+            for (String afterId : meta.loadAfter()) {
+                if ("*".equals(afterId)) {
+                    wildcardAfterPlugins.add(currentId);
+                } else if (registry.containsKey(afterId)) {
+                    adjacencyList.get(afterId).add(currentId);
+                }
+            }
+
+            // Explicit loadBefore rules (currentId -> beforeId)
+            for (String beforeId : meta.loadBefore()) {
+                if ("*".equals(beforeId)) {
+                    wildcardBeforePlugins.add(currentId);
+                } else if (registry.containsKey(beforeId)) {
+                    adjacencyList.get(currentId).add(beforeId);
+                }
             }
         }
 
-        Queue<String> queue = new LinkedList<>();
+        // Resolve Wildcards without violating explicit constraints or creating self/mutual wildcard cycles
+        // Wildcard loadBefore: currentId -> otherId
+        for (String currentId : wildcardBeforePlugins) {
+            Metadata currentMeta = registry.get(currentId);
+            for (String otherId : registry.keySet()) {
+                if (otherId.equals(currentId)) {
+                    continue;
+                }
+                // Skip if otherId is a hard dependency of currentId
+                if (currentMeta.dependencies().containsKey(otherId)) {
+                    continue;
+                }
+                // Skip if currentId explicitly loads after otherId
+                if (currentMeta.loadAfter().contains(otherId)) {
+                    continue;
+                }
+                // Skip if otherId explicitly declared loadBefore currentId
+                Metadata otherMeta = registry.get(otherId);
+                if (otherMeta.loadBefore().contains(currentId)) {
+                    continue;
+                }
+                // If both are wildcardBefore, let explicit rules (if any) govern, don't add mutual edges
+                if (wildcardBeforePlugins.contains(otherId) && adjacencyList.get(otherId).contains(currentId)) {
+                    continue;
+                }
+
+                adjacencyList.get(currentId).add(otherId);
+            }
+        }
+
+        // Wildcard loadAfter: otherId -> currentId
+        for (String currentId : wildcardAfterPlugins) {
+            Metadata currentMeta = registry.get(currentId);
+            for (String otherId : registry.keySet()) {
+                if (otherId.equals(currentId)) {
+                    continue;
+                }
+                Metadata otherMeta = registry.get(otherId);
+                // Skip if currentId is a hard dependency of otherId
+                if (otherMeta.dependencies().containsKey(currentId)) {
+                    continue;
+                }
+                // Skip if otherId explicitly loads after currentId
+                if (otherMeta.loadAfter().contains(currentId)) {
+                    continue;
+                }
+                // Skip if currentId explicitly declared loadBefore otherId
+                if (currentMeta.loadBefore().contains(otherId)) {
+                    continue;
+                }
+                // If both are wildcardAfter, avoid cyclic interference
+                if (wildcardAfterPlugins.contains(otherId) && adjacencyList.get(currentId).contains(otherId)) {
+                    continue;
+                }
+
+                adjacencyList.get(otherId).add(currentId);
+            }
+        }
+
+        // Compute in-degrees and execute Kahn's topological sort
+        Map<String, Integer> inDegrees = new HashMap<>();
+        for (String id : registry.keySet()) {
+            inDegrees.put(id, 0);
+        }
+
+        for (Set<String> outgoingEdges : adjacencyList.values()) {
+            for (String target : outgoingEdges) {
+                inDegrees.put(target, inDegrees.get(target) + 1);
+            }
+        }
+
+        Queue<String> queue = new ArrayDeque<>();
         for (Map.Entry<String, Integer> entry : inDegrees.entrySet()) {
             if (entry.getValue() == 0) {
                 queue.add(entry.getKey());
@@ -319,14 +415,17 @@ public class DefaultPluginManager implements PluginManager {
             }
         }
 
+        // Cycle verification
         if (sortedList.size() != registry.size()) {
             List<String> cycleNodes = inDegrees.entrySet().stream()
                     .filter(entry -> entry.getValue() > 0)
                     .map(Map.Entry::getKey)
+                    .sorted()
                     .toList();
-            throw new IllegalStateException("Cyclic plugin dependency detected. Circular nodes: " + String.join(", ", cycleNodes));
+            throw new IllegalStateException("Cyclic plugin dependency or load order detected. Circular nodes: " + String.join(", ", cycleNodes));
         }
 
+        // Filter out core descriptors from the user execution queue
         List<Metadata> userPluginsOrder = sortedList.stream()
                 .filter(meta -> corePlugins.stream().noneMatch(core -> core.id().equals(meta.id())))
                 .toList();
