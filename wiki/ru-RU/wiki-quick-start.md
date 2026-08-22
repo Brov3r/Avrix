@@ -148,6 +148,10 @@ contacts:
 dependencies:
   avrix-loader: ">=2.1.0"
   project-zomboid: ">=42.20.0"
+loadBefore:                             # Загрузка перед каким либо плагином (список идентификаторов).
+   - "*"                                # Можно указать "*", тогда загрузка, по возможности, будет происходить перед (либо после, если в loadAfter) всеми плагинами       
+loadAfter:                              # Загрузка после какого-либо плагина (список идентификаторов)
+   - "plugin-id"
 entrypoint: "com.example.exampleplugin.ExamplePlugin" # (Опционально) Полный FQCN точки входа
 mixins:
   - "com.example.exampleplugin.ExampleMixin"          # (Опционально) Список классов миксинов

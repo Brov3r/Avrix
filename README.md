@@ -40,22 +40,22 @@ configuration, and plugin development:
 3. 💡 Launch the game via the command line or custom startup script:
 
 ```bash
-java -jar ./Avrix-Loader-2.1.0.jar
+java -jar ./Avrix-Loader-x.x.x.jar
 ```
 
 *For dedicated servers with Steam integration disabled, append `-nosteam`:*
 
 ```bash
-java -jar ./Avrix-Loader-2.1.0.jar -nosteam
+java -jar ./Avrix-Loader-x.x.x.jar -nosteam
 ```
 
 > [!NOTE]
 > **Logging Level:** You can adjust the loader log verbosity using the `-Dconsole.level=TRACE` (or `DEBUG`, `INFO`,
-`WARN`, `ERROR`) JVM flag: ``java -Dconsole.level=TRACE -jar ./Avrix-Loader-2.1.0.jar``
+`WARN`, `ERROR`) JVM flag: ``java -Dconsole.level=TRACE -jar ./Avrix-Loader-x.x.x.jar``
 >
 >
 > **Raw Game Logs:** Pass the `--no-redirect-log` flag to disable Avrix stream interception and restore default Project
-> Zomboid console output: ``java -jar ./Avrix-Loader-2.1.0.jar --no-redirect-log``
+> Zomboid console output: ``java -jar ./Avrix-Loader-x.x.x.jar --no-redirect-log``
 
 ## 🤝 Contributing
 
