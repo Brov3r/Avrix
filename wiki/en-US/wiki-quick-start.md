@@ -149,7 +149,7 @@ dependencies:
   avrix-loader: ">=2.1.0"
   project-zomboid: ">=42.20.0"
 loadBefore: # Loading before any plugin (list of identifiers).
-  - "*"                                # You can specify “*”, in which case the loading will, if possible, occur before (or after, if in loadAfter) all plugins.
+  - "*" # You can specify “*”, in which case the loading will, if possible, occur before (or after, if in loadAfter) all plugins.
 loadAfter: # Loading after some plugin (list of identifiers)
   - "plugin-id"
 entrypoint: "com.example.exampleplugin.ExamplePlugin" # (Optional) FQCN of the entrypoint class
@@ -188,8 +188,8 @@ public class ExamplePlugin implements Plugin {
     @Override
     public void onInitialize(PluginData pluginData) {
         LOGGER.info("Example Plugin [{}] v{} initialized successfully!",
-                pluginData.getId(),
-                pluginData.getMetadata().version());
+                pluginData.id(),
+                pluginData.metadata().version());
     }
 }
 ```
