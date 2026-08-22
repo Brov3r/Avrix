@@ -16,23 +16,25 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * Immutable metadata descriptor for an Avrix plugin or game provider.
+ * Immutable metadata descriptor for an Avrix plugin or runtime game provider.
  * <p>
  * Encapsulates all declarative manifest information parsed from {@code plugin.yaml} or synthesized
- * from active game runtime providers. Used for dependency resolution, environment filtering,
- * and mixin registration.
+ * from active game runtime providers. Used for topological dependency sorting, environment filtering,
+ * and mixin bootstrap configuration.
  *
- * @param schema       metadata specification schema version
- * @param name         human-readable display name of the plugin
- * @param description  brief summary of plugin functionality
- * @param id           unique alphanumeric identifier (e.g., {@code "crafting-overhaul"})
- * @param version      semantic version string conforming to SemVer
- * @param environment  target execution environment constraint (CLIENT, SERVER, BOTH)
+ * @param schema       metadata specification schema version (mandatory, must match {@link Constants#METADATA_SCHEMA})
+ * @param name         human-readable display name of the plugin (mandatory, non-blank)
+ * @param description  brief summary of plugin functionality; defaults to empty string
+ * @param id           unique alphanumeric identifier (mandatory, non-blank)
+ * @param version      semantic version string conforming to SemVer (mandatory, non-blank)
+ * @param environment  target execution environment constraint; defaults to {@link Environment#BOTH}
  * @param authors      unmodifiable list of author attribution names
- * @param license      software licensing model descriptor (e.g., {@code "MIT"})
+ * @param license      software licensing model descriptor; defaults to {@code "UNLICENSED"}
  * @param contacts     unmodifiable list of contact endpoints or repository links
- * @param dependencies map of prerequisite plugin IDs to semantic version constraint ranges
- * @param entrypoint   fully-qualified class name of the plugin entrypoint class
+ * @param dependencies unmodifiable map of prerequisite plugin IDs to semantic version constraint ranges
+ * @param loadBefore   unmodifiable list of plugin IDs that must be loaded strictly after this plugin
+ * @param loadAfter    unmodifiable list of plugin IDs that must be loaded strictly before this plugin
+ * @param entrypoint   fully-qualified class name of the plugin entrypoint class; defaults to empty string
  * @param mixins       unmodifiable list of mixin configuration paths inside the plugin JAR
  */
 public record Metadata(
@@ -46,24 +48,28 @@ public record Metadata(
         String license,
         List<String> contacts,
         Map<String, String> dependencies,
+        List<String> loadBefore,
+        List<String> loadAfter,
         String entrypoint,
         List<String> mixins
 ) {
     private static final Logger LOGGER = LoggerFactory.getLogger(Metadata.class);
 
     /**
-     * Compact constructor enforcing domain invariants and collection immutability.
+     * Compact constructor enforcing domain invariants, mandatory attribute validation, and collection immutability.
      *
-     * @throws NullPointerException     if mandatory fields are null
-     * @throws IllegalArgumentException if string invariants or schema versions are violated
+     * @throws NullPointerException     if any mandatory string field ({@code id}, {@code name}, {@code version}) is {@code null}
+     * @throws IllegalArgumentException if string invariants (non-blank) or supported schema versions are violated
      */
     public Metadata {
+        // Mandatory schema verification
         if (schema != Constants.METADATA_SCHEMA) {
             throw new IllegalArgumentException(
                     "Unsupported metadata schema version (metadata: %d, supported: %d)".formatted(schema, Constants.METADATA_SCHEMA)
             );
         }
 
+        // Mandatory string attributes verification
         Objects.requireNonNull(id, "Plugin 'id' cannot be null");
         Objects.requireNonNull(name, "Plugin 'name' cannot be null");
         Objects.requireNonNull(version, "Plugin 'version' cannot be null");
@@ -78,15 +84,19 @@ public record Metadata(
             throw new IllegalArgumentException("Plugin 'version' cannot be blank");
         }
 
+        // Optional scalar fields normalization
         environment = Objects.requireNonNullElse(environment, Environment.BOTH);
         description = Objects.requireNonNullElse(description, "");
         license = Objects.requireNonNullElse(license, "UNLICENSED");
         entrypoint = Objects.requireNonNullElse(entrypoint, "");
 
+        // Defensive copy and unmodifiable collection creation
         authors = (authors == null) ? List.of() : List.copyOf(authors);
         contacts = (contacts == null) ? List.of() : List.copyOf(contacts);
         mixins = (mixins == null) ? List.of() : List.copyOf(mixins);
         dependencies = (dependencies == null) ? Map.of() : Map.copyOf(dependencies);
+        loadBefore = (loadBefore == null) ? List.of() : List.copyOf(loadBefore);
+        loadAfter = (loadAfter == null) ? List.of() : List.copyOf(loadAfter);
     }
 
     /**
@@ -94,7 +104,7 @@ public record Metadata(
      *
      * @param provider the active game provider instance
      * @return synthesized game metadata
-     * @throws NullPointerException if {@code provider} is null
+     * @throws NullPointerException if {@code provider} is {@code null}
      */
     public static Metadata fromGameProvider(GameProvider provider) {
         Objects.requireNonNull(provider, "GameProvider cannot be null");
@@ -117,7 +127,9 @@ public record Metadata(
      * @param jarPath   the path to the physical JAR file on disk
      * @param entryPath internal relative path to the YAML manifest (e.g., {@code "plugin.yaml"})
      * @return parsed immutable metadata
-     * @throws IOException if an I/O error occurs or the specified entry is missing
+     * @throws NullPointerException  if {@code jarPath} or {@code entryPath} is {@code null}
+     * @throws FileNotFoundException if the specified entry is missing inside the JAR
+     * @throws IOException           if an I/O error occurs while reading the JAR or parsing YAML
      */
     public static Metadata fromJarFile(Path jarPath, String entryPath) throws IOException {
         Objects.requireNonNull(jarPath, "JAR path cannot be null");
@@ -153,8 +165,9 @@ public record Metadata(
      *
      * @param jarFile   the physical JAR file
      * @param entryPath internal relative path to the YAML manifest
-     * @return parsed metadata
-     * @throws IOException if reading the manifest fails
+     * @return parsed immutable metadata
+     * @throws NullPointerException if {@code jarFile} or {@code entryPath} is {@code null}
+     * @throws IOException          if reading the manifest fails
      */
     public static Metadata fromJarFile(File jarFile, String entryPath) throws IOException {
         Objects.requireNonNull(jarFile, "JarFile cannot be null");
@@ -165,8 +178,9 @@ public record Metadata(
      * Parses metadata from an external YAML file on the filesystem.
      *
      * @param path path to the YAML file
-     * @return parsed metadata
-     * @throws IOException if reading fails or YAML structure is invalid
+     * @return parsed immutable metadata
+     * @throws NullPointerException if {@code path} is {@code null}
+     * @throws IOException          if reading fails or YAML structure is invalid
      */
     public static Metadata fromYaml(Path path) throws IOException {
         Objects.requireNonNull(path, "Path cannot be null");
@@ -179,6 +193,7 @@ public record Metadata(
      *
      * @param node the root configuration node
      * @return populated {@link Metadata}
+     * @throws NullPointerException   if {@code node} is {@code null}
      * @throws SerializationException if required nodes cannot be deserialized
      */
     public static Metadata fromNode(ConfigurationNode node) throws SerializationException {
@@ -195,6 +210,14 @@ public record Metadata(
 
         if (!node.node("environment").virtual()) {
             builder.environment(Environment.fromString(node.node("environment").getString("both")));
+        }
+
+        if (!node.node("loadBefore").virtual()) {
+            builder.loadBefore(node.node("loadBefore").getList(String.class, Collections.emptyList()));
+        }
+
+        if (!node.node("loadAfter").virtual()) {
+            builder.loadAfter(node.node("loadAfter").getList(String.class, Collections.emptyList()));
         }
 
         if (!node.node("authors").virtual()) {
@@ -236,6 +259,8 @@ public record Metadata(
         private String license = "UNLICENSED";
         private final List<String> contacts = new ArrayList<>();
         private final Map<String, String> dependencies = new HashMap<>();
+        private final List<String> loadBefore = new ArrayList<>();
+        private final List<String> loadAfter = new ArrayList<>();
         private String entrypoint = "";
         private final List<String> mixins = new ArrayList<>();
 
@@ -253,7 +278,7 @@ public record Metadata(
         /**
          * Sets the human-readable display name.
          *
-         * @param name plugin name
+         * @param name plugin display name
          * @return this builder instance
          */
         public Builder name(String name) {
@@ -286,7 +311,7 @@ public record Metadata(
         /**
          * Sets the semantic version string.
          *
-         * @param version version string
+         * @param version semantic version string
          * @return this builder instance
          */
         public Builder version(String version) {
@@ -297,7 +322,7 @@ public record Metadata(
         /**
          * Sets the execution environment constraint.
          *
-         * @param environment target environment
+         * @param environment target environment constraint
          * @return this builder instance
          */
         public Builder environment(Environment environment) {
@@ -422,6 +447,84 @@ public record Metadata(
         }
 
         /**
+         * Appends a list of plugin IDs that must load after this plugin.
+         *
+         * @param ids list of target plugin IDs
+         * @return this builder instance
+         */
+        public Builder loadBefore(List<String> ids) {
+            if (ids != null) {
+                this.loadBefore.addAll(ids);
+            }
+            return this;
+        }
+
+        /**
+         * Appends multiple plugin IDs that must load after this plugin.
+         *
+         * @param ids array of target plugin IDs
+         * @return this builder instance
+         */
+        public Builder loadBefore(String... ids) {
+            if (ids != null) {
+                this.loadBefore.addAll(Arrays.asList(ids));
+            }
+            return this;
+        }
+
+        /**
+         * Appends a single plugin ID that must load after this plugin.
+         *
+         * @param id target plugin ID
+         * @return this builder instance
+         */
+        public Builder addLoadBefore(String id) {
+            if (id != null && !id.isBlank()) {
+                this.loadBefore.add(id);
+            }
+            return this;
+        }
+
+        /**
+         * Appends a list of plugin IDs that must load before this plugin.
+         *
+         * @param ids list of prerequisite plugin IDs
+         * @return this builder instance
+         */
+        public Builder loadAfter(List<String> ids) {
+            if (ids != null) {
+                this.loadAfter.addAll(ids);
+            }
+            return this;
+        }
+
+        /**
+         * Appends multiple plugin IDs that must load before this plugin.
+         *
+         * @param ids array of prerequisite plugin IDs
+         * @return this builder instance
+         */
+        public Builder loadAfter(String... ids) {
+            if (ids != null) {
+                this.loadAfter.addAll(Arrays.asList(ids));
+            }
+            return this;
+        }
+
+        /**
+         * Appends a single plugin ID that must load before this plugin.
+         *
+         * @param id prerequisite plugin ID
+         * @return this builder instance
+         */
+        public Builder addLoadAfter(String id) {
+            if (id != null && !id.isBlank()) {
+                this.loadAfter.add(id);
+            }
+            return this;
+        }
+
+        /**
          * Sets the fully-qualified name of the main plugin entrypoint class.
          *
          * @param entrypoint binary name of the entrypoint class
@@ -475,6 +578,7 @@ public record Metadata(
          * Builds and validates the resulting {@link Metadata} record.
          *
          * @return validated immutable {@link Metadata} instance
+         * @throws NullPointerException     if any mandatory string field ({@code id}, {@code name}, {@code version}) is {@code null}
          * @throws IllegalArgumentException if domain constraints or mandatory fields are violated
          */
         public Metadata build() {
@@ -489,6 +593,8 @@ public record Metadata(
                     license,
                     contacts,
                     dependencies,
+                    loadBefore,
+                    loadAfter,
                     entrypoint,
                     mixins
             );

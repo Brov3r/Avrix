@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Unit test suite for {@link Metadata} record, builder, and deserialization routines.
+ * Comprehensive unit test suite for {@link Metadata} record, builder, and deserialization routines.
  */
 @DisplayName("Metadata Unit Tests")
 class MetadataTest {
@@ -37,12 +37,14 @@ class MetadataTest {
     class ConstructorTests {
 
         @Test
-        @DisplayName("Should create instance and retain exact values")
+        @DisplayName("Should create instance and retain exact values including load orders")
         void shouldCreateInstance() {
             var dependencies = Map.of("core-plugin", ">=1.0.0");
             var authors = List.of("Author One", "Author Two");
             var contacts = List.of("dev@example.com");
             var mixins = List.of("mixins.core.class");
+            var loadBefore = List.of("ui-plugin", "audio-plugin");
+            var loadAfter = List.of("network-engine");
 
             var meta = new Metadata(
                     SCHEMA,
@@ -55,6 +57,8 @@ class MetadataTest {
                     "MIT",
                     contacts,
                     dependencies,
+                    loadBefore,
+                    loadAfter,
                     "com.example.PluginMain",
                     mixins
             );
@@ -69,12 +73,14 @@ class MetadataTest {
             assertThat(meta.license()).isEqualTo("MIT");
             assertThat(meta.contacts()).containsExactly("dev@example.com");
             assertThat(meta.dependencies()).containsEntry("core-plugin", ">=1.0.0");
+            assertThat(meta.loadBefore()).containsExactly("ui-plugin", "audio-plugin");
+            assertThat(meta.loadAfter()).containsExactly("network-engine");
             assertThat(meta.entrypoint()).isEqualTo("com.example.PluginMain");
             assertThat(meta.mixins()).containsExactly("mixins.core.class");
         }
 
         @Test
-        @DisplayName("Should return strictly unmodifiable collections")
+        @DisplayName("Should return strictly unmodifiable collections for all collection properties")
         void shouldReturnUnmodifiableCollections() {
             var meta = new Metadata(
                     SCHEMA,
@@ -87,6 +93,8 @@ class MetadataTest {
                     "MIT",
                     List.of("contact@example.com"),
                     Map.of("dep", "1.0"),
+                    List.of("target-after-me"),
+                    List.of("target-before-me"),
                     "com.example.Main",
                     List.of("mixin.json")
             );
@@ -97,8 +105,44 @@ class MetadataTest {
                     .isInstanceOf(UnsupportedOperationException.class);
             assertThatThrownBy(() -> meta.dependencies().put("key", "val"))
                     .isInstanceOf(UnsupportedOperationException.class);
+            assertThatThrownBy(() -> meta.loadBefore().add("another-plugin"))
+                    .isInstanceOf(UnsupportedOperationException.class);
+            assertThatThrownBy(() -> meta.loadAfter().remove(0))
+                    .isInstanceOf(UnsupportedOperationException.class);
             assertThatThrownBy(() -> meta.mixins().remove(0))
                     .isInstanceOf(UnsupportedOperationException.class);
+        }
+
+        @Test
+        @DisplayName("Should fallback to defaults when nullable collections and optional values are provided")
+        void shouldHandleNullCollectionArgumentsInConstructor() {
+            var meta = new Metadata(
+                    SCHEMA,
+                    "Name",
+                    null,
+                    "plugin-id",
+                    "1.0.0",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+
+            assertThat(meta.environment()).isEqualTo(Environment.BOTH);
+            assertThat(meta.description()).isEmpty();
+            assertThat(meta.license()).isEqualTo("UNLICENSED");
+            assertThat(meta.entrypoint()).isEmpty();
+            assertThat(meta.authors()).isEmpty();
+            assertThat(meta.contacts()).isEmpty();
+            assertThat(meta.dependencies()).isEmpty();
+            assertThat(meta.loadBefore()).isEmpty();
+            assertThat(meta.loadAfter()).isEmpty();
+            assertThat(meta.mixins()).isEmpty();
         }
     }
 
@@ -126,6 +170,8 @@ class MetadataTest {
             assertThat(meta.authors()).isEmpty();
             assertThat(meta.contacts()).isEmpty();
             assertThat(meta.dependencies()).isEmpty();
+            assertThat(meta.loadBefore()).isEmpty();
+            assertThat(meta.loadAfter()).isEmpty();
             assertThat(meta.mixins()).isEmpty();
         }
 
@@ -173,6 +219,16 @@ class MetadataTest {
                     .isInstanceOf(NullPointerException.class)
                     .hasMessageContaining("Plugin 'name' cannot be null");
 
+            // Blank Name
+            assertThatThrownBy(() -> new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("valid-id")
+                    .name("   ")
+                    .version("1.0.0")
+                    .build())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Plugin 'name' cannot be blank");
+
             // Missing Version (null)
             assertThatThrownBy(() -> new Metadata.Builder()
                     .schema(SCHEMA)
@@ -198,6 +254,8 @@ class MetadataTest {
         void shouldDefensivelyCopyCollections() {
             var mutableAuthors = new ArrayList<>(List.of("Original Author"));
             var mutableDependencies = new HashMap<>(Map.of("dep-a", "1.0.0"));
+            var mutableLoadBefore = new ArrayList<>(List.of("plugin-b"));
+            var mutableLoadAfter = new ArrayList<>(List.of("plugin-a"));
 
             var builder = new Metadata.Builder()
                     .schema(SCHEMA)
@@ -205,19 +263,25 @@ class MetadataTest {
                     .name("Defensive Name")
                     .version("1.0.0")
                     .authors(mutableAuthors)
-                    .dependencies(mutableDependencies);
+                    .dependencies(mutableDependencies)
+                    .loadBefore(mutableLoadBefore)
+                    .loadAfter(mutableLoadAfter);
 
             mutableAuthors.add("Intruder");
             mutableDependencies.put("malicious-dep", "6.6.6");
+            mutableLoadBefore.add("malicious-before");
+            mutableLoadAfter.add("malicious-after");
 
             var meta = builder.build();
 
             assertThat(meta.authors()).containsExactly("Original Author");
             assertThat(meta.dependencies()).doesNotContainKey("malicious-dep");
+            assertThat(meta.loadBefore()).containsExactly("plugin-b");
+            assertThat(meta.loadAfter()).containsExactly("plugin-a");
         }
 
         @Test
-        @DisplayName("Should support fluent varargs and single-element addition")
+        @DisplayName("Should support fluent varargs and single-element addition for all collections")
         void shouldSupportConvenienceMethods() {
             var meta = new Metadata.Builder()
                     .schema(SCHEMA)
@@ -230,6 +294,10 @@ class MetadataTest {
                     .addContact("contact2@example.com")
                     .addDependency("lib-core", ">=2.0.0")
                     .addDependency("lib-ext", "^1.0.0")
+                    .loadBefore("plugin-x", "plugin-y")
+                    .addLoadBefore("plugin-z")
+                    .loadAfter("core-engine", "auth-service")
+                    .addLoadAfter("logger-service")
                     .mixins("mixin.a.json", "mixin.b.json")
                     .addMixin("mixin.c.json")
                     .build();
@@ -239,7 +307,45 @@ class MetadataTest {
             assertThat(meta.dependencies())
                     .containsEntry("lib-core", ">=2.0.0")
                     .containsEntry("lib-ext", "^1.0.0");
+            assertThat(meta.loadBefore()).containsExactly("plugin-x", "plugin-y", "plugin-z");
+            assertThat(meta.loadAfter()).containsExactly("core-engine", "auth-service", "logger-service");
             assertThat(meta.mixins()).containsExactly("mixin.a.json", "mixin.b.json", "mixin.c.json");
+        }
+
+        @Test
+        @DisplayName("Should ignore null or blank items in single-element and varargs builder methods")
+        void shouldIgnoreInvalidConvenienceInputs() {
+            var meta = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("safe-id")
+                    .name("Safe Name")
+                    .version("1.0.0")
+                    .authors((String[]) null)
+                    .addAuthor(null)
+                    .addAuthor("   ")
+                    .contacts((String[]) null)
+                    .addContact(null)
+                    .addContact("   ")
+                    .addDependency(null, ">=1.0")
+                    .addDependency("dep", null)
+                    .addDependency("   ", "1.0")
+                    .loadBefore((String[]) null)
+                    .addLoadBefore(null)
+                    .addLoadBefore("   ")
+                    .loadAfter((String[]) null)
+                    .addLoadAfter(null)
+                    .addLoadAfter("   ")
+                    .mixins((String[]) null)
+                    .addMixin(null)
+                    .addMixin("   ")
+                    .build();
+
+            assertThat(meta.authors()).isEmpty();
+            assertThat(meta.contacts()).isEmpty();
+            assertThat(meta.dependencies()).isEmpty();
+            assertThat(meta.loadBefore()).isEmpty();
+            assertThat(meta.loadAfter()).isEmpty();
+            assertThat(meta.mixins()).isEmpty();
         }
     }
 
@@ -255,7 +361,7 @@ class MetadataTest {
         }
 
         @Test
-        @DisplayName("Should parse complete metadata descriptor from YAML structure")
+        @DisplayName("Should parse complete metadata descriptor including load order rules from YAML structure")
         void shouldParseCompleteNode() throws IOException {
             var yaml = """
                     schema: %d
@@ -275,6 +381,11 @@ class MetadataTest {
                     dependencies:
                       core-lib: ">=1.0.0"
                       optional-dep: "^2.3"
+                    loadBefore:
+                      - downstream-plugin
+                    loadAfter:
+                      - upstream-plugin
+                      - base-runtime
                     mixins:
                       - mixins.parsed.class
                     """.formatted(SCHEMA);
@@ -295,6 +406,8 @@ class MetadataTest {
             assertThat(meta.dependencies())
                     .containsEntry("core-lib", ">=1.0.0")
                     .containsEntry("optional-dep", "^2.3");
+            assertThat(meta.loadBefore()).containsExactly("downstream-plugin");
+            assertThat(meta.loadAfter()).containsExactly("upstream-plugin", "base-runtime");
             assertThat(meta.mixins()).containsExactly("mixins.parsed.class");
         }
 
@@ -316,7 +429,7 @@ class MetadataTest {
         }
 
         @Test
-        @DisplayName("Should populate defaults for omitted optional fields")
+        @DisplayName("Should populate defaults for omitted optional fields and load order constraints")
         void shouldHandleMissingOptionalFields() throws IOException {
             var yaml = """
                     schema: %d
@@ -329,12 +442,15 @@ class MetadataTest {
             var meta = Metadata.fromNode(node);
 
             assertThat(meta.id()).isEqualTo("minimal-node");
+            assertThat(meta.environment()).isEqualTo(Environment.BOTH);
             assertThat(meta.description()).isEmpty();
             assertThat(meta.license()).isEqualTo("UNLICENSED");
             assertThat(meta.entrypoint()).isEmpty();
             assertThat(meta.authors()).isEmpty();
             assertThat(meta.contacts()).isEmpty();
             assertThat(meta.dependencies()).isEmpty();
+            assertThat(meta.loadBefore()).isEmpty();
+            assertThat(meta.loadAfter()).isEmpty();
             assertThat(meta.mixins()).isEmpty();
         }
     }
@@ -368,6 +484,8 @@ class MetadataTest {
             assertThat(meta.authors()).containsExactly("The Indie Stone");
             assertThat(meta.license()).isEqualTo("PROPRIETARY");
             assertThat(meta.contacts()).containsExactly("https://projectzomboid.com");
+            assertThat(meta.loadBefore()).isEmpty();
+            assertThat(meta.loadAfter()).isEmpty();
         }
     }
 
@@ -389,6 +507,8 @@ class MetadataTest {
                     version: 4.0.0
                     entrypoint: com.file.Main
                     authors: [FileAuthor]
+                    loadBefore: [dependent-a]
+                    loadAfter: [dependency-b]
                     """.formatted(SCHEMA);
 
             Files.writeString(yamlPath, content, StandardCharsets.UTF_8);
@@ -399,6 +519,8 @@ class MetadataTest {
             assertThat(meta.version()).isEqualTo("4.0.0");
             assertThat(meta.authors()).containsExactly("FileAuthor");
             assertThat(meta.entrypoint()).isEqualTo("com.file.Main");
+            assertThat(meta.loadBefore()).containsExactly("dependent-a");
+            assertThat(meta.loadAfter()).containsExactly("dependency-b");
         }
 
         @Test
@@ -410,6 +532,8 @@ class MetadataTest {
             assertThat(meta.id()).isEqualTo("jar-plugin");
             assertThat(meta.name()).isEqualTo("JAR Plugin");
             assertThat(meta.entrypoint()).isEqualTo("com.jar.Main");
+            assertThat(meta.loadBefore()).containsExactly("post-plugin");
+            assertThat(meta.loadAfter()).containsExactly("pre-plugin");
         }
 
         @Test
@@ -433,6 +557,10 @@ class MetadataTest {
                         name: JAR Plugin
                         version: 1.0.0
                         entrypoint: com.jar.Main
+                        loadBefore:
+                          - post-plugin
+                        loadAfter:
+                          - pre-plugin
                         """.formatted(SCHEMA);
                 jos.write(content.getBytes(StandardCharsets.UTF_8));
                 jos.closeEntry();
