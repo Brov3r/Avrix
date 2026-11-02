@@ -16,7 +16,8 @@ Avrix provides developers with full flexibility in choosing mixin syntax:
    Recommended for developers starting fresh without prior Minecraft modding experience.
 2. **Standard SpongePowered Mixin Annotations** (`@Mixin`, `@Inject`, `@Overwrite`, `@Redirect`):
    Supported via the built-in `MixinsTranslator` preprocessor inside the Avrix core. If you have previously built mods
-   for FabricMC or Sponge, your existing mixin code will work seamlessly.
+   for FabricMC or Sponge, many existing mixin declarations can be reused; verify that the annotations and features you
+   use are supported by the translator.
 
 ---
 
@@ -26,10 +27,10 @@ To use mixin annotations in your plugin codebase, declare the dependencies in th
 
 ```groovy
 dependencies {
-    // ClassTransform core (base transformation annotations)
+    // Compile-only: provided by the loader at runtime.
     compileOnly 'net.lenni0451.classtransform:core:1.15.1'
 
-    // SpongePowered Mixin dummy stubs (if you use @Mixin syntax)
+    // Only needed when using @Mixin syntax.
     compileOnly 'net.lenni0451.classtransform:mixinsdummy:1.15.1'
 }
 ```
@@ -46,14 +47,15 @@ mixins:
   - "com.example.myplugin.mixin.InventoryMixin"
 ```
 
-Avrix ensures that all declared mixins are registered in `KnotClassLoader` before the target Project Zomboid game
-classes are loaded and initialized.
+Mixins are registered when their owning plugin is loaded. If another plugin can load the target class earlier, declare
+`loadBefore` so the mixin-providing plugin is loaded first. Avoid loading target classes during `onInitialize` unless
+the load order guarantees that the required mixin is already registered.
 
 ---
 
 ### Learning Resources
 
-The principles of writing mixins in Avrix match the standard FabricMC ecosystem:
+The principles of writing mixins in Avrix are similar to the FabricMC ecosystem:
 
 * [Introduction to Mixins (FabricMC Wiki)](https://fabricmc.net/wiki/tutorial:mixin_introduction) — Core injection
   points (`HEAD`, `RETURN`, `INVOKE`).

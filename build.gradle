@@ -53,7 +53,11 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.withType(Javadoc).configureEach {
     options.encoding = 'UTF-8'
-    options.addStringOption('Xdoclint:none', '-quiet')
+    options.addStringOption('Xdoclint:all', '-quiet')
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('javadoc')
 }
 
 tasks.withType(Test).configureEach {

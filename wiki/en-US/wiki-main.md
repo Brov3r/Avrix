@@ -4,7 +4,7 @@
 
 This documentation is up to date for the following versions:
 
-- 🧟 **Project Zomboid:** `42.20.x+`
+- 🧟 **Project Zomboid:** `42.21.0+`
 - ⚡ **Avrix Loader:** `2.2.x`
 - ☕ **Java Runtime:** `JDK 25+`
 
@@ -22,8 +22,8 @@ Key concepts used across this documentation:
   features.
 - **Mixin:** An on-the-fly bytecode transformation mechanism that alters target game classes (Project Zomboid) during
   class loading without modifying original game files.
-- **KnotClassLoader:** A unified flat transforming classloader that hosts game classes, loader runtime, and plugins
-  within a single visibility domain.
+- **KnotClassLoader:** A transforming classloader that hosts game classes, loader runtime, and plugins in a single flat
+  domain. JVM internals and logging/loader infrastructure are delegated to the parent classloader.
 - **ServiceManager:** A thread-safe, type-safe service registry (Service Locator) that binds interface contracts to
   runtime implementations.
 

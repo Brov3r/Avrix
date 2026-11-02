@@ -19,7 +19,7 @@ import java.util.Properties;
  * via {@code avrix.properties} resource token replacement, falling back to static
  * constant definitions if the resource file is missing or unreadable.
  *
- * @apiNote Instantiated and registered in {@code ServiceManager} during the bootstrap lifecycle phase.
+ * <p><b>API Note:</b> Instantiated and registered in {@code ServiceManager} during the bootstrap lifecycle phase.
  */
 public final class DefaultLoaderProvider implements LoaderProvider {
 
@@ -40,7 +40,7 @@ public final class DefaultLoaderProvider implements LoaderProvider {
      * Attempts to read dynamically filtered build properties from {@code avrix.properties}
      * on the classpath. If unavailable, falls back to default constant values defined in {@link Constants}.
      *
-     * @implNote Initializes an immutable synthetic {@link Metadata} instance representing the loader runtime.
+     * <p><b>Implementation Note:</b> Initializes an immutable synthetic {@link Metadata} instance representing the loader runtime.
      */
     public DefaultLoaderProvider() {
         Properties properties = new Properties();

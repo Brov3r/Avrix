@@ -19,7 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Bypasses {@link System#out} and {@link System#err} redirections that might be installed
  * by the target game runtime or third-party mods, ensuring uninterrupted loader log output.
  *
- * @apiNote Thread-safe via internal {@link ReentrantLock} synchronizing writes to output streams.
+ * <p><b>API Note:</b> Thread-safe via internal {@link ReentrantLock} synchronizing writes to output streams.
  */
 public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
 
@@ -80,10 +80,10 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
 
     /**
      * Appends a single logging event by serializing it through the encoder and writing to OS descriptors.
+     * <p><b>Implementation Note:</b> Directs output to {@link FileDescriptor#err} if the event level is greater than or
+     * equal to {@link #errorLevel}; otherwise routes to {@link FileDescriptor#out}.
      *
      * @param event the logging event to process
-     * @implNote Directs output to {@link FileDescriptor#err} if the event level is greater than or
-     * equal to {@link #errorLevel}; otherwise routes to {@link FileDescriptor#out}.
      */
     @Override
     protected void append(ILoggingEvent event) {
@@ -114,7 +114,7 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
     /**
      * Starts the appender, validates encoder configuration, and configures console character encoding.
      *
-     * @implNote Detects the active console encoding via {@link System#console()} with fallback to {@link System#out}.
+     * <p><b>Implementation Note:</b> Detects the active console encoding via {@link System#console()} with fallback to {@link System#out}.
      */
     @Override
     public void start() {

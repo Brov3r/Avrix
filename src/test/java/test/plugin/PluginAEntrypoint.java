@@ -8,8 +8,12 @@ import com.avrix.plugins.PluginData;
  */
 public class PluginAEntrypoint implements Plugin {
 
+    /**
+     * Captures the result of the entrypoint execution for assertions.
+     */
     public static String executionResult;
 
+    /** {@inheritDoc} */
     @Override
     public void onInitialize(PluginData pluginData) {
         BasePluginService service = new BasePluginService();

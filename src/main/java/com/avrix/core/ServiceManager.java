@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Provides a lightweight dependency locator mechanism that binds unique service types
  * (interfaces or classes) to their active singleton instances across the loader lifecycle.
  *
- * @apiNote Ensures strict type safety, prevents accidental duplicate registrations,
+ * <p><b>API Note:</b> Ensures strict type safety, prevents accidental duplicate registrations,
  * and enables decoupled communication between core subsystems and external plugins.
  */
 public final class ServiceManager {
@@ -125,7 +125,7 @@ public final class ServiceManager {
     /**
      * Clears all registered services from the registry.
      *
-     * @apiNote Intended exclusively for integration test cleanup and environment resets.
+     * <p><b>API Note:</b> Intended exclusively for integration test cleanup and environment resets.
      */
     public static void clear() {
         SERVICES.clear();

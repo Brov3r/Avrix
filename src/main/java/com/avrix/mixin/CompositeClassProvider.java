@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  * Queries the unified {@link KnotClassLoader} and the platform runtime classloader
  * to supply raw bytecode for mixin translation and ASM frame computation.
  *
- * @apiNote Implements {@link IClassProvider} for {@link net.lenni0451.classtransform.TransformerManager}.
+ * <p><b>API Note:</b> Implements {@link IClassProvider} for {@link net.lenni0451.classtransform.TransformerManager}.
  */
 public final class CompositeClassProvider implements IClassProvider {
 

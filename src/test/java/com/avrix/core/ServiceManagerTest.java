@@ -21,6 +21,7 @@ class ServiceManagerTest {
     }
 
     static class DummyServiceImpl implements DummyService {
+        /** {@inheritDoc} */
         @Override
         public String ping() {
             return "pong";

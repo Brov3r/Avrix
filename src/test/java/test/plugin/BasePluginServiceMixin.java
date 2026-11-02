@@ -6,6 +6,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(BasePluginService.class)
+/**
+ * Test mixin that intercepts {@link BasePluginService#calculateValue(String)}.
+ */
 public class BasePluginServiceMixin {
 
     @Inject(method = "calculateValue", at = @At("HEAD"), cancellable = true)

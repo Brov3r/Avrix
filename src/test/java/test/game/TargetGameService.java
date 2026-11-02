@@ -34,6 +34,8 @@ public class TargetGameService {
     }
 
     /**
+     * Returns the number of target method invocations recorded by this test service.
+     *
      * @return current execution count
      */
     public int getExecutionCounter() {

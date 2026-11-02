@@ -10,7 +10,7 @@ import java.util.Properties;
 /**
  * Global constant definitions and runtime metadata for the Avrix loader.
  *
- * @apiNote This is a static utility class and cannot be instantiated.
+ * <p><b>API Note:</b> This is a static utility class and cannot be instantiated.
  */
 public final class Constants {
 

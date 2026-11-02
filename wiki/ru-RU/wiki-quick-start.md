@@ -7,20 +7,20 @@
 
 Для запуска Project Zomboid с загрузчиком Avrix выполните следующие шаги:
 
-1. ⬇️ Скачайте актуальный релиз `Avrix-Loader-X.X.X.jar` со
+1. ⬇️ Скачайте актуальный релиз `Avrix-Loader-<version>.jar` со
    страницы [Releases](https://github.com/Brov3r/Avrix/releases) на GitHub.
 2. 📁 Поместите скачанный `.jar` файл в корневую папку клиента или сервера Project Zomboid (например,
    `C:\Program Files (x86)\Steam\steamapps\common\ProjectZomboid`).
 3. 💡 Запустите игру через терминал (CMD / PowerShell / Bash):
 
 ```bash
-java -jar ./Avrix-Loader-2.1.0.jar
+java -jar ./Avrix-Loader-<version>.jar
 ```
 
 *Для запуска выделенного сервера без интеграции Steam добавьте аргумент `-nosteam`:*
 
 ```bash
-java -jar ./Avrix-Loader-2.1.0.jar -nosteam
+java -jar ./Avrix-Loader-<version>.jar -nosteam
 ```
 
 4. ⚙️ **Опционально:** для удобства создайте скрипт запуска `.bat` (Windows) или `.sh` (Linux) с этой командой.
@@ -38,15 +38,14 @@ ExamplePlugin/
 ├── build.gradle
 ├── settings.gradle
 ├── libs/
-│   ├── projectzomboid.jar      # Игровые классы
-│   ├── Avrix-Loader-2.1.0.jar  # Ядро загрузчика
-│   └── avrix-api-1.0.0.jar     # API (опционально)
+│   ├── projectzomboid.jar            # Игровые классы
+│   └── Avrix-Loader-<version>.jar    # Загрузчик и API плагинов
 └── src/
     ├── main/
     │   ├── java/com/example/exampleplugin/
     │   │   ├── ExamplePlugin.java      # Точка входа (implements Plugin)
     │   │   ├── ExampleMixin.java       # Класс трансформации (Миксин)
-    │   │   └── ...      
+    │   │   └── ...
     │   └── resources/
     │       ├── metadata.yml            # Метаданные плагина
     │       ├── icon.png                # Иконка (опционально)
@@ -55,6 +54,8 @@ ExamplePlugin/
         └── java/com/example/exampleplugin/
             └── ...
 ```
+
+JAR загрузчика также содержит публичный API плагинов, поэтому отдельная зависимость `avrix-api` не требуется.
 
 ---
 
@@ -86,13 +87,11 @@ repositories {
 }
 
 dependencies {
-    // Внешние runtime-библиотеки плагина (будут упакованы в ShadowJar)
-    // Зависимости компиляции: ядро игры и загрузчик (НЕ упаковываются в итоговый JAR)
+    // Compile-only: provided by the game and loader at runtime, so they are not shaded.
     compileOnly(fileTree(dir: 'libs', include: '*.jar'))
     compileOnly 'net.lenni0451.classtransform:core:1.15.1'
 
-    // Тестирование
-    testImplementation platform('org.junit:junit-bom:5.12.0')
+    testImplementation platform('org.junit:junit-bom:6.1.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core:3.27.7'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -145,12 +144,13 @@ authors:
 contacts:
   - "https://github.com/YourName/ExamplePlugin"
   - "contact@example.com"
+# Указывайте ограничения версий только если плагину нужен конкретный API или сборка игры.
 dependencies:
-  avrix-loader: ">=2.1.0"
-  project-zomboid: ">=42.20.0"
-loadBefore: # Загрузка перед каким либо плагином (список идентификаторов).
-  - "*" # Можно указать "*", тогда загрузка, по возможности, будет происходить перед (либо после, если в loadAfter) всеми плагинами       
-loadAfter: # Загрузка после какого-либо плагина (список идентификаторов)
+  avrix-loader: "*"
+  project-zomboid: "*"
+loadBefore: # Загрузка перед указанными ID; "*" — перед всеми плагинами, когда это возможно.
+  - "*"
+loadAfter: # Загрузка после указанных ID.
   - "plugin-id"
 entrypoint: "com.example.exampleplugin.ExamplePlugin" # (Опционально) Полный FQCN точки входа
 mixins:
@@ -180,8 +180,8 @@ public class ExamplePlugin implements Plugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExamplePlugin.class);
 
     /**
-     * Invoked during the loader initialization phase after classpath binding
-     * and mixin bytecode transformations, but before the game starts.
+     * Invoked after the plugin JAR is attached and its mixins are registered,
+     * but before the game starts.
      *
      * @param pluginData container containing active metadata, jar path, and icon
      */

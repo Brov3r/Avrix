@@ -197,64 +197,77 @@ class CrossPluginMixinIntegrationTest {
     }
 
     private static final class DummyGameProvider implements GameProvider {
+        /** {@inheritDoc} */
         @Override
         public String getId() {
             return "dummy-game";
         }
 
+        /** {@inheritDoc} */
         @Override
         public void init() {
         }
 
+        /** {@inheritDoc} */
         @Override
         public void launch(String[] args) {
         }
 
+        /** {@inheritDoc} */
         @Override
         public String[] getLaunchArgs() {
             return new String[0];
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getName() {
             return "Dummy Game";
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getNormalizedVersion() {
             return "1.0.0";
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getRawVersion() {
             return "1.0.0";
         }
 
+        /** {@inheritDoc} */
         @Override
         public Path getLaunchDirectory() {
             return Paths.get(".").toAbsolutePath().normalize();
         }
 
+        /** {@inheritDoc} */
         @Override
         public Environment getEnvironment() {
             return Environment.BOTH;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getEntrypoint() {
             return "com.dummy.Main";
         }
 
+        /** {@inheritDoc} */
         @Override
         public List<String> getAuthors() {
             return List.of("Author");
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getLicense() {
             return "MIT";
         }
 
+        /** {@inheritDoc} */
         @Override
         public List<String> getContacts() {
             return List.of();

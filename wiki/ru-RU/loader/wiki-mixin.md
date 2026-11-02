@@ -17,7 +17,8 @@ Avrix предоставляет разработчикам свободу вы�
    Рекомендуются для новых разработчиков, не имеющих опыта работы с Minecraft.
 2. **Стандартные аннотации SpongePowered Mixin** (`@Mixin`, `@Inject`, `@Overwrite`, `@Redirect`):
    Поддерживаются благодаря встроенному в ядро Avrix препроцессору `MixinsTranslator`. Если вы ранее писали моды для
-   FabricMC или Sponge, ваш привычный код будет работать без изменений.
+   FabricMC или Sponge, многие существующие объявления можно переиспользовать; проверьте, что используемые аннотации и
+   возможности поддерживаются транслятором.
 
 ---
 
@@ -27,10 +28,10 @@ Avrix предоставляет разработчикам свободу вы�
 
 ```groovy
 dependencies {
-    // Ядро ClassTransform (базовые аннотации трансформации)
+    // Compile-only: provided by the loader at runtime.
     compileOnly 'net.lenni0451.classtransform:core:1.15.1'
 
-    // Заглушки аннотаций SpongePowered Mixin (если вы используете синтаксис @Mixin)
+    // Only needed when using @Mixin syntax.
     compileOnly 'net.lenni0451.classtransform:mixinsdummy:1.15.1'
 }
 ```
@@ -47,14 +48,15 @@ mixins:
   - "com.example.myplugin.mixin.InventoryMixin"
 ```
 
-Avrix гарантирует, что все указанные миксины регистрируются в `KnotClassLoader` до момента загрузки и инициализации
-целевых игровых классов Project Zomboid.
+Миксины регистрируются при загрузке плагина-владельца. Если другой плагин может загрузить целевой класс раньше,
+укажите `loadBefore`, чтобы плагин с миксином загрузился первым. Не загружайте целевые классы в `onInitialize`, если
+порядок загрузки не гарантирует, что нужный миксин уже зарегистрирован.
 
 ---
 
 ### Обучающие материалы
 
-Принципы написания миксинов в Avrix полностью идентичны экосистеме FabricMC:
+Принципы написания миксинов в Avrix схожи с экосистемой FabricMC:
 
 * [Введение в Mixin (FabricMC Wiki)](https://fabricmc.net/wiki/tutorial:mixin_introduction) — базовые концепции точек
   внедрения (`HEAD`, `RETURN`, `INVOKE`).

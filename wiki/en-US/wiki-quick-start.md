@@ -7,20 +7,20 @@ experience with Fabric mod development, working with Avrix will feel immediately
 
 To launch Project Zomboid with the Avrix loader:
 
-1. ⬇️ Download the latest `Avrix-Loader-X.X.X.jar` from the GitHub [Releases](https://github.com/Brov3r/Avrix/releases)
-   page.
+1. ⬇️ Download the latest `Avrix-Loader-<version>.jar` from the GitHub
+   [Releases](https://github.com/Brov3r/Avrix/releases) page.
 2. 📁 Place the downloaded `.jar` file into the root directory of your Project Zomboid client or dedicated server (for
    example, `C:\Program Files (x86)\Steam\steamapps\common\ProjectZomboid`).
 3. 💡 Launch the game via your terminal (CMD, PowerShell, or Bash):
 
 ```bash
-java -jar ./Avrix-Loader-2.1.0.jar
+java -jar ./Avrix-Loader-<version>.jar
 ```
 
 *To launch a dedicated server without Steam integration, append the `-nosteam` argument:*
 
 ```bash
-java -jar ./Avrix-Loader-2.1.0.jar -nosteam
+java -jar ./Avrix-Loader-<version>.jar -nosteam
 ```
 
 4. ⚙️ **Optional:** Create a `.bat` (Windows) or `.sh` (Linux) launch script containing this command for quick
@@ -39,15 +39,14 @@ ExamplePlugin/
 ├── build.gradle
 ├── settings.gradle
 ├── libs/
-│   ├── projectzomboid.jar      # Game classes
-│   ├── Avrix-Loader-2.1.0.jar  # Loader core runtime
-│   └── avrix-api-1.0.0.jar     # Loader API (optional)
+│   ├── projectzomboid.jar            # Game classes
+│   └── Avrix-Loader-<version>.jar    # Loader runtime and plugin API
 └── src/
     ├── main/
     │   ├── java/com/example/exampleplugin/
     │   │   ├── ExamplePlugin.java      # Entrypoint (implements Plugin)
     │   │   ├── ExampleMixin.java       # Bytecode transformer (Mixin)
-    │   │   └── ...      
+    │   │   └── ...
     │   └── resources/
     │       ├── metadata.yml            # Plugin metadata manifest
     │       ├── icon.png                # Plugin icon (optional)
@@ -56,6 +55,8 @@ ExamplePlugin/
         └── java/com/example/exampleplugin/
             └── ...
 ```
+
+The loader JAR also contains the public plugin API, so a separate `avrix-api` dependency is not required.
 
 ---
 
@@ -87,12 +88,11 @@ repositories {
 }
 
 dependencies {
-    // Compile-only dependencies: game core and loader runtime (NOT shaded into final JAR)
+    // Compile-only dependencies: provided by the game and loader at runtime, so they are not shaded.
     compileOnly(fileTree(dir: 'libs', include: '*.jar'))
     compileOnly 'net.lenni0451.classtransform:core:1.15.1'
 
-    // Testing
-    testImplementation platform('org.junit:junit-bom:5.12.0')
+    testImplementation platform('org.junit:junit-bom:6.1.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.assertj:assertj-core:3.27.7'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -145,12 +145,13 @@ authors:
 contacts:
   - "https://github.com/YourName/ExamplePlugin"
   - "contact@example.com"
+# Add version constraints only when your plugin requires a specific API or game build.
 dependencies:
-  avrix-loader: ">=2.1.0"
-  project-zomboid: ">=42.20.0"
-loadBefore: # Loading before any plugin (list of identifiers).
-  - "*" # You can specify “*”, in which case the loading will, if possible, occur before (or after, if in loadAfter) all plugins.
-loadAfter: # Loading after some plugin (list of identifiers)
+  avrix-loader: "*"
+  project-zomboid: "*"
+loadBefore: # Load before these plugin IDs; use "*" to load before all plugins when possible.
+  - "*"
+loadAfter: # Load after these plugin IDs.
   - "plugin-id"
 entrypoint: "com.example.exampleplugin.ExamplePlugin" # (Optional) FQCN of the entrypoint class
 mixins:
@@ -180,8 +181,8 @@ public class ExamplePlugin implements Plugin {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExamplePlugin.class);
 
     /**
-     * Invoked during the loader initialization phase after classpath binding
-     * and mixin bytecode transformations, but before the game starts.
+     * Invoked after the plugin JAR is attached and its mixins are registered,
+     * but before the game starts.
      *
      * @param pluginData container containing active metadata, jar path, and icon
      */

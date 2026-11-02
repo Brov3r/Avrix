@@ -18,7 +18,7 @@ import java.util.jar.JarFile;
 /**
  * Immutable metadata descriptor for an Avrix plugin or runtime game provider.
  * <p>
- * Encapsulates all declarative manifest information parsed from {@code plugin.yaml} or synthesized
+ * Encapsulates all declarative manifest information parsed from {@code metadata.yml} or synthesized
  * from active game runtime providers. Used for topological dependency sorting, environment filtering,
  * and mixin bootstrap configuration.
  *
@@ -248,6 +248,12 @@ public record Metadata(
      * Fluent Builder for constructing immutable {@link Metadata} instances.
      */
     public static final class Builder {
+
+        /**
+         * Constructs an empty metadata builder with default values.
+         */
+        public Builder() {
+        }
 
         private int schema = Constants.METADATA_SCHEMA;
         private String name;

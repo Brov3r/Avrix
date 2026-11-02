@@ -39,12 +39,12 @@ public interface DatabaseService {
 public class PostgreSQLService implements DatabaseService {
     @Override
     public void connect(String url) {
-        // Connection logic
+        throw new UnsupportedOperationException("Connect implementation is omitted from this example.");
     }
 
     @Override
     public void disconnect() {
-        // Disconnection logic
+        throw new UnsupportedOperationException("Disconnect implementation is omitted from this example.");
     }
 
     @Override
@@ -60,7 +60,6 @@ public class DatabasePlugin implements Plugin {
 
     @Override
     public void onInitialize(PluginData pluginData) {
-        // Registering the implementation under the interface contract
         ServiceManager.register(DatabaseService.class, new PostgreSQLService());
     }
 }
@@ -93,7 +92,6 @@ public class ConsumerPlugin implements Plugin {
 
     @Override
     public void onInitialize(PluginData pluginData) {
-        // Direct resolution (throws an exception if the service is not found)
         DatabaseService dbService = ServiceManager.get(DatabaseService.class);
         dbService.connect("jdbc:postgresql://localhost:5432/zomboid");
     }
@@ -116,7 +114,6 @@ public class OptionalConsumerPlugin implements Plugin {
 
     @Override
     public void onInitialize(PluginData pluginData) {
-        // Safe lookup via Optional
         ServiceManager.find(DatabaseService.class).ifPresent(db -> {
             db.connect("jdbc:postgresql://localhost:5432/zomboid");
         });
@@ -131,18 +128,21 @@ public class OptionalConsumerPlugin implements Plugin {
 To check if a service type is registered without retrieving an instance, use the `contains` method:
 
 ```java
-if(ServiceManager.contains(DatabaseService .class)){
-        // Service is available
-        }
+if (ServiceManager.contains(DatabaseService.class)) {
+    // Use this only when the presence of the service changes your plugin's behavior.
+}
 ```
 
 ---
 
 ### 🧹 Unregistering a Service
 
-If you need to remove a service from the registry (for example, during plugin teardown or implementation replacement):
+If you need to remove a service binding at runtime (for example, in tests or when replacing an implementation you own):
 
 ```java
-// Returns true if the service was present and successfully removed
 boolean removed = ServiceManager.unregister(DatabaseService.class);
 ```
+
+> [!WARNING]
+> `ServiceManager` is a global registry. Do not unregister services owned by the loader or by other plugins unless you
+> control their lifecycle.

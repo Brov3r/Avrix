@@ -40,11 +40,17 @@ import java.util.regex.Pattern;
  * Linux, macOS), flat classpath construction, system stream redirection, and high-performance
  * launch execution via {@link MethodHandle}.
  *
- * @apiNote Must be initialized via {@link #init()} prior to calling {@link #launch(String[])}.
+ * <p><b>API Note:</b> Must be initialized via {@link #init()} prior to calling {@link #launch(String[])}.
  */
 public class ZomboidGameProvider implements GameProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZomboidGameProvider.class);
+
+    /**
+     * Constructs a new Project Zomboid game provider in an uninitialized state.
+     */
+    public ZomboidGameProvider() {
+    }
 
     private static final String DEFAULT_PROVIDER_ID = "project-zomboid";
     private static final String CLIENT_ENTRYPOINT = "zombie.gameStates.MainScreenState";
@@ -71,9 +77,9 @@ public class ZomboidGameProvider implements GameProvider {
      * Initializes the game provider environment, synchronizes process working directory,
      * applies mandatory system properties, and populates the {@link KnotClassLoader} with
      * native directories and bundled library JARs.
+     * <p><b>API Note:</b> Ensures working directory ({@code user.dir}) matches the game root to resolve media resources.
      *
      * @throws IllegalStateException if {@link KnotClassLoader} is not registered in {@link ServiceManager}
-     * @apiNote Ensures working directory ({@code user.dir}) matches the game root to resolve media resources.
      */
     @Override
     public synchronized void init() {
@@ -258,9 +264,9 @@ public class ZomboidGameProvider implements GameProvider {
 
     /**
      * Inspects game class bytecode via Java 25 ClassFile API to extract accurate raw version tokens.
+     * <p><b>Implementation Note:</b> Parses {@code zombie.core.Core} static initializer and {@code zombie.GitVersion} constant pool.
      *
      * @return formatted raw version string containing major, minor, patch, and revision components
-     * @implNote Parses {@code zombie.core.Core} static initializer and {@code zombie.GitVersion} constant pool.
      */
     @Override
     public synchronized String getRawVersion() {
@@ -355,10 +361,10 @@ public class ZomboidGameProvider implements GameProvider {
 
     /**
      * Resolves the root filesystem directory hosting the Project Zomboid installation.
+     * <p><b>API Note:</b> Supports overriding via {@code -Davrix.game.dir} or environment variable {@code AVRIX_GAME_DIR}.
      *
      * @return absolute, normalized {@link Path} of the game installation directory
      * @throws IllegalStateException if resolution fails and no fallback directory can be determined
-     * @apiNote Supports overriding via {@code -Davrix.game.dir} or environment variable {@code AVRIX_GAME_DIR}.
      */
     @Override
     public Path getLaunchDirectory() {

@@ -594,64 +594,77 @@ class MetadataTest {
             this.contacts = contacts;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getId() {
             return id;
         }
 
+        /** {@inheritDoc} */
         @Override
         public void init() {
         }
 
+        /** {@inheritDoc} */
         @Override
         public void launch(String[] args) {
         }
 
+        /** {@inheritDoc} */
         @Override
         public String[] getLaunchArgs() {
             return new String[0];
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getName() {
             return name;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getNormalizedVersion() {
             return version;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getRawVersion() {
             return version;
         }
 
+        /** {@inheritDoc} */
         @Override
         public Path getLaunchDirectory() {
             return Paths.get(".").toAbsolutePath().normalize();
         }
 
+        /** {@inheritDoc} */
         @Override
         public Environment getEnvironment() {
             return env;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getEntrypoint() {
             return entrypoint;
         }
 
+        /** {@inheritDoc} */
         @Override
         public List<String> getAuthors() {
             return authors;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getLicense() {
             return license;
         }
 
+        /** {@inheritDoc} */
         @Override
         public List<String> getContacts() {
             return contacts;

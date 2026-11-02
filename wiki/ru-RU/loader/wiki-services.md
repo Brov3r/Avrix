@@ -20,7 +20,7 @@ import com.avrix.plugins.Plugin;
 import com.avrix.plugins.PluginData;
 
 /**
- * Интерфейс сервиса — публичный контракт
+ * Service interface - public contract.
  */
 public interface DatabaseService {
     void connect(String url);
@@ -29,17 +29,17 @@ public interface DatabaseService {
 }
 
 /**
- * Реализация сервиса
+ * Service implementation.
  */
 public class PostgreSQLService implements DatabaseService {
     @Override
     public void connect(String url) {
-        // Логика подключения
+        throw new UnsupportedOperationException("Connect implementation is omitted from this example.");
     }
 
     @Override
     public void disconnect() {
-        // Логика отключения
+        throw new UnsupportedOperationException("Disconnect implementation is omitted from this example.");
     }
 
     @Override
@@ -49,13 +49,12 @@ public class PostgreSQLService implements DatabaseService {
 }
 
 /**
- * Точка входа плагина-поставщика сервиса
+ * Entrypoint of the service provider plugin.
  */
 public class DatabasePlugin implements Plugin {
 
     @Override
     public void onInitialize(PluginData pluginData) {
-        // Регистрация реализации под интерфейсом контракта
         ServiceManager.register(DatabaseService.class, new PostgreSQLService());
     }
 }
@@ -85,7 +84,6 @@ public class ConsumerPlugin implements Plugin {
 
     @Override
     public void onInitialize(PluginData pluginData) {
-        // Прямое получение (выбросит исключение, если сервис отсутствует)
         DatabaseService dbService = ServiceManager.get(DatabaseService.class);
         dbService.connect("jdbc:postgresql://localhost:5432/zomboid");
     }
@@ -107,7 +105,6 @@ public class OptionalConsumerPlugin implements Plugin {
 
     @Override
     public void onInitialize(PluginData pluginData) {
-        // Безопасный поиск через Optional
         ServiceManager.find(DatabaseService.class).ifPresent(db -> {
             db.connect("jdbc:postgresql://localhost:5432/zomboid");
         });
@@ -123,7 +120,7 @@ public class OptionalConsumerPlugin implements Plugin {
 
 ```java
 if (ServiceManager.contains(DatabaseService.class)) {
-    // Сервис доступен
+    // Use this only when the presence of the service changes your plugin's behavior.
 }
 ```
 
@@ -131,9 +128,13 @@ if (ServiceManager.contains(DatabaseService.class)) {
 
 ### 🧹 Отмена регистрации сервиса
 
-Если необходимо удалить сервис из реестра (например, при завершении работы или выгрузке модуля):
+Если необходимо удалить привязку сервиса во время работы (например, в тестах или при замене реализации, которой вы
+владеете):
 
 ```java
-// Возвращает true, если сервис был найден и успешно удален
 boolean removed = ServiceManager.unregister(DatabaseService.class);
 ```
+
+> [!WARNING]
+> `ServiceManager` — глобальный реестр. Не удаляйте сервисы загрузчика или других плагинов, если не управляете их
+> жизненным циклом.

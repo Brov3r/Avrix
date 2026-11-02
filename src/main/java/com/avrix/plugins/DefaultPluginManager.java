@@ -30,12 +30,18 @@ import java.util.stream.Stream;
  * Production-ready default implementation of the {@link PluginManager} subsystem.
  * <p>
  * Orchestrates plugin discovery from disk, environment-specific filtering, dependency graph validation
- * with topological sorting rules, and wildcard {@code "*"} ordering), flat classpath registration in {@link KnotClassLoader},
- * mixin configuration loading, and entrypoint lifecycle invocation.
+ * with topological sorting rules, wildcard {@code "*"} ordering, flat classpath registration in
+ * {@link KnotClassLoader}, mixin configuration loading, and entrypoint lifecycle invocation.
  */
 public class DefaultPluginManager implements PluginManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPluginManager.class);
+
+    /**
+     * Constructs a new plugin manager in an uninitialized state.
+     */
+    public DefaultPluginManager() {
+    }
 
     private final Map<String, PluginData> plugins = new ConcurrentHashMap<>();
     private final List<Metadata> corePlugins = new CopyOnWriteArrayList<>();
@@ -242,7 +248,6 @@ public class DefaultPluginManager implements PluginManager {
 
     /**
      * Computes the execution order of candidate plugins using topological sorting.
-     * <p>
      *
      * @param candidates list of candidate metadata descriptors
      * @return ordered list of user plugin metadata ready for sequential initialization

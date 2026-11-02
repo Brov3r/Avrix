@@ -633,6 +633,7 @@ class DefaultPluginManagerTest {
             
             // Setup a game provider running specifically in CLIENT environment
             ServiceManager.register(GameProvider.class, new DummyGameProvider() {
+                /** {@inheritDoc} */
                 @Override
                 public Environment getEnvironment() {
                     return Environment.CLIENT;
@@ -788,64 +789,77 @@ class DefaultPluginManagerTest {
      * Stub {@link GameProvider} for plugin manager unit tests.
      */
     private static class DummyGameProvider implements GameProvider {
+        /** {@inheritDoc} */
         @Override
         public String getId() {
             return "dummy-game";
         }
 
+        /** {@inheritDoc} */
         @Override
         public void init() {
         }
 
+        /** {@inheritDoc} */
         @Override
         public void launch(String[] args) {
         }
 
+        /** {@inheritDoc} */
         @Override
         public String[] getLaunchArgs() {
             return new String[0];
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getName() {
             return "Dummy Game";
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getNormalizedVersion() {
             return "1.0.0";
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getRawVersion() {
             return "1.0.0";
         }
 
+        /** {@inheritDoc} */
         @Override
         public Path getLaunchDirectory() {
             return Paths.get(".").toAbsolutePath().normalize();
         }
 
+        /** {@inheritDoc} */
         @Override
         public Environment getEnvironment() {
             return Environment.BOTH;
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getEntrypoint() {
             return "com.dummy.Main";
         }
 
+        /** {@inheritDoc} */
         @Override
         public List<String> getAuthors() {
             return List.of("Test Author");
         }
 
+        /** {@inheritDoc} */
         @Override
         public String getLicense() {
             return "MIT";
         }
 
+        /** {@inheritDoc} */
         @Override
         public List<String> getContacts() {
             return List.of();
@@ -856,8 +870,12 @@ class DefaultPluginManagerTest {
      * Valid plugin stub entrypoint for ClassLoader instantiation tests.
      */
     public static final class ValidStubPlugin implements Plugin {
+        /**
+         * Captures the descriptor passed to the stub entrypoint.
+         */
         public static PluginData initializedData;
 
+        /** {@inheritDoc} */
         @Override
         public void onInitialize(PluginData pluginData) {
             initializedData = pluginData;
@@ -868,6 +886,9 @@ class DefaultPluginManagerTest {
      * Invalid stub entrypoint that does not implement {@link Plugin}.
      */
     public static final class NonPluginClass {
+        /**
+         * Constructs a non-plugin stub for negative entrypoint tests.
+         */
         public NonPluginClass() {
         }
     }

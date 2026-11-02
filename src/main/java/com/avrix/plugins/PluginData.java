@@ -468,6 +468,12 @@ public record PluginData(
         return String.join("/", cleanSegments);
     }
 
+    /**
+     * Compares this descriptor with another object by plugin identifier and version.
+     *
+     * @param o object to compare with
+     * @return {@code true} if the other object is a {@link PluginData} with the same ID and version
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -475,11 +481,21 @@ public record PluginData(
         return Objects.equals(id(), that.id()) && Objects.equals(metadata.version(), that.metadata.version());
     }
 
+    /**
+     * Returns a hash code derived from the plugin identifier and version.
+     *
+     * @return hash code consistent with {@link #equals(Object)}
+     */
     @Override
     public int hashCode() {
         return Objects.hash(id(), metadata.version());
     }
 
+    /**
+     * Returns a diagnostic representation of this descriptor.
+     *
+     * @return string containing the plugin ID, version, and synthetic state
+     */
     @Override
     public String toString() {
         return "PluginData[id='%s', version='%s', synthetic=%s]".formatted(

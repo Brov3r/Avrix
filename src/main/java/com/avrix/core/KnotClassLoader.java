@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * within a single classloading domain. Intercepts class loading to apply bytecode transformations
  * on the fly via {@link MixinTransformer} and resolves native library dependencies.
  *
- * @apiNote Delegates JVM internals, logging subsystems, and loader infrastructure to parent loader
+ * <p><b>API Note:</b> Delegates JVM internals, logging subsystems, and loader infrastructure to parent loader
  * to prevent duplicate class definitions and {@link ClassCastException} across ServiceLoader boundaries.
  */
 public class KnotClassLoader extends URLClassLoader {
@@ -99,6 +99,15 @@ public class KnotClassLoader extends URLClassLoader {
         paths.forEach(this::addNativePath);
     }
 
+    /**
+     * Resolves a native library by name against the registered native paths.
+     * <p>
+     * Falls back to the parent class loader when no matching file exists in the registered directories.
+     *
+     * @param libName platform-independent library name
+     * @return absolute path to the resolved library, or {@code null} if no candidate exists
+     * @throws NullPointerException if {@code libName} is null
+     */
     @Override
     protected String findLibrary(String libName) {
         Objects.requireNonNull(libName, "Library name cannot be null");
@@ -135,6 +144,13 @@ public class KnotClassLoader extends URLClassLoader {
         return null;
     }
 
+    /**
+     * Adds a URL to the local classpath unless an equivalent normalized URL is already registered.
+     *
+     * @param url classpath URL to add
+     * @throws NullPointerException     if {@code url} is null
+     * @throws IllegalArgumentException if the URL cannot be converted to a valid URI
+     */
     @Override
     public void addURL(URL url) {
         Objects.requireNonNull(url, "URL cannot be null");
@@ -155,6 +171,17 @@ public class KnotClassLoader extends URLClassLoader {
         LOGGER.trace("Added URL to classpath: [{}]", formatDisplayName(url));
     }
 
+    /**
+     * Loads a class using local-first resolution with explicit parent delegation for protected prefixes.
+     * <p>
+     * Classes under the parent-delegated prefixes are loaded by the parent class loader. All other classes
+     * are resolved locally first and fall back to the parent when no local definition exists.
+     *
+     * @param name    binary name of the class
+     * @param resolve whether to resolve the class after loading
+     * @return the loaded class
+     * @throws ClassNotFoundException if the class cannot be found locally or by the parent
+     */
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         synchronized (getClassLoadingLock(name)) {
@@ -189,6 +216,13 @@ public class KnotClassLoader extends URLClassLoader {
         }
     }
 
+    /**
+     * Finds and defines a class from local classpath resources, applying mixin transformations before definition.
+     *
+     * @param name binary name of the class
+     * @return the defined class
+     * @throws ClassNotFoundException if no class resource exists for the given name
+     */
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         String resourcePath = name.replace('.', '/').concat(".class");

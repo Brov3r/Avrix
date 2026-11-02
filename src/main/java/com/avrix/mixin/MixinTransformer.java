@@ -15,7 +15,7 @@ import java.util.Objects;
  * Encapsulates the {@link TransformerManager} and configures the {@link MixinsTranslator} preprocessor
  * to allow Sponge-style mixin annotations to run on top of ClassTransform.
  *
- * @apiNote Must be initialized via {@link #init(KnotClassLoader)} before any game classes are loaded.
+ * <p><b>API Note:</b> Must be initialized via {@link #init(KnotClassLoader)} before any game classes are loaded.
  */
 public final class MixinTransformer {
 
@@ -118,7 +118,7 @@ public final class MixinTransformer {
     /**
      * Resets the internal state of the mixin environment.
      *
-     * @apiNote Used primarily in integration testing and context reloads.
+     * <p><b>API Note:</b> Used primarily in integration testing and context reloads.
      */
     public static synchronized void reset() {
         manager = null;
