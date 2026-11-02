@@ -1,7 +1,5 @@
 package com.avrix.core;
 
-import com.avrix.mixin.MixinTransformer;
-import net.lenni0451.classtransform.TransformerManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +14,8 @@ import java.security.CodeSigner;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.Collection;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * Hosts the core loader, the target game (Project Zomboid), and all external plugin JARs
  * within a single classloading domain. Intercepts class loading to apply bytecode transformations
- * on the fly via {@link MixinTransformer} and resolves native library dependencies.
+ * on the fly via {@link ClassTransformer} and resolves native library dependencies.
  *
  * <p><b>API Note:</b> Delegates JVM internals, logging subsystems, and loader infrastructure to parent loader
  * to prevent duplicate class definitions and {@link ClassCastException} across ServiceLoader boundaries.
@@ -37,7 +37,9 @@ public class KnotClassLoader extends URLClassLoader {
 
     private final Set<Path> nativePaths = ConcurrentHashMap.newKeySet();
     private final Set<String> registeredUrls = ConcurrentHashMap.newKeySet();
-    private final Set<String> parentDelegatedPrefixes;
+    private final Set<String> diagnosedResources = ConcurrentHashMap.newKeySet();
+    private final ClassLoadingPolicy loadingPolicy;
+    private volatile ClassTransformer classTransformer;
 
     static {
         registerAsParallelCapable();
@@ -51,21 +53,34 @@ public class KnotClassLoader extends URLClassLoader {
      * @throws NullPointerException if {@code urls} or {@code parent} is null
      */
     public KnotClassLoader(URL[] urls, ClassLoader parent) {
+        this(urls, parent, ClassLoadingPolicy.defaults());
+    }
+
+    /**
+     * Constructs a new {@link KnotClassLoader} with an explicit classloading policy.
+     *
+     * @param urls          initial array of URLs (game JARs, dependencies, plugins)
+     * @param parent        the parent class loader (typically the bootstrap/system loader)
+     * @param loadingPolicy policy used to decide which classes are delegated to the parent
+     * @throws NullPointerException if {@code urls}, {@code parent}, or {@code loadingPolicy} is null
+     */
+    public KnotClassLoader(URL[] urls, ClassLoader parent, ClassLoadingPolicy loadingPolicy) {
         super(new URL[0], Objects.requireNonNull(parent, "Parent ClassLoader must not be null"));
         Objects.requireNonNull(urls, "URLs array must not be null");
-
-        // Protect JVM runtime, SLF4J/Logback SPI, and Avrix core packages from duplicate loading
-        this.parentDelegatedPrefixes = Set.of(
-                "java.",
-                "jdk.",
-                "org.slf4j.",
-                "ch.qos.logback.",
-                "com.avrix."
-        );
+        this.loadingPolicy = Objects.requireNonNull(loadingPolicy, "ClassLoadingPolicy must not be null");
 
         for (URL url : urls) {
             addURL(url);
         }
+    }
+
+    /**
+     * Sets the bytecode transformer applied to locally defined classes.
+     *
+     * @param classTransformer transformer to use, or {@code null} to disable transformation
+     */
+    public void setClassTransformer(ClassTransformer classTransformer) {
+        this.classTransformer = classTransformer;
     }
 
     /**
@@ -192,13 +207,11 @@ public class KnotClassLoader extends URLClassLoader {
             }
 
             // Delegate strict JVM runtime and protected loader/logging libraries directly to the parent
-            for (String prefix : parentDelegatedPrefixes) {
-                if (name.startsWith(prefix)) {
-                    try {
-                        return getParent().loadClass(name);
-                    } catch (ClassNotFoundException _) {
-                        break;
-                    }
+            if (loadingPolicy.delegatesToParent(name)) {
+                try {
+                    return getParent().loadClass(name);
+                } catch (ClassNotFoundException _) {
+                    // Fall through to local resolution when the parent cannot provide the class.
                 }
             }
 
@@ -251,6 +264,51 @@ public class KnotClassLoader extends URLClassLoader {
     }
 
     /**
+     * Finds a local resource and reports it when the same path exists in multiple classpath entries.
+     *
+     * @param name resource path
+     * @return first matching local resource, or {@code null} when none exists
+     */
+    @Override
+    public URL findResource(String name) {
+        URL resource = super.findResource(name);
+        if (resource != null) {
+            diagnoseResourceCollisions(name);
+        }
+        return resource;
+    }
+
+    /**
+     * Logs a warning when a resource path is present in more than one classpath entry.
+     *
+     * @param resourcePath resource path to inspect
+     */
+    private void diagnoseResourceCollisions(String resourcePath) {
+        if (!diagnosedResources.add(resourcePath)) {
+            return;
+        }
+
+        try {
+            Enumeration<URL> resources = findResources(resourcePath);
+            Set<String> locations = new LinkedHashSet<>();
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                try {
+                    locations.add(url.toURI().normalize().toString());
+                } catch (URISyntaxException _) {
+                    locations.add(url.toExternalForm());
+                }
+            }
+
+            if (locations.size() > 1) {
+                LOGGER.warn("Resource [{}] exists in multiple classpath entries: {}", resourcePath, locations);
+            }
+        } catch (IOException e) {
+            LOGGER.debug("Failed to inspect resource collisions for [{}]", resourcePath, e);
+        }
+    }
+
+    /**
      * Reads all raw bytes of a class resource without creating persistent file descriptor locks.
      *
      * @param resource the target resource URL
@@ -269,20 +327,20 @@ public class KnotClassLoader extends URLClassLoader {
     }
 
     /**
-     * Executes bytecode transformation through {@link MixinTransformer}.
+     * Executes bytecode transformation through the configured {@link ClassTransformer}.
      *
      * @param className binary name of the class
      * @param rawBytes  original raw bytecode
      * @return transformed bytecode, or {@code null} if no modification occurred
      */
     protected byte[] transformClass(String className, byte[] rawBytes) {
-        if (!MixinTransformer.isInitialized()) {
+        ClassTransformer transformer = this.classTransformer;
+        if (transformer == null) {
             return null;
         }
 
         try {
-            TransformerManager manager = MixinTransformer.getManager();
-            byte[] result = manager.transform(className, rawBytes);
+            byte[] result = transformer.transform(className, rawBytes);
 
             if (result != null) {
                 LOGGER.debug("Transformed class: [{}]", className);

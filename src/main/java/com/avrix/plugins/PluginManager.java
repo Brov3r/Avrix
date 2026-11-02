@@ -35,6 +35,21 @@ public interface PluginManager {
     Map<String, PluginData> getPlugins();
 
     /**
+     * Returns the results of the most recent plugin load attempt.
+     *
+     * @return immutable list of load results
+     */
+    default List<PluginLoadResult> getLoadResults() {
+        return List.of();
+    }
+
+    /**
+     * Shuts down loaded plugins and releases plugin manager resources.
+     */
+    default void close() {
+    }
+
+    /**
      * Resolves the correct loading order for plugins based on their dependencies.
      *
      * @param candidates the list of plugin metadata to sort

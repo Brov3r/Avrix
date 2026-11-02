@@ -2,10 +2,12 @@ package com.avrix.mixin;
 
 import com.avrix.core.Environment;
 import com.avrix.core.KnotClassLoader;
+import com.avrix.core.LoaderConfig;
 import com.avrix.core.Metadata;
-import com.avrix.core.ServiceManager;
 import com.avrix.plugins.DefaultPluginManager;
 import com.avrix.plugins.PluginData;
+import com.avrix.plugins.PluginManifestParser;
+import com.avrix.plugins.PluginScanner;
 import com.avrix.provider.DefaultLoaderProvider;
 import com.avrix.provider.GameProvider;
 import com.avrix.provider.LoaderProvider;
@@ -51,6 +53,7 @@ class CrossPluginMixinIntegrationTest {
     Path tempDir;
 
     private KnotClassLoader knotClassLoader;
+    private MixinTransformer mixinTransformer;
     private DefaultPluginManager pluginManager;
 
     @BeforeEach
@@ -59,29 +62,32 @@ class CrossPluginMixinIntegrationTest {
         URLConnection.setDefaultUseCaches("jar", false);
         URLConnection.setDefaultUseCaches("file", false);
 
-        ServiceManager.clear();
-        MixinTransformer.reset();
         PluginAEntrypoint.executionResult = null;
 
         this.knotClassLoader = new KnotClassLoader(new URL[0], getClass().getClassLoader());
-        ServiceManager.register(KnotClassLoader.class, knotClassLoader);
 
         GameProvider dummyGameProvider = new DummyGameProvider();
-        ServiceManager.register(GameProvider.class, dummyGameProvider);
-
         LoaderProvider loaderProvider = new DefaultLoaderProvider();
-        ServiceManager.register(LoaderProvider.class, loaderProvider);
 
-        MixinTransformer.init(knotClassLoader);
+        this.mixinTransformer = new MixinTransformer(knotClassLoader);
+        knotClassLoader.setClassTransformer(mixinTransformer);
 
-        this.pluginManager = new DefaultPluginManager(tempDir.resolve("plugins"));
+        LoaderConfig config = LoaderConfig.defaults().withPluginsDirectory(tempDir.resolve("plugins"));
+        this.pluginManager = new DefaultPluginManager(
+                config,
+                knotClassLoader,
+                dummyGameProvider,
+                loaderProvider,
+                mixinTransformer,
+                new PluginScanner(config),
+                new PluginManifestParser()
+        );
         this.pluginManager.init();
     }
 
     @AfterEach
     void tearDown() throws Exception {
-        ServiceManager.clear();
-        MixinTransformer.reset();
+        mixinTransformer = null;
         PluginAEntrypoint.executionResult = null;
 
         // Explicitly close KnotClassLoader to release Windows file handles on physical JARs

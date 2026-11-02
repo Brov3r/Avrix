@@ -25,6 +25,76 @@ java -jar ./Avrix-Loader-<version>.jar -nosteam
 
 4. ⚙️ **Опционально:** для удобства создайте скрипт запуска `.bat` (Windows) или `.sh` (Linux) с этой командой.
 
+### Параметры запуска
+
+JVM-параметры указываются до `-jar`, а аргументы загрузчика и игры — после имени JAR:
+
+```bash
+# Подробные логи загрузчика (TRACE, DEBUG, INFO, WARN, ERROR)
+java -Dconsole.level=DEBUG -jar ./Avrix-Loader-<version>.jar
+
+# Запуск установки, расположенной вне текущего каталога
+java -Davrix.game.dir="C:\Path\To\ProjectZomboid" -jar ./Avrix-Loader-<version>.jar
+
+# Сохранить оригинальный вывод консоли Project Zomboid
+java -jar ./Avrix-Loader-<version>.jar --no-redirect-log
+
+# Прерывать запуск при ошибке загрузки любого плагина
+java -jar ./Avrix-Loader-<version>.jar --strict
+```
+
+Каталог игры также можно задать переменной окружения `AVRIX_GAME_DIR` (или `ZOMBOID_DIR`) либо JVM-свойством
+`-Dzomboid.dir`. Avrix определяет клиент или выделенный сервер только по файлам установки: `StartServer64.*`,
+каталогам `java/` и `natives/`, исполняемым файлам клиента или `ProjectZomboid64.json`. Флаг окружения не требуется.
+
+Avrix записывает лог в `logs/log_<timestamp>.log` в рабочем каталоге. Порог вывода в консоль задаётся через
+`-Dconsole.level`, а файловый appender сохраняет сообщения уровня `DEBUG` и выше.
+
+---
+
+## 🚫 Отключение плагинов
+
+Чтобы отключить плагин, не удаляя его из папки `plugins/`, создайте `plugins/disabled.txt`.
+
+В каждой непустой строке указывается `id` плагина или имя JAR-файла. Регистр не важен. Строки, начинающиеся с `#`, и
+inline-комментарии игнорируются.
+
+```text
+# plugins/disabled.txt
+my-plugin
+old-mod.jar
+```
+
+Отключённые плагины пропускаются и попадают в отчёт со статусом `SKIPPED`. Флаг `--strict` заставляет загрузчик
+прерывать запуск при ошибке загрузки плагина.
+
+---
+
+## 🧪 Запуск из IDE
+
+В Gradle-сборке предусмотрены две задачи для разработки:
+
+```bash
+./gradlew runClient
+./gradlew runServer
+```
+
+Задачи автоматически определяют типовые пути установки Steam в Windows, Linux и macOS. Если игра установлена в другом
+месте, переопределите путь:
+
+```bash
+# Свойства Gradle
+./gradlew runClient -PpzClientDir="C:\Program Files (x86)\Steam\steamapps\common\ProjectZomboid"
+./gradlew runServer -PpzServerDir="C:\Program Files (x86)\Steam\steamapps\common\Project Zomboid Dedicated Server"
+
+# Переменные окружения
+PZ_CLIENT_DIR=/path/to/ProjectZomboid ./gradlew runClient
+PZ_SERVER_DIR=/path/to/ProjectZomboidDedicatedServer ./gradlew runServer
+```
+
+`runServer` оставляет стандартный ввод подключённым, чтобы команды сервера можно было вводить из терминала. В macOS
+`runClient` также добавляет `-XstartOnFirstThread`, который требуется оконной подсистеме клиента.
+
 ---
 
 ## 💻 Быстрый старт (Разработка плагинов)
@@ -133,9 +203,9 @@ shadowJar {
 
 ```yaml
 schema: 1                                # Версия спецификации схемы метаданных
-id: "example-plugin"                     # Уникальный строковый ID плагина
+id: "example-plugin"                     # Уникальный ID плагина
 name: "Example Plugin"                   # Человекочитаемое имя
-version: "%PLUGIN_VERSION%"              # Версия плагина (подставляется через Gradle)
+version: "%PLUGIN_VERSION%"              # Версия плагина в формате SemVer (подставляется через Gradle)
 description: "Plugin for Project Zomboid" # Краткое описание
 environment: "*"                         # Целевое окружение: "*", "both", "server" или "client"
 license: "MIT"                           # Лицензия (например, MIT, Apache-2.0, PROPRIETARY)
@@ -156,6 +226,10 @@ entrypoint: "com.example.exampleplugin.ExamplePlugin" # (Опционально)
 mixins:
   - "com.example.exampleplugin.ExampleMixin"          # (Опционально) Список классов миксинов
 ```
+
+`schema` должен быть равен `1`, `version` должен быть корректной SemVer-строкой, а идентификаторы `avrix-loader` и
+`project-zomboid` зарезервированы за загрузчиком и игровым провайдером. Если плагин зависит от инициализации другого
+плагина, укажите зависимость или `loadAfter`.
 
 ---
 
@@ -194,6 +268,32 @@ public class ExamplePlugin implements Plugin {
 }
 ```
 
+### Жизненный цикл плагина
+
+`Plugin` предоставляет два callback'а жизненного цикла:
+
+- `onInitialize(PluginData)` вызывается один раз после подключения JAR плагина и регистрации его миксинов, но до
+  запуска игры. Здесь следует захватывать ресурсы и регистрировать сервисы.
+- `onShutdown()` вызывается при завершении загрузчика. Загруженные плагины останавливаются в обратном порядке загрузки;
+  реализация по умолчанию ничего не делает.
+
+```java
+@Override
+public void onInitialize(PluginData pluginData) {
+    // Захват ресурсов и регистрация сервисов.
+}
+
+@Override
+public void onShutdown() {
+    // Освобождение ресурсов, принадлежащих плагину.
+}
+```
+
+Если плагин регистрирует сервис, отмените регистрацию в `onShutdown()`; никогда не удаляйте сервисы загрузчика или
+других плагинов. Интеграции могут получить результаты последней попытки через `PluginManager.getLoadResults()` —
+неизменяемый список `PluginLoadResult` со статусами `LOADED`, `FAILED` и `SKIPPED`. `PluginManager.close()` завершает
+загруженные плагины в обратном порядке и вызывается загрузчиком автоматически при остановке JVM.
+
 ---
 
 ### `ExampleMixin.java` (Трансформация байт-кода)
@@ -226,3 +326,20 @@ public class ExampleMixin {
     }
 }
 ```
+
+Элементы `mixins` — это полные имена классов трансформации (FQCN), а не пути к файлам конфигурации. Регистрация
+выполняется при подготовке плагина-владельца, до запуска его entrypoint.
+
+---
+
+## 📊 Бенчмарк производительности
+
+В проект встроен лёгкий сравнительный бенчмарк без JMH и дополнительных зависимостей:
+
+```bash
+./gradlew benchmark
+```
+
+Он измеряет разрешение зависимостей, загрузку плагинов только с метаданными, загрузку реалистичных плагинов с
+entrypoint и ресурсами JAR, а также загрузку классов с применением миксинов. Сравнивайте результаты на одной машине;
+это не абсолютные гарантии производительности. Задача `benchmark` намеренно не входит в `check`.

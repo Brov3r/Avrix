@@ -47,6 +47,8 @@ mixins:
   - "com.example.myplugin.mixin.InventoryMixin"
 ```
 
+The entries are fully qualified transformer class names, not configuration file paths.
+
 Mixins are registered when their owning plugin is loaded. If another plugin can load the target class earlier, declare
 `loadBefore` so the mixin-providing plugin is loaded first. Avoid loading target classes during `onInitialize` unless
 the load order guarantees that the required mixin is already registered.

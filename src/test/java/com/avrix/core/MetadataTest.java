@@ -1,5 +1,6 @@
 package com.avrix.core;
 
+import com.avrix.plugins.PluginManifestParser;
 import com.avrix.provider.GameProvider;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class MetadataTest {
 
     private static final int SCHEMA = Constants.METADATA_SCHEMA;
+    private final PluginManifestParser manifestParser = new PluginManifestParser();
 
     @Nested
     @DisplayName("Constructor & Immutability Tests")
@@ -391,7 +393,7 @@ class MetadataTest {
                     """.formatted(SCHEMA);
 
             var node = loadYamlNode(yaml);
-            var meta = Metadata.fromNode(node);
+            var meta = manifestParser.fromNode(node);
 
             assertThat(meta.schema()).isEqualTo(SCHEMA);
             assertThat(meta.id()).isEqualTo("parsed-plugin");
@@ -423,7 +425,7 @@ class MetadataTest {
                     """.formatted(SCHEMA);
 
             var node = loadYamlNode(yaml);
-            var meta = Metadata.fromNode(node);
+            var meta = manifestParser.fromNode(node);
 
             assertThat(meta.environment()).isEqualTo(Environment.BOTH);
         }
@@ -439,7 +441,7 @@ class MetadataTest {
                     """.formatted(SCHEMA);
 
             var node = loadYamlNode(yaml);
-            var meta = Metadata.fromNode(node);
+            var meta = manifestParser.fromNode(node);
 
             assertThat(meta.id()).isEqualTo("minimal-node");
             assertThat(meta.environment()).isEqualTo(Environment.BOTH);
@@ -456,8 +458,8 @@ class MetadataTest {
     }
 
     @Nested
-    @DisplayName("fromGameProvider Mapping Tests")
-    class FromGameProviderTests {
+    @DisplayName("GameProvider Metadata Mapping Tests")
+    class GameProviderMetadataTests {
 
         @Test
         @DisplayName("Should synthesize valid Metadata from active GameProvider")
@@ -473,7 +475,7 @@ class MetadataTest {
                     List.of("https://projectzomboid.com")
             );
 
-            var meta = Metadata.fromGameProvider(provider);
+            var meta = provider.getMetadata();
 
             assertThat(meta.schema()).isEqualTo(SCHEMA);
             assertThat(meta.id()).isEqualTo("project-zomboid");
@@ -513,7 +515,7 @@ class MetadataTest {
 
             Files.writeString(yamlPath, content, StandardCharsets.UTF_8);
 
-            var meta = Metadata.fromYaml(yamlPath);
+            var meta = manifestParser.fromYaml(yamlPath);
 
             assertThat(meta.id()).isEqualTo("file-plugin");
             assertThat(meta.version()).isEqualTo("4.0.0");
@@ -527,7 +529,7 @@ class MetadataTest {
         @DisplayName("Should load metadata manifest from inside a physical JAR archive")
         void shouldLoadFromJarEntry() throws IOException {
             var jarFile = createTempJarWithMetadata("plugin.yml");
-            var meta = Metadata.fromJarFile(jarFile, "plugin.yml");
+            var meta = manifestParser.fromJarFile(jarFile, "plugin.yml");
 
             assertThat(meta.id()).isEqualTo("jar-plugin");
             assertThat(meta.name()).isEqualTo("JAR Plugin");
@@ -541,7 +543,7 @@ class MetadataTest {
         void shouldFailOnMissingJarEntry() throws IOException {
             var jarFile = createTempJarWithMetadata("plugin.yml");
 
-            assertThatThrownBy(() -> Metadata.fromJarFile(jarFile, "nonexistent.yml"))
+            assertThatThrownBy(() -> manifestParser.fromJarFile(jarFile, "nonexistent.yml"))
                     .isInstanceOf(FileNotFoundException.class)
                     .hasMessageContaining("not found in JAR");
         }

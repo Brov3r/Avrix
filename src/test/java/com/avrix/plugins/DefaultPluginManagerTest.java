@@ -2,14 +2,19 @@ package com.avrix.plugins;
 
 import com.avrix.core.Environment;
 import com.avrix.core.KnotClassLoader;
+import com.avrix.core.LoaderConfig;
 import com.avrix.core.Metadata;
-import com.avrix.core.ServiceManager;
+import com.avrix.core.MixinRegistrar;
 import com.avrix.provider.DefaultLoaderProvider;
 import com.avrix.provider.GameProvider;
 import com.avrix.provider.LoaderProvider;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
+import test.plugin.ErrorThrowingPlugin;
+import test.plugin.LifecyclePlugin;
+import test.plugin.PhaseAEntrypoint;
+import test.plugin.PhaseTracker;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +30,7 @@ import java.util.jar.JarOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.groups.Tuple.tuple;
 
 /**
  * Unit test suite for {@link DefaultPluginManager} dependency graph resolution,
@@ -36,34 +42,31 @@ class DefaultPluginManagerTest {
     @TempDir
     Path tempRoot;
 
+    private final MixinRegistrar mixinRegistrar = mixinClass -> {};
+
     private DefaultPluginManager manager;
     private Path pluginsDirectory;
     private KnotClassLoader classLoader;
+    private GameProvider gameProvider;
+    private LoaderProvider loaderProvider;
     private ClassLoader originalContextClassLoader;
     private static final int SCHEMA = Constants.METADATA_SCHEMA;
 
     @BeforeEach
     void setUp() {
-        ServiceManager.clear();
-
         originalContextClassLoader = Thread.currentThread().getContextClassLoader();
         pluginsDirectory = tempRoot.resolve("plugins");
         classLoader = new KnotClassLoader(new URL[0], ClassLoader.getSystemClassLoader());
         Thread.currentThread().setContextClassLoader(classLoader);
-        ServiceManager.register(KnotClassLoader.class, classLoader);
 
-        GameProvider dummyProvider = new DummyGameProvider();
-        ServiceManager.register(GameProvider.class, dummyProvider);
+        gameProvider = new DummyGameProvider();
+        loaderProvider = new DefaultLoaderProvider();
 
-        LoaderProvider loaderProvider = new DefaultLoaderProvider();
-        ServiceManager.register(LoaderProvider.class, loaderProvider);
-
-        manager = new DefaultPluginManager(pluginsDirectory);
+        manager = createManager(configWithEnvironment(Environment.BOTH), gameProvider);
     }
 
     @AfterEach
     void tearDown() throws IOException {
-        ServiceManager.clear();
         try {
             if (classLoader != null) {
                 classLoader.close();
@@ -71,6 +74,31 @@ class DefaultPluginManagerTest {
         } finally {
             Thread.currentThread().setContextClassLoader(originalContextClassLoader);
         }
+    }
+
+    private LoaderConfig configWithEnvironment(Environment environment) {
+        return new LoaderConfig(
+                pluginsDirectory,
+                Constants.METADATA_NAME,
+                Constants.PLUGIN_EXTENSION,
+                Constants.PLUGIN_ICON_NAME,
+                Constants.DEFAULT_GAME_PROVIDER_ID,
+                environment,
+                true,
+                false
+        );
+    }
+
+    private DefaultPluginManager createManager(LoaderConfig config, GameProvider provider) {
+        return new DefaultPluginManager(
+                config,
+                classLoader,
+                provider,
+                loaderProvider,
+                mixinRegistrar,
+                new PluginScanner(config),
+                new PluginManifestParser()
+        );
     }
 
     private Metadata createMeta(String id, String version) {
@@ -420,17 +448,39 @@ class DefaultPluginManagerTest {
         }
 
         @Test
-        @DisplayName("Should retain first detected instance when duplicate plugin IDs are encountered")
-        void shouldHandleDuplicatePluginIds() {
+        @DisplayName("Should reject duplicate plugin IDs")
+        void shouldRejectDuplicatePluginIds() {
             var metaFirst = new Metadata.Builder().schema(SCHEMA).id("dup-id").name("First").version("1.0.0").build();
             var metaSecond = new Metadata.Builder().schema(SCHEMA).id("dup-id").name("Second").version("2.0.0").build();
             var metaOther = createMeta("other", "1.0.0");
 
-            var result = manager.resolvePluginLoadOrder(List.of(metaFirst, metaSecond, metaOther));
+            assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(metaFirst, metaSecond, metaOther)))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Duplicate plugin identifier [dup-id]");
+        }
 
-            assertThat(result).hasSize(2);
-            assertThat(result).extracting(Metadata::name).contains("First", "other-plugin");
-            assertThat(result).extracting(Metadata::name).doesNotContain("Second");
+        @Test
+        @DisplayName("Should reject plugin IDs reserved for core components")
+        void shouldRejectReservedPluginIds() {
+            assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(createMeta(Constants.LOADER_ID, "1.0.0"))))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("reserved for a core component");
+
+            assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(createMeta(Constants.DEFAULT_GAME_PROVIDER_ID, "1.0.0"))))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("reserved for a core component");
+        }
+
+        @Test
+        @DisplayName("Should produce a deterministic order for independent plugins")
+        void shouldProduceDeterministicOrderForIndependentPlugins() {
+            var pluginZ = createMeta("plugin-z", "1.0.0");
+            var pluginA = createMeta("plugin-a", "1.0.0");
+            var pluginM = createMeta("plugin-m", "1.0.0");
+
+            var result = manager.resolvePluginLoadOrder(List.of(pluginZ, pluginA, pluginM));
+
+            assertThat(result).extracting(Metadata::id).containsExactly("plugin-a", "plugin-m", "plugin-z");
         }
 
         @Test
@@ -565,6 +615,32 @@ class DefaultPluginManagerTest {
         }
 
         @Test
+        @DisplayName("Should invoke plugin shutdown callback when manager is closed")
+        void shouldInvokeShutdownCallback() throws Exception {
+            PhaseTracker.reset();
+
+            var jarFile = createDummyJar("lifecycle-plugin.jar", LifecyclePlugin.class);
+            var meta = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("lifecycle-plugin")
+                    .name("Lifecycle Plugin")
+                    .version("1.0.0")
+                    .entrypoint(LifecyclePlugin.class.getName())
+                    .build();
+
+            manager.loadPlugin(new PluginData(jarFile, null, null, meta));
+            manager.close();
+
+            try {
+                assertThat(PhaseTracker.events())
+                        .containsExactly("init:lifecycle", "shutdown:lifecycle");
+                assertThat(manager.getPlugins()).isEmpty();
+            } finally {
+                PhaseTracker.reset();
+            }
+        }
+
+        @Test
         @DisplayName("Should ignore duplicate loadPlugin invocation for already loaded plugin ID")
         void shouldIgnoreDuplicateLoadCalls() throws Exception {
             var jarFile = createDummyJar("dup-run.jar", null);
@@ -614,7 +690,7 @@ class DefaultPluginManagerTest {
         @Test
         @DisplayName("Should throw IllegalStateException when loadPlugins() is called before init()")
         void shouldThrowWhenNotInitialized() {
-            var uninitializedManager = new DefaultPluginManager(pluginsDirectory);
+            var uninitializedManager = createManager(configWithEnvironment(Environment.BOTH), gameProvider);
             assertThatThrownBy(uninitializedManager::loadPlugins)
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessage("PluginManager is not initialized. Call init() first.");
@@ -635,22 +711,16 @@ class DefaultPluginManagerTest {
         @Test
         @DisplayName("Should filter out plugins incompatible with active runtime environment")
         void shouldFilterPluginsByEnvironment() throws Exception {
-            ServiceManager.clear();
-            ServiceManager.register(KnotClassLoader.class, classLoader);
-
-            LoaderProvider loaderProvider = new DefaultLoaderProvider();
-            ServiceManager.register(LoaderProvider.class, loaderProvider);
-            
             // Setup a game provider running specifically in CLIENT environment
-            ServiceManager.register(GameProvider.class, new DummyGameProvider() {
+            GameProvider clientProvider = new DummyGameProvider() {
                 /** {@inheritDoc} */
                 @Override
                 public Environment getEnvironment() {
                     return Environment.CLIENT;
                 }
-            });
+            };
 
-            var envManager = new DefaultPluginManager(pluginsDirectory);
+            var envManager = createManager(configWithEnvironment(Environment.CLIENT), clientProvider);
             envManager.init();
 
             Path pluginsPath = pluginsDirectory;
@@ -708,8 +778,160 @@ class DefaultPluginManagerTest {
             }
         }
 
-        private void createPluginJarOnDisk(Path destination, Metadata metadata) throws Exception {
+        @Test
+        @DisplayName("Should skip plugins listed in disabled.txt")
+        void shouldSkipDisabledPlugins() throws Exception {
+            manager.init();
+            Path pluginsPath = pluginsDirectory;
+            Files.createDirectories(pluginsPath);
+
+            var disabledMeta = createMeta("disabled-plugin", "1.0.0");
+            createPluginJarOnDisk(pluginsPath.resolve("disabled-plugin.jar"), disabledMeta);
+
+            var filenameDisabledMeta = createMeta("filename-disabled-plugin", "1.0.0");
+            createPluginJarOnDisk(pluginsPath.resolve("filename-disabled-plugin.jar"), filenameDisabledMeta);
+
+            var enabledMeta = createMeta("enabled-plugin", "1.0.0");
+            createPluginJarOnDisk(pluginsPath.resolve("enabled-plugin.jar"), enabledMeta);
+
+            Files.writeString(pluginsPath.resolve(Constants.DISABLED_PLUGINS_FILE_NAME), """
+                    # Disabled plugins
+                    disabled-plugin
+                    filename-disabled-plugin.jar
+                    """);
+
+            manager.loadPlugins();
+
+            assertThat(manager.getPlugins()).containsKey("enabled-plugin");
+            assertThat(manager.getPlugins())
+                    .doesNotContainKeys("disabled-plugin", "filename-disabled-plugin");
+            assertThat(manager.getLoadResults())
+                    .extracting(PluginLoadResult::pluginId, PluginLoadResult::status)
+                    .contains(
+                            tuple("disabled-plugin", PluginLoadStatus.SKIPPED),
+                            tuple("filename-disabled-plugin.jar", PluginLoadStatus.SKIPPED)
+                    );
+        }
+
+        @Test
+        @DisplayName("Should isolate plugin errors and report failed plugins")
+        void shouldIsolatePluginErrorsAndReportResults() throws Exception {
+            manager.init();
+            Path pluginsPath = pluginsDirectory;
+            Files.createDirectories(pluginsPath);
+
+            var failingMeta = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("failing-plugin")
+                    .name("Failing Plugin")
+                    .version("1.0.0")
+                    .entrypoint(ErrorThrowingPlugin.class.getName())
+                    .build();
+            createPluginJarOnDisk(pluginsPath.resolve("failing-plugin.jar"), failingMeta, ErrorThrowingPlugin.class);
+
+            var validMeta = createMeta("valid-plugin", "1.0.0");
+            createPluginJarOnDisk(pluginsPath.resolve("valid-plugin.jar"), validMeta);
+
+            manager.loadPlugins();
+
+            assertThat(manager.getPlugins()).containsKey("valid-plugin");
+            assertThat(manager.getPlugins()).doesNotContainKey("failing-plugin");
+            assertThat(manager.getLoadResults())
+                    .extracting(PluginLoadResult::pluginId, PluginLoadResult::status)
+                    .contains(
+                            tuple("valid-plugin", PluginLoadStatus.LOADED),
+                            tuple("failing-plugin", PluginLoadStatus.FAILED)
+                    );
+        }
+
+        @Test
+        @DisplayName("Should abort plugin loading in strict mode")
+        void shouldAbortInStrictMode() throws Exception {
+            var strictManager = createManager(
+                    configWithEnvironment(Environment.BOTH).withStrict(true),
+                    gameProvider
+            );
+            strictManager.init();
+
+            Path pluginsPath = pluginsDirectory;
+            Files.createDirectories(pluginsPath);
+
+            var failingMeta = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("failing-plugin")
+                    .name("Failing Plugin")
+                    .version("1.0.0")
+                    .entrypoint(ErrorThrowingPlugin.class.getName())
+                    .build();
+            createPluginJarOnDisk(pluginsPath.resolve("failing-plugin.jar"), failingMeta, ErrorThrowingPlugin.class);
+
+            assertThatThrownBy(strictManager::loadPlugins)
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Plugin load failed: failing-plugin");
+        }
+
+        @Test
+        @DisplayName("Should register all mixins before starting plugin entrypoints")
+        void shouldPrepareAllPluginsBeforeStartingEntrypoints() throws Exception {
+            PhaseTracker.reset();
+
+            var config = configWithEnvironment(Environment.BOTH);
+            var twoPhaseManager = new DefaultPluginManager(
+                    config,
+                    classLoader,
+                    gameProvider,
+                    loaderProvider,
+                    mixin -> PhaseTracker.record("mixin:" + mixin),
+                    new PluginScanner(config),
+                    new PluginManifestParser()
+            );
+            twoPhaseManager.init();
+
+            Path pluginsPath = pluginsDirectory;
+            Files.createDirectories(pluginsPath);
+
+            var metaA = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("plugin-a")
+                    .name("Plugin A")
+                    .version("1.0.0")
+                    .entrypoint(PhaseAEntrypoint.class.getName())
+                    .build();
+            createPluginJarOnDisk(pluginsPath.resolve("plugin-a.jar"), metaA, PhaseAEntrypoint.class);
+
+            var metaB = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("plugin-b")
+                    .name("Plugin B")
+                    .version("1.0.0")
+                    .mixins("test.plugin.PhaseBMixin")
+                    .build();
+            createPluginJarOnDisk(pluginsPath.resolve("plugin-b.jar"), metaB);
+
+            try {
+                twoPhaseManager.loadPlugins();
+
+                assertThat(PhaseTracker.events())
+                        .containsExactly("mixin:test.plugin.PhaseBMixin", "init:plugin-a");
+            } finally {
+                PhaseTracker.reset();
+            }
+        }
+
+        private void createPluginJarOnDisk(Path destination, Metadata metadata, Class<?>... classes) throws Exception {
             try (var jos = new JarOutputStream(Files.newOutputStream(destination))) {
+                for (Class<?> clazz : classes) {
+                    String classPath = clazz.getName().replace('.', '/') + ".class";
+                    try (var classBytes = clazz.getClassLoader().getResourceAsStream(classPath)) {
+                        if (classBytes == null) {
+                            throw new IllegalStateException("Class resource not found: " + classPath);
+                        }
+                        jos.putNextEntry(new JarEntry(classPath));
+                        jos.write(classBytes.readAllBytes());
+                        jos.closeEntry();
+                    }
+                }
+
                 var entry = new JarEntry(Constants.METADATA_NAME);
                 jos.putNextEntry(entry);
                 String yaml = """
@@ -718,13 +940,25 @@ class DefaultPluginManagerTest {
                         name: %s
                         version: %s
                         environment: %s
+                        entrypoint: %s
                         """.formatted(
                         metadata.schema(),
                         metadata.id(),
                         metadata.name(),
                         metadata.version(),
-                        metadata.environment().name().toLowerCase()
+                        metadata.environment().name().toLowerCase(),
+                        metadata.entrypoint()
                 );
+
+                if (!metadata.mixins().isEmpty()) {
+                    StringBuilder yamlWithMixins = new StringBuilder(yaml);
+                    yamlWithMixins.append("mixins:\n");
+                    for (String mixin : metadata.mixins()) {
+                        yamlWithMixins.append("  - \"").append(mixin).append("\"\n");
+                    }
+                    yaml = yamlWithMixins.toString();
+                }
+
                 jos.write(yaml.getBytes(StandardCharsets.UTF_8));
                 jos.closeEntry();
             }
@@ -762,6 +996,17 @@ class DefaultPluginManagerTest {
         void shouldFailOnMalformedDependencyVersion() {
             var metaA = createMetaWithDeps("pluginA", "1.0.0", Map.of("pluginB", ">=1.0.0"));
             var metaB = createMeta("pluginB", "invalid-semver-string");
+
+            assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(metaA, metaB)))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Invalid version [invalid-semver-string] declared by plugin [pluginB] required by plugin [pluginA]");
+        }
+
+        @Test
+        @DisplayName("Should report an invalid version constraint separately from a version mismatch")
+        void shouldFailOnMalformedConstraint() {
+            var metaA = createMetaWithDeps("pluginA", "1.0.0", Map.of("pluginB", "not-a-valid-range"));
+            var metaB = createMeta("pluginB", "1.0.0");
 
             assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(metaA, metaB)))
                     .isInstanceOf(IllegalStateException.class)

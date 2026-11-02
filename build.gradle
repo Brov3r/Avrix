@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.avrix'
-version = '2.2.0'
+version = '2.3.0'
 
 def baseSuffix = 'Loader'
 def baseArchiveName = "${rootProject.name.capitalize()}-${baseSuffix}"
@@ -138,4 +138,86 @@ tasks.register('releaseBuildJar') {
 
     dependsOn tasks.named('shadowJar')
     dependsOn tasks.named('sourceJar')
+}
+
+def pzClientDirProperty = providers.gradleProperty('pzClientDir')
+        .orElse(providers.environmentVariable('PZ_CLIENT_DIR'))
+def pzServerDirProperty = providers.gradleProperty('pzServerDir')
+        .orElse(providers.environmentVariable('PZ_SERVER_DIR'))
+
+def userHome = System.getProperty('user.home')
+def osName = (System.getProperty('os.name') ?: '').toLowerCase(Locale.ROOT)
+def programFilesX86 = System.getenv('ProgramFiles(x86)') ?: 'C:/Program Files (x86)'
+def programFiles = System.getenv('ProgramFiles') ?: 'C:/Program Files'
+
+def steamCommonRoots = []
+if (osName.contains('win')) {
+    steamCommonRoots = [
+            new File(programFilesX86, 'Steam/steamapps/common'),
+            new File(programFiles, 'Steam/steamapps/common')
+    ]
+} else if (osName.contains('mac')) {
+    steamCommonRoots = [
+            new File(userHome, 'Library/Application Support/Steam/steamapps/common')
+    ]
+} else {
+    steamCommonRoots = [
+            new File(userHome, '.steam/steam/steamapps/common'),
+            new File(userHome, '.local/share/Steam/steamapps/common'),
+            new File(userHome, '.steam/root/steamapps/common'),
+            new File('/usr/local/share/steam/steamapps/common')
+    ]
+}
+
+def clientCandidates = steamCommonRoots.collect { new File(it, 'ProjectZomboid') }
+def serverCandidates = steamCommonRoots.collect { new File(it, 'Project Zomboid Dedicated Server') }
+def defaultClientDir = clientCandidates.find { it.isDirectory() } ?: clientCandidates[0]
+def defaultServerDir = serverCandidates.find { it.isDirectory() } ?: serverCandidates[0]
+
+def resolveGameDirectory = { String taskName, Provider<String> configured, File fallback ->
+    File directory = configured.isPresent() ? file(configured.get()) : fallback
+    if (!directory.isDirectory()) {
+        throw new GradleException(
+                "${taskName}: game directory not found: ${directory}. " +
+                        "Set -PpzClientDir=... / -PpzServerDir=... or PZ_CLIENT_DIR / PZ_SERVER_DIR."
+        )
+    }
+    return directory
+}
+
+tasks.register('runClient', JavaExec) {
+    group = 'run'
+    description = 'Runs the Project Zomboid client with Avrix from the current IDE.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.avrix.Main'
+    doFirst {
+        File gameDirectory = resolveGameDirectory('runClient', pzClientDirProperty, defaultClientDir)
+        workingDir = gameDirectory
+        jvmArgs "-Davrix.game.dir=${gameDirectory.absolutePath}"
+        if (osName.contains('mac')) {
+            jvmArgs '-XstartOnFirstThread'
+        }
+    }
+}
+
+tasks.register('runServer', JavaExec) {
+    group = 'run'
+    description = 'Runs the Project Zomboid dedicated server with Avrix from the current IDE.'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.avrix.Main'
+    standardInput = System.in
+    doFirst {
+        File gameDirectory = resolveGameDirectory('runServer', pzServerDirProperty, defaultServerDir)
+        workingDir = gameDirectory
+        jvmArgs "-Davrix.game.dir=${gameDirectory.absolutePath}"
+    }
+}
+
+tasks.register('benchmark', JavaExec) {
+    group = 'verification'
+    description = 'Runs the Avrix performance benchmark.'
+    dependsOn tasks.named('testClasses')
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.avrix.benchmark.AvrixBenchmark'
+    jvmArgs '-Xmx1g'
 }

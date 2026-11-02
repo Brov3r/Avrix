@@ -26,6 +26,77 @@ java -jar ./Avrix-Loader-<version>.jar -nosteam
 4. ⚙️ **Optional:** Create a `.bat` (Windows) or `.sh` (Linux) launch script containing this command for quick
    execution.
 
+### Launch Options
+
+JVM options must be placed before `-jar`, while loader and game arguments go after the JAR name:
+
+```bash
+# Detailed loader logs (TRACE, DEBUG, INFO, WARN, ERROR)
+java -Dconsole.level=DEBUG -jar ./Avrix-Loader-<version>.jar
+
+# Launch an installation located outside the current directory
+java -Davrix.game.dir="C:\Path\To\ProjectZomboid" -jar ./Avrix-Loader-<version>.jar
+
+# Keep the original Project Zomboid console output
+java -jar ./Avrix-Loader-<version>.jar --no-redirect-log
+
+# Abort startup when any plugin fails to load
+java -jar ./Avrix-Loader-<version>.jar --strict
+```
+
+The game directory can also be provided through the `AVRIX_GAME_DIR` environment variable (or `ZOMBOID_DIR`), or
+through the `-Dzomboid.dir` JVM property. Avrix detects the client or dedicated server from installation files only,
+such as `StartServer64.*`, the `java/` and `natives/` directories, client executables, or `ProjectZomboid64.json`; no
+environment flag is required.
+
+Avrix writes a log file to `logs/log_<timestamp>.log` in the working directory. The console threshold is controlled by
+`-Dconsole.level`, while the file appender records `DEBUG` and above.
+
+---
+
+## 🚫 Disabling Plugins
+
+To disable a plugin without deleting it from the plugins directory, create `plugins/disabled.txt`.
+
+Each non-blank line contains either the plugin `id` or the plugin archive name. Matching is case-insensitive. Lines
+starting with `#` and inline comments are ignored.
+
+```text
+# plugins/disabled.txt
+my-plugin
+old-mod.jar
+```
+
+Disabled plugins are skipped and reported with the `SKIPPED` status. Use `--strict` to make plugin load failures abort
+startup instead.
+
+---
+
+## 🧪 Running from an IDE
+
+The Gradle build provides two development run tasks:
+
+```bash
+./gradlew runClient
+./gradlew runServer
+```
+
+The tasks auto-detect common Steam installation paths on Windows, Linux, and macOS. Override the location when the game
+is installed elsewhere:
+
+```bash
+# Gradle properties
+./gradlew runClient -PpzClientDir="C:\Program Files (x86)\Steam\steamapps\common\ProjectZomboid"
+./gradlew runServer -PpzServerDir="C:\Program Files (x86)\Steam\steamapps\common\Project Zomboid Dedicated Server"
+
+# Environment variables
+PZ_CLIENT_DIR=/path/to/ProjectZomboid ./gradlew runClient
+PZ_SERVER_DIR=/path/to/ProjectZomboidDedicatedServer ./gradlew runServer
+```
+
+`runServer` keeps standard input attached so server commands can be entered from the terminal. On macOS, `runClient`
+also applies `-XstartOnFirstThread`, which is required by the client windowing stack.
+
 ---
 
 ## 💻 Quick Start (Plugin Development)
@@ -134,9 +205,9 @@ Metadata manifest located at `src/main/resources/metadata.yml`:
 
 ```yaml
 schema: 1                                # Metadata schema specification version
-id: "example-plugin"                     # Unique alphanumeric plugin identifier
+id: "example-plugin"                     # Unique plugin identifier
 name: "Example Plugin"                   # Human-readable display name
-version: "%PLUGIN_VERSION%"              # Plugin version (templated via Gradle)
+version: "%PLUGIN_VERSION%"              # SemVer plugin version (templated via Gradle)
 description: "Plugin for Project Zomboid" # Brief description
 environment: "*"                         # Target environment: "*", "both", "server", or "client"
 license: "MIT"                           # License identifier (e.g., MIT, Apache-2.0, PROPRIETARY)
@@ -157,6 +228,10 @@ entrypoint: "com.example.exampleplugin.ExamplePlugin" # (Optional) FQCN of the e
 mixins:
   - "com.example.exampleplugin.ExampleMixin"          # (Optional) List of mixin class FQCNs
 ```
+
+`schema` must be `1`, `version` must be a valid SemVer string, and the identifiers `avrix-loader` and `project-zomboid`
+are reserved for the loader and game provider. Use a dependency or `loadAfter` entry when your plugin relies on another
+plugin being initialized first.
 
 ---
 
@@ -195,6 +270,32 @@ public class ExamplePlugin implements Plugin {
 }
 ```
 
+### Plugin Lifecycle
+
+`Plugin` exposes two lifecycle callbacks:
+
+- `onInitialize(PluginData)` is invoked once, after the plugin JAR is attached and its mixins are registered but before
+  the game starts. Acquire resources and register services here.
+- `onShutdown()` is invoked when the loader shuts down. Loaded plugins are shut down in reverse load order, and the
+  default implementation does nothing.
+
+```java
+@Override
+public void onInitialize(PluginData pluginData) {
+    // Acquire resources and register services.
+}
+
+@Override
+public void onShutdown() {
+    // Release resources owned by this plugin.
+}
+```
+
+If your plugin registers a service, unregister it in `onShutdown()`; never unregister services owned by the loader or by
+other plugins. Loader integrations can inspect the most recent attempt through `PluginManager.getLoadResults()`, which
+returns immutable `PluginLoadResult` entries with `LOADED`, `FAILED`, or `SKIPPED` status. `PluginManager.close()` shuts
+down loaded plugins in reverse order and is called automatically by the loader on JVM shutdown.
+
 ---
 
 ### `ExampleMixin.java` (Bytecode Transformation)
@@ -229,3 +330,20 @@ public class ExampleMixin {
     }
 }
 ```
+
+The `mixins` entries are fully qualified transformer class names, not configuration file paths. Registration happens
+while the owning plugin is prepared, before its entrypoint runs.
+
+---
+
+## 📊 Performance Benchmark
+
+A lightweight comparative benchmark is available without JMH or additional dependencies:
+
+```bash
+./gradlew benchmark
+```
+
+It measures dependency resolution, metadata-only plugin loading, realistic plugin loading with entrypoints and JAR
+resources, and class loading with mixin transformation. Use the results to compare changes on the same machine; they are
+not absolute performance guarantees. The `benchmark` task is intentionally not part of `check`.

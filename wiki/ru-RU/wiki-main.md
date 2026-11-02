@@ -5,7 +5,7 @@
 Данная документация актуальна для следующих версий:
 
 - 🧟 **Project Zomboid:** `42.21.0+`
-- ⚡ **Avrix Loader:** `2.2.x`
+- ⚡ **Avrix Loader:** `2.3.x`
 - ☕ **Java Runtime:** `JDK 25+`
 
 > [!IMPORTANT]

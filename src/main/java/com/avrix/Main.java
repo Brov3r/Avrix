@@ -1,27 +1,22 @@
 package com.avrix;
 
-import com.avrix.core.KnotClassLoader;
-import com.avrix.core.ServiceManager;
-import com.avrix.mixin.MixinTransformer;
-import com.avrix.plugins.DefaultPluginManager;
-import com.avrix.plugins.PluginManager;
-import com.avrix.provider.DefaultLoaderProvider;
-import com.avrix.provider.GameProvider;
-import com.avrix.provider.LoaderProvider;
-import com.avrix.provider.ZomboidGameProvider;
+import com.avrix.core.Environment;
+import com.avrix.core.LoaderConfig;
+import com.avrix.loader.LoaderContext;
+import com.avrix.loader.LoaderFactory;
 import com.avrix.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URL;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Main bootstrap entrypoint class for the Avrix plugin and mixin loader.
+ * Main bootstrap entrypoint for the Avrix plugin and mixin loader.
  * <p>
- * Orchestrates JVM classloader establishment, mixin subsystem configuration,
- * game provider discovery, plugin topological loading, and runtime delegation to Project Zomboid.
+ * Parses command-line arguments, builds the loader configuration, creates the runtime through {@link LoaderFactory},
+ * and delegates game startup to the resulting {@link LoaderContext}.
  */
 public final class Main {
 
@@ -48,41 +43,42 @@ public final class Main {
             String[] rawArgs = (args == null) ? new String[0] : args;
             Set<String> argumentsSet = new HashSet<>(Arrays.asList(rawArgs));
 
-            // Initialize Unified Flat Knot ClassLoader
-            KnotClassLoader classLoader = new KnotClassLoader(new URL[0], ClassLoader.getSystemClassLoader());
-            Thread.currentThread().setContextClassLoader(classLoader);
-            ServiceManager.register(KnotClassLoader.class, classLoader);
+            String providerId = System.getProperty(
+                    Constants.GAME_PROVIDER_PROPERTY,
+                    Constants.DEFAULT_GAME_PROVIDER_ID
+            );
 
-            // Initialize Mixin & Bytecode Transformation Subsystem
-            MixinTransformer.init(classLoader);
+            LoaderConfig config = new LoaderConfig(
+                    Path.of(Constants.PLUGINS_FOLDER_NAME),
+                    Constants.METADATA_NAME,
+                    Constants.PLUGIN_EXTENSION,
+                    Constants.PLUGIN_ICON_NAME,
+                    providerId,
+                    Environment.BOTH,
+                    !argumentsSet.contains(Constants.NO_REDIRECT_FLAG_NAME),
+                    argumentsSet.contains(Constants.STRICT_FLAG_NAME)
+            );
 
-            // Register Loader Provider & Game Provider
-            LoaderProvider loaderProvider = new DefaultLoaderProvider();
-            ServiceManager.register(LoaderProvider.class, loaderProvider);
+            LoaderContext context = LoaderFactory.create(config);
+            Runtime.getRuntime().addShutdownHook(new Thread(context::close, "avrix-shutdown"));
 
-            GameProvider gameProvider = new ZomboidGameProvider();
-            ServiceManager.register(GameProvider.class, gameProvider);
-            gameProvider.init();
+            try {
+                context.initialize();
 
-            // Initialize Plugin Subsystem & Load Mod Graph
-            PluginManager pluginManager = new DefaultPluginManager();
-            ServiceManager.register(PluginManager.class, pluginManager);
-            pluginManager.init();
-            pluginManager.loadPlugins();
+                if (!config.redirectSystemStreams()) {
+                    LOGGER.info("System log stream redirection is disabled via CLI argument: [{}]", Constants.NO_REDIRECT_FLAG_NAME);
+                } else {
+                    context.redirectSystemStreams();
+                }
 
-            // Configure System Log Streams Redirection
-            if (argumentsSet.contains(Constants.NO_REDIRECT_FLAG_NAME)) {
-                LOGGER.info("System log stream redirection is disabled via CLI argument: [{}]", Constants.NO_REDIRECT_FLAG_NAME);
-            } else {
-                gameProvider.redirectSystemStreamsToLogger();
+                long bootstrapDurationMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - bootstrapStartTime);
+                LOGGER.info("Avrix loader bootstrap completed in {}ms. Delegating control to {}...", bootstrapDurationMillis, context.getGameName());
+
+                String[] gameLaunchArgs = filterLoaderArguments(rawArgs);
+                context.launch(gameLaunchArgs);
+            } finally {
+                context.close();
             }
-
-            // Calculate & Display Bootstrap Benchmark
-            long bootstrapDurationMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - bootstrapStartTime);
-            LOGGER.info("Avrix loader bootstrap completed in {}ms. Delegating control to {}...", bootstrapDurationMillis, gameProvider.getName());
-
-            String[] gameLaunchArgs = filterLoaderArguments(rawArgs);
-            gameProvider.launch(gameLaunchArgs);
 
         } catch (Throwable throwable) {
             LOGGER.error("A fatal error occurred during the application launch phase!", throwable);
@@ -102,7 +98,8 @@ public final class Main {
         }
 
         Set<String> loaderSpecificFlags = Set.of(
-                Constants.NO_REDIRECT_FLAG_NAME
+                Constants.NO_REDIRECT_FLAG_NAME,
+                Constants.STRICT_FLAG_NAME
         );
 
         List<String> gameArgs = new ArrayList<>(rawArgs.length);

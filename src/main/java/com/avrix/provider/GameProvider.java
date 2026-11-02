@@ -1,6 +1,8 @@
 package com.avrix.provider;
 
 import com.avrix.core.Environment;
+import com.avrix.core.KnotClassLoader;
+import com.avrix.core.Metadata;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -18,6 +20,15 @@ public interface GameProvider {
      * Initializes the game environment, class loaders, and required paths.
      */
     void init();
+
+    /**
+     * Initializes the game environment with the loader classloader.
+     *
+     * @param classLoader flat classloader used to resolve game classes and attach libraries
+     */
+    default void init(KnotClassLoader classLoader) {
+        init();
+    }
 
     /**
      * Launches the game with the specified arguments.
@@ -104,6 +115,24 @@ public interface GameProvider {
     Environment getEnvironment();
 
     /**
+     * Synthesizes metadata describing this game provider.
+     *
+     * @return immutable metadata descriptor for the active game
+     */
+    default Metadata getMetadata() {
+        return new Metadata.Builder()
+                .id(getId())
+                .name(getName())
+                .version(getNormalizedVersion())
+                .environment(getEnvironment())
+                .authors(getAuthors())
+                .license(getLicense())
+                .contacts(getContacts())
+                .entrypoint(getEntrypoint())
+                .build();
+    }
+
+    /**
      * Returns paths to required Java libraries (JARs).
      *
      * @return a list of library paths
@@ -134,5 +163,11 @@ public interface GameProvider {
      * Redirects default output and error streams to the logger.
      */
     default void redirectSystemStreamsToLogger() {
+    }
+
+    /**
+     * Releases provider resources and restores any process-wide state it changed.
+     */
+    default void close() {
     }
 }

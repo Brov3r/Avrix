@@ -36,24 +36,29 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class KnotClassLoaderMixinTest {
 
     private KnotClassLoader knotClassLoader;
+    private MixinTransformer mixinTransformer;
 
     @BeforeEach
     void setUp() {
         ServiceManager.clear();
-        MixinTransformer.reset();
 
         URL[] testClasspathUrls = resolveCurrentClasspathUrls();
 
         this.knotClassLoader = new KnotClassLoader(testClasspathUrls, getClass().getClassLoader());
         ServiceManager.register(KnotClassLoader.class, knotClassLoader);
 
-        MixinTransformer.init(knotClassLoader);
+        this.mixinTransformer = new MixinTransformer(knotClassLoader);
+        knotClassLoader.setClassTransformer(mixinTransformer);
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws Exception {
         ServiceManager.clear();
-        MixinTransformer.reset();
+        mixinTransformer = null;
+        if (knotClassLoader != null) {
+            knotClassLoader.close();
+            knotClassLoader = null;
+        }
     }
 
     @Test
@@ -62,7 +67,7 @@ class KnotClassLoaderMixinTest {
         String targetClassName = TargetGameService.class.getName();
         String mixinClassName = TargetGameServiceMixin.class.getName();
 
-        MixinTransformer.addMixin(mixinClassName);
+        mixinTransformer.addMixin(mixinClassName);
 
         Class<?> transformedClass = knotClassLoader.loadClass(targetClassName);
         assertThat(transformedClass.getClassLoader()).isSameAs(knotClassLoader);
@@ -90,8 +95,8 @@ class KnotClassLoaderMixinTest {
         String targetClassName = TargetGameService.class.getName();
 
         // Register both independent mixins targeting the same method
-        MixinTransformer.addMixin(FirstPipelineInjectMixin.class.getName());
-        MixinTransformer.addMixin(SecondPipelineInjectMixin.class.getName());
+        mixinTransformer.addMixin(FirstPipelineInjectMixin.class.getName());
+        mixinTransformer.addMixin(SecondPipelineInjectMixin.class.getName());
 
         Class<?> transformedClass = knotClassLoader.loadClass(targetClassName);
         assertThat(transformedClass.getClassLoader()).isSameAs(knotClassLoader);
@@ -140,13 +145,40 @@ class KnotClassLoaderMixinTest {
     }
 
     @Test
-    @DisplayName("Should prevent mixin registration when environment is not initialized")
-    void shouldFailRegisteringMixinWhenNotInitialized() {
-        MixinTransformer.reset();
+    @DisplayName("Should apply a custom ClassTransformer to locally defined classes")
+    void shouldUseConfiguredClassTransformer() throws Exception {
+        List<String> transformedClasses = new ArrayList<>();
+        knotClassLoader.setClassTransformer((className, originalBytes) -> {
+            transformedClasses.add(className);
+            return null;
+        });
 
-        assertThatThrownBy(() -> MixinTransformer.addMixin("test.game.NonExistentMixin"))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("MixinTransformer is not initialized");
+        knotClassLoader.loadClass(TargetGameService.class.getName());
+
+        assertThat(transformedClasses).contains(TargetGameService.class.getName());
+    }
+
+    @Test
+    @DisplayName("Should expose the transformer manager and register mixin collections")
+    void shouldExposeManagerAndRegisterMixinCollections() {
+        assertThat(mixinTransformer.getManager()).isNotNull();
+        assertThatThrownBy(() -> new MixinTransformer(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("KnotClassLoader");
+
+        mixinTransformer.addMixins(List.of(TargetGameServiceMixin.class.getName()));
+
+        assertThatThrownBy(() -> mixinTransformer.addMixins(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("Mixins collection");
+    }
+
+    @Test
+    @DisplayName("Should reject blank mixin class names")
+    void shouldRejectBlankMixinName() {
+        assertThatThrownBy(() -> mixinTransformer.addMixin(" "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Mixin class name cannot be blank");
     }
 
     private static URL[] resolveCurrentClasspathUrls() {

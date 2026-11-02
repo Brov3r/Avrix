@@ -10,6 +10,23 @@ while other plugins consume the service without direct dependencies on the under
 
 ---
 
+### 🧱 Built-in Services
+
+The loader registers these contracts during bootstrap:
+
+| Contract          | Implementation                                        |
+|-------------------|-------------------------------------------------------|
+| `KnotClassLoader` | Flat transforming classloader hosting the runtime     |
+| `LoaderProvider`  | Loader name, version, authors, license, and contacts  |
+| `GameProvider`    | Active client or dedicated server game provider       |
+| `PluginManager`   | Active plugin manager                                 |
+
+These services are loader-owned. Never unregister or replace them. All four are available by the time plugin
+`onInitialize` callbacks run. A plugin that consumes a service registered by another plugin should declare a dependency
+or a `loadAfter` entry so the provider plugin is initialized first.
+
+---
+
 ### 🧩 Registering a Service
 
 To register a service in `ServiceManager`, use the `register(Class<T> serviceType, T implementation)` method. Exactly
@@ -68,6 +85,17 @@ public class DatabasePlugin implements Plugin {
 > [!WARNING]
 > If a service for the specified class is already registered, `ServiceManager.register` throws an
 `IllegalStateException`. This safeguards the runtime against unintended implementation collisions.
+
+Register services from `onInitialize` and unregister only the contracts your plugin owns from `onShutdown`:
+
+```java
+@Override
+public void onShutdown() {
+    ServiceManager.unregister(DatabaseService.class);
+}
+```
+
+The loader invokes plugin shutdown callbacks in reverse load order through `PluginManager.close()`.
 
 ---
 

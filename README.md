@@ -57,6 +57,47 @@ java -jar ./Avrix-Loader-x.x.x.jar -nosteam
 > **Raw Game Logs:** Pass the `--no-redirect-log` flag to disable Avrix stream interception and restore default Project
 > Zomboid console output: ``java -jar ./Avrix-Loader-x.x.x.jar --no-redirect-log``
 
+## 🧪 Running from an IDE
+
+For local development, Gradle provides two run configurations:
+
+```bash
+./gradlew runClient
+./gradlew runServer
+```
+
+The tasks auto-detect common Steam installation paths on Windows, Linux, and macOS. Override them with Gradle
+properties or environment variables when the game is installed elsewhere:
+
+```bash
+# Windows
+./gradlew runClient -PpzClientDir="C:\Program Files (x86)\Steam\steamapps\common\ProjectZomboid"
+./gradlew runServer -PpzServerDir="C:\Program Files (x86)\Steam\steamapps\common\Project Zomboid Dedicated Server"
+
+# Linux
+./gradlew runClient -PpzClientDir="$HOME/.steam/steam/steamapps/common/ProjectZomboid"
+
+# macOS
+./gradlew runClient -PpzClientDir="$HOME/Library/Application Support/Steam/steamapps/common/ProjectZomboid"
+```
+
+Supported environment variables: `PZ_CLIENT_DIR` and `PZ_SERVER_DIR`.
+
+The client/server environment itself is detected from installation files only. The loader does not require an
+environment flag.
+
+## 📊 Performance Benchmark
+
+A lightweight comparative benchmark is available without adding JMH or extra dependencies:
+
+```bash
+./gradlew benchmark
+```
+
+It measures dependency resolution, metadata-only plugin loading, realistic plugin loading with entrypoints and
+resources, and class loading with mixin transformation. Results are intended for regression comparison on the same
+machine, not as absolute performance guarantees.
+
 ## 🤝 Contributing
 
 Contributions are always welcome! Here is how you can help:

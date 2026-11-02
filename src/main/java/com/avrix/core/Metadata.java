@@ -1,26 +1,15 @@
 package com.avrix.core;
 
-import com.avrix.provider.GameProvider;
 import com.avrix.utils.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.spongepowered.configurate.ConfigurationNode;
-import org.spongepowered.configurate.serialize.SerializationException;
-import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 /**
  * Immutable metadata descriptor for an Avrix plugin or runtime game provider.
  * <p>
- * Encapsulates all declarative manifest information parsed from {@code metadata.yml} or synthesized
- * from active game runtime providers. Used for topological dependency sorting, environment filtering,
- * and mixin bootstrap configuration.
+ * Encapsulates all declarative manifest information parsed from {@code metadata.yml} or synthesized by an
+ * active game provider. Used for topological dependency sorting, environment filtering, and mixin bootstrap
+ * configuration.
  *
  * @param schema       metadata specification schema version (mandatory, must match {@link Constants#METADATA_SCHEMA})
  * @param name         human-readable display name of the plugin (mandatory, non-blank)
@@ -53,7 +42,6 @@ public record Metadata(
         String entrypoint,
         List<String> mixins
 ) {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Metadata.class);
 
     /**
      * Compact constructor enforcing domain invariants, mandatory attribute validation, and collection immutability.
@@ -97,151 +85,6 @@ public record Metadata(
         dependencies = (dependencies == null) ? Map.of() : Map.copyOf(dependencies);
         loadBefore = (loadBefore == null) ? List.of() : List.copyOf(loadBefore);
         loadAfter = (loadAfter == null) ? List.of() : List.copyOf(loadAfter);
-    }
-
-    /**
-     * Synthesizes a {@link Metadata} descriptor representing the underlying game from a {@link GameProvider}.
-     *
-     * @param provider the active game provider instance
-     * @return synthesized game metadata
-     * @throws NullPointerException if {@code provider} is {@code null}
-     */
-    public static Metadata fromGameProvider(GameProvider provider) {
-        Objects.requireNonNull(provider, "GameProvider cannot be null");
-        return new Builder()
-                .schema(Constants.METADATA_SCHEMA)
-                .id(provider.getId())
-                .name(provider.getName())
-                .version(provider.getNormalizedVersion())
-                .environment(provider.getEnvironment())
-                .authors(provider.getAuthors())
-                .license(provider.getLicense())
-                .contacts(provider.getContacts())
-                .entrypoint(provider.getEntrypoint())
-                .build();
-    }
-
-    /**
-     * Parses a plugin metadata manifest located inside a JAR file.
-     *
-     * @param jarPath   the path to the physical JAR file on disk
-     * @param entryPath internal relative path to the YAML manifest (e.g., {@code "plugin.yaml"})
-     * @return parsed immutable metadata
-     * @throws NullPointerException  if {@code jarPath} or {@code entryPath} is {@code null}
-     * @throws FileNotFoundException if the specified entry is missing inside the JAR
-     * @throws IOException           if an I/O error occurs while reading the JAR or parsing YAML
-     */
-    public static Metadata fromJarFile(Path jarPath, String entryPath) throws IOException {
-        Objects.requireNonNull(jarPath, "JAR path cannot be null");
-        Objects.requireNonNull(entryPath, "Entry path cannot be null");
-
-        LOGGER.debug("Loading plugin metadata from JAR [{}] at entry [{}]", jarPath, entryPath);
-        try (JarFile jar = new JarFile(jarPath.toFile())) {
-            JarEntry entry = jar.getJarEntry(entryPath);
-            if (entry == null) {
-                throw new FileNotFoundException("Metadata entry [%s] not found in JAR [%s]".formatted(entryPath, jarPath));
-            }
-
-            try (InputStream in = jar.getInputStream(entry)) {
-                YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
-                        .source(() -> new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8)))
-                        .build();
-
-                Metadata metadata = fromNode(loader.load());
-                LOGGER.debug("Successfully loaded metadata for plugin [{}] (v{})", metadata.id(), metadata.version());
-                return metadata;
-            }
-        } catch (FileNotFoundException e) {
-            LOGGER.warn("Metadata manifest not found: {}", e.getMessage());
-            throw e;
-        } catch (IOException e) {
-            LOGGER.error("Failed to parse metadata manifest from JAR [{}]: {}", jarPath.getFileName(), e.getMessage(), e);
-            throw e;
-        }
-    }
-
-    /**
-     * Parses a plugin metadata manifest from a {@link File} reference.
-     *
-     * @param jarFile   the physical JAR file
-     * @param entryPath internal relative path to the YAML manifest
-     * @return parsed immutable metadata
-     * @throws NullPointerException if {@code jarFile} or {@code entryPath} is {@code null}
-     * @throws IOException          if reading the manifest fails
-     */
-    public static Metadata fromJarFile(File jarFile, String entryPath) throws IOException {
-        Objects.requireNonNull(jarFile, "JarFile cannot be null");
-        return fromJarFile(jarFile.toPath(), entryPath);
-    }
-
-    /**
-     * Parses metadata from an external YAML file on the filesystem.
-     *
-     * @param path path to the YAML file
-     * @return parsed immutable metadata
-     * @throws NullPointerException if {@code path} is {@code null}
-     * @throws IOException          if reading fails or YAML structure is invalid
-     */
-    public static Metadata fromYaml(Path path) throws IOException {
-        Objects.requireNonNull(path, "Path cannot be null");
-        YamlConfigurationLoader loader = YamlConfigurationLoader.builder().path(path).build();
-        return fromNode(loader.load());
-    }
-
-    /**
-     * Deserializes a {@link Metadata} record from a Configurate {@link ConfigurationNode}.
-     *
-     * @param node the root configuration node
-     * @return populated {@link Metadata}
-     * @throws NullPointerException   if {@code node} is {@code null}
-     * @throws SerializationException if required nodes cannot be deserialized
-     */
-    public static Metadata fromNode(ConfigurationNode node) throws SerializationException {
-        Objects.requireNonNull(node, "ConfigurationNode cannot be null");
-
-        Builder builder = new Builder()
-                .schema(node.node("schema").getInt(Constants.METADATA_SCHEMA))
-                .id(node.node("id").getString())
-                .name(node.node("name").getString())
-                .description(node.node("description").getString(""))
-                .version(node.node("version").getString())
-                .entrypoint(node.node("entrypoint").getString(""))
-                .license(node.node("license").getString("UNLICENSED"));
-
-        if (!node.node("environment").virtual()) {
-            builder.environment(Environment.fromString(node.node("environment").getString("both")));
-        }
-
-        if (!node.node("loadBefore").virtual()) {
-            builder.loadBefore(node.node("loadBefore").getList(String.class, Collections.emptyList()));
-        }
-
-        if (!node.node("loadAfter").virtual()) {
-            builder.loadAfter(node.node("loadAfter").getList(String.class, Collections.emptyList()));
-        }
-
-        if (!node.node("authors").virtual()) {
-            builder.authors(node.node("authors").getList(String.class, Collections.emptyList()));
-        }
-
-        if (!node.node("contacts").virtual()) {
-            builder.contacts(node.node("contacts").getList(String.class, Collections.emptyList()));
-        }
-
-        if (!node.node("mixins").virtual()) {
-            builder.mixins(node.node("mixins").getList(String.class, Collections.emptyList()));
-        }
-
-        ConfigurationNode dependenciesNode = node.node("dependencies");
-        if (!dependenciesNode.virtual() && dependenciesNode.isMap()) {
-            for (var entry : dependenciesNode.childrenMap().entrySet()) {
-                String depId = String.valueOf(entry.getKey());
-                String versionConstraint = entry.getValue().getString("*");
-                builder.addDependency(depId, versionConstraint);
-            }
-        }
-
-        return builder.build();
     }
 
     /**

@@ -20,6 +20,11 @@ public final class Constants {
     public static final String NO_REDIRECT_FLAG_NAME = "--no-redirect-log";
 
     /**
+     * CLI argument flag that makes plugin load failures abort startup.
+     */
+    public static final String STRICT_FLAG_NAME = "--strict";
+
+    /**
      * Standard manifest file name containing plugin metadata.
      */
     public static final String METADATA_NAME = "metadata.yml";
@@ -45,6 +50,11 @@ public final class Constants {
     public static final String PLUGINS_FOLDER_NAME = "plugins";
 
     /**
+     * File name containing plugin identifiers or archive names that must not be loaded.
+     */
+    public static final String DISABLED_PLUGINS_FILE_NAME = "disabled.txt";
+
+    /**
      * Loader runtime version resolved from build properties.
      */
     public static final String LOADER_VERSION;
@@ -58,6 +68,16 @@ public final class Constants {
      * Unique identifier for the loader subsystem.
      */
     public static final String LOADER_ID = "avrix-loader";
+
+    /**
+     * Identifier of the default game provider.
+     */
+    public static final String DEFAULT_GAME_PROVIDER_ID = "project-zomboid";
+
+    /**
+     * System property used to select a game provider by identifier.
+     */
+    public static final String GAME_PROVIDER_PROPERTY = "avrix.provider";
 
     /**
      * Primary author / maintainer of the project.
