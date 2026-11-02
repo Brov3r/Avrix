@@ -74,7 +74,7 @@ class CrossPluginMixinIntegrationTest {
 
         MixinTransformer.init(knotClassLoader);
 
-        this.pluginManager = new DefaultPluginManager();
+        this.pluginManager = new DefaultPluginManager(tempDir.resolve("plugins"));
         this.pluginManager.init();
     }
 

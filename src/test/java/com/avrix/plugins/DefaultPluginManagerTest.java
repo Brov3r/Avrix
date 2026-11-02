@@ -12,6 +12,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -32,14 +33,22 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("DefaultPluginManager Unit Tests")
 class DefaultPluginManagerTest {
 
+    @TempDir
+    Path tempRoot;
+
     private DefaultPluginManager manager;
+    private Path pluginsDirectory;
+    private KnotClassLoader classLoader;
+    private ClassLoader originalContextClassLoader;
     private static final int SCHEMA = Constants.METADATA_SCHEMA;
 
     @BeforeEach
     void setUp() {
         ServiceManager.clear();
 
-        KnotClassLoader classLoader = new KnotClassLoader(new URL[0], ClassLoader.getSystemClassLoader());
+        originalContextClassLoader = Thread.currentThread().getContextClassLoader();
+        pluginsDirectory = tempRoot.resolve("plugins");
+        classLoader = new KnotClassLoader(new URL[0], ClassLoader.getSystemClassLoader());
         Thread.currentThread().setContextClassLoader(classLoader);
         ServiceManager.register(KnotClassLoader.class, classLoader);
 
@@ -49,12 +58,19 @@ class DefaultPluginManagerTest {
         LoaderProvider loaderProvider = new DefaultLoaderProvider();
         ServiceManager.register(LoaderProvider.class, loaderProvider);
 
-        manager = new DefaultPluginManager();
+        manager = new DefaultPluginManager(pluginsDirectory);
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws IOException {
         ServiceManager.clear();
+        try {
+            if (classLoader != null) {
+                classLoader.close();
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(originalContextClassLoader);
+        }
     }
 
     private Metadata createMeta(String id, String version) {
@@ -595,13 +611,10 @@ class DefaultPluginManagerTest {
     @DisplayName("loadPlugins() End-to-End & Disk Discovery Tests")
     class LoadPluginsEndToEndTests {
 
-        @TempDir
-        Path customPluginsDir;
-
         @Test
         @DisplayName("Should throw IllegalStateException when loadPlugins() is called before init()")
         void shouldThrowWhenNotInitialized() {
-            var uninitializedManager = new DefaultPluginManager();
+            var uninitializedManager = new DefaultPluginManager(pluginsDirectory);
             assertThatThrownBy(uninitializedManager::loadPlugins)
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessage("PluginManager is not initialized. Call init() first.");
@@ -623,9 +636,6 @@ class DefaultPluginManagerTest {
         @DisplayName("Should filter out plugins incompatible with active runtime environment")
         void shouldFilterPluginsByEnvironment() throws Exception {
             ServiceManager.clear();
-
-            KnotClassLoader classLoader = new KnotClassLoader(new URL[0], ClassLoader.getSystemClassLoader());
-            Thread.currentThread().setContextClassLoader(classLoader);
             ServiceManager.register(KnotClassLoader.class, classLoader);
 
             LoaderProvider loaderProvider = new DefaultLoaderProvider();
@@ -640,10 +650,10 @@ class DefaultPluginManagerTest {
                 }
             });
 
-            var envManager = new DefaultPluginManager();
+            var envManager = new DefaultPluginManager(pluginsDirectory);
             envManager.init();
 
-            Path pluginsPath = Path.of(Constants.PLUGINS_FOLDER_NAME);
+            Path pluginsPath = pluginsDirectory;
             Files.createDirectories(pluginsPath);
 
             // Server-only plugin JAR (must be skipped)
@@ -676,7 +686,7 @@ class DefaultPluginManagerTest {
         @DisplayName("Should skip corrupt JAR archives and continue loading valid plugins")
         void shouldSkipCorruptedJarsAndContinue() throws Exception {
             manager.init();
-            Path pluginsPath = Path.of(Constants.PLUGINS_FOLDER_NAME);
+            Path pluginsPath = pluginsDirectory;
             Files.createDirectories(pluginsPath);
 
             // Corrupt file with plugin extension

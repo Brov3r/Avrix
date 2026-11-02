@@ -37,18 +37,30 @@ public class DefaultPluginManager implements PluginManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPluginManager.class);
 
-    /**
-     * Constructs a new plugin manager in an uninitialized state.
-     */
-    public DefaultPluginManager() {
-    }
-
+    private final Path pluginsDirectory;
     private final Map<String, PluginData> plugins = new ConcurrentHashMap<>();
     private final List<Metadata> corePlugins = new CopyOnWriteArrayList<>();
     private volatile Map<String, PluginData> cachedPlugins = Map.of();
 
     private KnotClassLoader classLoader;
     private volatile boolean initialized = false;
+
+    /**
+     * Constructs a new plugin manager using the default plugins directory.
+     */
+    public DefaultPluginManager() {
+        this(Path.of(Constants.PLUGINS_FOLDER_NAME));
+    }
+
+    /**
+     * Constructs a new plugin manager using a custom plugins directory.
+     *
+     * @param pluginsDirectory directory used to discover plugin archives
+     * @throws NullPointerException if {@code pluginsDirectory} is null
+     */
+    public DefaultPluginManager(Path pluginsDirectory) {
+        this.pluginsDirectory = Objects.requireNonNull(pluginsDirectory, "Plugins directory cannot be null");
+    }
 
     /**
      * Initializes the plugin manager, creates the plugins storage directory if missing,
@@ -75,7 +87,7 @@ public class DefaultPluginManager implements PluginManager {
         corePlugins.add(Metadata.fromGameProvider(gameProvider));
         corePlugins.add(loaderProvider.getMetadata());
 
-        Path pluginsDir = Path.of(Constants.PLUGINS_FOLDER_NAME).toAbsolutePath();
+        Path pluginsDir = pluginsDirectory.toAbsolutePath().normalize();
         try {
             if (Files.notExists(pluginsDir)) {
                 Files.createDirectories(pluginsDir);
@@ -464,7 +476,7 @@ public class DefaultPluginManager implements PluginManager {
      * @return list of JAR files matching the plugin extension
      */
     private List<File> getPluginFiles() {
-        Path pluginsDir = Path.of(Constants.PLUGINS_FOLDER_NAME);
+        Path pluginsDir = pluginsDirectory.toAbsolutePath().normalize();
         if (!Files.isDirectory(pluginsDir)) {
             return List.of();
         }
