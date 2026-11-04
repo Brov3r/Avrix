@@ -1,0 +1,10 @@
+name=Avrix
+id=Avrix
+author=Brov3r
+description=A modern Java mod loader and mixin framework for Project Zomboid.
+poster=poster.png
+icon=poster.png
+modversion=2.3.0
+versionMin=42.0.0
+category=features
+url=https://github.com/Brov3r/Avrix

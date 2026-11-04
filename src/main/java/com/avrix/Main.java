@@ -2,6 +2,7 @@ package com.avrix;
 
 import com.avrix.core.Environment;
 import com.avrix.core.LoaderConfig;
+import com.avrix.core.RuntimeMarker;
 import com.avrix.loader.LoaderContext;
 import com.avrix.loader.LoaderFactory;
 import com.avrix.utils.Constants;
@@ -62,6 +63,11 @@ public final class Main {
             LoaderContext context = LoaderFactory.create(config);
             Runtime.getRuntime().addShutdownHook(new Thread(context::close, "avrix-shutdown"));
 
+            List<Path> runtimeMarkers = RuntimeMarker.activate();
+            Runtime.getRuntime().addShutdownHook(
+                    new Thread(() -> RuntimeMarker.deactivate(runtimeMarkers), "avrix-runtime-marker")
+            );
+
             try {
                 context.initialize();
 
@@ -77,6 +83,7 @@ public final class Main {
                 String[] gameLaunchArgs = filterLoaderArguments(rawArgs);
                 context.launch(gameLaunchArgs);
             } finally {
+                RuntimeMarker.deactivate(runtimeMarkers);
                 context.close();
             }
 

@@ -47,6 +47,11 @@ public final class Constants {
     public static final String PLUGINS_FOLDER_NAME = "plugins";
 
     /**
+     * Runtime marker file used by Project Zomboid Lua code to detect an active Avrix launch.
+     */
+    public static final String RUNTIME_MARKER_NAME = "avrix-active.marker";
+
+    /**
      * File name containing plugin identifiers or archive names that must not be loaded.
      */
     public static final String DISABLED_PLUGINS_FILE_NAME = "disabled.txt";

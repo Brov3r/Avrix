@@ -141,6 +141,46 @@ tasks.register('releaseBuildJar') {
     dependsOn tasks.named('sourceJar')
 }
 
+def workshopModInfo = layout.projectDirectory.file('workshop-mod/42/mod.info')
+def workshopModVersion = project.version.toString()
+
+tasks.register('updateWorkshopModInfo') {
+    group = 'build'
+    description = 'Updates modversion in the Workshop mod.info from the project version.'
+
+    inputs.property('version', workshopModVersion)
+    outputs.file(workshopModInfo)
+
+    doLast {
+        File file = workshopModInfo.asFile
+        if (!file.isFile()) {
+            throw new GradleException("Workshop mod.info not found: ${file}")
+        }
+
+        String text = file.getText('UTF-8')
+        String updated = text.replaceAll(/(?m)^modversion=.*$/, "modversion=${workshopModVersion}")
+        if (updated != text) {
+            file.setText(updated, 'UTF-8')
+        }
+    }
+}
+
+tasks.named('build') {
+    dependsOn tasks.named('updateWorkshopModInfo')
+}
+
+tasks.register('buildWorkshopJar', Copy) {
+    group = 'build'
+    description = 'Builds the shaded loader JAR and copies it into the Project Zomboid Workshop mod libs directory.'
+
+    dependsOn tasks.named('shadowJar')
+    dependsOn tasks.named('updateWorkshopModInfo')
+
+    from(tasks.named('shadowJar', ShadowJar).flatMap { it.archiveFile })
+    into(layout.projectDirectory.dir('workshop-mod/libs'))
+    rename { 'Avrix-Loader.jar' }
+}
+
 def pzClientDirProperty = providers.gradleProperty('pzClientDir')
         .orElse(providers.environmentVariable('PZ_CLIENT_DIR'))
 def pzServerDirProperty = providers.gradleProperty('pzServerDir')

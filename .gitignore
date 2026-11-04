@@ -44,3 +44,10 @@ bin/
 .tools/
 .opencode/
 AGENTS.md
+
+# Workshop mod build artifacts (produced by buildWorkshopJar)
+/workshop-mod/libs/*.jar
+
+# Avrix runtime markers (created while the game is running)
+/workshop-mod/42/avrix-active.marker
+/workshop-mod/avrix-active.marker
