@@ -48,7 +48,9 @@ jobs:
         
     - name: Build project
       if: matrix.language == 'java-kotlin' && matrix.build-mode == 'manual'
-      run: ./gradlew classes -x test
+      # Build cache must be bypassed, otherwise compilation is restored from cache
+      # and CodeQL has no compiled classes to analyze.
+      run: ./gradlew clean classes -x test --no-build-cache
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v4.39.1
