@@ -1,0 +1,78 @@
+name: Release
+
+on:
+  push:
+    tags: [ "v*" ]
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      with:
+        persist-credentials: false
+
+    - name: Set up JDK 25
+      uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
+      with:
+        java-version: '25'
+        distribution: 'temurin'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+    - name: Build and verify
+      run: ./gradlew build releaseBuildJar
+
+    - name: Generate checksums
+      shell: bash
+      run: |
+        set -euo pipefail
+        version="${GITHUB_REF_NAME#v}"
+        jar="build/Avrix-Loader-${version}.jar"
+        sources="build/Avrix-Loader-${version}-sources.jar"
+
+        for file in "$jar" "$sources"; do
+          if [[ ! -f "$file" ]]; then
+            echo "::error::Expected release artifact not found: $file"
+            exit 1
+          fi
+        done
+
+        cd build
+        sha256sum "Avrix-Loader-${version}.jar" "Avrix-Loader-${version}-sources.jar" > SHA256SUMS.txt
+        cat SHA256SUMS.txt
+
+    - name: Attest build provenance
+      uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      with:
+        subject-path: build/Avrix-Loader-*.jar
+
+    - name: Publish GitHub Release
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        version="${GITHUB_REF_NAME#v}"
+
+        gh release create "$GITHUB_REF_NAME" \
+          "build/Avrix-Loader-${version}.jar" \
+          "build/Avrix-Loader-${version}-sources.jar" \
+          build/SHA256SUMS.txt \
+          --title "Avrix ${version}" \
+          --generate-notes \
+          --verify-tag

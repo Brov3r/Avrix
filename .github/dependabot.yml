@@ -11,6 +11,9 @@ updates:
       interval: "weekly"
     labels: ["dependencies", "ci"]
     open-pull-requests-limit: 5
+    groups:
+      github-actions:
+        patterns: ["*"]
 
   - package-ecosystem: "gradle"
     directory: "/"
@@ -18,3 +21,7 @@ updates:
       interval: "weekly"
     labels: ["dependencies", "java"]
     open-pull-requests-limit: 10
+    groups:
+      gradle-minor:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
