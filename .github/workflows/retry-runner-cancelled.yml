@@ -1,0 +1,63 @@
+name: Retry runner-cancelled builds
+
+on:
+  schedule:
+    # Every 6 hours. GitHub hosted macOS runners occasionally fail to be
+    # acquired; each scheduled run retries the latest build if that happened.
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: retry-runner-cancelled
+  cancel-in-progress: false
+
+jobs:
+  retry:
+    name: Retry latest build if no runner was acquired
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - name: Re-run cancelled build
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        run_id="$(gh api \
+          "repos/${GITHUB_REPOSITORY}/actions/workflows/gradle.yml/runs?branch=main&event=push&per_page=1" \
+          --jq '.workflow_runs[0].id')"
+
+        if [[ -z "$run_id" || "$run_id" == "null" ]]; then
+          echo "No build runs found."
+          exit 0
+        fi
+
+        run="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}")"
+        conclusion="$(jq -r '.conclusion' <<<"$run")"
+        attempt="$(jq -r '.run_attempt' <<<"$run")"
+
+        if [[ "$conclusion" != "cancelled" ]]; then
+          echo "Latest build ${run_id} finished with '${conclusion}', nothing to retry."
+          exit 0
+        fi
+
+        # Only retry jobs that were cancelled before a runner was assigned.
+        # A cancelled job that actually ran has runner_id != 0 and must not be retried.
+        jobs_url="repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/attempts/${attempt}/jobs?per_page=100"
+        runnerless_jobs="$(gh api "$jobs_url" \
+          --jq '[.jobs[] | select(.conclusion == "cancelled" and .runner_id == 0) | .name]')"
+
+        if [[ "$runnerless_jobs" == "[]" ]]; then
+          echo "Latest build ${run_id} was cancelled after jobs started, not retrying."
+          exit 0
+        fi
+
+        echo "Retrying build ${run_id}: ${runnerless_jobs}"
+        gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/rerun" >/dev/null
+        echo "Re-run requested."
