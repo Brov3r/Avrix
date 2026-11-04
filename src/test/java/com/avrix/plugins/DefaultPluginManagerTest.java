@@ -1043,8 +1043,12 @@ class DefaultPluginManagerTest {
         priorityManager.loadPlugins();
 
         assertThat(priorityManager.getPlugins()).containsKey("duplicate-plugin");
-        assertThat(priorityManager.getPlugins().get("duplicate-plugin").getPluginFile().orElseThrow())
-                .isEqualTo(modJar.toFile());
+        Path selectedArchive = priorityManager.getPlugins()
+                .get("duplicate-plugin")
+                .getPluginFile()
+                .orElseThrow()
+                .toPath();
+        assertThat(Files.isSameFile(selectedArchive, modJar)).isTrue();
     }
 
     @Test
