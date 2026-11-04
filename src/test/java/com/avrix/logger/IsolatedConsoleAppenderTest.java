@@ -306,6 +306,28 @@ class IsolatedConsoleAppenderTest {
                         .contains("Failed to write log event directly to isolated console descriptors"));
     }
 
+    @Test
+    @DisplayName("Should stop writing to the console after the first write failure")
+    void shouldDisableConsoleAfterFirstWriteFailure() {
+        replaceField(appender, "errStream", new OutputStream() {
+            @Override
+            public void write(int value) throws IOException {
+                throw new IOException("rejected");
+            }
+        });
+        encoder.payload = event -> "payload".getBytes(StandardCharsets.UTF_8);
+        appender.setEncoder(encoder);
+        appender.start();
+
+        appender.append(event(Level.ERROR, "first"));
+        appender.append(event(Level.ERROR, "second"));
+
+        assertThat(encoder.encodeCount).isEqualTo(1);
+        assertThat(errorStatusMessages())
+                .filteredOn(message -> message.contains("Failed to write log event directly"))
+                .hasSize(1);
+    }
+
     private LoggingEvent event(Level level, String message) {
         return new LoggingEvent(
                 "com.avrix.logger.IsolatedConsoleAppenderTest", logger, level, message, null, null);

@@ -27,6 +27,8 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
     private final OutputStream errStream;
     private final ReentrantLock lock = new ReentrantLock();
 
+    private volatile boolean consoleWritable = true;
+
     private Encoder<ILoggingEvent> encoder;
     private Level errorLevel = Level.WARN;
 
@@ -87,7 +89,7 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
      */
     @Override
     protected void append(ILoggingEvent event) {
-        if (event == null || !isStarted() || encoder == null) {
+        if (event == null || !isStarted() || encoder == null || !consoleWritable) {
             return;
         }
 
@@ -107,7 +109,7 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
                 lock.unlock();
             }
         } catch (IOException e) {
-            addError("Failed to write log event directly to isolated console descriptors", e);
+            disableConsole("Failed to write log event directly to isolated console descriptors", e);
         }
     }
 
@@ -153,20 +155,22 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
 
         lock.lock();
         try {
-            if (encoder != null) {
+            if (consoleWritable && encoder != null) {
                 byte[] footerBytes = encoder.footerBytes();
                 if (footerBytes != null && footerBytes.length > 0) {
                     writeBytesDirectly(outStream, footerBytes);
                 }
-                if (encoder.isStarted()) {
-                    encoder.stop();
-                }
+            }
+            if (encoder != null && encoder.isStarted()) {
+                encoder.stop();
             }
 
-            outStream.flush();
-            errStream.flush();
+            if (consoleWritable) {
+                outStream.flush();
+                errStream.flush();
+            }
         } catch (IOException e) {
-            addError("Failed to flush output streams during appender shutdown", e);
+            disableConsole("Failed to flush output streams during appender shutdown", e);
         } finally {
             lock.unlock();
         }
@@ -181,14 +185,36 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
      * @param bytes  the byte array to write
      */
     private void writeBytesDirectly(OutputStream stream, byte[] bytes) {
+        if (!consoleWritable) {
+            return;
+        }
+
         lock.lock();
         try {
             stream.write(bytes);
             stream.flush();
         } catch (IOException e) {
-            addError("Failed to write metadata bytes to output stream", e);
+            disableConsole("Failed to write metadata bytes to output stream", e);
         } finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * Disables console output after the first write failure.
+     * <p>
+     * GUI processes launched without an attached console can expose invalid standard handles. Continuing to write
+     * would make every log event fail and, when {@code System.err} is redirected to the logger, create a feedback
+     * loop. The file appender remains active.
+     *
+     * @param message   failure description
+     * @param exception underlying I/O failure
+     */
+    private void disableConsole(String message, IOException exception) {
+        if (!consoleWritable) {
+            return;
+        }
+        consoleWritable = false;
+        addError(message, exception);
     }
 }
