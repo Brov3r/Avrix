@@ -47,31 +47,14 @@ public class ZomboidGameProvider implements GameProvider {
     private static final String CLIENT_ENTRYPOINT = "zombie.gameStates.MainScreenState";
     private static final String SERVER_ENTRYPOINT = "zombie.network.GameServer";
 
-    private static final List<String> SERVER_MARKERS = List.of(
-            "StartServer64.bat",
-            "StartServer64.sh",
-            "StartServer64_nosteam.bat",
-            "StartServer64_nosteam.sh"
-    );
-
-    private static final List<String> CLIENT_MARKERS = List.of(
-            "ProjectZomboid64.exe",
-            "ProjectZomboid32.exe",
-            "ProjectZomboid64.bat",
-            "ProjectZomboid32.bat"
-    );
-
     private static final Map<String, String> BASE_CORE_PROPERTIES = Map.of(
             "zomboid.steam", "1",
             "zomboid.znetlog", "1"
     );
 
-    private static final String LAUNCH_CONFIG_NAME = "ProjectZomboid64.json";
-    private static final String SERVER_MAIN_CLASS = "zombie/network/GameServer";
-    private static final String CLIENT_MAIN_CLASS = "zombie/gameStates/MainScreenState";
-
     private final NativeLibraryLocator nativeLibraryLocator = new NativeLibraryLocator();
     private final ZomboidVersionResolver versionResolver = new ZomboidVersionResolver();
+    private final ZomboidEnvironmentDetector environmentDetector = new ZomboidEnvironmentDetector();
 
     private KnotClassLoader classLoader;
     private String[] launchArgs = new String[0];
@@ -177,12 +160,38 @@ public class ZomboidGameProvider implements GameProvider {
      * @throws IllegalStateException if the provider has not been initialized or if execution fails
      */
     @Override
-    public synchronized void launch(String[] args) {
-        if (!initialized) {
-            throw new IllegalStateException("Provider must be initialized before launch. Call init() first.");
-        }
+    public void launch(String[] args) {
+        String entrypointClassName;
+        MethodHandle mainMethodHandle;
+        String[] gameArgs;
 
-        this.launchArgs = (args == null) ? new String[0] : args.clone();
+        // Keep the provider monitor only for setup. The game loop can run for the whole process lifetime and may
+        // call System.exit() from inside main(), so holding this lock during invocation would deadlock the shutdown hook.
+        synchronized (this) {
+            if (!initialized) {
+                throw new IllegalStateException("Provider must be initialized before launch. Call init() first.");
+            }
+
+            this.launchArgs = (args == null) ? new String[0] : args.clone();
+            gameArgs = this.launchArgs.clone();
+            entrypointClassName = getEntrypoint();
+
+            try {
+                Class<?> entryClass = Class.forName(entrypointClassName, true, classLoader);
+                MethodHandles.Lookup lookup = MethodHandles.lookup();
+                mainMethodHandle = lookup.findStatic(
+                        entryClass,
+                        "main",
+                        MethodType.methodType(void.class, String[].class)
+                );
+            } catch (NoSuchMethodException e) {
+                LOGGER.error("Entrypoint [{}] does not declare public static void main(String[])", entrypointClassName, e);
+                throw new IllegalStateException("Entrypoint missing main method: " + entrypointClassName, e);
+            } catch (Throwable throwable) {
+                LOGGER.error("Failed to resolve entrypoint [{}] for provider [{}]", entrypointClassName, getId(), throwable);
+                throw new IllegalStateException("Game entrypoint resolution failed: " + getId(), throwable);
+            }
+        }
 
         Thread currentThread = Thread.currentThread();
         ClassLoader previousContextLoader = currentThread.getContextClassLoader();
@@ -190,23 +199,11 @@ public class ZomboidGameProvider implements GameProvider {
         try {
             currentThread.setContextClassLoader(classLoader);
 
-            String entrypointClassName = getEntrypoint();
             LOGGER.info("Launching {} (env={}, version={}) via [{}]",
                     getName(), getEnvironment(), getNormalizedVersion(), entrypointClassName);
 
-            Class<?> entryClass = Class.forName(entrypointClassName, true, classLoader);
-            MethodHandles.Lookup lookup = MethodHandles.lookup();
-            MethodHandle mainMethodHandle = lookup.findStatic(
-                    entryClass,
-                    "main",
-                    MethodType.methodType(void.class, String[].class)
-            );
+            mainMethodHandle.invokeExact(gameArgs);
 
-            mainMethodHandle.invokeExact(launchArgs);
-
-        } catch (NoSuchMethodException e) {
-            LOGGER.error("Entrypoint [{}] does not declare public static void main(String[])", getEntrypoint(), e);
-            throw new IllegalStateException("Entrypoint missing main method: " + getEntrypoint(), e);
         } catch (Throwable throwable) {
             LOGGER.error("Project Zomboid execution terminated unexpectedly via provider [{}]", getId(), throwable);
             throw new IllegalStateException("Game execution failed: " + getId(), throwable);
@@ -313,6 +310,7 @@ public class ZomboidGameProvider implements GameProvider {
     /**
      * Resolves the root filesystem directory hosting the Project Zomboid installation.
      * <p><b>API Note:</b> Supports overriding via {@code -Davrix.game.dir} or environment variable {@code AVRIX_GAME_DIR}.
+     * macOS application bundles are resolved to the directory containing the game files.
      *
      * @return absolute, normalized {@link Path} of the game installation directory
      * @throws IllegalStateException if resolution fails and no fallback directory can be determined
@@ -328,7 +326,7 @@ public class ZomboidGameProvider implements GameProvider {
         if (explicitDir != null && !explicitDir.isBlank()) {
             Path customPath = Paths.get(explicitDir).toAbsolutePath().normalize();
             if (Files.isDirectory(customPath)) {
-                return customPath;
+                return ZomboidEnvironmentDetector.resolveMacBundleGameRoot(customPath);
             }
             LOGGER.warn("Explicitly defined game directory does not exist: [{}]", customPath);
         }
@@ -344,9 +342,9 @@ public class ZomboidGameProvider implements GameProvider {
 
             if (Files.isRegularFile(path)) {
                 Path parent = path.getParent();
-                return (parent != null) ? parent : path;
+                return ZomboidEnvironmentDetector.resolveMacBundleGameRoot((parent != null) ? parent : path);
             }
-            return path;
+            return ZomboidEnvironmentDetector.resolveMacBundleGameRoot(path);
 
         } catch (URISyntaxException e) {
             throw new IllegalStateException("Invalid URI syntax for provider CodeSource", e);
@@ -591,8 +589,8 @@ public class ZomboidGameProvider implements GameProvider {
     /**
      * Determines whether the current installation is running in Dedicated Server topology.
      * <p>
-     * Detection is based on installation files and directory markers only. No CLI flags or system properties select
-     * the environment.
+     * Detection prefers explicit environment overrides and the launch configuration, then falls back to launch
+     * scripts, marker files, installation layout, Steam metadata, and the directory name.
      *
      * @return {@code true} if running as dedicated server, {@code false} otherwise
      */
@@ -602,33 +600,8 @@ public class ZomboidGameProvider implements GameProvider {
         }
 
         try {
-            Path launchDirectory = getLaunchDirectory();
-
-            boolean hasServerMarkers = hasAnyFile(launchDirectory, SERVER_MARKERS);
-            boolean hasClientMarkers = hasAnyFile(launchDirectory, CLIENT_MARKERS);
-            boolean hasServerLayout = Files.isDirectory(launchDirectory.resolve("java"))
-                    && Files.isDirectory(launchDirectory.resolve("natives"));
-
-            Boolean configEnvironment = detectEnvironmentFromLaunchConfig(launchDirectory);
-
-            if (hasServerMarkers || hasServerLayout) {
-                this.serverEnvironmentDetected = true;
-            } else if (hasClientMarkers) {
-                this.serverEnvironmentDetected = false;
-            } else if (configEnvironment != null) {
-                this.serverEnvironmentDetected = configEnvironment;
-            } else {
-                String directoryName = launchDirectory.getFileName() != null
-                        ? launchDirectory.getFileName().toString().toLowerCase(Locale.ROOT)
-                        : "";
-                this.serverEnvironmentDetected = directoryName.contains("dedicated server")
-                        || directoryName.contains("dedicatedserver");
-                LOGGER.warn(
-                        "No explicit client/server markers found in [{}]. Falling back to directory-name detection: {}",
-                        launchDirectory,
-                        serverEnvironmentDetected ? "SERVER" : "CLIENT"
-                );
-            }
+            Environment environment = environmentDetector.detect(getLaunchDirectory());
+            this.serverEnvironmentDetected = environment == Environment.SERVER;
         } catch (Exception e) {
             LOGGER.warn("Failed to deduce server environment topology. Defaulting to CLIENT.", e);
             this.serverEnvironmentDetected = false;
@@ -638,55 +611,12 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
-     * Detects the environment from the {@code ProjectZomboid64.json} launch configuration.
-     *
-     * @param launchDirectory game installation root
-     * @return {@code true} for server, {@code false} for client, or {@code null} when the configuration is absent
-     *         or does not identify the entrypoint
-     */
-    private static Boolean detectEnvironmentFromLaunchConfig(Path launchDirectory) {
-        Path configPath = launchDirectory.resolve(LAUNCH_CONFIG_NAME);
-        if (!Files.isRegularFile(configPath)) {
-            return null;
-        }
-
-        try {
-            String config = Files.readString(configPath, StandardCharsets.UTF_8);
-            if (config.contains(SERVER_MAIN_CLASS)) {
-                return true;
-            }
-            if (config.contains(CLIENT_MAIN_CLASS)) {
-                return false;
-            }
-        } catch (IOException e) {
-            LOGGER.debug("Failed to read launch configuration [{}]", configPath, e);
-        }
-        return null;
-    }
-
-    /**
-     * Checks whether any of the provided marker files exists in a directory.
-     *
-     * @param directory directory to inspect
-     * @param markers   marker file names
-     * @return {@code true} when at least one marker exists
-     */
-    private static boolean hasAnyFile(Path directory, List<String> markers) {
-        for (String marker : markers) {
-            if (Files.isRegularFile(directory.resolve(marker))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
      * Validates that a directory looks like a Project Zomboid installation.
      *
      * @param launchDirectory candidate installation directory
      * @throws IllegalStateException if the directory does not contain recognizable game files
      */
-    private static void validateInstallation(Path launchDirectory) {
+    private void validateInstallation(Path launchDirectory) {
         if (!Files.isDirectory(launchDirectory)) {
             throw new IllegalStateException(
                     "Project Zomboid installation directory does not exist: " + launchDirectory
@@ -696,11 +626,11 @@ public class ZomboidGameProvider implements GameProvider {
 
         boolean hasGameArchive = Files.isRegularFile(launchDirectory.resolve("projectzomboid.jar"))
                 || Files.isRegularFile(launchDirectory.resolve("java").resolve("projectzomboid.jar"));
-        boolean hasClientLayout = hasAnyFile(launchDirectory, CLIENT_MARKERS)
+        boolean hasClientLayout = ZomboidEnvironmentDetector.looksLikeClientLayout(launchDirectory)
+                || environmentDetector.hasClientMarker(launchDirectory)
                 || Files.isDirectory(launchDirectory.resolve("jre64"));
-        boolean hasServerLayout = hasAnyFile(launchDirectory, SERVER_MARKERS)
-                || Files.isDirectory(launchDirectory.resolve("java"))
-                || Files.isDirectory(launchDirectory.resolve("natives"));
+        boolean hasServerLayout = ZomboidEnvironmentDetector.looksLikeServerLayout(launchDirectory)
+                || environmentDetector.hasServerMarker(launchDirectory);
 
         if (!hasGameArchive && !hasClientLayout && !hasServerLayout) {
             throw new IllegalStateException(

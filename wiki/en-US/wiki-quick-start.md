@@ -45,9 +45,11 @@ java -jar ./Avrix-Loader-<version>.jar --strict
 ```
 
 The game directory can also be provided through the `AVRIX_GAME_DIR` environment variable (or `ZOMBOID_DIR`), or
-through the `-Dzomboid.dir` JVM property. Avrix detects the client or dedicated server from installation files only,
-such as `StartServer64.*`, the `java/` and `natives/` directories, client executables, or `ProjectZomboid64.json`; no
-environment flag is required.
+through the `-Dzomboid.dir` JVM property. Avrix detects the client or dedicated server from installation metadata and
+files: the `mainClass` in `ProjectZomboid64.json` takes priority, followed by launch scripts (`StartServer*`,
+`start-server.sh`), platform marker files, the `java/` and `natives/` layout, Steam app manifests, and finally the
+installation directory name. No environment flag is required, but `-Davrix.environment=client|server` (or
+`AVRIX_ENVIRONMENT`) can be used as an explicit override.
 
 Avrix writes a log file to `logs/log_<timestamp>.log` in the working directory. The console threshold is controlled by
 `-Dconsole.level`, while the file appender records `DEBUG` and above.

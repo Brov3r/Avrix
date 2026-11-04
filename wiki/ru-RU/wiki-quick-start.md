@@ -44,8 +44,10 @@ java -jar ./Avrix-Loader-<version>.jar --strict
 ```
 
 Каталог игры также можно задать переменной окружения `AVRIX_GAME_DIR` (или `ZOMBOID_DIR`) либо JVM-свойством
-`-Dzomboid.dir`. Avrix определяет клиент или выделенный сервер только по файлам установки: `StartServer64.*`,
-каталогам `java/` и `natives/`, исполняемым файлам клиента или `ProjectZomboid64.json`. Флаг окружения не требуется.
+`-Dzomboid.dir`. Avrix определяет клиент или выделенный сервер по метаданным и файлам установки: приоритет имеет
+`mainClass` в `ProjectZomboid64.json`, затем launch-скрипты (`StartServer*`, `start-server.sh`), платформенные
+маркеры, раскладка `java/` и `natives/`, Steam app manifest и, в последнюю очередь, имя каталога. Флаг окружения
+не требуется, но можно явно задать `-Davrix.environment=client|server` (или `AVRIX_ENVIRONMENT`).
 
 Avrix записывает лог в `logs/log_<timestamp>.log` в рабочем каталоге. Порог вывода в консоль задаётся через
 `-Dconsole.level`, а файловый appender сохраняет сообщения уровня `DEBUG` и выше.

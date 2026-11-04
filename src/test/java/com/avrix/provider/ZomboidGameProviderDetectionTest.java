@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Tests for file-based Project Zomboid environment detection.
+ * Tests for Project Zomboid client/server environment detection.
  */
 @DisplayName("ZomboidGameProvider Environment Detection Tests")
 class ZomboidGameProviderDetectionTest {
@@ -65,16 +65,93 @@ class ZomboidGameProviderDetectionTest {
     }
 
     @Test
-    @DisplayName("Should detect the dedicated server by java and natives directories")
+    @DisplayName("Should detect the dedicated server by java archive and native libraries")
     void shouldDetectServerByLayout() throws Exception {
         Files.createDirectories(tempDir.resolve("java"));
         Files.createDirectories(tempDir.resolve("natives"));
+        Files.createFile(tempDir.resolve("java").resolve("projectzomboid.jar"));
+        Files.createFile(tempDir.resolve("natives").resolve("PZBullet64.dll"));
         useGameDirectory(tempDir);
 
         ZomboidGameProvider provider = new ZomboidGameProvider();
 
         assertThat(provider.isServer()).isTrue();
         assertThat(provider.getEnvironment()).isEqualTo(Environment.SERVER);
+    }
+
+    @Test
+    @DisplayName("Should not treat empty server directories as a dedicated server")
+    void shouldNotDetectServerFromEmptyLayout() throws Exception {
+        Files.createDirectories(tempDir.resolve("java"));
+        Files.createDirectories(tempDir.resolve("natives"));
+        useGameDirectory(tempDir);
+
+        ZomboidGameProvider provider = new ZomboidGameProvider();
+
+        assertThat(provider.isServer()).isFalse();
+        assertThat(provider.getEnvironment()).isEqualTo(Environment.CLIENT);
+    }
+
+    @Test
+    @DisplayName("Should prefer the client launch configuration over server-looking directories")
+    void shouldPreferClientLaunchConfigOverServerLayout() throws Exception {
+        Files.createDirectories(tempDir.resolve("java"));
+        Files.createDirectories(tempDir.resolve("natives"));
+        Files.writeString(
+                tempDir.resolve("ProjectZomboid64.json"),
+                "{\"mainClass\":\"zombie/gameStates/MainScreenState\"}"
+        );
+        useGameDirectory(tempDir);
+
+        ZomboidGameProvider provider = new ZomboidGameProvider();
+
+        assertThat(provider.isServer()).isFalse();
+        assertThat(provider.getEnvironment()).isEqualTo(Environment.CLIENT);
+    }
+
+    @Test
+    @DisplayName("Should detect the server from a dot-separated launch configuration main class")
+    void shouldDetectServerFromDotSeparatedMainClass() throws Exception {
+        Files.writeString(
+                tempDir.resolve("ProjectZomboid64.json"),
+                "{\"mainClass\":\"zombie.network.GameServer\"}"
+        );
+        useGameDirectory(tempDir);
+
+        ZomboidGameProvider provider = new ZomboidGameProvider();
+
+        assertThat(provider.isServer()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should ignore server class mentions outside mainClass")
+    void shouldIgnoreServerClassOutsideMainClass() throws Exception {
+        Files.writeString(
+                tempDir.resolve("ProjectZomboid64.json"),
+                "{\"mainClass\":\"zombie/gameStates/MainScreenState\","
+                        + "\"comment\":\"zombie/network/GameServer\"}"
+        );
+        useGameDirectory(tempDir);
+
+        ZomboidGameProvider provider = new ZomboidGameProvider();
+
+        assertThat(provider.isServer()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should resolve a macOS application bundle to its game directory")
+    void shouldResolveMacBundleGameDirectory() throws Exception {
+        Path bundle = tempDir.resolve("Project Zomboid.app");
+        Path gameRoot = bundle.resolve("Contents").resolve("Resources").resolve("Java");
+        Files.createDirectories(gameRoot);
+        Files.createFile(gameRoot.resolve("projectzomboid.jar"));
+
+        previousGameDir = System.getProperty("avrix.game.dir");
+        System.setProperty("avrix.game.dir", bundle.toAbsolutePath().toString());
+
+        ZomboidGameProvider provider = new ZomboidGameProvider();
+
+        assertThat(provider.getLaunchDirectory()).isEqualTo(gameRoot.toAbsolutePath().normalize());
     }
 
     @Test
