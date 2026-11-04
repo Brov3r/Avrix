@@ -1,7 +1,8 @@
-package com.avrix.plugins;
+package com.avrix.provider;
 
+import com.avrix.api.PluginArchive;
+import com.avrix.api.PluginSource;
 import com.avrix.core.Environment;
-import com.avrix.utils.Constants;
 import com.github.zafarkhaja.semver.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,9 +32,9 @@ import java.util.regex.Pattern;
  * The scanner reads the active mod list from the client {@code default.txt} file or the dedicated-server
  * {@code Server/<name>.ini} file, then inspects only matching mod directories. It never scans arbitrary JAR files.
  */
-final class ModInfoPluginScanner {
+public final class ZomboidModPluginSource implements PluginSource {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ModInfoPluginScanner.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZomboidModPluginSource.class);
 
     private static final String ZOMBOID_FOLDER = "Zomboid";
     private static final String MODS_FOLDER = "mods";
@@ -41,7 +42,8 @@ final class ModInfoPluginScanner {
     private static final String COMMON_DIRECTORY = "common";
     private static final String VERSION_DIRECTORY_PATTERN = "42*";
     private static final String JAR_SEPARATOR_PATTERN = "[;,]";
-    private static final Pattern WORKSHOP_ITEM_PATTERN = Pattern.compile("/content/108600/(\\d+)/");
+    private static final Pattern WORKSHOP_ITEM_PATTERN =
+            Pattern.compile("/content/" + ZomboidConstants.WORKSHOP_APP_ID + "/(\\d+)/");
 
     private final Path gameRoot;
     private final Path userHome;
@@ -57,7 +59,7 @@ final class ModInfoPluginScanner {
      * @param environment active runtime environment
      * @param serverName  dedicated-server name, or {@code null} to use the default
      */
-    ModInfoPluginScanner(Path gameRoot, Environment environment, String serverName) {
+    public ZomboidModPluginSource(Path gameRoot, Environment environment, String serverName) {
         this(gameRoot, Path.of(System.getProperty("user.home", ".")), environment, serverName, null, false);
     }
 
@@ -69,7 +71,7 @@ final class ModInfoPluginScanner {
      * @param environment active runtime environment
      * @param serverName  dedicated-server name, or {@code null} to use the default
      */
-    ModInfoPluginScanner(Path gameRoot, Path userHome, Environment environment, String serverName) {
+    public ZomboidModPluginSource(Path gameRoot, Path userHome, Environment environment, String serverName) {
         this(gameRoot, userHome, environment, serverName, null, false);
     }
 
@@ -82,7 +84,7 @@ final class ModInfoPluginScanner {
      * @param gameVersion normalized game version, or {@code null} when unknown
      * @param strict      whether discovery errors should abort startup
      */
-    ModInfoPluginScanner(
+    public ZomboidModPluginSource(
             Path gameRoot,
             Environment environment,
             String serverName,
@@ -102,7 +104,7 @@ final class ModInfoPluginScanner {
      * @param gameVersion normalized game version, or {@code null} when unknown
      * @param strict      whether discovery errors should abort startup
      */
-    ModInfoPluginScanner(
+    public ZomboidModPluginSource(
             Path gameRoot,
             Path userHome,
             Environment environment,
@@ -118,7 +120,7 @@ final class ModInfoPluginScanner {
                 .normalize();
         this.environment = environment == null ? Environment.CLIENT : environment;
         this.serverName = (serverName == null || serverName.isBlank())
-                ? Constants.DEFAULT_SERVER_NAME
+                ? ZomboidConstants.DEFAULT_SERVER_NAME
                 : serverName.trim();
         this.gameVersion = parseVersion(gameVersion);
         this.strict = strict;
@@ -130,7 +132,7 @@ final class ModInfoPluginScanner {
      * @return normalized paths to discovered plugin archives
      * @throws IllegalStateException when strict mode is enabled and discovery errors were collected
      */
-    List<Path> scan() {
+    public List<Path> scan() {
         return scanArchives().stream()
                 .map(archive -> archive.file().toPath())
                 .toList();
@@ -142,7 +144,8 @@ final class ModInfoPluginScanner {
      * @return discovered plugin archives
      * @throws IllegalStateException when strict mode is enabled and discovery errors were collected
      */
-    List<PluginArchive> scanArchives() {
+    @Override
+    public List<PluginArchive> scanArchives() {
         Set<String> activeMods = readActiveMods();
         if (activeMods.isEmpty()) {
             LOGGER.debug("No active Project Zomboid mods found. Skipping mod.info plugin discovery.");
@@ -178,7 +181,7 @@ final class ModInfoPluginScanner {
         Path clientConfig = userHome
                 .resolve(ZOMBOID_FOLDER)
                 .resolve(MODS_FOLDER)
-                .resolve(Constants.ACTIVE_MODS_FILE_NAME);
+                .resolve(ZomboidConstants.ACTIVE_MODS_FILE_NAME);
         return readClientActiveMods(clientConfig);
     }
 
@@ -306,7 +309,7 @@ final class ModInfoPluginScanner {
         Path workshopContent = steamApps
                 .resolve("workshop")
                 .resolve("content")
-                .resolve(Constants.WORKSHOP_APP_ID);
+                .resolve(ZomboidConstants.WORKSHOP_APP_ID);
         if (!Files.isDirectory(workshopContent)) {
             return;
         }
@@ -529,7 +532,7 @@ final class ModInfoPluginScanner {
                     if (name == null || name.isBlank()) {
                         name = value;
                     }
-                } else if (key.equalsIgnoreCase(Constants.JAR_PLUGINS_KEY)) {
+                } else if (key.equalsIgnoreCase(ZomboidConstants.JAR_PLUGINS_KEY)) {
                     for (String entry : value.split(JAR_SEPARATOR_PATTERN)) {
                         String jarPath = entry.trim();
                         if (!jarPath.isEmpty()) {
@@ -563,7 +566,14 @@ final class ModInfoPluginScanner {
             if (resolved != null) {
                 archives.putIfAbsent(
                         resolved,
-                        new PluginArchive(resolved.toFile(), modId, modName, workshopId, false)
+                        new PluginArchive(
+                                resolved.toFile(),
+                                modId,
+                                modName,
+                                workshopId != null ? PluginArchive.SOURCE_WORKSHOP : PluginArchive.SOURCE_MOD,
+                                workshopId != null ? Map.of(PluginArchive.ATTRIBUTE_WORKSHOP_ID, workshopId) : Map.of(),
+                                false
+                        )
                 );
             }
         }

@@ -1,5 +1,7 @@
-package com.avrix.plugins;
+package com.avrix.provider;
 
+import com.avrix.api.PluginApprovalGate;
+import com.avrix.api.PluginArchive;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;
 import com.avrix.utils.Constants;
@@ -16,10 +18,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link PluginApprovalService}.
+ * Unit tests for {@link ZomboidPluginApprovalGate}.
  */
-@DisplayName("PluginApprovalService Unit Tests")
-class PluginApprovalServiceTest {
+@DisplayName("ZomboidPluginApprovalGate Unit Tests")
+class ZomboidPluginApprovalGateTest {
 
     @TempDir
     Path tempDir;
@@ -52,9 +54,9 @@ class PluginApprovalServiceTest {
     @Test
     @DisplayName("Should write pending list to the game folder and Lua mirror")
     void shouldWritePendingToGameFolderAndLuaMirror() throws IOException {
-        PluginApprovalService service = service(Environment.CLIENT, "prompt");
+        ZomboidPluginApprovalGate service = service(Environment.CLIENT, "prompt");
 
-        assertThat(service.evaluate(archive(), metadata())).isEqualTo(PluginApprovalService.Status.PENDING);
+        assertThat(service.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.PENDING);
         service.flushPending();
 
         assertThat(gamePending).isRegularFile();
@@ -68,15 +70,15 @@ class PluginApprovalServiceTest {
     @Test
     @DisplayName("Should load an approved hash after a Lua decision and remove the decision file")
     void shouldApplyLuaDecision() throws IOException {
-        PluginApprovalService firstRun = service(Environment.CLIENT, "prompt");
-        assertThat(firstRun.evaluate(archive(), metadata())).isEqualTo(PluginApprovalService.Status.PENDING);
+        ZomboidPluginApprovalGate firstRun = service(Environment.CLIENT, "prompt");
+        assertThat(firstRun.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.PENDING);
         firstRun.flushPending();
 
         String hash = pendingHash();
         Files.writeString(luaDecisions, "VERSION\t1\nDECISION\ttest-mod\t" + hash + "\ttrue\n");
 
-        PluginApprovalService secondRun = service(Environment.CLIENT, "prompt");
-        assertThat(secondRun.evaluate(archive(), metadata())).isEqualTo(PluginApprovalService.Status.APPROVED);
+        ZomboidPluginApprovalGate secondRun = service(Environment.CLIENT, "prompt");
+        assertThat(secondRun.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.APPROVED);
 
         assertThat(gameApprovals).isRegularFile();
         assertThat(Files.readString(gameApprovals)).contains("APPROVAL", "test-mod", hash, "true");
@@ -86,9 +88,9 @@ class PluginApprovalServiceTest {
     @Test
     @DisplayName("Should deny unknown plugins under deny-new policy without a pending entry")
     void shouldDenyUnknownUnderDenyNew() throws IOException {
-        PluginApprovalService service = service(Environment.CLIENT, "deny-new");
+        ZomboidPluginApprovalGate service = service(Environment.CLIENT, "deny-new");
 
-        assertThat(service.evaluate(archive(), metadata())).isEqualTo(PluginApprovalService.Status.DENIED);
+        assertThat(service.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.DENIED);
         service.flushPending();
 
         assertThat(gamePending).isRegularFile();
@@ -98,36 +100,36 @@ class PluginApprovalServiceTest {
     @Test
     @DisplayName("Should load everything under allow-all policy")
     void shouldAllowAll() {
-        PluginApprovalService service = service(Environment.CLIENT, "allow-all");
+        ZomboidPluginApprovalGate service = service(Environment.CLIENT, "allow-all");
 
-        assertThat(service.evaluate(archive(), metadata())).isEqualTo(PluginApprovalService.Status.APPROVED);
+        assertThat(service.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.APPROVED);
     }
 
     @Test
     @DisplayName("Should bypass approval for trusted plugins-directory archives")
     void shouldTrustPluginsDirectoryArchives() {
-        PluginApprovalService service = service(Environment.CLIENT, "prompt");
-        PluginArchive trusted = new PluginArchive(pluginJar.toFile(), null, null, null, true);
+        ZomboidPluginApprovalGate service = service(Environment.CLIENT, "prompt");
+        PluginArchive trusted = PluginArchive.trusted(pluginJar.toFile());
 
-        assertThat(service.evaluate(trusted, metadata())).isEqualTo(PluginApprovalService.Status.APPROVED);
+        assertThat(service.evaluate(trusted, metadata())).isEqualTo(PluginApprovalGate.Status.APPROVED);
     }
 
     @Test
     @DisplayName("Should require approval again after the archive hash changes")
     void shouldRequireApprovalAfterHashChange() throws IOException {
-        PluginApprovalService firstRun = service(Environment.CLIENT, "prompt");
+        ZomboidPluginApprovalGate firstRun = service(Environment.CLIENT, "prompt");
         firstRun.evaluate(archive(), metadata());
         firstRun.flushPending();
 
         String hash = pendingHash();
         Files.writeString(luaDecisions, "VERSION\t1\nDECISION\ttest-mod\t" + hash + "\ttrue\n");
         assertThat(service(Environment.CLIENT, "prompt").evaluate(archive(), metadata()))
-                .isEqualTo(PluginApprovalService.Status.APPROVED);
+                .isEqualTo(PluginApprovalGate.Status.APPROVED);
 
         Files.writeString(pluginJar, "changed-content");
 
-        PluginApprovalService changedRun = service(Environment.CLIENT, "prompt");
-        assertThat(changedRun.evaluate(archive(), metadata())).isEqualTo(PluginApprovalService.Status.PENDING);
+        ZomboidPluginApprovalGate changedRun = service(Environment.CLIENT, "prompt");
+        assertThat(changedRun.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.PENDING);
         changedRun.flushPending();
 
         assertThat(Files.readString(gamePending)).contains("ENTRY", "CHANGED");
@@ -136,32 +138,32 @@ class PluginApprovalServiceTest {
     @Test
     @DisplayName("Should treat prompt as deny-new on a dedicated server")
     void shouldFallbackToDenyNewOnServer() {
-        PluginApprovalService service = service(Environment.SERVER, "prompt");
+        ZomboidPluginApprovalGate service = service(Environment.SERVER, "prompt");
 
-        assertThat(service.evaluate(archive(), metadata())).isEqualTo(PluginApprovalService.Status.DENIED);
+        assertThat(service.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.DENIED);
     }
 
     @Test
     @DisplayName("Should write the Lua mirror under the configured cache root")
     void shouldWriteLuaMirrorUnderConfiguredCacheRoot() {
         Path customCacheRoot = tempDir.resolve("custom-cache");
-        PluginApprovalService service = new PluginApprovalService(
+        ZomboidPluginApprovalGate service = new ZomboidPluginApprovalGate(
                 gameRoot, customCacheRoot, Environment.CLIENT, "prompt"
         );
 
-        assertThat(service.evaluate(archive(), metadata())).isEqualTo(PluginApprovalService.Status.PENDING);
+        assertThat(service.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.PENDING);
         service.flushPending();
 
         assertThat(customCacheRoot.resolve("Lua/avrix/plugin-pending.txt")).isRegularFile();
         assertThat(userHome.resolve("Zomboid/Lua/avrix/plugin-pending.txt")).doesNotExist();
     }
 
-    private PluginApprovalService service(Environment environment, String policy) {
-        return new PluginApprovalService(gameRoot, userHome.resolve("Zomboid"), environment, policy);
+    private ZomboidPluginApprovalGate service(Environment environment, String policy) {
+        return new ZomboidPluginApprovalGate(gameRoot, userHome.resolve("Zomboid"), environment, policy);
     }
 
     private PluginArchive archive() {
-        return new PluginArchive(pluginJar.toFile(), "test-mod", "Test Mod", null, false);
+        return new PluginArchive(pluginJar.toFile(), "test-mod", "Test Mod", PluginArchive.SOURCE_MOD, null, false);
     }
 
     private Metadata metadata() {

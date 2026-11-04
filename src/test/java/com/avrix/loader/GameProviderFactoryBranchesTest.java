@@ -1,6 +1,7 @@
 package com.avrix.loader;
 
-import com.avrix.provider.GameProvider;
+import com.avrix.api.GameProvider;
+import com.avrix.provider.ZomboidConstants;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,7 @@ class GameProviderFactoryBranchesTest {
                 new URL[]{tempDir.toUri().toURL()},
                 getClass().getClassLoader()
         )) {
-            assertThatThrownBy(() -> GameProviderFactory.load(Constants.DEFAULT_GAME_PROVIDER_ID, classLoader))
+            assertThatThrownBy(() -> GameProviderFactory.load(ZomboidConstants.PROVIDER_ID, classLoader))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Failed to discover GameProvider implementations from")
                     .hasCauseInstanceOf(ServiceConfigurationError.class);

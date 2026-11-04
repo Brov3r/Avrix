@@ -5,7 +5,7 @@ import com.avrix.core.KnotClassLoader;
 import com.avrix.core.Metadata;
 import com.avrix.plugins.PluginData;
 import com.avrix.plugins.PluginManager;
-import com.avrix.provider.GameProvider;
+import com.avrix.api.GameProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +39,25 @@ class LoaderContextTest {
             assertThat(pluginManager.loaded).isTrue();
             assertThat(gameProvider.streamsRedirected).isTrue();
             assertThat(gameProvider.launchArgs).containsExactly("-test");
+            assertThat(gameProvider.beforeLaunchCalled).isTrue();
+            assertThat(gameProvider.afterLaunchCalled).isTrue();
             assertThat(context.getGameName()).isEqualTo("Test Game");
+        }
+    }
+
+    @Test
+    @DisplayName("Should invoke the post-launch hook when the game launch fails")
+    void shouldInvokeAfterLaunchWhenLaunchFails() throws Exception {
+        try (KnotClassLoader classLoader = newClassLoader()) {
+            RecordingGameProvider gameProvider = new RecordingGameProvider();
+            gameProvider.failLaunch = true;
+            LoaderContext context = new LoaderContext(classLoader, gameProvider, null, new RecordingPluginManager());
+
+            assertThatThrownBy(() -> context.launch(new String[]{"-test"}))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("simulated launch failure");
+            assertThat(gameProvider.beforeLaunchCalled).isTrue();
+            assertThat(gameProvider.afterLaunchCalled).isTrue();
         }
     }
 
@@ -88,6 +106,9 @@ class LoaderContextTest {
      */
     private static final class RecordingGameProvider implements GameProvider {
         private boolean streamsRedirected;
+        private boolean beforeLaunchCalled;
+        private boolean afterLaunchCalled;
+        private boolean failLaunch;
         private String[] launchArgs = new String[0];
 
         /** {@inheritDoc} */
@@ -98,7 +119,20 @@ class LoaderContextTest {
         /** {@inheritDoc} */
         @Override
         public void launch(String[] args) {
+            if (failLaunch) {
+                throw new IllegalStateException("simulated launch failure");
+            }
             launchArgs = args.clone();
+        }
+
+        @Override
+        public void beforeLaunch() {
+            beforeLaunchCalled = true;
+        }
+
+        @Override
+        public void afterLaunch() {
+            afterLaunchCalled = true;
         }
 
         /** {@inheritDoc} */

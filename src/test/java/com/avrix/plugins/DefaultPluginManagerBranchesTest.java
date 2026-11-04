@@ -6,8 +6,8 @@ import com.avrix.core.LoaderConfig;
 import com.avrix.core.Metadata;
 import com.avrix.core.MixinRegistrar;
 import com.avrix.provider.DefaultLoaderProvider;
-import com.avrix.provider.GameProvider;
-import com.avrix.provider.LoaderProvider;
+import com.avrix.api.GameProvider;
+import com.avrix.api.LoaderProvider;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -420,7 +420,7 @@ class DefaultPluginManagerBranchesTest {
                 Constants.METADATA_NAME,
                 Constants.PLUGIN_EXTENSION,
                 iconName,
-                Constants.DEFAULT_GAME_PROVIDER_ID,
+                Constants.AUTO_PROVIDER_ID,
                 Environment.BOTH,
                 true,
                 strict

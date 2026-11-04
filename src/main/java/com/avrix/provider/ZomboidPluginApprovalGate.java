@@ -1,5 +1,8 @@
-package com.avrix.plugins;
+package com.avrix.provider;
 
+import com.avrix.api.PluginApprovalGate;
+import com.avrix.api.PluginApprovalGate.Status;
+import com.avrix.api.PluginArchive;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;
 import org.slf4j.Logger;
@@ -31,9 +34,9 @@ import java.util.TreeMap;
  * Project Zomboid Lua sandbox cannot access arbitrary paths outside that directory. The cache directory follows the
  * game {@code -cachedir=} override when present.
  */
-public final class PluginApprovalService {
+public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PluginApprovalService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZomboidPluginApprovalGate.class);
 
     private static final String VERSION_LINE = "VERSION\t1";
     private static final String APPROVALS_FILE_NAME = "plugin-approvals.txt";
@@ -63,7 +66,7 @@ public final class PluginApprovalService {
      * @param policyValue configured policy value, or {@code null} for the environment default
      * @throws NullPointerException if {@code gameRoot} or {@code cacheRoot} is null
      */
-    public PluginApprovalService(Path gameRoot, Path cacheRoot, Environment environment, String policyValue) {
+    public ZomboidPluginApprovalGate(Path gameRoot, Path cacheRoot, Environment environment, String policyValue) {
         Path normalizedGameRoot = java.util.Objects.requireNonNull(gameRoot, "Game root cannot be null")
                 .toAbsolutePath()
                 .normalize();
@@ -89,6 +92,7 @@ public final class PluginApprovalService {
      * @param metadata parsed plugin metadata
      * @return approval status
      */
+    @Override
     public Status evaluate(PluginArchive archive, Metadata metadata) {
         if (archive.trusted()) {
             return Status.APPROVED;
@@ -102,12 +106,12 @@ public final class PluginApprovalService {
             LOGGER.warn(
                     "Plugin approval storage is unavailable; skipping unapproved plugin [{}] from mod [{}]",
                     pluginId(metadata),
-                    archive.modId()
+                    archive.sourceId()
             );
             return Status.DENIED;
         }
 
-        String modId = archive.modId();
+        String modId = archive.sourceId();
         if (modId == null || modId.isBlank()) {
             LOGGER.warn("Plugin archive [{}] has no source mod ID; denying", archive.file());
             return Status.DENIED;
@@ -177,6 +181,7 @@ public final class PluginApprovalService {
     /**
      * Writes the pending list for the Lua approval UI.
      */
+    @Override
     public void flushPending() {
         if (!storageAvailable) {
             return;
@@ -422,24 +427,6 @@ public final class PluginApprovalService {
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to write plugin approval file: " + file, e);
         }
-    }
-
-    /**
-     * Plugin approval status.
-     */
-    public enum Status {
-        /**
-         * Archive may be loaded.
-         */
-        APPROVED,
-        /**
-         * Archive is waiting for a Lua UI decision.
-         */
-        PENDING,
-        /**
-         * Archive must not be loaded.
-         */
-        DENIED
     }
 
     private enum Policy {

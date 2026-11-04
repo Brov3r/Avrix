@@ -47,49 +47,9 @@ public final class Constants {
     public static final String PLUGINS_FOLDER_NAME = "plugins";
 
     /**
-     * Runtime marker file used by Project Zomboid Lua code to detect an active Avrix launch.
+     * Identifier used to select the only registered game provider automatically.
      */
-    public static final String RUNTIME_MARKER_NAME = "avrix-active.marker";
-
-    /**
-     * Project Zomboid mod.info key listing plugin archives to load from an active mod.
-     */
-    public static final String JAR_PLUGINS_KEY = "jarplugins";
-
-    /**
-     * Steam application identifier used by Project Zomboid Workshop content.
-     */
-    public static final String WORKSHOP_APP_ID = "108600";
-
-    /**
-     * File name containing the list of active client mods.
-     */
-    public static final String ACTIVE_MODS_FILE_NAME = "default.txt";
-
-    /**
-     * System property containing the active dedicated-server name.
-     */
-    public static final String SERVER_NAME_PROPERTY = "avrix.server.name";
-
-    /**
-     * Default dedicated-server name used when no {@code -servername} argument is present.
-     */
-    public static final String DEFAULT_SERVER_NAME = "servertest";
-
-    /**
-     * System property selecting the Workshop plugin approval policy.
-     */
-    public static final String PLUGIN_POLICY_PROPERTY = "avrix.plugin.policy";
-
-    /**
-     * CLI argument prefix used by Project Zomboid to override the user cache directory.
-     */
-    public static final String CACHE_DIR_ARGUMENT_PREFIX = "-cachedir=";
-
-    /**
-     * System property carrying the cache directory override parsed from {@link #CACHE_DIR_ARGUMENT_PREFIX}.
-     */
-    public static final String CACHE_DIR_PROPERTY = "avrix.cachedir";
+    public static final String AUTO_PROVIDER_ID = "auto";
 
     /**
      * File name containing plugin identifiers or archive names that must not be loaded.
@@ -110,11 +70,6 @@ public final class Constants {
      * Unique identifier for the loader subsystem.
      */
     public static final String LOADER_ID = "avrix-loader";
-
-    /**
-     * Identifier of the default game provider.
-     */
-    public static final String DEFAULT_GAME_PROVIDER_ID = "project-zomboid";
 
     /**
      * System property used to select a game provider by identifier.

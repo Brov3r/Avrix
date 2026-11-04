@@ -1,5 +1,6 @@
 package com.avrix.provider;
 
+import com.avrix.api.LoaderProvider;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;
 import com.avrix.utils.Constants;

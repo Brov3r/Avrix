@@ -29,7 +29,7 @@ import java.util.jar.JarFile;
 /**
  * Unified Flat ClassLoader for the Avrix environment, implementing the Knot architecture.
  * <p>
- * Hosts the core loader, the target game (Project Zomboid), and all external plugin JARs
+ * Hosts the core loader, the target game, and all external plugin JARs
  * within a single classloading domain. Intercepts class loading to apply bytecode transformations
  * on the fly via {@link ClassTransformer} and resolves native library dependencies.
  *

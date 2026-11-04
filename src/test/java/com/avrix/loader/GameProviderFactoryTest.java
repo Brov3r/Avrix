@@ -1,7 +1,8 @@
 package com.avrix.loader;
 
 import com.avrix.core.KnotClassLoader;
-import com.avrix.provider.GameProvider;
+import com.avrix.api.GameProvider;
+import com.avrix.provider.ZomboidConstants;
 import com.avrix.provider.ZomboidGameProvider;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.DisplayName;
@@ -23,22 +24,22 @@ class GameProviderFactoryTest {
     @DisplayName("Should discover the default Project Zomboid provider")
     void shouldDiscoverDefaultProvider() {
         GameProvider provider = GameProviderFactory.load(
-                Constants.DEFAULT_GAME_PROVIDER_ID,
+                ZomboidConstants.PROVIDER_ID,
                 getClass().getClassLoader()
         );
 
         assertThat(provider).isInstanceOf(ZomboidGameProvider.class);
-        assertThat(provider.getId()).isEqualTo(Constants.DEFAULT_GAME_PROVIDER_ID);
+        assertThat(provider.getId()).isEqualTo(ZomboidConstants.PROVIDER_ID);
     }
 
     @Test
     @DisplayName("Should discover the provider through KnotClassLoader")
     void shouldDiscoverProviderThroughKnotClassLoader() throws IOException {
         try (KnotClassLoader classLoader = new KnotClassLoader(new URL[0], getClass().getClassLoader())) {
-            GameProvider provider = GameProviderFactory.load(Constants.DEFAULT_GAME_PROVIDER_ID, classLoader);
+            GameProvider provider = GameProviderFactory.load(ZomboidConstants.PROVIDER_ID, classLoader);
 
             assertThat(provider).isInstanceOf(ZomboidGameProvider.class);
-            assertThat(provider.getId()).isEqualTo(Constants.DEFAULT_GAME_PROVIDER_ID);
+            assertThat(provider.getId()).isEqualTo(ZomboidConstants.PROVIDER_ID);
         }
     }
 
@@ -48,7 +49,7 @@ class GameProviderFactoryTest {
         assertThatThrownBy(() -> GameProviderFactory.load("missing-provider", getClass().getClassLoader()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("No GameProvider registered for ID [missing-provider]")
-                .hasMessageContaining(Constants.DEFAULT_GAME_PROVIDER_ID);
+                .hasMessageContaining(ZomboidConstants.PROVIDER_ID);
     }
 
     @Test
@@ -66,7 +67,7 @@ class GameProviderFactoryTest {
     @Test
     @DisplayName("Should reject a null class loader")
     void shouldRejectNullClassLoader() {
-        assertThatThrownBy(() -> GameProviderFactory.load(Constants.DEFAULT_GAME_PROVIDER_ID, null))
+        assertThatThrownBy(() -> GameProviderFactory.load(ZomboidConstants.PROVIDER_ID, null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("ClassLoader");
     }

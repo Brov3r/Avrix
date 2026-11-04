@@ -21,8 +21,6 @@ class ConstantsTest {
     void shouldExposeCliFlagNames() {
         assertThat(Constants.NO_REDIRECT_FLAG_NAME).isEqualTo("--no-redirect-log");
         assertThat(Constants.STRICT_FLAG_NAME).isEqualTo("--strict");
-        assertThat(Constants.CACHE_DIR_ARGUMENT_PREFIX).isEqualTo("-cachedir=");
-        assertThat(Constants.CACHE_DIR_PROPERTY).isEqualTo("avrix.cachedir");
     }
 
     @Test
@@ -40,7 +38,7 @@ class ConstantsTest {
     @DisplayName("Should expose loader identity and provider selection constants")
     void shouldExposeLoaderIdentity() {
         assertThat(Constants.LOADER_ID).isEqualTo("avrix-loader");
-        assertThat(Constants.DEFAULT_GAME_PROVIDER_ID).isEqualTo("project-zomboid");
+        assertThat(Constants.AUTO_PROVIDER_ID).isEqualTo("auto");
         assertThat(Constants.GAME_PROVIDER_PROPERTY).isEqualTo("avrix.provider");
         assertThat(Constants.LOADER_AUTHOR).isEqualTo("Brov3r");
         assertThat(Constants.LOADER_LICENSE).isEqualTo("MIT");

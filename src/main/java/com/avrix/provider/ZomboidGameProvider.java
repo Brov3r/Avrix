@@ -1,10 +1,11 @@
 package com.avrix.provider;
 
+import com.avrix.api.GameProvider;
+import com.avrix.api.PluginApprovalGate;
+import com.avrix.api.PluginSource;
 import com.avrix.core.Environment;
 import com.avrix.core.KnotClassLoader;
 import com.avrix.logger.LineReadingOutputStream;
-import com.avrix.logger.ZomboidLogLineParser;
-import com.avrix.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,43 @@ public class ZomboidGameProvider implements GameProvider {
     public ZomboidGameProvider() {
     }
 
+    /**
+     * Applies Project Zomboid command-line arguments before initialization.
+     *
+     * @param args command-line arguments passed to the game
+     */
+    @Override
+    public void configure(String[] args) {
+        if (args == null) {
+            return;
+        }
+
+        for (int index = 0; index < args.length; index++) {
+            String argument = args[index];
+            if (argument == null) {
+                continue;
+            }
+
+            if ("-servername".equalsIgnoreCase(argument) && index + 1 < args.length) {
+                System.setProperty(ZomboidConstants.SERVER_NAME_PROPERTY, args[index + 1]);
+                continue;
+            }
+
+            String serverPrefix = "-servername=";
+            if (argument.regionMatches(true, 0, serverPrefix, 0, serverPrefix.length())) {
+                System.setProperty(ZomboidConstants.SERVER_NAME_PROPERTY, argument.substring(serverPrefix.length()));
+                continue;
+            }
+
+            if (argument.startsWith(ZomboidConstants.CACHE_DIR_ARGUMENT_PREFIX)) {
+                System.setProperty(
+                        ZomboidConstants.CACHE_DIR_PROPERTY,
+                        argument.substring(ZomboidConstants.CACHE_DIR_ARGUMENT_PREFIX.length()).trim()
+                );
+            }
+        }
+    }
+
     private static final String CLIENT_ENTRYPOINT = "zombie.gameStates.MainScreenState";
     private static final String SERVER_ENTRYPOINT = "zombie.network.GameServer";
 
@@ -56,6 +94,7 @@ public class ZomboidGameProvider implements GameProvider {
     private final ZomboidVersionResolver versionResolver = new ZomboidVersionResolver();
     private final ZomboidEnvironmentDetector environmentDetector = new ZomboidEnvironmentDetector();
 
+    private final ZomboidRuntimeMarker runtimeMarker = new ZomboidRuntimeMarker();
     private KnotClassLoader classLoader;
     private String[] launchArgs = new String[0];
 
@@ -247,7 +286,7 @@ public class ZomboidGameProvider implements GameProvider {
      */
     @Override
     public String getId() {
-        return Constants.DEFAULT_GAME_PROVIDER_ID;
+        return ZomboidConstants.PROVIDER_ID;
     }
 
     /**
@@ -396,6 +435,32 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
+     * Resolves the Project Zomboid user cache directory.
+     * <p>
+     * Resolution order: an explicit {@code -cachedir=} override, the Java Web Start
+     * {@code deployment.user.cachedir} property on non-Windows systems, and finally {@code ~/Zomboid}.
+     *
+     * @return normalized cache directory path
+     */
+    @Override
+    public Path getCacheRoot() {
+        String explicitCache = System.getProperty(ZomboidConstants.CACHE_DIR_PROPERTY);
+        if (explicitCache != null && !explicitCache.isBlank()) {
+            return Path.of(explicitCache).toAbsolutePath().normalize();
+        }
+
+        String deploymentCache = System.getProperty("deployment.user.cachedir");
+        boolean windows = System.getProperty("os.name", "")
+                .toLowerCase(Locale.ROOT)
+                .startsWith("win");
+        if (!windows && deploymentCache != null && !deploymentCache.isBlank()) {
+            return Path.of(deploymentCache).toAbsolutePath().normalize().resolve("Zomboid");
+        }
+
+        return Path.of(System.getProperty("user.home", ".")).resolve("Zomboid");
+    }
+
+    /**
      * Returns the binary FQCN of the main entrypoint class for the active execution environment.
      *
      * @return fully qualified binary name of the game entrypoint class
@@ -503,13 +568,54 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
-     * Indicates that Project Zomboid Lua code relies on the runtime marker to detect an active Avrix launch.
+     * Returns the Project Zomboid mod-based plugin source.
      *
-     * @return {@code true} always
+     * @param strict whether discovery errors should abort startup
+     * @return plugin sources backed by active Project Zomboid mods
      */
     @Override
-    public boolean requiresRuntimeMarker() {
-        return true;
+    public List<PluginSource> getPluginSources(boolean strict) {
+        return List.of(new ZomboidModPluginSource(
+                getLaunchDirectory(),
+                Path.of(System.getProperty("user.home", ".")),
+                getEnvironment(),
+                System.getProperty(ZomboidConstants.SERVER_NAME_PROPERTY, ZomboidConstants.DEFAULT_SERVER_NAME),
+                getNormalizedVersion(),
+                strict
+        ));
+    }
+
+    /**
+     * Creates the Project Zomboid Workshop approval gate.
+     *
+     * @param cacheRoot   game cache directory
+     * @param environment active runtime environment
+     * @return Workshop approval gate
+     */
+    @Override
+    public PluginApprovalGate createApprovalGate(Path cacheRoot, Environment environment) {
+        return new ZomboidPluginApprovalGate(
+                getLaunchDirectory(),
+                cacheRoot,
+                environment,
+                System.getProperty(ZomboidConstants.PLUGIN_POLICY_PROPERTY)
+        );
+    }
+
+    /**
+     * Creates runtime marker files before the game entrypoint is invoked.
+     */
+    @Override
+    public void beforeLaunch() {
+        runtimeMarker.activate();
+    }
+
+    /**
+     * Removes runtime marker files after the game entrypoint returns or fails.
+     */
+    @Override
+    public void afterLaunch() {
+        runtimeMarker.deactivate();
     }
 
     /**
@@ -579,6 +685,7 @@ public class ZomboidGameProvider implements GameProvider {
      */
     @Override
     public synchronized void close() {
+        runtimeMarker.deactivate();
         restoreSystemState();
         initialized = false;
         serverEnvironmentDetected = null;

@@ -6,8 +6,10 @@ import com.avrix.core.LoaderConfig;
 import com.avrix.core.Metadata;
 import com.avrix.core.MixinRegistrar;
 import com.avrix.provider.DefaultLoaderProvider;
-import com.avrix.provider.GameProvider;
-import com.avrix.provider.LoaderProvider;
+import com.avrix.provider.ZomboidModPluginSource;
+import com.avrix.provider.ZomboidPluginApprovalGate;
+import com.avrix.api.GameProvider;
+import com.avrix.api.LoaderProvider;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
@@ -82,7 +84,7 @@ class DefaultPluginManagerTest {
                 Constants.METADATA_NAME,
                 Constants.PLUGIN_EXTENSION,
                 Constants.PLUGIN_ICON_NAME,
-                Constants.DEFAULT_GAME_PROVIDER_ID,
+                Constants.AUTO_PROVIDER_ID,
                 environment,
                 true,
                 false
@@ -518,10 +520,6 @@ class DefaultPluginManagerTest {
         @DisplayName("Should reject plugin IDs reserved for core components")
         void shouldRejectReservedPluginIds() {
             assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(createMeta(Constants.LOADER_ID, "1.0.0"))))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("reserved for a core component");
-
-            assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(createMeta(Constants.DEFAULT_GAME_PROVIDER_ID, "1.0.0"))))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("reserved for a core component");
         }
@@ -1035,7 +1033,10 @@ class DefaultPluginManagerTest {
                 gameProvider,
                 loaderProvider,
                 mixinRegistrar,
-                new PluginScanner(config, gameRoot, userHome, Environment.BOTH, null),
+                new PluginScanner(
+                        config,
+                        List.of(new ZomboidModPluginSource(gameRoot, userHome, Environment.BOTH, null))
+                ),
                 new PluginManifestParser()
         );
         priorityManager.init();
@@ -1070,7 +1071,7 @@ class DefaultPluginManagerTest {
         createPluginJarOnDisk(versionDirectory.resolve("media/java/approval-plugin.jar"), metadata);
 
         LoaderConfig config = configWithEnvironment(Environment.BOTH);
-        PluginApprovalService approvalService = new PluginApprovalService(
+        ZomboidPluginApprovalGate approvalService = new ZomboidPluginApprovalGate(
                 gameRoot, userHome.resolve("Zomboid"), Environment.BOTH, "prompt"
         );
         DefaultPluginManager approvalManager = new DefaultPluginManager(
@@ -1079,7 +1080,10 @@ class DefaultPluginManagerTest {
                 gameProvider,
                 loaderProvider,
                 mixinRegistrar,
-                new PluginScanner(config, gameRoot, userHome, Environment.BOTH, null),
+                new PluginScanner(
+                        config,
+                        List.of(new ZomboidModPluginSource(gameRoot, userHome, Environment.BOTH, null))
+                ),
                 new PluginManifestParser(),
                 approvalService
         );

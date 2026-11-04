@@ -6,8 +6,8 @@ import com.avrix.core.LoaderConfig;
 import com.avrix.core.Metadata;
 import com.avrix.core.MixinRegistrar;
 import com.avrix.provider.DefaultLoaderProvider;
-import com.avrix.provider.GameProvider;
-import com.avrix.provider.LoaderProvider;
+import com.avrix.api.GameProvider;
+import com.avrix.api.LoaderProvider;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -150,14 +150,14 @@ class DefaultPluginManagerEdgeTest {
         }
 
         @Test
-        @DisplayName("Should abort in strict mode when a user plugin uses a reserved core identifier")
+        @DisplayName("Should abort in strict mode when a user plugin reuses a core identifier")
         void shouldAbortOnReservedIdentifierInStrictMode() throws IOException {
             DefaultPluginManager manager = createManager(true);
             manager.init();
 
             createPluginJar(
                     pluginsDirectory.resolve("reserved.jar"),
-                    Constants.DEFAULT_GAME_PROVIDER_ID,
+                    "dummy-game",
                     ""
             );
 
@@ -168,10 +168,7 @@ class DefaultPluginManagerEdgeTest {
                     .hasMessageContaining("Failed to resolve plugin load order");
             assertThat(thrown.getCause())
                     .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("reserved for a core component");
-            assertThat(manager.getLoadResults())
-                    .extracting(PluginLoadResult::pluginId, PluginLoadResult::status)
-                    .contains(tuple(Constants.DEFAULT_GAME_PROVIDER_ID, PluginLoadStatus.FAILED));
+                    .hasMessageContaining("Duplicate plugin identifier");
         }
 
         @Test
@@ -471,7 +468,7 @@ class DefaultPluginManagerEdgeTest {
                 Constants.METADATA_NAME,
                 Constants.PLUGIN_EXTENSION,
                 Constants.PLUGIN_ICON_NAME,
-                Constants.DEFAULT_GAME_PROVIDER_ID,
+                Constants.AUTO_PROVIDER_ID,
                 Environment.BOTH,
                 true,
                 strict

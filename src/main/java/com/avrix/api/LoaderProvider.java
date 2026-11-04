@@ -1,4 +1,4 @@
-package com.avrix.provider;
+package com.avrix.api;
 
 import com.avrix.core.Metadata;
 

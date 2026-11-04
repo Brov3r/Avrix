@@ -1,6 +1,5 @@
-package com.avrix.core;
+package com.avrix.provider;
 
-import com.avrix.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,16 +21,16 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Creates and removes runtime marker files that let Project Zomboid Lua code detect an active Avrix launch.
+ * Creates and removes Project Zomboid runtime marker files that let Lua code detect an active Avrix launch.
  * <p>
  * The marker is written to the current working directory and, when the loader runs from a Workshop mod
  * {@code libs} directory, to the adjacent {@code 42} directory that Project Zomboid exposes to Lua. While the loader
  * is running the timestamp is refreshed periodically, so Lua code can distinguish a live session from a marker left
  * behind by a crash.
  */
-public final class RuntimeMarker {
+public final class ZomboidRuntimeMarker implements AutoCloseable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RuntimeMarker.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ZomboidRuntimeMarker.class);
 
     /**
      * Seconds between marker timestamp refreshes.
@@ -43,15 +42,13 @@ public final class RuntimeMarker {
      */
     private static final long HEARTBEAT_SHUTDOWN_TIMEOUT_SECONDS = 2L;
 
-    private static final Object HEARTBEAT_LOCK = new Object();
-
-    private static ScheduledExecutorService heartbeat;
+    private final List<Path> markers = new ArrayList<>();
+    private ScheduledExecutorService heartbeat;
 
     /**
-     * Prevents instantiation of this utility class.
+     * Creates an inactive runtime marker manager.
      */
-    private RuntimeMarker() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated.");
+    public ZomboidRuntimeMarker() {
     }
 
     /**
@@ -59,30 +56,28 @@ public final class RuntimeMarker {
      *
      * @return marker paths that were successfully created
      */
-    public static List<Path> activate() {
-        try {
-            List<Path> markers = new ArrayList<>(2);
+    public synchronized List<Path> activate() {
+        if (!markers.isEmpty()) {
+            return List.copyOf(markers);
+        }
 
+        try {
             Path workingDirectoryMarker = Path.of(System.getProperty("user.dir", "."))
                     .toAbsolutePath()
                     .normalize()
-                    .resolve(Constants.RUNTIME_MARKER_NAME);
-            addMarker(markers, workingDirectoryMarker);
+                    .resolve(ZomboidConstants.RUNTIME_MARKER_NAME);
+            addMarker(workingDirectoryMarker);
 
             Path modMarker = resolveModMarker();
             if (modMarker != null) {
-                addMarker(markers, modMarker);
+                addMarker(modMarker);
             }
 
             if (markers.isEmpty()) {
                 return List.of();
             }
 
-            try {
-                startHeartbeat(markers);
-            } catch (RuntimeException e) {
-                LOGGER.debug("Failed to start Avrix runtime marker heartbeat", e);
-            }
+            startHeartbeat();
             return List.copyOf(markers);
         } catch (RuntimeException e) {
             LOGGER.debug("Failed to create Avrix runtime markers", e);
@@ -92,15 +87,9 @@ public final class RuntimeMarker {
 
     /**
      * Stops the timestamp refresh and removes marker files created by {@link #activate()}.
-     *
-     * @param markers marker paths to remove
      */
-    public static void deactivate(List<Path> markers) {
+    public synchronized void deactivate() {
         stopHeartbeat();
-
-        if (markers == null) {
-            return;
-        }
 
         for (Path marker : markers) {
             try {
@@ -109,45 +98,48 @@ public final class RuntimeMarker {
                 LOGGER.debug("Failed to remove Avrix runtime marker [{}]", marker, e);
             }
         }
+        markers.clear();
     }
 
-    private static void addMarker(List<Path> markers, Path marker) {
+    /**
+     * Stops the timestamp refresh and removes all created marker files.
+     */
+    @Override
+    public void close() {
+        deactivate();
+    }
+
+    private void addMarker(Path marker) {
         if (writeMarker(marker)) {
             markers.add(marker);
         }
     }
 
-    private static void startHeartbeat(List<Path> markers) {
-        List<Path> watchedMarkers = List.copyOf(markers);
-
-        synchronized (HEARTBEAT_LOCK) {
-            if (heartbeat != null) {
-                return;
-            }
-
-            ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(runnable -> {
-                Thread thread = new Thread(runnable, "avrix-runtime-marker-heartbeat");
-                thread.setDaemon(true);
-                return thread;
-            });
-
-            executor.scheduleAtFixedRate(
-                    () -> refreshMarkers(watchedMarkers),
-                    HEARTBEAT_INTERVAL_SECONDS,
-                    HEARTBEAT_INTERVAL_SECONDS,
-                    TimeUnit.SECONDS
-            );
-
-            heartbeat = executor;
+    private void startHeartbeat() {
+        if (heartbeat != null) {
+            return;
         }
+
+        List<Path> watchedMarkers = List.copyOf(markers);
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(runnable -> {
+            Thread thread = new Thread(runnable, "avrix-runtime-marker-heartbeat");
+            thread.setDaemon(true);
+            return thread;
+        });
+
+        executor.scheduleAtFixedRate(
+                () -> refreshMarkers(watchedMarkers),
+                HEARTBEAT_INTERVAL_SECONDS,
+                HEARTBEAT_INTERVAL_SECONDS,
+                TimeUnit.SECONDS
+        );
+
+        heartbeat = executor;
     }
 
-    private static void stopHeartbeat() {
-        ScheduledExecutorService executor;
-        synchronized (HEARTBEAT_LOCK) {
-            executor = heartbeat;
-            heartbeat = null;
-        }
+    private void stopHeartbeat() {
+        ScheduledExecutorService executor = heartbeat;
+        heartbeat = null;
 
         if (executor == null) {
             return;
@@ -204,7 +196,7 @@ public final class RuntimeMarker {
 
     private static Path resolveModMarker() {
         try {
-            CodeSource codeSource = RuntimeMarker.class.getProtectionDomain().getCodeSource();
+            CodeSource codeSource = ZomboidRuntimeMarker.class.getProtectionDomain().getCodeSource();
             if (codeSource == null || codeSource.getLocation() == null) {
                 return null;
             }
@@ -231,7 +223,7 @@ public final class RuntimeMarker {
                 return null;
             }
 
-            return versionDirectory.resolve(Constants.RUNTIME_MARKER_NAME);
+            return versionDirectory.resolve(ZomboidConstants.RUNTIME_MARKER_NAME);
         } catch (URISyntaxException e) {
             LOGGER.debug("Failed to resolve Avrix runtime marker location", e);
             return null;

@@ -3,8 +3,8 @@ package com.avrix.loader;
 import com.avrix.core.KnotClassLoader;
 import com.avrix.core.ServiceManager;
 import com.avrix.plugins.PluginManager;
-import com.avrix.provider.GameProvider;
-import com.avrix.provider.LoaderProvider;
+import com.avrix.api.GameProvider;
+import com.avrix.api.LoaderProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,15 +58,6 @@ public final class LoaderContext implements AutoCloseable {
     }
 
     /**
-     * Indicates whether the active game provider requires the loader's runtime marker files.
-     *
-     * @return {@code true} if runtime markers should be created for the active provider
-     */
-    public boolean requiresRuntimeMarker() {
-        return gameProvider.requiresRuntimeMarker();
-    }
-
-    /**
      * Redirects the game output streams to the loader logging subsystem.
      */
     public void redirectSystemStreams() {
@@ -79,7 +70,12 @@ public final class LoaderContext implements AutoCloseable {
      * @param args command-line arguments passed to the game
      */
     public void launch(String[] args) {
-        gameProvider.launch(args);
+        try {
+            gameProvider.beforeLaunch();
+            gameProvider.launch(args);
+        } finally {
+            gameProvider.afterLaunch();
+        }
     }
 
     /**
@@ -95,8 +91,7 @@ public final class LoaderContext implements AutoCloseable {
      * Shuts down loaded plugins and closes the flat classloader.
      * <p>
      * This method is idempotent and safe to call from both a try-with-resources block and a JVM shutdown hook.
-     * The Project Zomboid client and dedicated server main methods block until exit, so closing after
-     * {@link #launch(String[])} returns is safe.
+     * Game main methods usually block until exit, so closing after {@link #launch(String[])} returns is safe.
      */
     @Override
     public void close() {

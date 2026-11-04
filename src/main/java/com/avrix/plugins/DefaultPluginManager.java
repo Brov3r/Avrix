@@ -5,8 +5,10 @@ import com.avrix.core.KnotClassLoader;
 import com.avrix.core.LoaderConfig;
 import com.avrix.core.Metadata;
 import com.avrix.core.MixinRegistrar;
-import com.avrix.provider.GameProvider;
-import com.avrix.provider.LoaderProvider;
+import com.avrix.api.GameProvider;
+import com.avrix.api.LoaderProvider;
+import com.avrix.api.PluginApprovalGate;
+import com.avrix.api.PluginArchive;
 import com.avrix.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +50,7 @@ public class DefaultPluginManager implements PluginManager {
     private final MixinRegistrar mixinRegistrar;
     private final PluginScanner pluginScanner;
     private final PluginManifestParser manifestParser;
-    private final PluginApprovalService approvalService;
+    private final PluginApprovalGate approvalGate;
     private final Map<String, PluginData> plugins = new ConcurrentHashMap<>();
     private final List<Metadata> corePlugins = new CopyOnWriteArrayList<>();
     private final List<PluginLoadResult> loadResults = new CopyOnWriteArrayList<>();
@@ -90,7 +92,7 @@ public class DefaultPluginManager implements PluginManager {
     }
 
     /**
-     * Constructs a new plugin manager with an optional Workshop plugin approval service.
+     * Constructs a new plugin manager with an optional plugin approval gate.
      *
      * @param config          loader configuration
      * @param classLoader     flat classloader used to attach plugins and resolve classes
@@ -99,7 +101,7 @@ public class DefaultPluginManager implements PluginManager {
      * @param mixinRegistrar  registrar used for plugin mixin classes
      * @param pluginScanner   scanner used to discover plugin archives
      * @param manifestParser  parser used to read plugin manifests
-     * @param approvalService approval service, or {@code null} to load every discovered archive
+     * @param approvalGate    approval gate, or {@code null} to allow every discovered archive
      * @throws NullPointerException if any required dependency is null
      */
     public DefaultPluginManager(
@@ -110,7 +112,7 @@ public class DefaultPluginManager implements PluginManager {
             MixinRegistrar mixinRegistrar,
             PluginScanner pluginScanner,
             PluginManifestParser manifestParser,
-            PluginApprovalService approvalService
+            PluginApprovalGate approvalGate
     ) {
         this.config = Objects.requireNonNull(config, "Loader config cannot be null");
         this.classLoader = Objects.requireNonNull(classLoader, "KnotClassLoader cannot be null");
@@ -119,7 +121,7 @@ public class DefaultPluginManager implements PluginManager {
         this.mixinRegistrar = Objects.requireNonNull(mixinRegistrar, "Mixin registrar cannot be null");
         this.pluginScanner = Objects.requireNonNull(pluginScanner, "Plugin scanner cannot be null");
         this.manifestParser = Objects.requireNonNull(manifestParser, "Plugin manifest parser cannot be null");
-        this.approvalService = approvalService;
+        this.approvalGate = (approvalGate != null) ? approvalGate : PluginApprovalGate.allowAll();
     }
 
     /**
@@ -191,14 +193,13 @@ public class DefaultPluginManager implements PluginManager {
         List<PluginArchive> pluginArchives = pluginScanner.scanArchives();
         if (pluginArchives.isEmpty()) {
             LOGGER.debug("No plugin archives discovered in [{}]", config.pluginsDirectory());
-            if (approvalService != null) {
-                approvalService.flushPending();
-            }
+            approvalGate.flushPending();
             return;
         }
 
         List<Metadata> candidates = new ArrayList<>(pluginArchives.size());
         Map<String, File> candidatesFiles = new HashMap<>();
+        Map<String, Boolean> candidatesTrusted = new HashMap<>();
         Map<String, List<String>> candidatesClassEntries = new HashMap<>();
         Map<String, Boolean> candidatesMultiRelease = new HashMap<>();
         Map<String, Boolean> candidatesIconPresent = new HashMap<>();
@@ -242,25 +243,24 @@ public class DefaultPluginManager implements PluginManager {
                 continue;
             }
 
-            if (approvalService != null) {
-                PluginApprovalService.Status approvalStatus = approvalService.evaluate(archive, metadata);
-                if (approvalStatus != PluginApprovalService.Status.APPROVED) {
-                    String reason = approvalStatus == PluginApprovalService.Status.PENDING
-                            ? "Pending approval"
-                            : "Denied by plugin policy";
-                    LOGGER.info("Skipping plugin [{}] from mod [{}]: {}", metadata.id(), archive.modId(), reason);
-                    loadResults.add(PluginLoadResult.skipped(metadata.id(), reason));
-                    continue;
-                }
+            PluginApprovalGate.Status approvalStatus = approvalGate.evaluate(archive, metadata);
+            if (approvalStatus != PluginApprovalGate.Status.APPROVED) {
+                String reason = approvalStatus == PluginApprovalGate.Status.PENDING
+                        ? "Pending approval"
+                        : "Denied by plugin policy";
+                LOGGER.info("Skipping plugin [{}] from source [{}]: {}", metadata.id(), archive.sourceId(), reason);
+                loadResults.add(PluginLoadResult.skipped(metadata.id(), reason));
+                continue;
             }
 
             String pluginId = metadata.id();
             File existingFile = candidatesFiles.get(pluginId);
+            boolean existingTrusted = Boolean.TRUE.equals(candidatesTrusted.get(pluginId));
 
-            if (existingFile != null && isPluginsDirectoryArchive(existingFile) != isPluginsDirectoryArchive(pluginFile)) {
-                if (isPluginsDirectoryArchive(existingFile)) {
+            if (existingFile != null && existingTrusted != archive.trusted()) {
+                if (existingTrusted) {
                     LOGGER.info(
-                            "Duplicate plugin ID [{}]: replacing plugins-directory archive [{}] with mod archive [{}]",
+                            "Duplicate plugin ID [{}]: replacing trusted archive [{}] with source archive [{}]",
                             pluginId,
                             existingFile,
                             pluginFile
@@ -268,12 +268,13 @@ public class DefaultPluginManager implements PluginManager {
                     candidates.removeIf(candidate -> candidate.id().equals(pluginId));
                     candidates.add(metadata);
                     candidatesFiles.put(pluginId, pluginFile);
+                    candidatesTrusted.put(pluginId, archive.trusted());
                     candidatesClassEntries.put(pluginId, parsedPlugin.classEntries());
                     candidatesMultiRelease.put(pluginId, parsedPlugin.multiRelease());
                     candidatesIconPresent.put(pluginId, parsedPlugin.iconPresent());
                 } else {
                     LOGGER.warn(
-                            "Duplicate plugin ID [{}]: keeping mod archive [{}], ignoring plugins-directory archive [{}]",
+                            "Duplicate plugin ID [{}]: keeping source archive [{}], ignoring trusted archive [{}]",
                             pluginId,
                             existingFile,
                             pluginFile
@@ -284,15 +285,14 @@ public class DefaultPluginManager implements PluginManager {
 
             candidates.add(metadata);
             candidatesFiles.put(pluginId, pluginFile);
+            candidatesTrusted.put(pluginId, archive.trusted());
             candidatesClassEntries.put(pluginId, parsedPlugin.classEntries());
             candidatesMultiRelease.put(pluginId, parsedPlugin.multiRelease());
             candidatesIconPresent.put(pluginId, parsedPlugin.iconPresent());
             LOGGER.debug("Candidate plugin discovered: [{}] ({}@{})", metadata.name(), pluginId, metadata.version());
         }
 
-        if (approvalService != null) {
-            approvalService.flushPending();
-        }
+        approvalGate.flushPending();
 
         candidates.addAll(corePlugins);
 
@@ -883,23 +883,6 @@ public class DefaultPluginManager implements PluginManager {
     private static boolean isPluginDisabled(Set<String> disabledPlugins, Metadata metadata, File pluginFile) {
         return disabledPlugins.contains(metadata.id().toLowerCase(Locale.ROOT))
                 || disabledPlugins.contains(pluginFile.getName().toLowerCase(Locale.ROOT));
-    }
-
-    /**
-     * Checks whether an archive belongs to the manually managed plugins directory.
-     *
-     * @param pluginFile plugin archive
-     * @return {@code true} when the archive is located under the configured plugins directory
-     */
-    private boolean isPluginsDirectoryArchive(File pluginFile) {
-        Path pluginsDirectory = config.pluginsDirectory().toAbsolutePath().normalize();
-        Path file = pluginFile.toPath().toAbsolutePath().normalize();
-
-        try {
-            return file.toRealPath().startsWith(pluginsDirectory.toRealPath());
-        } catch (IOException e) {
-            return file.startsWith(pluginsDirectory);
-        }
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.avrix.loader;
 
-import com.avrix.provider.GameProvider;
+import com.avrix.api.GameProvider;
+import com.avrix.provider.ZomboidConstants;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,10 +58,10 @@ class GameProviderFactoryTCCLTest {
         ClassLoader classLoader = getClass().getClassLoader();
 
         GameProvider testProvider = GameProviderFactory.load(TestGameProvider.ID, classLoader);
-        GameProvider defaultProvider = GameProviderFactory.load(Constants.DEFAULT_GAME_PROVIDER_ID, classLoader);
+        GameProvider defaultProvider = GameProviderFactory.load(ZomboidConstants.PROVIDER_ID, classLoader);
 
         assertThat(testProvider).isInstanceOf(TestGameProvider.class);
-        assertThat(defaultProvider.getId()).isEqualTo(Constants.DEFAULT_GAME_PROVIDER_ID);
+        assertThat(defaultProvider.getId()).isEqualTo(ZomboidConstants.PROVIDER_ID);
     }
 
     @Test
@@ -99,7 +100,7 @@ class GameProviderFactoryTCCLTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("No GameProvider registered for ID [missing-provider]")
                 .hasMessageContaining(TestGameProvider.ID)
-                .hasMessageContaining(Constants.DEFAULT_GAME_PROVIDER_ID);
+                .hasMessageContaining(ZomboidConstants.PROVIDER_ID);
     }
 
     @Test
@@ -122,5 +123,70 @@ class GameProviderFactoryTCCLTest {
                     .hasMessageContaining("Multiple GameProvider implementations registered for ID")
                     .hasMessageContaining(TestGameProvider.ID);
         }
+    }
+
+    @Test
+    @DisplayName("Should select the only provider in auto mode")
+    void shouldSelectSingleProviderInAutoMode() throws IOException {
+        Path root = tempDir.resolve("auto-single");
+        Path servicesDirectory = root.resolve("META-INF").resolve("services");
+        Files.createDirectories(servicesDirectory);
+        Files.writeString(
+                servicesDirectory.resolve(GameProvider.class.getName()),
+                TestGameProvider.class.getName() + System.lineSeparator()
+        );
+
+        try (URLClassLoader classLoader = serviceIsolatedClassLoader(root)) {
+            GameProvider provider = GameProviderFactory.load(Constants.AUTO_PROVIDER_ID, classLoader);
+
+            assertThat(provider).isInstanceOf(TestGameProvider.class);
+            assertThat(provider.getId()).isEqualTo(TestGameProvider.ID);
+        }
+    }
+
+    @Test
+    @DisplayName("Should reject ambiguous auto mode when several providers are registered")
+    void shouldRejectAmbiguousAutoMode() throws IOException {
+        Path root = tempDir.resolve("auto-multiple");
+        Path servicesDirectory = root.resolve("META-INF").resolve("services");
+        Files.createDirectories(servicesDirectory);
+        Files.writeString(
+                servicesDirectory.resolve(GameProvider.class.getName()),
+                TestGameProvider.class.getName() + System.lineSeparator()
+                        + TestGameProvider.Duplicate.class.getName() + System.lineSeparator()
+        );
+
+        try (URLClassLoader classLoader = serviceIsolatedClassLoader(root)) {
+            assertThatThrownBy(() -> GameProviderFactory.load(Constants.AUTO_PROVIDER_ID, classLoader))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Multiple GameProvider implementations registered")
+                    .hasMessageContaining(TestGameProvider.ID);
+        }
+    }
+
+    private URLClassLoader serviceIsolatedClassLoader(Path root) throws IOException {
+        ClassLoader parent = new ClassLoader(getClass().getClassLoader()) {
+            @Override
+            public URL getResource(String name) {
+                if (serviceResourceName().equals(name)) {
+                    return null;
+                }
+                return super.getResource(name);
+            }
+
+            @Override
+            public java.util.Enumeration<URL> getResources(String name) throws IOException {
+                if (serviceResourceName().equals(name)) {
+                    return java.util.Collections.emptyEnumeration();
+                }
+                return super.getResources(name);
+            }
+        };
+
+        return new URLClassLoader(new URL[]{root.toUri().toURL()}, parent);
+    }
+
+    private static String serviceResourceName() {
+        return "META-INF/services/" + GameProvider.class.getName();
     }
 }

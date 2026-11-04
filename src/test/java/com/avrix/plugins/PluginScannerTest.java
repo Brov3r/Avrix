@@ -1,7 +1,10 @@
 package com.avrix.plugins;
 
+import com.avrix.api.PluginArchive;
+import com.avrix.api.PluginSource;
 import com.avrix.core.Environment;
 import com.avrix.core.LoaderConfig;
+import com.avrix.provider.ZomboidModPluginSource;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,6 +14,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -92,6 +96,33 @@ class PluginScannerTest {
     }
 
     @Test
+    @DisplayName("Should merge plugins directory with provider-supplied plugin sources")
+    void shouldMergeProviderSuppliedSources() throws Exception {
+        Path pluginsDir = tempDir.resolve("plugins");
+        Files.createDirectories(pluginsDir);
+        Files.createFile(pluginsDir.resolve("local.jar"));
+
+        Path sourceJar = tempDir.resolve("source.jar");
+        Files.createFile(sourceJar);
+
+        PluginSource source = () -> List.of(new PluginArchive(
+                sourceJar.toFile(),
+                "source-id",
+                "Source",
+                "custom",
+                Map.of(),
+                false
+        ));
+
+        LoaderConfig config = LoaderConfig.defaults().withPluginsDirectory(pluginsDir);
+        List<File> result = new PluginScanner(config, List.of(source)).scan();
+
+        assertThat(result)
+                .extracting(File::getName)
+                .containsExactlyInAnyOrder("local.jar", "source.jar");
+    }
+
+    @Test
     @DisplayName("Should merge plugins directory with active mod.info plugin archives")
     void shouldMergePluginsDirectoryAndActiveModPlugins() throws Exception {
         Path pluginsDir = tempDir.resolve("plugins");
@@ -122,10 +153,7 @@ class PluginScannerTest {
         LoaderConfig config = LoaderConfig.defaults().withPluginsDirectory(pluginsDir);
         List<File> result = new PluginScanner(
                 config,
-                gameRoot,
-                userHome,
-                Environment.CLIENT,
-                null
+                List.of(new ZomboidModPluginSource(gameRoot, userHome, Environment.CLIENT, null))
         ).scan();
 
         assertThat(result)

@@ -77,7 +77,7 @@ public record LoaderConfig(
                 Constants.METADATA_NAME,
                 Constants.PLUGIN_EXTENSION,
                 Constants.PLUGIN_ICON_NAME,
-                Constants.DEFAULT_GAME_PROVIDER_ID,
+                Constants.AUTO_PROVIDER_ID,
                 Environment.AUTO,
                 true,
                 false

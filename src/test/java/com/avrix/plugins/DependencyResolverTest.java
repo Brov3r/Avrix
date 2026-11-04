@@ -150,17 +150,13 @@ class DependencyResolverTest {
     }
 
     @Test
-    @DisplayName("Should reject both reserved core identifiers when no core descriptor is registered")
+    @DisplayName("Should reject the reserved loader identifier when no core descriptor is registered")
     void shouldRejectReservedIdentifiersWithoutCoreRegistration() {
         var resolver = new DependencyResolver(List.of());
 
         assertThatThrownBy(() -> resolver.resolve(List.of(meta(Constants.LOADER_ID, "1.0.0"))))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("[%s] is reserved for a core component".formatted(Constants.LOADER_ID));
-
-        assertThatThrownBy(() -> resolver.resolve(List.of(meta(Constants.DEFAULT_GAME_PROVIDER_ID, "1.0.0"))))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("[%s] is reserved for a core component".formatted(Constants.DEFAULT_GAME_PROVIDER_ID));
     }
 
     @Test

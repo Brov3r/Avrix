@@ -24,7 +24,7 @@ class LoaderConfigTest {
         assertThat(config.metadataFileName()).isEqualTo(Constants.METADATA_NAME);
         assertThat(config.pluginExtension()).isEqualTo(Constants.PLUGIN_EXTENSION);
         assertThat(config.pluginIconName()).isEqualTo(Constants.PLUGIN_ICON_NAME);
-        assertThat(config.providerId()).isEqualTo(Constants.DEFAULT_GAME_PROVIDER_ID);
+        assertThat(config.providerId()).isEqualTo(Constants.AUTO_PROVIDER_ID);
         assertThat(config.environment()).isEqualTo(Environment.AUTO);
         assertThat(config.redirectSystemStreams()).isTrue();
         assertThat(config.strict()).isFalse();
@@ -90,7 +90,7 @@ class LoaderConfigTest {
                 "metadata.yml",
                 "JAR",
                 "icon.png",
-                Constants.DEFAULT_GAME_PROVIDER_ID,
+                Constants.AUTO_PROVIDER_ID,
                 Environment.SERVER,
                 false,
                 true
@@ -105,19 +105,19 @@ class LoaderConfigTest {
     @Test
     @DisplayName("Should reject null and blank required values")
     void shouldRejectInvalidValues() {
-        assertThatThrownBy(() -> new LoaderConfig(null, "metadata.yml", ".jar", "icon.png", Constants.DEFAULT_GAME_PROVIDER_ID, Environment.BOTH, true, false))
+        assertThatThrownBy(() -> new LoaderConfig(null, "metadata.yml", ".jar", "icon.png", Constants.AUTO_PROVIDER_ID, Environment.BOTH, true, false))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("Plugins directory");
 
-        assertThatThrownBy(() -> new LoaderConfig(Path.of("plugins"), " ", ".jar", "icon.png", Constants.DEFAULT_GAME_PROVIDER_ID, Environment.BOTH, true, false))
+        assertThatThrownBy(() -> new LoaderConfig(Path.of("plugins"), " ", ".jar", "icon.png", Constants.AUTO_PROVIDER_ID, Environment.BOTH, true, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Metadata file name");
 
-        assertThatThrownBy(() -> new LoaderConfig(Path.of("plugins"), "metadata.yml", "", "icon.png", Constants.DEFAULT_GAME_PROVIDER_ID, Environment.BOTH, true, false))
+        assertThatThrownBy(() -> new LoaderConfig(Path.of("plugins"), "metadata.yml", "", "icon.png", Constants.AUTO_PROVIDER_ID, Environment.BOTH, true, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Plugin extension");
 
-        assertThatThrownBy(() -> new LoaderConfig(Path.of("plugins"), "metadata.yml", ".jar", " ", Constants.DEFAULT_GAME_PROVIDER_ID, Environment.BOTH, true, false))
+        assertThatThrownBy(() -> new LoaderConfig(Path.of("plugins"), "metadata.yml", ".jar", " ", Constants.AUTO_PROVIDER_ID, Environment.BOTH, true, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Plugin icon name");
 

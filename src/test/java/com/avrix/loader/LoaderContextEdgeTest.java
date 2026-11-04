@@ -5,7 +5,7 @@ import com.avrix.core.KnotClassLoader;
 import com.avrix.core.Metadata;
 import com.avrix.plugins.PluginData;
 import com.avrix.plugins.PluginManager;
-import com.avrix.provider.GameProvider;
+import com.avrix.api.GameProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

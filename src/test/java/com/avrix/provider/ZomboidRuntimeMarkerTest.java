@@ -1,4 +1,4 @@
-package com.avrix.core;
+package com.avrix.provider;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,10 +12,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link RuntimeMarker} file handling.
+ * Unit tests for {@link ZomboidRuntimeMarker} file handling.
  */
-@DisplayName("RuntimeMarker Unit Tests")
-class RuntimeMarkerTest {
+@DisplayName("ZomboidRuntimeMarker Unit Tests")
+class ZomboidRuntimeMarkerTest {
 
     @TempDir
     Path tempDir;
@@ -40,23 +40,23 @@ class RuntimeMarkerTest {
     }
 
     @Test
-    @DisplayName("Should remove every marker on deactivate")
-    void shouldRemoveMarkersOnDeactivate() throws Exception {
-        Path first = tempDir.resolve("first.marker");
-        Path second = tempDir.resolve("second.marker");
-        assertThat(writeMarker(first)).isTrue();
-        assertThat(writeMarker(second)).isTrue();
+    @DisplayName("Should create and remove the working-directory marker")
+    void shouldCreateAndRemoveWorkingDirectoryMarker() {
+        String originalUserDir = System.getProperty("user.dir");
+        System.setProperty("user.dir", tempDir.toString());
 
-        RuntimeMarker.deactivate(List.of(first, second));
+        try {
+            ZomboidRuntimeMarker marker = new ZomboidRuntimeMarker();
+            marker.activate();
 
-        assertThat(first).doesNotExist();
-        assertThat(second).doesNotExist();
-    }
+            Path markerFile = tempDir.resolve(ZomboidConstants.RUNTIME_MARKER_NAME);
+            assertThat(markerFile).isRegularFile();
 
-    @Test
-    @DisplayName("Should accept a null marker list on deactivate")
-    void shouldAcceptNullMarkers() {
-        RuntimeMarker.deactivate(null);
+            marker.deactivate();
+            assertThat(markerFile).doesNotExist();
+        } finally {
+            System.setProperty("user.dir", originalUserDir);
+        }
     }
 
     private static long readTimestamp(Path marker) throws Exception {
@@ -73,7 +73,7 @@ class RuntimeMarkerTest {
 
     private static Method findMethod(String name, Class<?>... parameterTypes) {
         try {
-            Method method = RuntimeMarker.class.getDeclaredMethod(name, parameterTypes);
+            Method method = ZomboidRuntimeMarker.class.getDeclaredMethod(name, parameterTypes);
             method.setAccessible(true);
             return method;
         } catch (NoSuchMethodException exception) {

@@ -326,6 +326,6 @@ public final class DependencyResolver {
     }
 
     private static boolean isReservedId(String id) {
-        return Constants.LOADER_ID.equals(id) || Constants.DEFAULT_GAME_PROVIDER_ID.equals(id);
+        return Constants.LOADER_ID.equals(id);
     }
 }

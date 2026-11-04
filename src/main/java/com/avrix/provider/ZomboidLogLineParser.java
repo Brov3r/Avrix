@@ -1,4 +1,4 @@
-package com.avrix.logger;
+package com.avrix.provider;
 
 import java.util.Locale;
 import java.util.Objects;

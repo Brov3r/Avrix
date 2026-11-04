@@ -6,8 +6,9 @@ import com.avrix.core.LoaderConfig;
 import com.avrix.core.ServiceManager;
 import com.avrix.plugins.PluginManager;
 import com.avrix.provider.DefaultLoaderProvider;
-import com.avrix.provider.GameProvider;
-import com.avrix.provider.LoaderProvider;
+import com.avrix.provider.ZomboidConstants;
+import com.avrix.api.GameProvider;
+import com.avrix.api.LoaderProvider;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,8 +61,8 @@ class LoaderFactoryTest {
     @BeforeEach
     void setUp() {
         originalContextClassLoader = Thread.currentThread().getContextClassLoader();
-        originalCacheDirectory = System.getProperty(Constants.CACHE_DIR_PROPERTY);
-        System.setProperty(Constants.CACHE_DIR_PROPERTY, tempDir.resolve("cache").toString());
+        originalCacheDirectory = System.getProperty(ZomboidConstants.CACHE_DIR_PROPERTY);
+        System.setProperty(ZomboidConstants.CACHE_DIR_PROPERTY, tempDir.resolve("cache").toString());
         ServiceManager.clear();
         TestGameProvider.reset();
     }
@@ -73,7 +74,7 @@ class LoaderFactoryTest {
             TestGameProvider.reset();
         } finally {
             Thread.currentThread().setContextClassLoader(originalContextClassLoader);
-            restoreProperty(Constants.CACHE_DIR_PROPERTY, originalCacheDirectory);
+            restoreProperty(ZomboidConstants.CACHE_DIR_PROPERTY, originalCacheDirectory);
         }
     }
 
@@ -338,7 +339,7 @@ class LoaderFactoryTest {
 
         List<String> command = List.of(
                 javaExecutable(),
-                "-D" + Constants.CACHE_DIR_PROPERTY + "=" + tempDir.resolve("child-cache"),
+                "-D" + ZomboidConstants.CACHE_DIR_PROPERTY + "=" + tempDir.resolve("child-cache"),
                 "-cp",
                 buildChildClasspath(),
                 ChildMain.class.getName(),

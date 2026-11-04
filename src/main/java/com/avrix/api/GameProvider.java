@@ -1,4 +1,4 @@
-package com.avrix.provider;
+package com.avrix.api;
 
 import com.avrix.core.Environment;
 import com.avrix.core.KnotClassLoader;
@@ -12,7 +12,7 @@ import java.util.Map;
  * Defines the contract for a game provider.
  * <p>
  * Implementations are responsible for discovering game resources, setting up the environment,
- * and launching the game executable or entrypoint.
+ * interpreting game-specific launch arguments, supplying game-specific plugin sources, and launching the game.
  */
 public interface GameProvider {
 
@@ -31,11 +31,38 @@ public interface GameProvider {
     }
 
     /**
+     * Applies game-specific command-line arguments before initialization.
+     * <p>
+     * Implementations may parse their own flags and store system properties required by the game. The loader
+     * core does not interpret game-specific arguments.
+     *
+     * @param args command-line arguments passed to the game
+     */
+    public default void configure(String[] args) {
+    }
+
+    /**
      * Launches the game with the specified arguments.
      *
      * @param args command-line arguments to pass to the game
      */
     public void launch(String[] args);
+
+    /**
+     * Invoked immediately before {@link #launch(String[])}.
+     * <p>
+     * Providers can use this hook to create runtime artifacts such as marker files.
+     */
+    public default void beforeLaunch() {
+    }
+
+    /**
+     * Invoked immediately after {@link #launch(String[])} returns or fails.
+     * <p>
+     * Providers can use this hook to remove runtime artifacts created by {@link #beforeLaunch()}.
+     */
+    public default void afterLaunch() {
+    }
 
     /**
      * Returns the arguments used to launch the game.
@@ -101,6 +128,18 @@ public interface GameProvider {
     public Path getLaunchDirectory();
 
     /**
+     * Returns the game user cache directory.
+     * <p>
+     * The default is a neutral {@code ~/.avrix} directory. Game providers should override this when the game
+     * uses a different location for runtime hand-off files.
+     *
+     * @return cache directory path
+     */
+    public default Path getCacheRoot() {
+        return Path.of(System.getProperty("user.home", ".")).resolve(".avrix");
+    }
+
+    /**
      * Returns the fully qualified name of the game's main class.
      *
      * @return the entrypoint class name
@@ -163,15 +202,24 @@ public interface GameProvider {
     }
 
     /**
-     * Indicates whether this provider requires the loader's runtime marker files.
-     * <p>
-     * Providers whose game runtime can detect an active Avrix launch through
-     * {@link com.avrix.core.RuntimeMarker} should return {@code true}.
+     * Returns additional plugin sources supplied by this game provider.
      *
-     * @return {@code true} if runtime markers should be created for this provider
+     * @param strict whether discovery errors should abort startup
+     * @return plugin sources, or an empty list when the provider has no additional sources
      */
-    public default boolean requiresRuntimeMarker() {
-        return false;
+    public default List<PluginSource> getPluginSources(boolean strict) {
+        return List.of();
+    }
+
+    /**
+     * Creates the approval gate used for archives from non-trusted plugin sources.
+     *
+     * @param cacheRoot   game cache directory
+     * @param environment active runtime environment
+     * @return approval gate, or an allow-all gate when the provider does not require approval
+     */
+    public default PluginApprovalGate createApprovalGate(Path cacheRoot, Environment environment) {
+        return PluginApprovalGate.allowAll();
     }
 
     /**

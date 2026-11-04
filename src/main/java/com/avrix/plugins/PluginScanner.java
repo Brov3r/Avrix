@@ -1,6 +1,7 @@
 package com.avrix.plugins;
 
-import com.avrix.core.Environment;
+import com.avrix.api.PluginArchive;
+import com.avrix.api.PluginSource;
 import com.avrix.core.LoaderConfig;
 import com.avrix.utils.Constants;
 import org.slf4j.Logger;
@@ -22,14 +23,14 @@ import java.util.TreeSet;
 import java.util.stream.Stream;
 
 /**
- * Scans the configured plugins directory for plugin archives.
+ * Scans the configured plugins directory and provider-supplied plugin sources for plugin archives.
  */
 public final class PluginScanner {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginScanner.class);
 
     private final LoaderConfig config;
-    private final ModInfoPluginScanner modInfoPluginScanner;
+    private final List<PluginSource> pluginSources;
 
     /**
      * Constructs a new plugin scanner that only scans the plugins directory.
@@ -38,82 +39,23 @@ public final class PluginScanner {
      * @throws NullPointerException if {@code config} is null
      */
     public PluginScanner(LoaderConfig config) {
-        this(config, null, Path.of(System.getProperty("user.home", ".")), null, null, null);
+        this(config, List.of());
     }
 
     /**
-     * Constructs a new plugin scanner that also discovers archives from active Project Zomboid mods.
+     * Constructs a new plugin scanner with additional game-specific plugin sources.
      *
-     * @param config      loader configuration providing the plugins directory and archive extension
-     * @param gameRoot    Project Zomboid installation root, or {@code null} to disable mod.info discovery
-     * @param environment active runtime environment
-     * @param serverName  dedicated-server name, or {@code null} to use the default
-     * @throws NullPointerException if {@code config} is null
+     * @param config        loader configuration providing the plugins directory and archive extension
+     * @param pluginSources additional sources supplied by the active game provider
+     * @throws NullPointerException if {@code config} or {@code pluginSources} is null
      */
-    public PluginScanner(LoaderConfig config, Path gameRoot, Environment environment, String serverName) {
-        this(config, gameRoot, Path.of(System.getProperty("user.home", ".")), environment, serverName, null);
-    }
-
-    /**
-     * Constructs a new plugin scanner that also discovers archives from active Project Zomboid mods.
-     *
-     * @param config      loader configuration providing the plugins directory and archive extension
-     * @param gameRoot    Project Zomboid installation root, or {@code null} to disable mod.info discovery
-     * @param environment active runtime environment
-     * @param serverName  dedicated-server name, or {@code null} to use the default
-     * @param gameVersion normalized game version, or {@code null} when unknown
-     * @throws NullPointerException if {@code config} is null
-     */
-    public PluginScanner(
-            LoaderConfig config,
-            Path gameRoot,
-            Environment environment,
-            String serverName,
-            String gameVersion
-    ) {
-        this(
-                config,
-                gameRoot,
-                Path.of(System.getProperty("user.home", ".")),
-                environment,
-                serverName,
-                gameVersion
-        );
-    }
-
-    PluginScanner(
-            LoaderConfig config,
-            Path gameRoot,
-            Path userHome,
-            Environment environment,
-            String serverName
-    ) {
-        this(config, gameRoot, userHome, environment, serverName, null);
-    }
-
-    PluginScanner(
-            LoaderConfig config,
-            Path gameRoot,
-            Path userHome,
-            Environment environment,
-            String serverName,
-            String gameVersion
-    ) {
+    public PluginScanner(LoaderConfig config, List<PluginSource> pluginSources) {
         this.config = Objects.requireNonNull(config, "Loader config cannot be null");
-        this.modInfoPluginScanner = gameRoot == null
-                ? null
-                : new ModInfoPluginScanner(
-                        gameRoot,
-                        userHome,
-                        environment,
-                        serverName,
-                        gameVersion,
-                        config.strict()
-                );
+        this.pluginSources = List.copyOf(Objects.requireNonNull(pluginSources, "Plugin sources cannot be null"));
     }
 
     /**
-     * Scans the configured plugins directory and active Project Zomboid mods for plugin archives.
+     * Scans the configured plugins directory and all provider-supplied sources for plugin archives.
      *
      * @return discovered plugin files, or an empty list when no archive is found
      */
@@ -124,7 +66,7 @@ public final class PluginScanner {
     }
 
     /**
-     * Scans the configured plugins directory and active Project Zomboid mods for plugin archives with source metadata.
+     * Scans the configured plugins directory and all provider-supplied sources for plugin archives.
      *
      * @return discovered plugin archives, or an empty list when no archive is found
      */
@@ -132,11 +74,11 @@ public final class PluginScanner {
         Map<String, PluginArchive> discovered = new LinkedHashMap<>();
 
         for (File plugin : scanPluginsDirectory()) {
-            addDiscovered(discovered, new PluginArchive(plugin, null, null, null, true));
+            addDiscovered(discovered, PluginArchive.trusted(plugin));
         }
 
-        if (modInfoPluginScanner != null) {
-            for (PluginArchive plugin : modInfoPluginScanner.scanArchives()) {
+        for (PluginSource source : pluginSources) {
+            for (PluginArchive plugin : source.scanArchives()) {
                 addDiscovered(discovered, plugin);
             }
         }

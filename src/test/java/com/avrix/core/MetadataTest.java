@@ -1,7 +1,7 @@
 package com.avrix.core;
 
 import com.avrix.plugins.PluginManifestParser;
-import com.avrix.provider.GameProvider;
+import com.avrix.api.GameProvider;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

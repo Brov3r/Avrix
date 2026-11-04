@@ -1,7 +1,7 @@
 package test.loader;
 
 import com.avrix.core.Environment;
-import com.avrix.provider.GameProvider;
+import com.avrix.api.GameProvider;
 
 import java.nio.file.Path;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.avrix.plugins;
+package com.avrix.provider;
 
 import com.avrix.core.Environment;
 import org.junit.jupiter.api.DisplayName;
@@ -15,10 +15,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Unit and stress tests for {@link ModInfoPluginScanner}.
+ * Unit and stress tests for {@link ZomboidModPluginSource}.
  */
-@DisplayName("ModInfoPluginScanner Unit Tests")
-class ModInfoPluginScannerTest {
+@DisplayName("ZomboidModPluginSource Unit Tests")
+class ZomboidModPluginSourceTest {
 
     @TempDir
     Path tempDir;
@@ -38,7 +38,7 @@ class ModInfoPluginScannerTest {
                 "media/java/c.jar",
                 "media/java/c.jar");
 
-        List<Path> result = new ModInfoPluginScanner(gameRoot, home, Environment.CLIENT, null).scan();
+        List<Path> result = new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan();
 
         assertThat(result)
                 .extracting(path -> path.getFileName().toString())
@@ -57,7 +57,7 @@ class ModInfoPluginScannerTest {
                 "media/java/inactive.jar",
                 "media/java/inactive.jar");
 
-        assertThat(new ModInfoPluginScanner(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
+        assertThat(new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
     }
 
     @Test
@@ -72,7 +72,7 @@ class ModInfoPluginScannerTest {
                 "media/java/workshop.jar",
                 "media/java/workshop.jar");
 
-        List<Path> result = new ModInfoPluginScanner(gameRoot, home, Environment.CLIENT, null).scan();
+        List<Path> result = new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan();
 
         assertThat(result)
                 .extracting(path -> path.getFileName().toString())
@@ -98,7 +98,7 @@ class ModInfoPluginScannerTest {
         Files.createDirectories(versionJar.getParent());
         Files.createFile(versionJar);
 
-        List<Path> result = new ModInfoPluginScanner(gameRoot, home, Environment.CLIENT, null).scan();
+        List<Path> result = new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan();
 
         assertThat(result)
                 .extracting(path -> path.getFileName().toString())
@@ -116,7 +116,7 @@ class ModInfoPluginScannerTest {
         writeMod(mods, "TraversalMod", "active-mod", "../../outside.jar");
         Files.createFile(mods.resolve("outside.jar"));
 
-        assertThat(new ModInfoPluginScanner(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
+        assertThat(new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
     }
 
     @Test
@@ -138,9 +138,9 @@ class ModInfoPluginScannerTest {
         Files.createDirectories(insideJar.getParent());
         Files.createFile(insideJar);
 
-        assertThat(new ModInfoPluginScanner(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
+        assertThat(new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
 
-        assertThatThrownBy(() -> new ModInfoPluginScanner(
+        assertThatThrownBy(() -> new ZomboidModPluginSource(
                 gameRoot, home, Environment.CLIENT, null, "42.21.0", true
         ).scan())
                 .isInstanceOf(IllegalStateException.class)
@@ -163,9 +163,9 @@ class ModInfoPluginScannerTest {
                 jarPlugins=%s
                 """.formatted(outsideJar.toAbsolutePath()));
 
-        assertThat(new ModInfoPluginScanner(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
+        assertThat(new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
 
-        assertThatThrownBy(() -> new ModInfoPluginScanner(
+        assertThatThrownBy(() -> new ZomboidModPluginSource(
                 gameRoot, home, Environment.CLIENT, null, "42.21.0", true
         ).scan())
                 .isInstanceOf(IllegalStateException.class)
@@ -190,7 +190,7 @@ class ModInfoPluginScannerTest {
                 "media/java/server.jar",
                 "media/java/server.jar");
 
-        List<Path> result = new ModInfoPluginScanner(gameRoot, home, Environment.SERVER, "myserver").scan();
+        List<Path> result = new ZomboidModPluginSource(gameRoot, home, Environment.SERVER, "myserver").scan();
 
         assertThat(result)
                 .extracting(path -> path.getFileName().toString())
@@ -206,7 +206,7 @@ class ModInfoPluginScannerTest {
                 "media/java/inactive.jar",
                 "media/java/inactive.jar");
 
-        assertThat(new ModInfoPluginScanner(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
+        assertThat(new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
     }
 
     @Test
@@ -221,7 +221,7 @@ class ModInfoPluginScannerTest {
                 "media/java/a.jar, media/java/a.jar",
                 "media/java/a.jar");
 
-        assertThat(new ModInfoPluginScanner(gameRoot, home, Environment.CLIENT, null).scan())
+        assertThat(new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan())
                 .hasSize(1);
     }
 
@@ -238,7 +238,7 @@ class ModInfoPluginScannerTest {
         writeVersionMod(modRoot, "42.21", "versioned-mod",
                 "media/java/42.21.jar", "media/java/42.21.jar");
 
-        List<Path> result = new ModInfoPluginScanner(
+        List<Path> result = new ZomboidModPluginSource(
                 gameRoot, home, Environment.CLIENT, null, "42.20.0", false
         ).scan();
 
@@ -260,7 +260,7 @@ class ModInfoPluginScannerTest {
         writeVersionMod(modRoot, "42.21", "versioned-mod",
                 "media/java/42.21.jar", "media/java/42.21.jar");
 
-        List<Path> result = new ModInfoPluginScanner(
+        List<Path> result = new ZomboidModPluginSource(
                 gameRoot, home, Environment.CLIENT, null, "42.19.0", false
         ).scan();
 
@@ -282,7 +282,7 @@ class ModInfoPluginScannerTest {
         writeVersionMod(modRoot, "42.21", "versioned-mod",
                 "media/java/42.21.jar", "media/java/42.21.jar");
 
-        List<Path> result = new ModInfoPluginScanner(
+        List<Path> result = new ZomboidModPluginSource(
                 gameRoot, home, Environment.CLIENT, null, null, false
         ).scan();
 
@@ -300,13 +300,13 @@ class ModInfoPluginScannerTest {
         writeMod(home.resolve("Zomboid/mods"), "MissingMod", "active-mod",
                 "media/java/missing.jar");
 
-        assertThatThrownBy(() -> new ModInfoPluginScanner(
+        assertThatThrownBy(() -> new ZomboidModPluginSource(
                 gameRoot, home, Environment.CLIENT, null, "42.21.0", true
         ).scan())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("missing.jar");
 
-        assertThat(new ModInfoPluginScanner(
+        assertThat(new ZomboidModPluginSource(
                 gameRoot, home, Environment.CLIENT, null, "42.21.0", false
         ).scan()).isEmpty();
     }
@@ -349,7 +349,7 @@ class ModInfoPluginScannerTest {
             }
         }
 
-        List<Path> result = new ModInfoPluginScanner(gameRoot, home, Environment.CLIENT, null).scan();
+        List<Path> result = new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan();
 
         assertThat(result).hasSize(expectedJars);
         assertThat(result)

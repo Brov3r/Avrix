@@ -1,4 +1,4 @@
-package com.avrix.logger;
+package com.avrix.provider;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

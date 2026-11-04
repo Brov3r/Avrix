@@ -121,7 +121,7 @@ class DependencyResolverBranchesTest {
     @DisplayName("Should omit core descriptors when only core candidates are provided")
     void shouldOmitCoreOnlyCandidates() {
         Metadata coreLoader = meta(Constants.LOADER_ID, "1.0.0");
-        Metadata coreGame = meta(Constants.DEFAULT_GAME_PROVIDER_ID, "1.0.0");
+        Metadata coreGame = meta("core-game", "1.0.0");
         var resolver = new DependencyResolver(List.of(coreLoader, coreGame));
 
         var result = resolver.resolve(List.of(coreLoader, coreGame));
@@ -132,11 +132,11 @@ class DependencyResolverBranchesTest {
     @Test
     @DisplayName("Should allow a dependency on a reserved game provider when its core descriptor is registered")
     void shouldAllowDependencyOnRegisteredCoreGameProvider() {
-        Metadata coreGame = meta(Constants.DEFAULT_GAME_PROVIDER_ID, "1.0.0");
+        Metadata coreGame = meta("core-game", "1.0.0");
         Metadata userPlugin = withDependencies(
                 "user-plugin",
                 "1.0.0",
-                Map.of(Constants.DEFAULT_GAME_PROVIDER_ID, ">=1.0.0")
+                Map.of("core-game", ">=1.0.0")
         );
         var resolver = new DependencyResolver(List.of(coreGame));
 

@@ -1,11 +1,15 @@
 package com.avrix.provider;
 
+import com.avrix.api.GameProvider;
+import com.avrix.api.PluginApprovalGate;
+import com.avrix.api.PluginArchive;
 import com.avrix.core.Environment;
 import com.avrix.core.KnotClassLoader;
 import com.avrix.core.Metadata;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -53,6 +57,33 @@ class GameProviderDefaultsTest {
         DefaultsProvider provider = new DefaultsProvider();
 
         assertThatCode(provider::redirectSystemStreamsToLogger).doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("Should provide game-agnostic cache, plugin, and approval defaults")
+    void shouldProvideGameAgnosticDefaults() {
+        DefaultsProvider provider = new DefaultsProvider();
+
+        assertThat(provider.getCacheRoot().getFileName().toString()).isEqualTo(".avrix");
+        assertThat(provider.getPluginSources(true)).isEmpty();
+
+        PluginApprovalGate gate = provider.createApprovalGate(Path.of("cache"), Environment.SERVER);
+        Metadata metadata = provider.getMetadata();
+        PluginArchive archive = PluginArchive.trusted(new File("plugin.jar"));
+
+        assertThat(gate.evaluate(archive, metadata)).isEqualTo(PluginApprovalGate.Status.APPROVED);
+    }
+
+    @Test
+    @DisplayName("Should provide no-op launch lifecycle hooks by default")
+    void shouldProvideNoOpLaunchHooks() {
+        DefaultsProvider provider = new DefaultsProvider();
+
+        assertThatCode(() -> {
+            provider.configure(new String[]{"-test"});
+            provider.beforeLaunch();
+            provider.afterLaunch();
+        }).doesNotThrowAnyException();
     }
 
     @Test
