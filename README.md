@@ -3,6 +3,8 @@
 </div>
 
 <p align="center">
+    <a href="https://github.com/Brov3r/Avrix/actions/workflows/gradle.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/Brov3r/Avrix/gradle.yml?branch=main&label=build"></a>
+    <a href="https://github.com/Brov3r/Avrix/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://img.shields.io/github/actions/workflow/status/Brov3r/Avrix/codeql.yml?branch=main&label=CodeQL"></a>
     <img alt="PZ Version" src="https://img.shields.io/badge/Project_Zomboid-b42+-blue">
     <img alt="Java Version" src="https://img.shields.io/badge/Java-25-orange">
     <img alt="Environment" src="https://img.shields.io/badge/Environment-Client%20%7C%20Server-green">
