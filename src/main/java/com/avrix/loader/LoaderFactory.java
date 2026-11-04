@@ -6,17 +6,21 @@ import com.avrix.core.LoaderConfig;
 import com.avrix.core.ServiceManager;
 import com.avrix.mixin.MixinTransformer;
 import com.avrix.plugins.DefaultPluginManager;
+import com.avrix.plugins.PluginApprovalService;
 import com.avrix.plugins.PluginManager;
 import com.avrix.plugins.PluginManifestParser;
 import com.avrix.plugins.PluginScanner;
 import com.avrix.provider.DefaultLoaderProvider;
 import com.avrix.provider.GameProvider;
 import com.avrix.provider.LoaderProvider;
+import com.avrix.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -81,14 +85,28 @@ public final class LoaderFactory {
                     ? gameProvider.getEnvironment()
                     : config.environment();
 
+            PluginApprovalService approvalService = new PluginApprovalService(
+                    gameProvider.getLaunchDirectory(),
+                    resolveCacheRoot(),
+                    resolvedEnvironment,
+                    System.getProperty(Constants.PLUGIN_POLICY_PROPERTY)
+            );
+
             pluginManager = new DefaultPluginManager(
                     config.withEnvironment(resolvedEnvironment),
                     classLoader,
                     gameProvider,
                     loaderProvider,
                     mixinTransformer,
-                    new PluginScanner(config),
-                    new PluginManifestParser()
+                    new PluginScanner(
+                            config,
+                            gameProvider.getLaunchDirectory(),
+                            resolvedEnvironment,
+                            System.getProperty(Constants.SERVER_NAME_PROPERTY, Constants.DEFAULT_SERVER_NAME),
+                            gameProvider.getNormalizedVersion()
+                    ),
+                    new PluginManifestParser(),
+                    approvalService
             );
             ServiceManager.register(PluginManager.class, pluginManager);
             pluginManagerRegistered = true;
@@ -120,6 +138,31 @@ public final class LoaderFactory {
             Thread.currentThread().setContextClassLoader(previousContextClassLoader);
             throw e;
         }
+    }
+
+    /**
+     * Resolves the Project Zomboid user cache directory used for the Lua hand-off files.
+     * <p>
+     * Mirrors the game resolution order: an explicit {@code -cachedir=} override first, then the Java Web Start
+     * {@code deployment.user.cachedir} property on non-Windows systems, and finally {@code ~/Zomboid}.
+     *
+     * @return normalized cache directory path
+     */
+    private static Path resolveCacheRoot() {
+        String explicitCache = System.getProperty(Constants.CACHE_DIR_PROPERTY);
+        if (explicitCache != null) {
+            return Path.of(explicitCache).toAbsolutePath().normalize();
+        }
+
+        String deploymentCache = System.getProperty("deployment.user.cachedir");
+        boolean windows = System.getProperty("os.name", "")
+                .toLowerCase(Locale.ROOT)
+                .startsWith("win");
+        if (!windows && deploymentCache != null && !deploymentCache.isBlank()) {
+            return Path.of(deploymentCache).toAbsolutePath().normalize().resolve("Zomboid");
+        }
+
+        return Path.of(System.getProperty("user.home", ".")).resolve("Zomboid");
     }
 
     private static void closeQuietly(PluginManager pluginManager) {

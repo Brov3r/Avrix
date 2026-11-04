@@ -46,8 +46,11 @@ bin/
 AGENTS.md
 
 # Workshop mod build artifacts (produced by buildWorkshopJar)
-/workshop-mod/libs/*.jar
+/workshop-mod/Contents/mods/Avrix/libs/*.jar
 
 # Avrix runtime markers (created while the game is running)
-/workshop-mod/42/avrix-active.marker
-/workshop-mod/avrix-active.marker
+/avrix/
+/avrix-active.marker
+*.marker.tmp
+/workshop-mod/Contents/mods/Avrix/42/avrix-active.marker
+/workshop-mod/Contents/mods/Avrix/avrix-active.marker

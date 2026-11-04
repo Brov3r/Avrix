@@ -21,6 +21,8 @@ class ConstantsTest {
     void shouldExposeCliFlagNames() {
         assertThat(Constants.NO_REDIRECT_FLAG_NAME).isEqualTo("--no-redirect-log");
         assertThat(Constants.STRICT_FLAG_NAME).isEqualTo("--strict");
+        assertThat(Constants.CACHE_DIR_ARGUMENT_PREFIX).isEqualTo("-cachedir=");
+        assertThat(Constants.CACHE_DIR_PROPERTY).isEqualTo("avrix.cachedir");
     }
 
     @Test

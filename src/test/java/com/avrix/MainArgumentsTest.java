@@ -14,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class MainArgumentsTest {
 
     private static final Method FILTER_LOADER_ARGUMENTS = findFilterMethod();
+    private static final Method PARSE_CACHE_DIRECTORY = findCacheDirectoryMethod();
 
     @Test
     @DisplayName("Should keep game arguments unchanged")
@@ -47,13 +48,51 @@ class MainArgumentsTest {
         assertThat(result).isEmpty();
     }
 
+    @Test
+    @DisplayName("Should parse the Project Zomboid cache directory argument")
+    void shouldParseCacheDirectory() throws Exception {
+        assertThat(cacheDirectory("-game", "-cachedir=D:\\PZData", "-debug")).isEqualTo("D:\\PZData");
+    }
+
+    @Test
+    @DisplayName("Should trim the parsed cache directory value")
+    void shouldTrimCacheDirectory() throws Exception {
+        assertThat(cacheDirectory("-cachedir=  D:\\PZ Data  ")).isEqualTo("D:\\PZ Data");
+    }
+
+    @Test
+    @DisplayName("Should keep the last cache directory override")
+    void shouldKeepLastCacheDirectory() throws Exception {
+        assertThat(cacheDirectory("-cachedir=first", "-cachedir=second")).isEqualTo("second");
+    }
+
+    @Test
+    @DisplayName("Should return null when no cache directory override is present")
+    void shouldReturnNullWithoutCacheDirectory() throws Exception {
+        assertThat(cacheDirectory("-game", "-debug")).isNull();
+    }
+
     private static String[] filter(String... args) throws Exception {
         return (String[]) FILTER_LOADER_ARGUMENTS.invoke(null, (Object) args);
+    }
+
+    private static String cacheDirectory(String... args) throws Exception {
+        return (String) PARSE_CACHE_DIRECTORY.invoke(null, (Object) args);
     }
 
     private static Method findFilterMethod() {
         try {
             Method method = Main.class.getDeclaredMethod("filterLoaderArguments", String[].class);
+            method.setAccessible(true);
+            return method;
+        } catch (NoSuchMethodException exception) {
+            throw new ExceptionInInitializerError(exception);
+        }
+    }
+
+    private static Method findCacheDirectoryMethod() {
+        try {
+            Method method = Main.class.getDeclaredMethod("parseCacheDirectory", String[].class);
             method.setAccessible(true);
             return method;
         } catch (NoSuchMethodException exception) {

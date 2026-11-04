@@ -1,5 +1,6 @@
 package com.avrix.plugins;
 
+import com.avrix.core.Environment;
 import com.avrix.core.LoaderConfig;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.DisplayName;
@@ -88,5 +89,47 @@ class PluginScannerTest {
         var disabled = new PluginScanner(config).readDisabledPlugins();
 
         assertThat(disabled).containsExactly("padded-id");
+    }
+
+    @Test
+    @DisplayName("Should merge plugins directory with active mod.info plugin archives")
+    void shouldMergePluginsDirectoryAndActiveModPlugins() throws Exception {
+        Path pluginsDir = tempDir.resolve("plugins");
+        Files.createDirectories(pluginsDir);
+        Files.createFile(pluginsDir.resolve("local.jar"));
+
+        Path gameRoot = tempDir.resolve("steamapps/common/ProjectZomboid");
+        Files.createDirectories(gameRoot);
+
+        Path userHome = tempDir.resolve("home");
+        Path modsDir = userHome.resolve("Zomboid/mods");
+        Files.createDirectories(modsDir);
+        Files.writeString(modsDir.resolve("default.txt"), """
+                mods
+                {
+                    mod = test-mod,
+                }
+                """);
+
+        Path versionDir = modsDir.resolve("TestMod/42");
+        Files.createDirectories(versionDir.resolve("media/java"));
+        Files.writeString(versionDir.resolve("mod.info"), """
+                id=test-mod
+                jarPlugins=media/java/mod.jar
+                """);
+        Files.createFile(versionDir.resolve("media/java/mod.jar"));
+
+        LoaderConfig config = LoaderConfig.defaults().withPluginsDirectory(pluginsDir);
+        List<File> result = new PluginScanner(
+                config,
+                gameRoot,
+                userHome,
+                Environment.CLIENT,
+                null
+        ).scan();
+
+        assertThat(result)
+                .extracting(File::getName)
+                .containsExactlyInAnyOrder("local.jar", "mod.jar");
     }
 }

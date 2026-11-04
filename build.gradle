@@ -141,7 +141,7 @@ tasks.register('releaseBuildJar') {
     dependsOn tasks.named('sourceJar')
 }
 
-def workshopModInfo = layout.projectDirectory.file('workshop-mod/42/mod.info')
+def workshopModInfo = layout.projectDirectory.file('workshop-mod/Contents/mods/Avrix/42/mod.info')
 def workshopModVersion = project.version.toString()
 
 tasks.register('updateWorkshopModInfo') {
@@ -177,7 +177,7 @@ tasks.register('buildWorkshopJar', Copy) {
     dependsOn tasks.named('updateWorkshopModInfo')
 
     from(tasks.named('shadowJar', ShadowJar).flatMap { it.archiveFile })
-    into(layout.projectDirectory.dir('workshop-mod/libs'))
+    into(layout.projectDirectory.dir('workshop-mod/Contents/mods/Avrix/libs'))
     rename { 'Avrix-Loader.jar' }
 }
 

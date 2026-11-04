@@ -503,6 +503,16 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
+     * Indicates that Project Zomboid Lua code relies on the runtime marker to detect an active Avrix launch.
+     *
+     * @return {@code true} always
+     */
+    @Override
+    public boolean requiresRuntimeMarker() {
+        return true;
+    }
+
+    /**
      * Intercepts and redirects {@link System#out} and {@link System#err} to the Avrix logging system.
      *
      * @throws IllegalStateException if stream redirection configuration fails

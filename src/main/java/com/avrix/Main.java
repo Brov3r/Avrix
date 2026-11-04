@@ -44,6 +44,16 @@ public final class Main {
             String[] rawArgs = (args == null) ? new String[0] : args;
             Set<String> argumentsSet = new HashSet<>(Arrays.asList(rawArgs));
 
+            String serverName = parseServerName(rawArgs);
+            if (serverName != null && !serverName.isBlank()) {
+                System.setProperty(Constants.SERVER_NAME_PROPERTY, serverName);
+            }
+
+            String cacheDirectory = parseCacheDirectory(rawArgs);
+            if (cacheDirectory != null) {
+                System.setProperty(Constants.CACHE_DIR_PROPERTY, cacheDirectory);
+            }
+
             String providerId = System.getProperty(
                     Constants.GAME_PROVIDER_PROPERTY,
                     Constants.DEFAULT_GAME_PROVIDER_ID
@@ -63,10 +73,14 @@ public final class Main {
             LoaderContext context = LoaderFactory.create(config);
             Runtime.getRuntime().addShutdownHook(new Thread(context::close, "avrix-shutdown"));
 
-            List<Path> runtimeMarkers = RuntimeMarker.activate();
-            Runtime.getRuntime().addShutdownHook(
-                    new Thread(() -> RuntimeMarker.deactivate(runtimeMarkers), "avrix-runtime-marker")
-            );
+            List<Path> runtimeMarkers = context.requiresRuntimeMarker()
+                    ? RuntimeMarker.activate()
+                    : List.of();
+            if (!runtimeMarkers.isEmpty()) {
+                Runtime.getRuntime().addShutdownHook(
+                        new Thread(() -> RuntimeMarker.deactivate(runtimeMarkers), "avrix-runtime-marker")
+                );
+            }
 
             try {
                 context.initialize();
@@ -91,6 +105,44 @@ public final class Main {
             LOGGER.error("A fatal error occurred during the application launch phase!", throwable);
             System.exit(1);
         }
+    }
+
+    /**
+     * Extracts the dedicated-server name from the game arguments.
+     *
+     * @param args original JVM command-line arguments
+     * @return server name, or {@code null} when no {@code -servername} argument is present
+     */
+    private static String parseServerName(String[] args) {
+        for (int index = 0; index < args.length; index++) {
+            String argument = args[index];
+            if ("-servername".equalsIgnoreCase(argument) && index + 1 < args.length) {
+                return args[index + 1];
+            }
+
+            String prefix = "-servername=";
+            if (argument.regionMatches(true, 0, prefix, 0, prefix.length())) {
+                return argument.substring(prefix.length());
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Extracts the Project Zomboid cache directory override from the game arguments.
+     *
+     * @param args original JVM command-line arguments
+     * @return last {@code -cachedir=} value, or {@code null} when the argument is absent
+     */
+    private static String parseCacheDirectory(String[] args) {
+        String cacheDirectory = null;
+        for (String argument : args) {
+            if (argument != null && argument.startsWith(Constants.CACHE_DIR_ARGUMENT_PREFIX)) {
+                cacheDirectory = argument.substring(Constants.CACHE_DIR_ARGUMENT_PREFIX.length()).trim();
+            }
+        }
+        return cacheDirectory;
     }
 
     /**

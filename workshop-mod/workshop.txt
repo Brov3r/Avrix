@@ -1,0 +1,10 @@
+version=1
+id=
+title=Avrix
+description=A modern Java mod loader and mixin framework for Project Zomboid.
+description=
+description=Avrix runs Java plugins from mods without repacking the game: it swaps the game classloader, applies ASM mixins, reads metadata.yml and invokes plugin entrypoints.
+description=
+description=Requires Java 25, which is bundled with Project Zomboid Build 42.
+tags=Build 42;Framework;Misc;Multiplayer
+visibility=public

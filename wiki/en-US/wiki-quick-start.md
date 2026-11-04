@@ -5,7 +5,47 @@
 In many aspects, Avrix is architecturally similar to [FabricMC](https://fabricmc.net/) for Minecraft. If you have
 experience with Fabric mod development, working with Avrix will feel immediately familiar.
 
-To launch Project Zomboid with the Avrix loader:
+### 🎮 Steam Users (Recommended)
+
+The recommended installation for Steam users is the Avrix Workshop item.
+
+1. Subscribe to the Avrix Workshop item.
+2. Open **Steam → Project Zomboid → Properties → Launch Options** and add the profile for your platform:
+
+   **Windows (Normal Launch):**
+
+   ```text
+   -pzexeconfig ..\..\workshop\content\108600\<AVRIX_WORKSHOP_ID>\mods\Avrix\libs\Avrix-windows.json
+   ```
+
+   **Linux:**
+
+   ```text
+   -pzexeconfig ../../../workshop/content/108600/<AVRIX_WORKSHOP_ID>/mods/Avrix/libs/Avrix-linux.json
+   ```
+
+   Replace `<AVRIX_WORKSHOP_ID>` with the numeric ID of the Avrix Workshop item.
+
+3. Launch Project Zomboid using **Normal Launch**.
+4. Enable any Workshop mods that contain Avrix plugins in the in-game **Mods** menu. Avrix loads `jarPlugins` only
+   from active mods. The classic `plugins/` directory still works independently.
+
+Java plugins from Workshop mods require approval. With the default `prompt` policy, Avrix shows a single Lua batch
+dialog on the main menu. Choose skip/allow/deny for each plugin, press `Apply`, and restart; rows left on skip are
+asked again next launch. See
+[Workshop Mods & Java Plugins](./loader/wiki-workshop.md) for approval files and `avrix.plugin.policy` values.
+
+> [!IMPORTANT]
+> The Workshop profile works with the normal native launcher. It does not work with Alternate Launch
+> (`ProjectZomboid64.bat` / `start-server.sh`). macOS support is not verified yet; use the manual `java -jar` model
+> until the macOS agent path is available.
+
+See [Workshop Mods & Java Plugins](./loader/wiki-workshop.md) for the `jarPlugins` format, active-mod rules, and
+troubleshooting.
+
+### 🖥️ Manual Launch (java -jar / Dedicated Server)
+
+Use this model for dedicated servers, non-Steam installations, and development. It does not require the Workshop item.
 
 1. ⬇️ Download the latest `Avrix-Loader-<version>.jar` from the GitHub
    [Releases](https://github.com/Brov3r/Avrix/releases) page.
@@ -75,7 +115,8 @@ old-mod.jar
 ```
 
 Disabled plugins are skipped and reported with the `SKIPPED` status. Use `--strict` to make plugin load failures abort
-startup instead.
+startup instead. The same list also applies to plugins discovered from active Workshop or local mods through
+`jarPlugins`.
 
 ---
 
@@ -135,6 +176,9 @@ ExamplePlugin/
 ```
 
 The loader JAR also contains the public plugin API, so a separate `avrix-api` dependency is not required.
+
+To distribute the finished plugin through Steam Workshop, see
+[Workshop Mods & Java Plugins](./loader/wiki-workshop.md).
 
 ---
 

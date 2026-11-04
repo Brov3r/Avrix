@@ -14,6 +14,7 @@
     "-Djava.security.egd=file:/dev/./urandom",
     "-XX:+UseZGC",
     "-XX:-OmitStackTraceInFastThrow",
+    "-Davrix.plugin.policy=prompt",
     "-Davrix.game.dir=."
   ]
 }

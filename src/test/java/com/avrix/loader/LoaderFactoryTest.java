@@ -55,10 +55,13 @@ class LoaderFactoryTest {
     Path tempDir;
 
     private ClassLoader originalContextClassLoader;
+    private String originalCacheDirectory;
 
     @BeforeEach
     void setUp() {
         originalContextClassLoader = Thread.currentThread().getContextClassLoader();
+        originalCacheDirectory = System.getProperty(Constants.CACHE_DIR_PROPERTY);
+        System.setProperty(Constants.CACHE_DIR_PROPERTY, tempDir.resolve("cache").toString());
         ServiceManager.clear();
         TestGameProvider.reset();
     }
@@ -70,6 +73,7 @@ class LoaderFactoryTest {
             TestGameProvider.reset();
         } finally {
             Thread.currentThread().setContextClassLoader(originalContextClassLoader);
+            restoreProperty(Constants.CACHE_DIR_PROPERTY, originalCacheDirectory);
         }
     }
 
@@ -334,6 +338,7 @@ class LoaderFactoryTest {
 
         List<String> command = List.of(
                 javaExecutable(),
+                "-D" + Constants.CACHE_DIR_PROPERTY + "=" + tempDir.resolve("child-cache"),
                 "-cp",
                 buildChildClasspath(),
                 ChildMain.class.getName(),
@@ -422,6 +427,14 @@ class LoaderFactoryTest {
                 .contains("win");
         String executable = windows ? "java.exe" : "java";
         return Path.of(System.getProperty("java.home"), "bin", executable).toString();
+    }
+
+    private static void restoreProperty(String name, String value) {
+        if (value == null) {
+            System.clearProperty(name);
+        } else {
+            System.setProperty(name, value);
+        }
     }
 
     /**

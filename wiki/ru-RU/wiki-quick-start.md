@@ -5,7 +5,48 @@
 Во многих аспектах Avrix схож с [FabricMC](https://fabricmc.net/) для Minecraft. Если у вас есть опыт разработки
 модификаций под Fabric, освоить Avrix будет максимально просто.
 
-Для запуска Project Zomboid с загрузчиком Avrix выполните следующие шаги:
+### 🎮 Пользователи Steam (рекомендуется)
+
+Рекомендуемый способ установки для Steam — Workshop-мод Avrix.
+
+1. Подпишитесь на Workshop-мод Avrix.
+2. Откройте **Steam → Project Zomboid → Свойства → Параметры запуска** и добавьте профиль для вашей платформы:
+
+   **Windows (Normal Launch):**
+
+   ```text
+   -pzexeconfig ..\..\workshop\content\108600\<AVRIX_WORKSHOP_ID>\mods\Avrix\libs\Avrix-windows.json
+   ```
+
+   **Linux:**
+
+   ```text
+   -pzexeconfig ../../../workshop/content/108600/<AVRIX_WORKSHOP_ID>/mods/Avrix/libs/Avrix-linux.json
+   ```
+
+   Замените `<AVRIX_WORKSHOP_ID>` на числовой ID Workshop-мода Avrix.
+
+3. Запустите Project Zomboid через **Normal Launch**.
+4. Включите Workshop-моды с Avrix-плагинами в игровом меню **Mods**. Avrix загружает `jarPlugins` только из
+   активных модов. Классическая папка `plugins/` при этом продолжает работать независимо.
+
+Java-плагины из Workshop-модов требуют подтверждения. При политике по умолчанию `prompt` Avrix показывает одно
+батч-окно Lua в главном меню. Выберите для каждого плагина «пропуск», «разрешить» или «запретить», нажмите `Apply`
+и перезапустите игру; строки, оставленные на пропуске, будут показаны снова при следующем запуске. Подробности о
+файлах approval и значениях `avrix.plugin.policy` — в
+[Workshop-модах и Java-плагинах](./loader/wiki-workshop.md).
+
+> [!IMPORTANT]
+> Workshop-профиль работает через обычный нативный лаунчер. Он не работает с Alternate Launch
+> (`ProjectZomboid64.bat` / `start-server.sh`). Поддержка macOS пока не проверена; используйте ручной `java -jar`,
+> пока не появится macOS-путь через агент.
+
+Подробности о формате `jarPlugins`, правилах активных модов и диагностике —
+в [Workshop-модах и Java-плагинах](./loader/wiki-workshop.md).
+
+### 🖥️ Ручной запуск (java -jar / выделенный сервер)
+
+Этот способ предназначен для выделенных серверов, не-Steam установок и разработки. Workshop-мод для него не нужен.
 
 1. ⬇️ Скачайте актуальный релиз `Avrix-Loader-<version>.jar` со
    страницы [Releases](https://github.com/Brov3r/Avrix/releases) на GitHub.
@@ -74,7 +115,8 @@ old-mod.jar
 ```
 
 Отключённые плагины пропускаются и попадают в отчёт со статусом `SKIPPED`. Флаг `--strict` заставляет загрузчик
-прерывать запуск при ошибке загрузки плагина.
+прерывать запуск при ошибке загрузки плагина. Этот же список действует и для плагинов, найденных в активных
+Workshop- или локальных модах через `jarPlugins`.
 
 ---
 
@@ -134,6 +176,9 @@ ExamplePlugin/
 ```
 
 JAR загрузчика также содержит публичный API плагинов, поэтому отдельная зависимость `avrix-api` не требуется.
+
+Чтобы распространять готовый плагин через Steam Workshop, см.
+[Workshop-моды и Java-плагины](./loader/wiki-workshop.md).
 
 ---
 

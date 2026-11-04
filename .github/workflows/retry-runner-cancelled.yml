@@ -2,7 +2,7 @@ name: Retry runner-cancelled builds
 
 on:
   schedule:
-    # Every 6 hours. GitHub hosted macOS runners occasionally fail to be
+    # Every 6 hours. GitHub hosted runners occasionally fail to be
     # acquired; each scheduled run retries the latest build if that happened.
     - cron: '0 */6 * * *'
   workflow_dispatch:

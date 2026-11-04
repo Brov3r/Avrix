@@ -1,5 +1,6 @@
 package com.avrix.plugins;
 
+import com.avrix.core.Environment;
 import com.avrix.core.LoaderConfig;
 import com.avrix.utils.Constants;
 import org.slf4j.Logger;
@@ -11,8 +12,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
@@ -26,23 +29,124 @@ public final class PluginScanner {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginScanner.class);
 
     private final LoaderConfig config;
+    private final ModInfoPluginScanner modInfoPluginScanner;
 
     /**
-     * Constructs a new plugin scanner.
+     * Constructs a new plugin scanner that only scans the plugins directory.
      *
      * @param config loader configuration providing the plugins directory and archive extension
      * @throws NullPointerException if {@code config} is null
      */
     public PluginScanner(LoaderConfig config) {
-        this.config = Objects.requireNonNull(config, "Loader config cannot be null");
+        this(config, null, Path.of(System.getProperty("user.home", ".")), null, null, null);
     }
 
     /**
-     * Scans the configured plugins directory for regular files with the configured extension.
+     * Constructs a new plugin scanner that also discovers archives from active Project Zomboid mods.
      *
-     * @return discovered plugin files, or an empty list when the directory is missing or cannot be read
+     * @param config      loader configuration providing the plugins directory and archive extension
+     * @param gameRoot    Project Zomboid installation root, or {@code null} to disable mod.info discovery
+     * @param environment active runtime environment
+     * @param serverName  dedicated-server name, or {@code null} to use the default
+     * @throws NullPointerException if {@code config} is null
+     */
+    public PluginScanner(LoaderConfig config, Path gameRoot, Environment environment, String serverName) {
+        this(config, gameRoot, Path.of(System.getProperty("user.home", ".")), environment, serverName, null);
+    }
+
+    /**
+     * Constructs a new plugin scanner that also discovers archives from active Project Zomboid mods.
+     *
+     * @param config      loader configuration providing the plugins directory and archive extension
+     * @param gameRoot    Project Zomboid installation root, or {@code null} to disable mod.info discovery
+     * @param environment active runtime environment
+     * @param serverName  dedicated-server name, or {@code null} to use the default
+     * @param gameVersion normalized game version, or {@code null} when unknown
+     * @throws NullPointerException if {@code config} is null
+     */
+    public PluginScanner(
+            LoaderConfig config,
+            Path gameRoot,
+            Environment environment,
+            String serverName,
+            String gameVersion
+    ) {
+        this(
+                config,
+                gameRoot,
+                Path.of(System.getProperty("user.home", ".")),
+                environment,
+                serverName,
+                gameVersion
+        );
+    }
+
+    PluginScanner(
+            LoaderConfig config,
+            Path gameRoot,
+            Path userHome,
+            Environment environment,
+            String serverName
+    ) {
+        this(config, gameRoot, userHome, environment, serverName, null);
+    }
+
+    PluginScanner(
+            LoaderConfig config,
+            Path gameRoot,
+            Path userHome,
+            Environment environment,
+            String serverName,
+            String gameVersion
+    ) {
+        this.config = Objects.requireNonNull(config, "Loader config cannot be null");
+        this.modInfoPluginScanner = gameRoot == null
+                ? null
+                : new ModInfoPluginScanner(
+                        gameRoot,
+                        userHome,
+                        environment,
+                        serverName,
+                        gameVersion,
+                        config.strict()
+                );
+    }
+
+    /**
+     * Scans the configured plugins directory and active Project Zomboid mods for plugin archives.
+     *
+     * @return discovered plugin files, or an empty list when no archive is found
      */
     public List<File> scan() {
+        return scanArchives().stream()
+                .map(PluginArchive::file)
+                .toList();
+    }
+
+    /**
+     * Scans the configured plugins directory and active Project Zomboid mods for plugin archives with source metadata.
+     *
+     * @return discovered plugin archives, or an empty list when no archive is found
+     */
+    public List<PluginArchive> scanArchives() {
+        Map<String, PluginArchive> discovered = new LinkedHashMap<>();
+
+        for (File plugin : scanPluginsDirectory()) {
+            addDiscovered(discovered, new PluginArchive(plugin, null, null, null, true));
+        }
+
+        if (modInfoPluginScanner != null) {
+            for (PluginArchive plugin : modInfoPluginScanner.scanArchives()) {
+                addDiscovered(discovered, plugin);
+            }
+        }
+
+        return discovered.values().stream()
+                .sorted(Comparator.comparing(archive -> archive.file().getName().toLowerCase(Locale.ROOT)))
+                .toList();
+    }
+
+    private List<File> scanPluginsDirectory() {
         Path pluginsDir = config.pluginsDirectory().toAbsolutePath().normalize();
         if (!Files.isDirectory(pluginsDir)) {
             return List.of();
@@ -61,6 +165,16 @@ public final class PluginScanner {
             LOGGER.error("Failed to enumerate plugin archives in [{}]", pluginsDir, e);
             return List.of();
         }
+    }
+
+    private static void addDiscovered(Map<String, PluginArchive> discovered, PluginArchive plugin) {
+        String key;
+        try {
+            key = plugin.file().getCanonicalPath();
+        } catch (IOException e) {
+            key = plugin.file().getAbsolutePath();
+        }
+        discovered.putIfAbsent(key, plugin);
     }
 
     /**

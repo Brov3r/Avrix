@@ -58,6 +58,15 @@ public final class LoaderContext implements AutoCloseable {
     }
 
     /**
+     * Indicates whether the active game provider requires the loader's runtime marker files.
+     *
+     * @return {@code true} if runtime markers should be created for the active provider
+     */
+    public boolean requiresRuntimeMarker() {
+        return gameProvider.requiresRuntimeMarker();
+    }
+
+    /**
      * Redirects the game output streams to the loader logging subsystem.
      */
     public void redirectSystemStreams() {

@@ -163,6 +163,18 @@ public interface GameProvider {
     }
 
     /**
+     * Indicates whether this provider requires the loader's runtime marker files.
+     * <p>
+     * Providers whose game runtime can detect an active Avrix launch through
+     * {@link com.avrix.core.RuntimeMarker} should return {@code true}.
+     *
+     * @return {@code true} if runtime markers should be created for this provider
+     */
+    public default boolean requiresRuntimeMarker() {
+        return false;
+    }
+
+    /**
      * Redirects default output and error streams to the logger.
      */
     public default void redirectSystemStreamsToLogger() {

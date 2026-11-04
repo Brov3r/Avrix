@@ -9,8 +9,9 @@ This documentation is up to date for the following versions:
 - ☕ **Java Runtime:** `JDK 25+`
 
 > [!IMPORTANT]
-> Running and developing plugins for Avrix requires **Java Development Kit (JDK) 25 or higher**. Older Java versions are
-> not supported.
+> Developing plugins and using the standalone `java -jar` loader requires **Java Development Kit (JDK) 25 or higher**.
+> Older Java versions are not supported. Steam Workshop users use the Java 25 runtime bundled with Project Zomboid and
+> do not need a separate JDK.
 
 ---
 
@@ -26,11 +27,14 @@ Key concepts used across this documentation:
   domain. JVM internals, logging, and loader-owned libraries are delegated to the parent classloader.
 - **ServiceManager:** A thread-safe, type-safe service registry (Service Locator) that binds interface contracts to
   runtime implementations.
+- **Workshop Mod:** A Project Zomboid mod distributed through Steam Workshop. A Workshop mod can declare Avrix Java
+  plugins with the `jarPlugins` key in `mod.info`.
 
 ---
 
 ### 📁 Documentation Sections
 
 - [🏃 Quick Start (Launching & Development)](wiki-quick-start.md)
+- [🛠️ Workshop Mods & Java Plugins](./loader/wiki-workshop.md)
 - [⚡ Bytecode Transformation & Mixins](./loader/wiki-mixin.md)
 - [🔧 Service Architecture & ServiceManager](./loader/wiki-services.md)

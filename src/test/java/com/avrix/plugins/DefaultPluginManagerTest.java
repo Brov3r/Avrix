@@ -1001,6 +1001,97 @@ class DefaultPluginManagerTest {
 
     }
 
+    @Test
+    @DisplayName("Should prefer a mod archive over the plugins directory when plugin IDs collide")
+    void shouldPreferModArchiveOverPluginsDirectoryForDuplicateId() throws Exception {
+        Metadata metadata = createMeta("duplicate-plugin", "1.0.0");
+        Files.createDirectories(pluginsDirectory);
+        createPluginJarOnDisk(pluginsDirectory.resolve("folder-plugin.jar"), metadata);
+
+        Path gameRoot = tempRoot.resolve("steamapps/common/ProjectZomboid");
+        Files.createDirectories(gameRoot);
+
+        Path userHome = tempRoot.resolve("home");
+        Path versionDirectory = userHome.resolve("Zomboid/mods/TestMod/42");
+        Files.createDirectories(versionDirectory.resolve("media/java"));
+        Files.writeString(userHome.resolve("Zomboid/mods/default.txt"), """
+                mods
+                {
+                    mod = test-mod,
+                }
+                """);
+        Files.writeString(versionDirectory.resolve("mod.info"), """
+                id=test-mod
+                jarPlugins=media/java/mod-plugin.jar
+                """);
+
+        Path modJar = versionDirectory.resolve("media/java/mod-plugin.jar");
+        createPluginJarOnDisk(modJar, metadata);
+
+        LoaderConfig config = configWithEnvironment(Environment.BOTH);
+        DefaultPluginManager priorityManager = new DefaultPluginManager(
+                config,
+                classLoader,
+                gameProvider,
+                loaderProvider,
+                mixinRegistrar,
+                new PluginScanner(config, gameRoot, userHome, Environment.BOTH, null),
+                new PluginManifestParser()
+        );
+        priorityManager.init();
+        priorityManager.loadPlugins();
+
+        assertThat(priorityManager.getPlugins()).containsKey("duplicate-plugin");
+        assertThat(priorityManager.getPlugins().get("duplicate-plugin").getPluginFile().orElseThrow())
+                .isEqualTo(modJar.toFile());
+    }
+
+    @Test
+    @DisplayName("Should skip a mod plugin while approval is pending")
+    void shouldSkipPendingModPlugin() throws Exception {
+        Path gameRoot = tempRoot.resolve("steamapps/common/ProjectZomboid");
+        Files.createDirectories(gameRoot);
+
+        Path userHome = tempRoot.resolve("home");
+        Path versionDirectory = userHome.resolve("Zomboid/mods/ApprovalMod/42");
+        Files.createDirectories(versionDirectory.resolve("media/java"));
+        Files.writeString(userHome.resolve("Zomboid/mods/default.txt"), """
+                mods
+                {
+                    mod = approval-mod,
+                }
+                """);
+        Files.writeString(versionDirectory.resolve("mod.info"), """
+                id=approval-mod
+                jarPlugins=media/java/approval-plugin.jar
+                """);
+
+        Metadata metadata = createMeta("approval-plugin", "1.0.0");
+        createPluginJarOnDisk(versionDirectory.resolve("media/java/approval-plugin.jar"), metadata);
+
+        LoaderConfig config = configWithEnvironment(Environment.BOTH);
+        PluginApprovalService approvalService = new PluginApprovalService(
+                gameRoot, userHome.resolve("Zomboid"), Environment.BOTH, "prompt"
+        );
+        DefaultPluginManager approvalManager = new DefaultPluginManager(
+                config,
+                classLoader,
+                gameProvider,
+                loaderProvider,
+                mixinRegistrar,
+                new PluginScanner(config, gameRoot, userHome, Environment.BOTH, null),
+                new PluginManifestParser(),
+                approvalService
+        );
+        approvalManager.init();
+        approvalManager.loadPlugins();
+
+        Path pendingFile = gameRoot.resolve("avrix/plugin-pending.txt");
+        assertThat(approvalManager.getPlugins()).doesNotContainKey("approval-plugin");
+        assertThat(pendingFile).isRegularFile();
+        assertThat(Files.readString(pendingFile)).contains("ENTRY", "approval-mod", "approval-plugin");
+    }
+
     @Nested
     @DisplayName("Conflict Resolution Tests")
     class ConflictTests {
