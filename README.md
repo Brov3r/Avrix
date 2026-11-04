@@ -15,6 +15,8 @@
 **Avrix** is a modern, modular Java-based mod loader for Project Zomboid (client and dedicated server), powered by
 on-the-fly mixin bytecode transformation.
 
+**Steam Workshop:** [Avrix on Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3833849848)
+
 ## ✨ Features
 
 * **Mixin Technology:** Native support for Sponge-style mixin annotations powered
@@ -36,7 +38,8 @@ configuration, and plugin development:
 
 ## 🚀 Quick Start
 
-1. ⬇️ Download the latest executable JAR from the [Releases Page](https://github.com/Brov3r/Avrix/releases).
+1. ⬇️ Download the latest executable JAR from the [Releases Page](https://github.com/Brov3r/Avrix/releases), or
+   subscribe to the [Steam Workshop item](https://steamcommunity.com/sharedfiles/filedetails/?id=3833849848).
 2. 📁 Place the `Avrix-Loader-<version>.jar` file into the root folder of your Project Zomboid installation (client or
    dedicated server).
 3. 💡 Launch the game via the command line or custom startup script:

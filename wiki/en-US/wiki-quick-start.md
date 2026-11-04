@@ -15,16 +15,17 @@ The recommended installation for Steam users is the Avrix Workshop item.
    **Windows (Normal Launch):**
 
    ```text
-   -pzexeconfig ..\..\workshop\content\108600\<AVRIX_WORKSHOP_ID>\mods\Avrix\libs\Avrix-windows.json
+   -pzexeconfig ..\..\workshop\content\108600\3833849848\mods\Avrix\libs\Avrix-windows.json
    ```
 
    **Linux:**
 
    ```text
-   -pzexeconfig ../../../workshop/content/108600/<AVRIX_WORKSHOP_ID>/mods/Avrix/libs/Avrix-linux.json
+   -pzexeconfig ../../../workshop/content/108600/3833849848/mods/Avrix/libs/Avrix-linux.json
    ```
 
-   Replace `<AVRIX_WORKSHOP_ID>` with the numeric ID of the Avrix Workshop item.
+   The Avrix Workshop item ID is `3833849848`
+   ([Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3833849848)).
 
 3. Launch Project Zomboid using **Normal Launch**.
 4. Enable any Workshop mods that contain Avrix plugins in the in-game **Mods** menu. Avrix loads `jarPlugins` only

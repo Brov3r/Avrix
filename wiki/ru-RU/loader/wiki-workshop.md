@@ -36,16 +36,17 @@ mods/Avrix/
 **Windows (Normal Launch):**
 
 ```text
--pzexeconfig ..\..\workshop\content\108600\<AVRIX_WORKSHOP_ID>\mods\Avrix\libs\Avrix-windows.json
+-pzexeconfig ..\..\workshop\content\108600\3833849848\mods\Avrix\libs\Avrix-windows.json
 ```
 
 **Linux:**
 
 ```text
--pzexeconfig ../../../workshop/content/108600/<AVRIX_WORKSHOP_ID>/mods/Avrix/libs/Avrix-linux.json
+-pzexeconfig ../../../workshop/content/108600/3833849848/mods/Avrix/libs/Avrix-linux.json
 ```
 
-Замените `<AVRIX_WORKSHOP_ID>` на числовой ID Workshop-мода Avrix.
+ID Workshop-мода Avrix — `3833849848`
+([Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3833849848)).
 
 `-pzexeconfig` — аргумент лаунчера. Если вы добавляете JVM-аргументы, указывайте их до разделителя `--`, который
 использует Project Zomboid.

@@ -36,16 +36,17 @@ After subscribing, add the profile for your platform to **Steam → Project Zomb
 **Windows (Normal Launch):**
 
 ```text
--pzexeconfig ..\..\workshop\content\108600\<AVRIX_WORKSHOP_ID>\mods\Avrix\libs\Avrix-windows.json
+-pzexeconfig ..\..\workshop\content\108600\3833849848\mods\Avrix\libs\Avrix-windows.json
 ```
 
 **Linux:**
 
 ```text
--pzexeconfig ../../../workshop/content/108600/<AVRIX_WORKSHOP_ID>/mods/Avrix/libs/Avrix-linux.json
+-pzexeconfig ../../../workshop/content/108600/3833849848/mods/Avrix/libs/Avrix-linux.json
 ```
 
-Replace `<AVRIX_WORKSHOP_ID>` with the numeric ID of the Avrix Workshop item.
+The Avrix Workshop item ID is `3833849848`
+([Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3833849848)).
 
 `-pzexeconfig` is a launcher argument. If you add JVM arguments, keep them before the `--` separator used by Project
 Zomboid.

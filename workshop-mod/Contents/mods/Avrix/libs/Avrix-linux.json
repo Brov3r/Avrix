@@ -1,7 +1,7 @@
 {
   "mainClass": "com/avrix/Main",
   "classpath": [
-    "../../../workshop/content/108600/<WORKSHOP_ID>/mods/Avrix/libs/Avrix-Loader.jar"
+    "../../../workshop/content/108600/3833849848/mods/Avrix/libs/Avrix-Loader.jar"
   ],
   "vmArgs": [
     "-Djava.awt.headless=true",

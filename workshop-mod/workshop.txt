@@ -1,5 +1,5 @@
 version=1
-id=
+id=3833849848
 title=Avrix
 description=A modern Java mod loader and mixin framework for Project Zomboid.
 description=
