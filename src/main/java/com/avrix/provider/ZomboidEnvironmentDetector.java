@@ -78,24 +78,6 @@ final class ZomboidEnvironmentDetector {
             "\"installdir\"\\s+\"([^\"]*)\""
     );
 
-    private final String osName;
-
-    /**
-     * Constructs a detector for the current JVM operating system.
-     */
-    ZomboidEnvironmentDetector() {
-        this(System.getProperty("os.name", ""));
-    }
-
-    /**
-     * Constructs a detector for the provided operating-system name.
-     *
-     * @param osName operating-system name, for example {@code Windows 11} or {@code Linux}
-     */
-    ZomboidEnvironmentDetector(String osName) {
-        this.osName = (osName == null ? "" : osName).toLowerCase(Locale.ROOT);
-    }
-
     /**
      * Detects the environment of the provided Project Zomboid installation.
      *
@@ -427,29 +409,11 @@ final class ZomboidEnvironmentDetector {
         return containsAnyFileName(launchDirectory, clientMarkers());
     }
 
-    private List<String> serverMarkers() {
-        if (osName.contains("win")) {
-            return WINDOWS_SERVER_MARKERS;
-        }
-        if (osName.contains("linux")) {
-            return LINUX_SERVER_MARKERS;
-        }
-        if (osName.contains("mac")) {
-            return List.of();
-        }
+    private static List<String> serverMarkers() {
         return combined(WINDOWS_SERVER_MARKERS, LINUX_SERVER_MARKERS);
     }
 
-    private List<String> clientMarkers() {
-        if (osName.contains("win")) {
-            return WINDOWS_CLIENT_MARKERS;
-        }
-        if (osName.contains("linux")) {
-            return LINUX_CLIENT_MARKERS;
-        }
-        if (osName.contains("mac")) {
-            return MAC_CLIENT_MARKERS;
-        }
+    private static List<String> clientMarkers() {
         return combined(combined(WINDOWS_CLIENT_MARKERS, LINUX_CLIENT_MARKERS), MAC_CLIENT_MARKERS);
     }
 

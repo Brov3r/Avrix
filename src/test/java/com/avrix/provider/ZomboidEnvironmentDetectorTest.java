@@ -36,7 +36,7 @@ class ZomboidEnvironmentDetectorTest {
     void shouldDetectLinuxServerByStartScript() throws Exception {
         Files.createFile(tempDir.resolve("start-server.sh"));
 
-        Environment environment = new ZomboidEnvironmentDetector("Linux").detect(tempDir);
+        Environment environment = new ZomboidEnvironmentDetector().detect(tempDir);
 
         assertThat(environment).isEqualTo(Environment.SERVER);
     }
@@ -46,7 +46,7 @@ class ZomboidEnvironmentDetectorTest {
     void shouldDetectLinuxClientByShellLauncher() throws Exception {
         Files.createFile(tempDir.resolve("ProjectZomboid64.sh"));
 
-        Environment environment = new ZomboidEnvironmentDetector("Linux").detect(tempDir);
+        Environment environment = new ZomboidEnvironmentDetector().detect(tempDir);
 
         assertThat(environment).isEqualTo(Environment.CLIENT);
     }
@@ -58,7 +58,7 @@ class ZomboidEnvironmentDetectorTest {
         Files.createDirectories(bundle.resolve("Contents"));
         Files.createFile(bundle.resolve("Contents").resolve("Info.plist"));
 
-        Environment environment = new ZomboidEnvironmentDetector("Mac OS X").detect(tempDir);
+        Environment environment = new ZomboidEnvironmentDetector().detect(tempDir);
 
         assertThat(environment).isEqualTo(Environment.CLIENT);
     }
@@ -71,7 +71,7 @@ class ZomboidEnvironmentDetectorTest {
                 "{\"mainClass\":\"zombie\\/network\\/GameServer\"}"
         );
 
-        Environment environment = new ZomboidEnvironmentDetector("Windows 11").detect(tempDir);
+        Environment environment = new ZomboidEnvironmentDetector().detect(tempDir);
 
         assertThat(environment).isEqualTo(Environment.SERVER);
     }
@@ -84,7 +84,7 @@ class ZomboidEnvironmentDetectorTest {
                 "\"jre64/bin/java.exe\" -cp java/projectzomboid.jar zombie.network.GameServer"
         );
 
-        Environment environment = new ZomboidEnvironmentDetector("Windows 11").detect(tempDir);
+        Environment environment = new ZomboidEnvironmentDetector().detect(tempDir);
 
         assertThat(environment).isEqualTo(Environment.SERVER);
     }
@@ -99,7 +99,7 @@ class ZomboidEnvironmentDetectorTest {
         Files.createFile(tempDir.resolve("projectzomboid.jar"));
         Files.createDirectories(tempDir.resolve("jre64"));
 
-        Environment environment = new ZomboidEnvironmentDetector("Windows 11").detect(tempDir);
+        Environment environment = new ZomboidEnvironmentDetector().detect(tempDir);
 
         assertThat(environment).isEqualTo(Environment.CLIENT);
     }
@@ -110,7 +110,7 @@ class ZomboidEnvironmentDetectorTest {
         Path serverDirectory = tempDir.resolve("pzserver");
         Files.createDirectories(serverDirectory);
 
-        Environment environment = new ZomboidEnvironmentDetector("Linux").detect(serverDirectory);
+        Environment environment = new ZomboidEnvironmentDetector().detect(serverDirectory);
 
         assertThat(environment).isEqualTo(Environment.SERVER);
     }
@@ -120,7 +120,7 @@ class ZomboidEnvironmentDetectorTest {
     void shouldMatchMarkerFilesIgnoringCase() throws Exception {
         Files.createFile(tempDir.resolve("STARTSERVER64.BAT"));
 
-        Environment environment = new ZomboidEnvironmentDetector("Windows 11").detect(tempDir);
+        Environment environment = new ZomboidEnvironmentDetector().detect(tempDir);
 
         assertThat(environment).isEqualTo(Environment.SERVER);
     }
@@ -131,7 +131,7 @@ class ZomboidEnvironmentDetectorTest {
         previousEnvironment = System.getProperty("avrix.environment");
         System.setProperty("avrix.environment", "server");
 
-        Environment environment = new ZomboidEnvironmentDetector("Windows 11").detect(tempDir);
+        Environment environment = new ZomboidEnvironmentDetector().detect(tempDir);
 
         assertThat(environment).isEqualTo(Environment.SERVER);
     }
@@ -146,7 +146,7 @@ class ZomboidEnvironmentDetectorTest {
                 "\"AppState\"\n{\n\t\"installdir\"\t\t\"ProjectZomboid\"\n}\n"
         );
 
-        Environment environment = new ZomboidEnvironmentDetector("Windows 11").detect(install);
+        Environment environment = new ZomboidEnvironmentDetector().detect(install);
 
         assertThat(environment).isEqualTo(Environment.CLIENT);
     }
@@ -162,7 +162,7 @@ class ZomboidEnvironmentDetectorTest {
                 "\"AppState\"\n{\n\t\"installdir\"\t\t\"Project Zomboid Dedicated Server\"\n}\n"
         );
 
-        Environment environment = new ZomboidEnvironmentDetector("Windows 11").detect(install);
+        Environment environment = new ZomboidEnvironmentDetector().detect(install);
 
         assertThat(environment).isEqualTo(Environment.SERVER);
     }
