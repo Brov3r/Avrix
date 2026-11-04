@@ -288,13 +288,13 @@ class DefaultPluginManagerEdgeTest {
             DefaultPluginManager manager = createManager(false);
             manager.init();
 
-            createPluginJar(pluginsDirectory.resolve("id-disabled.jar"), "UPPER-ID", "");
+            createPluginJar(pluginsDirectory.resolve("id-disabled.jar"), "upper-id", "");
             createPluginJar(pluginsDirectory.resolve("name-disabled.JAR"), "name-upper", "");
             createPluginJar(pluginsDirectory.resolve("enabled-plugin.jar"), "enabled-plugin", "");
 
             Files.writeString(pluginsDirectory.resolve(Constants.DISABLED_PLUGINS_FILE_NAME), """
                     # Disabled entries are case-insensitive
-                    upper-id
+                    UPPER-ID
                     NAME-DISABLED.JAR
                     """);
 
@@ -302,11 +302,11 @@ class DefaultPluginManagerEdgeTest {
 
             assertThat(manager.getPlugins())
                     .containsKey("enabled-plugin")
-                    .doesNotContainKeys("UPPER-ID", "name-upper");
+                    .doesNotContainKeys("upper-id", "name-upper");
             assertThat(manager.getLoadResults())
                     .extracting(PluginLoadResult::pluginId, PluginLoadResult::status)
                     .contains(
-                            tuple("UPPER-ID", PluginLoadStatus.SKIPPED),
+                            tuple("upper-id", PluginLoadStatus.SKIPPED),
                             tuple("name-disabled.JAR", PluginLoadStatus.SKIPPED),
                             tuple("enabled-plugin", PluginLoadStatus.LOADED)
                     );
@@ -366,7 +366,7 @@ class DefaultPluginManagerEdgeTest {
                 loaderProvider,
                 mixinRegistrar,
                 new PluginScanner(config),
-                new PluginManifestParser()
+                new PluginManifestParser(config.strict())
         );
     }
 

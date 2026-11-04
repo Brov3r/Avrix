@@ -44,9 +44,10 @@ class MetadataTest {
             var dependencies = Map.of("core-plugin", ">=1.0.0");
             var authors = List.of("Author One", "Author Two");
             var contacts = List.of("dev@example.com");
-            var mixins = List.of("mixins.core.class");
+            var mixins = List.of("com.example.mixins.CoreMixin");
             var loadBefore = List.of("ui-plugin", "audio-plugin");
             var loadAfter = List.of("network-engine");
+            var conflicts = List.of("legacy-plugin");
 
             var meta = new Metadata(
                     SCHEMA,
@@ -62,7 +63,8 @@ class MetadataTest {
                     loadBefore,
                     loadAfter,
                     "com.example.PluginMain",
-                    mixins
+                    mixins,
+                    conflicts
             );
 
             assertThat(meta.schema()).isEqualTo(SCHEMA);
@@ -78,7 +80,8 @@ class MetadataTest {
             assertThat(meta.loadBefore()).containsExactly("ui-plugin", "audio-plugin");
             assertThat(meta.loadAfter()).containsExactly("network-engine");
             assertThat(meta.entrypoint()).isEqualTo("com.example.PluginMain");
-            assertThat(meta.mixins()).containsExactly("mixins.core.class");
+            assertThat(meta.mixins()).containsExactly("com.example.mixins.CoreMixin");
+            assertThat(meta.conflicts()).containsExactly("legacy-plugin");
         }
 
         @Test
@@ -98,7 +101,8 @@ class MetadataTest {
                     List.of("target-after-me"),
                     List.of("target-before-me"),
                     "com.example.Main",
-                    List.of("mixin.json")
+                    List.of("com.example.mixin.ExampleMixin"),
+                    List.of("conflicting-plugin")
             );
 
             assertThatThrownBy(() -> meta.authors().add("Unauthorized"))
@@ -113,6 +117,8 @@ class MetadataTest {
                     .isInstanceOf(UnsupportedOperationException.class);
             assertThatThrownBy(() -> meta.mixins().remove(0))
                     .isInstanceOf(UnsupportedOperationException.class);
+            assertThatThrownBy(() -> meta.conflicts().add("another-conflict"))
+                    .isInstanceOf(UnsupportedOperationException.class);
         }
 
         @Test
@@ -124,6 +130,7 @@ class MetadataTest {
                     null,
                     "plugin-id",
                     "1.0.0",
+                    null,
                     null,
                     null,
                     null,
@@ -145,6 +152,60 @@ class MetadataTest {
             assertThat(meta.loadBefore()).isEmpty();
             assertThat(meta.loadAfter()).isEmpty();
             assertThat(meta.mixins()).isEmpty();
+            assertThat(meta.conflicts()).isEmpty();
+        }
+    }
+
+    @Nested
+    @DisplayName("Value Normalization Tests")
+    class NormalizationTests {
+
+        @Test
+        @DisplayName("Should trim scalar fields, list entries, and dependency keys/constraints")
+        void shouldTrimValues() {
+            var meta = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("  padded-id  ")
+                    .name("  Padded Name  ")
+                    .version("  1.0.0  ")
+                    .description("  Description  ")
+                    .license("  MIT  ")
+                    .entrypoint("  com.example.Main  ")
+                    .authors(List.of("  Author  "))
+                    .contacts(List.of("  https://example.com  "))
+                    .loadBefore(List.of("  dependent  "))
+                    .loadAfter(List.of("  dependency  "))
+                    .mixins(List.of("  com.example.Mixin  "))
+                    .conflicts(List.of("  legacy-plugin  "))
+                    .addDependency("  core-lib  ", "  >=1.0.0  ")
+                    .build();
+
+            assertThat(meta.id()).isEqualTo("padded-id");
+            assertThat(meta.name()).isEqualTo("Padded Name");
+            assertThat(meta.version()).isEqualTo("1.0.0");
+            assertThat(meta.description()).isEqualTo("Description");
+            assertThat(meta.license()).isEqualTo("MIT");
+            assertThat(meta.entrypoint()).isEqualTo("com.example.Main");
+            assertThat(meta.authors()).containsExactly("Author");
+            assertThat(meta.contacts()).containsExactly("https://example.com");
+            assertThat(meta.loadBefore()).containsExactly("dependent");
+            assertThat(meta.loadAfter()).containsExactly("dependency");
+            assertThat(meta.mixins()).containsExactly("com.example.Mixin");
+            assertThat(meta.conflicts()).containsExactly("legacy-plugin");
+            assertThat(meta.dependencies()).containsEntry("core-lib", ">=1.0.0");
+        }
+
+        @Test
+        @DisplayName("Should reject identifiers containing internal whitespace")
+        void shouldRejectIdentifierWithInternalWhitespace() {
+            assertThatThrownBy(() -> new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("bad id")
+                    .name("Name")
+                    .version("1.0.0")
+                    .build())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("Plugin 'id' cannot contain whitespace");
         }
     }
 
@@ -175,6 +236,7 @@ class MetadataTest {
             assertThat(meta.loadBefore()).isEmpty();
             assertThat(meta.loadAfter()).isEmpty();
             assertThat(meta.mixins()).isEmpty();
+            assertThat(meta.conflicts()).isEmpty();
         }
 
         @Test
@@ -258,6 +320,7 @@ class MetadataTest {
             var mutableDependencies = new HashMap<>(Map.of("dep-a", "1.0.0"));
             var mutableLoadBefore = new ArrayList<>(List.of("plugin-b"));
             var mutableLoadAfter = new ArrayList<>(List.of("plugin-a"));
+            var mutableConflicts = new ArrayList<>(List.of("legacy-plugin"));
 
             var builder = new Metadata.Builder()
                     .schema(SCHEMA)
@@ -267,12 +330,14 @@ class MetadataTest {
                     .authors(mutableAuthors)
                     .dependencies(mutableDependencies)
                     .loadBefore(mutableLoadBefore)
-                    .loadAfter(mutableLoadAfter);
+                    .loadAfter(mutableLoadAfter)
+                    .conflicts(mutableConflicts);
 
             mutableAuthors.add("Intruder");
             mutableDependencies.put("malicious-dep", "6.6.6");
             mutableLoadBefore.add("malicious-before");
             mutableLoadAfter.add("malicious-after");
+            mutableConflicts.add("malicious-conflict");
 
             var meta = builder.build();
 
@@ -280,6 +345,7 @@ class MetadataTest {
             assertThat(meta.dependencies()).doesNotContainKey("malicious-dep");
             assertThat(meta.loadBefore()).containsExactly("plugin-b");
             assertThat(meta.loadAfter()).containsExactly("plugin-a");
+            assertThat(meta.conflicts()).containsExactly("legacy-plugin");
         }
 
         @Test
@@ -300,8 +366,10 @@ class MetadataTest {
                     .addLoadBefore("plugin-z")
                     .loadAfter("core-engine", "auth-service")
                     .addLoadAfter("logger-service")
-                    .mixins("mixin.a.json", "mixin.b.json")
-                    .addMixin("mixin.c.json")
+                    .mixins("com.example.mixin.MixinA", "com.example.mixin.MixinB")
+                    .addMixin("com.example.mixin.MixinC")
+                    .conflicts("legacy-plugin", "old-api")
+                    .addConflict("broken-mod")
                     .build();
 
             assertThat(meta.authors()).containsExactly("Author A", "Author B", "Author C");
@@ -311,7 +379,12 @@ class MetadataTest {
                     .containsEntry("lib-ext", "^1.0.0");
             assertThat(meta.loadBefore()).containsExactly("plugin-x", "plugin-y", "plugin-z");
             assertThat(meta.loadAfter()).containsExactly("core-engine", "auth-service", "logger-service");
-            assertThat(meta.mixins()).containsExactly("mixin.a.json", "mixin.b.json", "mixin.c.json");
+            assertThat(meta.mixins()).containsExactly(
+                    "com.example.mixin.MixinA",
+                    "com.example.mixin.MixinB",
+                    "com.example.mixin.MixinC"
+            );
+            assertThat(meta.conflicts()).containsExactly("legacy-plugin", "old-api", "broken-mod");
         }
 
         @Test
@@ -340,6 +413,9 @@ class MetadataTest {
                     .mixins((String[]) null)
                     .addMixin(null)
                     .addMixin("   ")
+                    .conflicts((String[]) null)
+                    .addConflict(null)
+                    .addConflict("   ")
                     .build();
 
             assertThat(meta.authors()).isEmpty();
@@ -348,6 +424,7 @@ class MetadataTest {
             assertThat(meta.loadBefore()).isEmpty();
             assertThat(meta.loadAfter()).isEmpty();
             assertThat(meta.mixins()).isEmpty();
+            assertThat(meta.conflicts()).isEmpty();
         }
     }
 
@@ -389,7 +466,7 @@ class MetadataTest {
                       - upstream-plugin
                       - base-runtime
                     mixins:
-                      - mixins.parsed.class
+                      - com.example.mixins.ParsedMixin
                     """.formatted(SCHEMA);
 
             var node = loadYamlNode(yaml);
@@ -410,7 +487,7 @@ class MetadataTest {
                     .containsEntry("optional-dep", "^2.3");
             assertThat(meta.loadBefore()).containsExactly("downstream-plugin");
             assertThat(meta.loadAfter()).containsExactly("upstream-plugin", "base-runtime");
-            assertThat(meta.mixins()).containsExactly("mixins.parsed.class");
+            assertThat(meta.mixins()).containsExactly("com.example.mixins.ParsedMixin");
         }
 
         @Test

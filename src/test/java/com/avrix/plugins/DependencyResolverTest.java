@@ -1,10 +1,14 @@
 package com.avrix.plugins;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -49,6 +53,117 @@ class DependencyResolverTest {
     }
 
     @Test
+    @DisplayName("Should reject identifiers that differ only by case")
+    void shouldRejectCaseInsensitiveDuplicateIdentifiers() {
+        var resolver = new DependencyResolver(List.of());
+
+        assertThatThrownBy(() -> resolver.resolve(List.of(
+                meta("Plugin", "1.0.0"),
+                meta("plugin", "1.0.0")
+        )))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Duplicate plugin identifier [plugin] (case-insensitive conflict with [Plugin])");
+    }
+
+    @Test
+    @DisplayName("Should warn and continue when a declared conflict is installed in lenient mode")
+    void shouldWarnOnConflictInLenientMode() {
+        var pluginA = builder("plugin-a", "1.0.0").conflicts("plugin-b").build();
+        var pluginB = meta("plugin-b", "1.0.0");
+
+        Logger logger = (Logger) LoggerFactory.getLogger(DependencyResolver.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+
+        try {
+            var result = new DependencyResolver(List.of()).resolve(List.of(pluginA, pluginB));
+            assertThat(result).extracting(Metadata::id).containsExactlyInAnyOrder("plugin-a", "plugin-b");
+        } finally {
+            logger.detachAppender(appender);
+        }
+
+        assertThat(appender.list).anySatisfy(event -> assertThat(event.getFormattedMessage())
+                .contains("Plugin [plugin-a] conflicts with installed plugin [plugin-b]"));
+    }
+
+    @Test
+    @DisplayName("Should reject a declared conflict in strict mode")
+    void shouldRejectConflictInStrictMode() {
+        var pluginA = builder("plugin-a", "1.0.0").conflicts("plugin-b").build();
+        var pluginB = meta("plugin-b", "1.0.0");
+
+        assertThatThrownBy(() -> new DependencyResolver(List.of(), true).resolve(List.of(pluginA, pluginB)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Plugin [plugin-a] conflicts with installed plugin [plugin-b]");
+    }
+
+    @Test
+    @DisplayName("Should match conflicts case-insensitively")
+    void shouldMatchConflictsCaseInsensitively() {
+        var pluginA = builder("plugin-a", "1.0.0").conflicts("PLUGIN-B").build();
+        var pluginB = meta("plugin-b", "1.0.0");
+
+        assertThatThrownBy(() -> new DependencyResolver(List.of(), true).resolve(List.of(pluginA, pluginB)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Plugin [plugin-a] conflicts with installed plugin [plugin-b]");
+    }
+
+    @Test
+    @DisplayName("Should ignore conflicts with plugins that are not installed")
+    void shouldIgnoreConflictsWithMissingPlugins() {
+        var pluginA = builder("plugin-a", "1.0.0").conflicts("missing-plugin").build();
+        var pluginB = meta("plugin-b", "1.0.0");
+
+        var result = new DependencyResolver(List.of(), true).resolve(List.of(pluginA, pluginB));
+
+        assertThat(result).extracting(Metadata::id).containsExactlyInAnyOrder("plugin-a", "plugin-b");
+    }
+
+    @Test
+    @DisplayName("Should reject a self-referencing dependency with a dedicated message")
+    void shouldRejectSelfDependency() {
+        var resolver = new DependencyResolver(List.of());
+        var plugin = withDependencies("self", "1.0.0", Map.of("self", ">=1.0.0"));
+
+        assertThatThrownBy(() -> resolver.resolve(List.of(plugin)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Plugin [self] cannot depend on itself");
+    }
+
+    @Test
+    @DisplayName("Should resolve dependencies and load order ignoring identifier case")
+    void shouldResolveIdentifiersIgnoringCase() {
+        var resolver = new DependencyResolver(List.of());
+
+        var dependencyConsumer = withDependencies("consumer", "1.0.0", Map.of("MyPlugin", ">=1.0.0"));
+        var dependencyProvider = meta("myplugin", "1.0.0");
+        var dependencyOrder = resolver.resolve(List.of(dependencyConsumer, dependencyProvider));
+
+        assertThat(dependencyOrder).extracting(Metadata::id).containsExactly("myplugin", "consumer");
+
+        var orderConsumer = builder("order-consumer", "1.0.0").loadAfter("Plugin-B").build();
+        var orderProvider = meta("plugin-b", "1.0.0");
+        var order = resolver.resolve(List.of(orderConsumer, orderProvider));
+
+        assertThat(order).extracting(Metadata::id).containsExactly("plugin-b", "order-consumer");
+    }
+
+    @Test
+    @DisplayName("Should reject self-referencing soft load ordering")
+    void shouldRejectSelfSoftOrdering() {
+        var resolver = new DependencyResolver(List.of());
+
+        assertThatThrownBy(() -> resolver.resolve(List.of(builder("self", "1.0.0").loadAfter("self").build())))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Plugin [self] cannot declare loadAfter itself");
+
+        assertThatThrownBy(() -> resolver.resolve(List.of(builder("self", "1.0.0").loadBefore("self").build())))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Plugin [self] cannot declare loadBefore itself");
+    }
+
+    @Test
     @DisplayName("Should reject both reserved core identifiers when no core descriptor is registered")
     void shouldRejectReservedIdentifiersWithoutCoreRegistration() {
         var resolver = new DependencyResolver(List.of());
@@ -84,6 +199,17 @@ class DependencyResolverTest {
         assertThatThrownBy(() -> resolver.resolve(List.of(orphan)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Plugin [orphan] depends on missing component [missing]");
+    }
+
+    @Test
+    @DisplayName("Should report an invalid constraint before a missing dependency")
+    void shouldValidateConstraintBeforeMissingDependency() {
+        var resolver = new DependencyResolver(List.of());
+        var plugin = withDependencies("consumer", "1.0.0", Map.of("missing", "not-a-valid-range"));
+
+        assertThatThrownBy(() -> resolver.resolve(List.of(plugin)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Invalid version constraint in plugin [consumer] for dependency [missing]");
     }
 
     @Test
@@ -130,6 +256,37 @@ class DependencyResolverTest {
         assertThatThrownBy(() -> resolver.resolve(List.of(a, b, c)))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Cyclic plugin dependency or load order detected. Circular nodes: a, b, c");
+    }
+
+    @Test
+    @DisplayName("Should warn about unknown soft load-order targets")
+    void shouldWarnAboutUnknownSoftLoadOrderTargets() {
+        var plugin = builder("plugin", "1.0.0").loadBefore("missing-target").build();
+        Logger logger = (Logger) LoggerFactory.getLogger(DependencyResolver.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+
+        try {
+            assertThat(new DependencyResolver(List.of()).resolve(List.of(plugin)))
+                    .extracting(Metadata::id)
+                    .containsExactly("plugin");
+        } finally {
+            logger.detachAppender(appender);
+        }
+
+        assertThat(appender.list).anySatisfy(event -> assertThat(event.getFormattedMessage())
+                .contains("Plugin [plugin] declares loadBefore for unknown plugin [missing-target]"));
+    }
+
+    @Test
+    @DisplayName("Should reject contradictory wildcard load-order declarations")
+    void shouldRejectContradictoryWildcardLoadOrder() {
+        var plugin = builder("plugin", "1.0.0").loadBefore("*").loadAfter("*").build();
+
+        assertThatThrownBy(() -> new DependencyResolver(List.of()).resolve(List.of(plugin)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Plugin [plugin] cannot declare both loadBefore and loadAfter wildcards");
     }
 
     @Test

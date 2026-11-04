@@ -97,7 +97,7 @@ class DefaultPluginManagerTest {
                 loaderProvider,
                 mixinRegistrar,
                 new PluginScanner(config),
-                new PluginManifestParser()
+                new PluginManifestParser(config.strict())
         );
     }
 
@@ -120,6 +120,61 @@ class DefaultPluginManagerTest {
                 .environment(Environment.BOTH)
                 .dependencies(deps)
                 .build();
+    }
+
+    private void createPluginJarOnDisk(Path destination, Metadata metadata, Class<?>... classes) throws Exception {
+        try (var jos = new JarOutputStream(Files.newOutputStream(destination))) {
+            for (Class<?> clazz : classes) {
+                String classPath = clazz.getName().replace('.', '/') + ".class";
+                try (var classBytes = clazz.getClassLoader().getResourceAsStream(classPath)) {
+                    if (classBytes == null) {
+                        throw new IllegalStateException("Class resource not found: " + classPath);
+                    }
+                    jos.putNextEntry(new JarEntry(classPath));
+                    jos.write(classBytes.readAllBytes());
+                    jos.closeEntry();
+                }
+            }
+
+            var entry = new JarEntry(Constants.METADATA_NAME);
+            jos.putNextEntry(entry);
+            String yaml = """
+                    schema: %d
+                    id: %s
+                    name: %s
+                    version: %s
+                    environment: %s
+                    entrypoint: %s
+                    """.formatted(
+                    metadata.schema(),
+                    metadata.id(),
+                    metadata.name(),
+                    metadata.version(),
+                    metadata.environment().name().toLowerCase(),
+                    metadata.entrypoint()
+            );
+
+            if (!metadata.mixins().isEmpty()) {
+                StringBuilder yamlWithMixins = new StringBuilder(yaml);
+                yamlWithMixins.append("mixins:\n");
+                for (String mixin : metadata.mixins()) {
+                    yamlWithMixins.append("  - \"").append(mixin).append("\"\n");
+                }
+                yaml = yamlWithMixins.toString();
+            }
+
+            if (!metadata.conflicts().isEmpty()) {
+                StringBuilder yamlWithConflicts = new StringBuilder(yaml);
+                yamlWithConflicts.append("conflicts:\n");
+                for (String conflict : metadata.conflicts()) {
+                    yamlWithConflicts.append("  - \"").append(conflict).append("\"\n");
+                }
+                yaml = yamlWithConflicts.toString();
+            }
+
+            jos.write(yaml.getBytes(StandardCharsets.UTF_8));
+            jos.closeEntry();
+        }
     }
 
     @Nested
@@ -484,14 +539,13 @@ class DefaultPluginManagerTest {
         }
 
         @Test
-        @DisplayName("Should detect self-referencing dependency cycles")
+        @DisplayName("Should reject a self-referencing dependency")
         void shouldDetectSelfCycle() {
             var selfDep = createMetaWithDeps("self-dep", "1.0.0", Map.of("self-dep", ">=1.0.0"));
 
             assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(selfDep)))
                     .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("Cyclic plugin dependency or load order detected")
-                    .hasMessageContaining("self-dep");
+                    .hasMessage("Plugin [self-dep] cannot depend on itself");
         }
 
         @Test
@@ -883,7 +937,7 @@ class DefaultPluginManagerTest {
                     loaderProvider,
                     mixin -> PhaseTracker.record("mixin:" + mixin),
                     new PluginScanner(config),
-                    new PluginManifestParser()
+                    new PluginManifestParser(config.strict())
             );
             twoPhaseManager.init();
 
@@ -918,50 +972,68 @@ class DefaultPluginManagerTest {
             }
         }
 
-        private void createPluginJarOnDisk(Path destination, Metadata metadata, Class<?>... classes) throws Exception {
-            try (var jos = new JarOutputStream(Files.newOutputStream(destination))) {
-                for (Class<?> clazz : classes) {
-                    String classPath = clazz.getName().replace('.', '/') + ".class";
-                    try (var classBytes = clazz.getClassLoader().getResourceAsStream(classPath)) {
-                        if (classBytes == null) {
-                            throw new IllegalStateException("Class resource not found: " + classPath);
-                        }
-                        jos.putNextEntry(new JarEntry(classPath));
-                        jos.write(classBytes.readAllBytes());
-                        jos.closeEntry();
-                    }
-                }
+    }
 
-                var entry = new JarEntry(Constants.METADATA_NAME);
-                jos.putNextEntry(entry);
-                String yaml = """
-                        schema: %d
-                        id: %s
-                        name: %s
-                        version: %s
-                        environment: %s
-                        entrypoint: %s
-                        """.formatted(
-                        metadata.schema(),
-                        metadata.id(),
-                        metadata.name(),
-                        metadata.version(),
-                        metadata.environment().name().toLowerCase(),
-                        metadata.entrypoint()
-                );
+    @Nested
+    @DisplayName("Conflict Resolution Tests")
+    class ConflictTests {
 
-                if (!metadata.mixins().isEmpty()) {
-                    StringBuilder yamlWithMixins = new StringBuilder(yaml);
-                    yamlWithMixins.append("mixins:\n");
-                    for (String mixin : metadata.mixins()) {
-                        yamlWithMixins.append("  - \"").append(mixin).append("\"\n");
-                    }
-                    yaml = yamlWithMixins.toString();
-                }
+        @Test
+        @DisplayName("Should load conflicting plugins with a warning in non-strict mode")
+        void shouldLoadConflictingPluginsInNonStrictMode() throws Exception {
+            manager.init();
+            Files.createDirectories(pluginsDirectory);
 
-                jos.write(yaml.getBytes(StandardCharsets.UTF_8));
-                jos.closeEntry();
-            }
+            var pluginA = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("conflict-a")
+                    .name("Conflict A")
+                    .version("1.0.0")
+                    .conflicts("conflict-b")
+                    .build();
+            var pluginB = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("conflict-b")
+                    .name("Conflict B")
+                    .version("1.0.0")
+                    .build();
+
+            createPluginJarOnDisk(pluginsDirectory.resolve("conflict-a.jar"), pluginA);
+            createPluginJarOnDisk(pluginsDirectory.resolve("conflict-b.jar"), pluginB);
+
+            manager.loadPlugins();
+
+            assertThat(manager.getPlugins()).containsKeys("conflict-a", "conflict-b");
+        }
+
+        @Test
+        @DisplayName("Should abort on conflicting plugins in strict mode")
+        void shouldAbortOnConflictingPluginsInStrictMode() throws Exception {
+            var strictManager = createManager(configWithEnvironment(Environment.BOTH).withStrict(true), gameProvider);
+            strictManager.init();
+            Files.createDirectories(pluginsDirectory);
+
+            var pluginA = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("conflict-a")
+                    .name("Conflict A")
+                    .version("1.0.0")
+                    .conflicts("conflict-b")
+                    .build();
+            var pluginB = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("conflict-b")
+                    .name("Conflict B")
+                    .version("1.0.0")
+                    .build();
+
+            createPluginJarOnDisk(pluginsDirectory.resolve("conflict-a.jar"), pluginA);
+            createPluginJarOnDisk(pluginsDirectory.resolve("conflict-b.jar"), pluginB);
+
+            assertThatThrownBy(strictManager::loadPlugins)
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Failed to resolve plugin load order")
+                    .hasRootCauseMessage("Plugin [conflict-a] conflicts with installed plugin [conflict-b]");
         }
     }
 

@@ -123,7 +123,7 @@ class DefaultPluginManagerBranchesTest {
                 loaderProvider,
                 mixinRegistrar,
                 new PluginScanner(config),
-                new PluginManifestParser()
+                new PluginManifestParser(config.strict())
         ) {
             @Override
             public List<Metadata> resolvePluginLoadOrder(List<Metadata> candidates) {
@@ -370,7 +370,7 @@ class DefaultPluginManagerBranchesTest {
                 new DefaultLoaderProvider(),
                 mixinRegistrar,
                 new PluginScanner(config),
-                new PluginManifestParser()
+                new PluginManifestParser(config.strict())
         ) {
             @Override
             public List<Metadata> resolvePluginLoadOrder(List<Metadata> candidates) {
@@ -391,7 +391,7 @@ class DefaultPluginManagerBranchesTest {
                 loaderProvider,
                 mixinRegistrar,
                 new PluginScanner(config),
-                new PluginManifestParser()
+                new PluginManifestParser(config.strict())
         );
     }
 

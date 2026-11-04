@@ -23,8 +23,11 @@ import java.util.*;
  * @param dependencies unmodifiable map of prerequisite plugin IDs to semantic version constraint ranges
  * @param loadBefore   unmodifiable list of plugin IDs that must be loaded strictly after this plugin
  * @param loadAfter    unmodifiable list of plugin IDs that must be loaded strictly before this plugin
- * @param entrypoint   fully-qualified class name of the plugin entrypoint class; defaults to empty string
- * @param mixins       unmodifiable list of mixin configuration paths inside the plugin JAR
+ * @param entrypoint   entrypoint class name; for user plugins this is a {@link com.avrix.plugins.Plugin}
+ *                     implementation, for game provider descriptors it is the game's main class, and for loader
+ *                     descriptors it is empty
+ * @param mixins       unmodifiable list of fully qualified mixin class names registered with the loader
+ * @param conflicts    unmodifiable list of plugin IDs declared incompatible with this plugin
  */
 public record Metadata(
         int schema,
@@ -40,14 +43,16 @@ public record Metadata(
         List<String> loadBefore,
         List<String> loadAfter,
         String entrypoint,
-        List<String> mixins
+        List<String> mixins,
+        List<String> conflicts
 ) {
 
     /**
-     * Compact constructor enforcing domain invariants, mandatory attribute validation, and collection immutability.
+     * Compact constructor enforcing domain invariants, normalizing string values, and collection immutability.
      *
      * @throws NullPointerException     if any mandatory string field ({@code id}, {@code name}, {@code version}) is {@code null}
-     * @throws IllegalArgumentException if string invariants (non-blank) or supported schema versions are violated
+     * @throws IllegalArgumentException if string invariants (non-blank, no embedded whitespace in identifiers) or supported
+     *                                  schema versions are violated
      */
     public Metadata {
         // Mandatory schema verification
@@ -62,6 +67,10 @@ public record Metadata(
         Objects.requireNonNull(name, "Plugin 'name' cannot be null");
         Objects.requireNonNull(version, "Plugin 'version' cannot be null");
 
+        id = id.strip();
+        name = name.strip();
+        version = version.strip();
+
         if (id.isBlank()) {
             throw new IllegalArgumentException("Plugin 'id' cannot be blank");
         }
@@ -71,20 +80,73 @@ public record Metadata(
         if (version.isBlank()) {
             throw new IllegalArgumentException("Plugin 'version' cannot be blank");
         }
+        if (id.chars().anyMatch(Character::isWhitespace)) {
+            throw new IllegalArgumentException("Plugin 'id' cannot contain whitespace");
+        }
+        if (id.chars().anyMatch(Character::isISOControl)) {
+            throw new IllegalArgumentException("Plugin 'id' cannot contain control characters");
+        }
 
         // Optional scalar fields normalization
         environment = Objects.requireNonNullElse(environment, Environment.BOTH);
-        description = Objects.requireNonNullElse(description, "");
-        license = Objects.requireNonNullElse(license, "UNLICENSED");
-        entrypoint = Objects.requireNonNullElse(entrypoint, "");
+        description = Objects.requireNonNullElse(description, "").strip();
+        license = Objects.requireNonNullElse(license, "UNLICENSED").strip();
+        entrypoint = Objects.requireNonNullElse(entrypoint, "").strip();
+        if (license.isBlank()) {
+            license = "UNLICENSED";
+        }
 
-        // Defensive copy and unmodifiable collection creation
-        authors = (authors == null) ? List.of() : List.copyOf(authors);
-        contacts = (contacts == null) ? List.of() : List.copyOf(contacts);
-        mixins = (mixins == null) ? List.of() : List.copyOf(mixins);
-        dependencies = (dependencies == null) ? Map.of() : Map.copyOf(dependencies);
-        loadBefore = (loadBefore == null) ? List.of() : List.copyOf(loadBefore);
-        loadAfter = (loadAfter == null) ? List.of() : List.copyOf(loadAfter);
+        // Defensive copy, normalization, and unmodifiable collection creation
+        authors = normalizeList(authors);
+        contacts = normalizeList(contacts);
+        mixins = normalizeList(mixins);
+        dependencies = normalizeDependencies(dependencies);
+        loadBefore = normalizeList(loadBefore);
+        loadAfter = normalizeList(loadAfter);
+        conflicts = normalizeList(conflicts);
+    }
+
+    /**
+     * Creates an immutable list with trimmed, non-blank string values.
+     *
+     * @param values source values, may be {@code null}
+     * @return immutable normalized list
+     */
+    private static List<String> normalizeList(List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> normalized = new ArrayList<>(values.size());
+        for (String value : values) {
+            if (value == null) {
+                continue;
+            }
+            String trimmed = value.strip();
+            if (!trimmed.isEmpty()) {
+                normalized.add(trimmed);
+            }
+        }
+        return List.copyOf(normalized);
+    }
+
+    /**
+     * Creates an immutable dependency map with trimmed identifiers and constraints.
+     *
+     * @param values source dependency map, may be {@code null}
+     * @return immutable normalized dependency map
+     * @throws NullPointerException if a dependency identifier or constraint is {@code null}
+     */
+    private static Map<String, String> normalizeDependencies(Map<String, String> values) {
+        if (values == null || values.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<String, String> normalized = new LinkedHashMap<>(values.size());
+        for (Map.Entry<String, String> entry : values.entrySet()) {
+            normalized.put(entry.getKey().strip(), entry.getValue().strip());
+        }
+        return Map.copyOf(normalized);
     }
 
     /**
@@ -112,6 +174,7 @@ public record Metadata(
         private final List<String> loadAfter = new ArrayList<>();
         private String entrypoint = "";
         private final List<String> mixins = new ArrayList<>();
+        private final List<String> conflicts = new ArrayList<>();
 
         /**
          * Sets the schema version.
@@ -385,9 +448,9 @@ public record Metadata(
         }
 
         /**
-         * Appends a list of mixin configuration paths.
+         * Appends a list of fully qualified mixin class names.
          *
-         * @param mixins list of mixin configuration JSON/YAML paths
+         * @param mixins list of mixin class names
          * @return this builder instance
          */
         public Builder mixins(List<String> mixins) {
@@ -398,9 +461,9 @@ public record Metadata(
         }
 
         /**
-         * Appends multiple mixin configuration paths.
+         * Appends multiple fully qualified mixin class names.
          *
-         * @param mixins array of mixin configuration paths
+         * @param mixins array of mixin class names
          * @return this builder instance
          */
         public Builder mixins(String... mixins) {
@@ -411,14 +474,53 @@ public record Metadata(
         }
 
         /**
-         * Appends a single mixin configuration path.
+         * Appends a single fully qualified mixin class name.
          *
-         * @param mixin relative path to mixin config inside JAR
+         * @param mixin mixin class name
          * @return this builder instance
          */
         public Builder addMixin(String mixin) {
             if (mixin != null && !mixin.isBlank()) {
                 this.mixins.add(mixin);
+            }
+            return this;
+        }
+
+        /**
+         * Appends a list of plugin identifiers that are incompatible with this plugin.
+         *
+         * @param conflicts list of conflicting plugin identifiers
+         * @return this builder instance
+         */
+        public Builder conflicts(List<String> conflicts) {
+            if (conflicts != null) {
+                this.conflicts.addAll(conflicts);
+            }
+            return this;
+        }
+
+        /**
+         * Appends multiple plugin identifiers that are incompatible with this plugin.
+         *
+         * @param conflicts array of conflicting plugin identifiers
+         * @return this builder instance
+         */
+        public Builder conflicts(String... conflicts) {
+            if (conflicts != null) {
+                this.conflicts.addAll(Arrays.asList(conflicts));
+            }
+            return this;
+        }
+
+        /**
+         * Appends a single plugin identifier that is incompatible with this plugin.
+         *
+         * @param conflict conflicting plugin identifier
+         * @return this builder instance
+         */
+        public Builder addConflict(String conflict) {
+            if (conflict != null && !conflict.isBlank()) {
+                this.conflicts.add(conflict);
             }
             return this;
         }
@@ -445,7 +547,8 @@ public record Metadata(
                     loadBefore,
                     loadAfter,
                     entrypoint,
-                    mixins
+                    mixins,
+                    conflicts
             );
         }
     }

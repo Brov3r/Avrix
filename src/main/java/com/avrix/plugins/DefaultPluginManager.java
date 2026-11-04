@@ -447,7 +447,7 @@ public class DefaultPluginManager implements PluginManager {
      */
     @Override
     public List<Metadata> resolvePluginLoadOrder(List<Metadata> candidates) {
-        return new DependencyResolver(corePlugins).resolve(candidates);
+        return new DependencyResolver(corePlugins, config.strict()).resolve(candidates);
     }
 
     /**

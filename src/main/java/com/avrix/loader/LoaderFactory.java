@@ -68,7 +68,7 @@ public final class LoaderFactory {
                 loaderProvider,
                 mixinTransformer,
                 new PluginScanner(config),
-                new PluginManifestParser()
+                new PluginManifestParser(config.strict())
         );
         ServiceManager.register(PluginManager.class, pluginManager);
 

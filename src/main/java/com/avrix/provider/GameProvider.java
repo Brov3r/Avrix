@@ -116,6 +116,9 @@ public interface GameProvider {
 
     /**
      * Synthesizes metadata describing this game provider.
+     * <p>
+     * In the resulting descriptor, {@link Metadata#entrypoint()} denotes the game's main class rather than a
+     * {@link com.avrix.plugins.Plugin} implementation.
      *
      * @return immutable metadata descriptor for the active game
      */

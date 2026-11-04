@@ -227,11 +227,24 @@ loadAfter: # Load after these plugin IDs.
 entrypoint: "com.example.exampleplugin.ExamplePlugin" # (Optional) FQCN of the entrypoint class
 mixins:
   - "com.example.exampleplugin.ExampleMixin"          # (Optional) List of mixin class FQCNs
+conflicts: # (Optional) Plugin IDs declared incompatible with this plugin
+  - "legacy-plugin"
 ```
 
-`schema` must be `1`, `version` must be a valid SemVer string, and the identifiers `avrix-loader` and `project-zomboid`
-are reserved for the loader and game provider. Use a dependency or `loadAfter` entry when your plugin relies on another
-plugin being initialized first.
+`schema` is required and must be `1`, `version` must be a valid SemVer string, and the identifiers `avrix-loader` and
+`project-zomboid` are reserved for the loader and game provider. Always quote `version` and dependency constraints
+(`"1.10.0"`, `">=1.2.0"`) so YAML does not coerce them into numbers. The `dependencies` section must be a map of plugin
+identifiers to constraints; list syntax is not supported. Use a dependency or `loadAfter` entry when your plugin relies
+on another plugin being initialized first. Unknown identifiers in `loadBefore` / `loadAfter` are reported as warnings
+because the referenced plugin may be optional. To require a minimum loader or game version, declare a constraint on
+`avrix-loader` or `project-zomboid` respectively. The `mixins` entries are fully qualified mixin class names, not
+resource paths. Plugin IDs in `metadata.yml` must match `[a-z0-9][a-z0-9._-]{0,63}`; uppercase or space-containing IDs
+are rejected. The `conflicts` field declares plugin IDs that are incompatible with this plugin. A single declaration is
+sufficient, identifiers are matched case-insensitively, and conflicts with plugins that are not installed are ignored.
+In normal mode a detected conflict is logged as a warning; under `--strict` it aborts load order resolution. For game
+provider descriptors, `entrypoint` means the game's main class rather than a `Plugin` implementation; loader
+descriptors leave it empty. Parser dispatch is keyed by `schema`, so a future schema version can be added without
+changing existing version-1 manifests.
 
 ---
 

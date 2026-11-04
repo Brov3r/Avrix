@@ -3,22 +3,34 @@ package com.avrix.plugins;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;
 import com.avrix.utils.Constants;
+import com.github.zafarkhaja.semver.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.loader.ParsingException;
 import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
+import javax.lang.model.SourceVersion;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -29,10 +41,42 @@ public final class PluginManifestParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginManifestParser.class);
 
+    private static final Pattern ID_PATTERN = Pattern.compile("[a-z0-9][a-z0-9._-]{0,63}");
+
+    private static final Set<String> KNOWN_KEYS = Set.of(
+            "schema",
+            "id",
+            "name",
+            "description",
+            "version",
+            "environment",
+            "license",
+            "authors",
+            "contacts",
+            "dependencies",
+            "loadBefore",
+            "loadAfter",
+            "entrypoint",
+            "mixins",
+            "conflicts"
+    );
+
+    private final boolean strict;
+
     /**
-     * Constructs a new plugin manifest parser.
+     * Constructs a lenient plugin manifest parser.
      */
     public PluginManifestParser() {
+        this(false);
+    }
+
+    /**
+     * Constructs a plugin manifest parser with the requested validation mode.
+     *
+     * @param strict whether manifest compatibility issues should abort parsing
+     */
+    public PluginManifestParser(boolean strict) {
+        this.strict = strict;
     }
 
     /**
@@ -49,6 +93,7 @@ public final class PluginManifestParser {
         Objects.requireNonNull(jarPath, "JAR path cannot be null");
         Objects.requireNonNull(entryPath, "Entry path cannot be null");
 
+        String source = "Invalid metadata in JAR [%s] at entry [%s]".formatted(jarPath, entryPath);
         LOGGER.debug("Loading plugin metadata from JAR [{}] at entry [{}]", jarPath, entryPath);
         try (JarFile jar = new JarFile(jarPath.toFile())) {
             JarEntry entry = jar.getJarEntry(entryPath);
@@ -60,17 +105,24 @@ public final class PluginManifestParser {
                 YamlConfigurationLoader loader = YamlConfigurationLoader.builder()
                         .source(() -> new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8)))
                         .build();
+                enableDuplicateKeyDetection(loader);
 
-                Metadata metadata = fromNode(loader.load());
+                Metadata metadata = parseNode(loader.load(), source);
                 LOGGER.debug("Successfully loaded metadata for plugin [{}] (v{})", metadata.id(), metadata.version());
                 return metadata;
             }
         } catch (FileNotFoundException e) {
             LOGGER.warn("Metadata manifest not found: {}", e.getMessage());
             throw e;
+        } catch (SerializationException e) {
+            throw e;
+        } catch (ParsingException e) {
+            throw withCause(source + ": " + parseFailureMessage(e), e);
         } catch (IOException e) {
             LOGGER.error("Failed to parse metadata manifest from JAR [{}]: {}", jarPath.getFileName(), e.getMessage(), e);
             throw e;
+        } catch (RuntimeException e) {
+            throw withCause(source + ": " + parseFailureMessage(e), e);
         }
     }
 
@@ -98,12 +150,25 @@ public final class PluginManifestParser {
      */
     public Metadata fromYaml(Path path) throws IOException {
         Objects.requireNonNull(path, "Path cannot be null");
+        String source = "Invalid metadata in YAML [%s]".formatted(path);
         YamlConfigurationLoader loader = YamlConfigurationLoader.builder().path(path).build();
-        return fromNode(loader.load());
+        enableDuplicateKeyDetection(loader);
+
+        try {
+            return parseNode(loader.load(), source);
+        } catch (SerializationException e) {
+            throw e;
+        } catch (ParsingException e) {
+            throw withCause(source + ": " + parseFailureMessage(e), e);
+        } catch (RuntimeException e) {
+            throw withCause(source + ": " + parseFailureMessage(e), e);
+        }
     }
 
     /**
      * Deserializes a {@link Metadata} record from a Configurate {@link ConfigurationNode}.
+     * <p>
+     * Duplicate YAML key detection is available only through the file- and JAR-based parsing methods.
      *
      * @param node the root configuration node
      * @return populated {@link Metadata}
@@ -111,50 +176,475 @@ public final class PluginManifestParser {
      * @throws SerializationException if required nodes cannot be deserialized
      */
     public Metadata fromNode(ConfigurationNode node) throws SerializationException {
+        return parseNode(node, "Invalid metadata");
+    }
+
+    /**
+     * Parses a manifest node and dispatches to the parser for the declared schema version.
+     *
+     * @param node   root configuration node
+     * @param source diagnostic source description
+     * @return parsed immutable metadata
+     * @throws SerializationException if validation fails or the schema version is unsupported
+     */
+    private Metadata parseNode(ConfigurationNode node, String source) throws SerializationException {
         Objects.requireNonNull(node, "ConfigurationNode cannot be null");
+        validateTopLevelKeys(node, source);
+
+        int schema = readSchema(node, source);
+        return switch (schema) {
+            case Constants.METADATA_SCHEMA -> parseSchema1(node, source);
+            default -> throw new SerializationException(
+                    "%s: Unsupported metadata schema [%d], supported: %d"
+                            .formatted(source, schema, Constants.METADATA_SCHEMA)
+            );
+        };
+    }
+
+    /**
+     * Parses a manifest that declares the currently supported schema version.
+     *
+     * @param node   root configuration node
+     * @param source diagnostic source description
+     * @return parsed immutable metadata
+     * @throws SerializationException if any manifest value is invalid
+     */
+    private Metadata parseSchema1(ConfigurationNode node, String source) throws SerializationException {
+        String id = node.node("id").getString();
+        if (id != null && !id.isBlank()) {
+            validateIdentifier(id.strip(), "id", source);
+        }
+
+        String entrypoint = node.node("entrypoint").getString("");
+        if (entrypoint != null && !entrypoint.isBlank()) {
+            validateJavaName(entrypoint.strip(), "entrypoint", source);
+        }
+
+        List<String> mixins = readStringList(node, "mixins", source);
+        for (String mixin : mixins) {
+            validateJavaName(mixin, "mixins", source);
+        }
 
         Metadata.Builder builder = new Metadata.Builder()
-                .schema(node.node("schema").getInt(Constants.METADATA_SCHEMA))
-                .id(node.node("id").getString())
+                .schema(Constants.METADATA_SCHEMA)
+                .id(id)
                 .name(node.node("name").getString())
                 .description(node.node("description").getString(""))
                 .version(node.node("version").getString())
-                .entrypoint(node.node("entrypoint").getString(""))
-                .license(node.node("license").getString("UNLICENSED"));
+                .entrypoint(entrypoint)
+                .license(node.node("license").getString("UNLICENSED"))
+                .environment(readEnvironment(node, source));
 
-        if (!node.node("environment").virtual()) {
-            builder.environment(Environment.fromString(node.node("environment").getString("both")));
+        builder.loadBefore(readIdentifierList(node, "loadBefore", source, true));
+        builder.loadAfter(readIdentifierList(node, "loadAfter", source, true));
+        builder.authors(readStringList(node, "authors", source));
+        builder.contacts(readStringList(node, "contacts", source));
+        builder.mixins(mixins);
+        builder.conflicts(readIdentifierList(node, "conflicts", source, false));
+
+        for (Map.Entry<String, String> dependency : readDependencies(node, source).entrySet()) {
+            builder.addDependency(dependency.getKey(), dependency.getValue());
         }
 
-        if (!node.node("loadBefore").virtual()) {
-            builder.loadBefore(node.node("loadBefore").getList(String.class, Collections.emptyList()));
+        Metadata metadata;
+        try {
+            metadata = builder.build();
+        } catch (RuntimeException e) {
+            throw withCause(source + ": Invalid metadata: " + e.getMessage(), e);
         }
 
-        if (!node.node("loadAfter").virtual()) {
-            builder.loadAfter(node.node("loadAfter").getList(String.class, Collections.emptyList()));
+        validateVersion(metadata, source);
+        return metadata;
+    }
+
+    /**
+     * Reads a string list, trimming values and rejecting blank entries.
+     *
+     * @param node   manifest root node
+     * @param key    manifest key containing the list
+     * @param source diagnostic source description
+     * @return immutable normalized list
+     * @throws SerializationException if the value is not a string list or strict validation rejects a blank entry
+     */
+    private List<String> readStringList(ConfigurationNode node, String key, String source) throws SerializationException {
+        ConfigurationNode listNode = node.node(key);
+        if (listNode.virtual() || listNode.isNull()) {
+            return Collections.emptyList();
         }
 
-        if (!node.node("authors").virtual()) {
-            builder.authors(node.node("authors").getList(String.class, Collections.emptyList()));
+        List<String> values;
+        try {
+            values = listNode.getList(String.class, Collections.emptyList());
+        } catch (SerializationException e) {
+            throw withCause("%s: Metadata key [%s] must be a list of strings".formatted(source, key), e);
         }
 
-        if (!node.node("contacts").virtual()) {
-            builder.contacts(node.node("contacts").getList(String.class, Collections.emptyList()));
+        List<String> normalized = new ArrayList<>(values.size());
+        for (String value : values) {
+            if (value == null || value.isBlank()) {
+                warnOrFail(source, "Metadata key [%s] contains a blank list entry".formatted(key));
+                continue;
+            }
+            normalized.add(value.strip());
         }
+        return List.copyOf(normalized);
+    }
 
-        if (!node.node("mixins").virtual()) {
-            builder.mixins(node.node("mixins").getList(String.class, Collections.emptyList()));
+    /**
+     * Reads a list of plugin identifiers, validating every entry.
+     *
+     * @param node          manifest root node
+     * @param key           manifest key containing the list
+     * @param source        diagnostic source description
+     * @param allowWildcard whether the special {@code "*"} value is allowed
+     * @return immutable normalized list without duplicates
+     * @throws SerializationException if an identifier is invalid, duplicated in strict mode, or the list is malformed
+     */
+    private List<String> readIdentifierList(
+            ConfigurationNode node,
+            String key,
+            String source,
+            boolean allowWildcard
+    ) throws SerializationException {
+        List<String> values = readStringList(node, key, source);
+        List<String> normalized = new ArrayList<>(values.size());
+        Set<String> seen = new HashSet<>();
+
+        for (String value : values) {
+            if (allowWildcard && "*".equals(value)) {
+                if (!seen.add(value)) {
+                    warnOrFail(source, "Metadata key [%s] contains duplicate identifier [%s]".formatted(key, value));
+                    continue;
+                }
+                normalized.add(value);
+                continue;
+            }
+
+            validateIdentifier(value, key, source);
+            if (!seen.add(value)) {
+                warnOrFail(source, "Metadata key [%s] contains duplicate identifier [%s]".formatted(key, value));
+                continue;
+            }
+            normalized.add(value);
         }
+        return List.copyOf(normalized);
+    }
 
+    /**
+     * Reads and validates declared plugin dependencies.
+     *
+     * @param node   manifest root node
+     * @param source diagnostic source description
+     * @return immutable map of dependency identifiers to version constraints
+     * @throws SerializationException if the dependency section is malformed
+     */
+    private Map<String, String> readDependencies(ConfigurationNode node, String source) throws SerializationException {
         ConfigurationNode dependenciesNode = node.node("dependencies");
-        if (!dependenciesNode.virtual() && dependenciesNode.isMap()) {
-            for (var entry : dependenciesNode.childrenMap().entrySet()) {
-                String depId = String.valueOf(entry.getKey());
-                String versionConstraint = entry.getValue().getString("*");
-                builder.addDependency(depId, versionConstraint);
+        if (dependenciesNode.virtual() || dependenciesNode.isNull()) {
+            return Map.of();
+        }
+        if (!dependenciesNode.isMap()) {
+            throw new SerializationException(
+                    source + ": Metadata key [dependencies] must be a map of plugin identifiers to version constraints"
+            );
+        }
+
+        Map<String, String> dependencies = new LinkedHashMap<>();
+        for (Map.Entry<Object, ? extends ConfigurationNode> entry : dependenciesNode.childrenMap().entrySet()) {
+            String dependencyId = String.valueOf(entry.getKey()).strip();
+            if (dependencyId.isEmpty()) {
+                throw new SerializationException(source + ": Dependency identifier cannot be blank");
+            }
+            validateIdentifier(dependencyId, "dependencies." + dependencyId, source);
+
+            ConfigurationNode valueNode = entry.getValue();
+            String versionConstraint;
+            if (valueNode.virtual() || valueNode.isNull()) {
+                versionConstraint = "*";
+            } else {
+                if (valueNode.isMap() || valueNode.isList()) {
+                    throw new SerializationException(
+                            source + ": Dependency [" + dependencyId + "] must declare a version constraint string"
+                    );
+                }
+                versionConstraint = valueNode.getString();
+                if (versionConstraint == null) {
+                    versionConstraint = "*";
+                }
+                versionConstraint = versionConstraint.strip();
+                if (versionConstraint.isEmpty()) {
+                    throw new SerializationException(
+                            source + ": Dependency [" + dependencyId + "] has a blank version constraint"
+                    );
+                }
+            }
+
+            try {
+                SemVerConstraints.validate(versionConstraint);
+            } catch (IllegalArgumentException e) {
+                throw withCause(source + ": Dependency [" + dependencyId + "] has " + e.getMessage(), e);
+            }
+
+            if (dependencies.putIfAbsent(dependencyId, versionConstraint) != null) {
+                throw new SerializationException(source + ": Duplicate dependency identifier [" + dependencyId + "]");
             }
         }
+        return Map.copyOf(dependencies);
+    }
 
-        return builder.build();
+    /**
+     * Validates a plugin identifier against the canonical lowercase format.
+     *
+     * @param identifier identifier value to validate
+     * @param key        manifest key that contains the identifier
+     * @param source     diagnostic source description
+     * @throws SerializationException if the identifier is invalid
+     */
+    private void validateIdentifier(String identifier, String key, String source) throws SerializationException {
+        if (identifier.chars().anyMatch(Character::isWhitespace)) {
+            throw new SerializationException(source + ": Metadata key [" + key + "] cannot contain whitespace");
+        }
+        if (identifier.chars().anyMatch(Character::isISOControl)) {
+            throw new SerializationException(source + ": Metadata key [" + key + "] cannot contain control characters");
+        }
+        if (!ID_PATTERN.matcher(identifier).matches()) {
+            throw new SerializationException(
+                    "%s: Metadata key [%s] value [%s] must match identifier pattern %s"
+                            .formatted(source, key, identifier, ID_PATTERN.pattern())
+            );
+        }
+    }
+
+    /**
+     * Validates a fully qualified Java class name.
+     *
+     * @param className class name to validate
+     * @param key       manifest key that contains the class name
+     * @param source    diagnostic source description
+     * @throws SerializationException if the value is not a valid Java class name
+     */
+    private void validateJavaName(String className, String key, String source) throws SerializationException {
+        if (!SourceVersion.isName(className)) {
+            throw new SerializationException(
+                    source + ": Metadata key [" + key + "] value [" + className + "] is not a valid Java class name"
+            );
+        }
+    }
+
+    /**
+     * Verifies that the declared plugin version is a valid semantic version.
+     *
+     * @param metadata parsed metadata descriptor
+     * @param source   diagnostic source description
+     * @throws SerializationException if the version is not valid SemVer
+     */
+    private void validateVersion(Metadata metadata, String source) throws SerializationException {
+        try {
+            Version.parse(metadata.version());
+        } catch (RuntimeException e) {
+            throw withCause(
+                    "%s: Invalid plugin version [%s] for [%s]: %s"
+                            .formatted(source, metadata.version(), metadata.id(), e.getMessage()),
+                    e
+            );
+        }
+    }
+
+    /**
+     * Reads and validates the metadata schema version.
+     *
+     * @param node   manifest root node
+     * @param source diagnostic source description
+     * @return declared schema version, or the current version when omitted in lenient mode
+     * @throws SerializationException if the schema value is malformed or strict validation rejects a missing value
+     */
+    private int readSchema(ConfigurationNode node, String source) throws SerializationException {
+        ConfigurationNode schemaNode = node.node("schema");
+        if (schemaNode.virtual() || schemaNode.isNull()) {
+            throw new SerializationException(source + ": Missing required metadata key [schema]");
+        }
+
+        if (schemaNode.isMap() || schemaNode.isList()) {
+            throw new SerializationException(source + ": Metadata key [schema] must be an integer");
+        }
+
+        String rawValue = schemaNode.getString();
+        if (rawValue == null || rawValue.isBlank()) {
+            throw new SerializationException(source + ": Missing required metadata key [schema]");
+        }
+
+        try {
+            return Integer.parseInt(rawValue.strip());
+        } catch (NumberFormatException e) {
+            throw withCause(source + ": Metadata key [schema] must be an integer", e);
+        }
+    }
+
+    /**
+     * Reads and validates the target execution environment.
+     *
+     * @param node   manifest root node
+     * @param source diagnostic source description
+     * @return declared environment, or {@link Environment#BOTH} when omitted
+     * @throws SerializationException if the environment value is malformed or strict validation rejects an unknown value
+     */
+    private Environment readEnvironment(ConfigurationNode node, String source) throws SerializationException {
+        ConfigurationNode environmentNode = node.node("environment");
+        if (environmentNode.virtual() || environmentNode.isNull()) {
+            return Environment.BOTH;
+        }
+
+        if (environmentNode.isMap() || environmentNode.isList()) {
+            throw new SerializationException(source + ": Metadata key [environment] must be a string");
+        }
+
+        String rawValue = environmentNode.getString();
+        if (rawValue == null || rawValue.isBlank()) {
+            return Environment.BOTH;
+        }
+
+        String normalized = rawValue.strip().toLowerCase(Locale.ROOT);
+        return switch (normalized) {
+            case "client" -> Environment.CLIENT;
+            case "server" -> Environment.SERVER;
+            case "both", "*" -> Environment.BOTH;
+            default -> {
+                warnOrFail(source, "Unknown metadata environment [" + rawValue + "]; assuming [both]");
+                yield Environment.BOTH;
+            }
+        };
+    }
+
+    /**
+     * Reports manifest keys that are not part of the supported schema.
+     *
+     * @param node   manifest root node
+     * @param source diagnostic source description
+     * @throws SerializationException if strict validation is enabled
+     */
+    private void validateTopLevelKeys(ConfigurationNode node, String source) throws SerializationException {
+        for (Object key : node.childrenMap().keySet()) {
+            String keyName = String.valueOf(key);
+            if (!KNOWN_KEYS.contains(keyName)) {
+                warnOrFail(source, "Unknown metadata key [" + keyName + "]");
+            }
+        }
+    }
+
+    /**
+     * Enables rejection of duplicate YAML keys on a Configurate loader.
+     * <p>
+     * Configurate does not expose the underlying SnakeYAML loader option, so the option is enabled through the
+     * loader's internal state. If the internal layout changes, parsing continues without duplicate-key checks.
+     *
+     * @param loader loader to configure
+     */
+    private static void enableDuplicateKeyDetection(YamlConfigurationLoader loader) {
+        try {
+            Object yamlHolder = readField(loader, "yaml");
+            if (!(yamlHolder instanceof ThreadLocal<?> threadLocal)) {
+                return;
+            }
+
+            Object yaml = threadLocal.get();
+            if (yaml == null) {
+                return;
+            }
+
+            Object constructor = readField(yaml, "constructor");
+            setBooleanField(constructor, "allowDuplicateKeys", false);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            LOGGER.warn("Unable to enable duplicate YAML key detection: {}", parseFailureMessage(e));
+        }
+    }
+
+    /**
+     * Reads a field from an object or one of its superclasses.
+     *
+     * @param target target object
+     * @param name   field name
+     * @return field value
+     * @throws ReflectiveOperationException if the field cannot be read
+     */
+    private static Object readField(Object target, String name) throws ReflectiveOperationException {
+        Field field = findField(target.getClass(), name);
+        field.setAccessible(true);
+        return field.get(target);
+    }
+
+    /**
+     * Sets a boolean field on an object or one of its superclasses.
+     *
+     * @param target target object
+     * @param name   field name
+     * @param value  value to assign
+     * @throws ReflectiveOperationException if the field cannot be written
+     */
+    private static void setBooleanField(Object target, String name, boolean value) throws ReflectiveOperationException {
+        Field field = findField(target.getClass(), name);
+        field.setAccessible(true);
+        field.setBoolean(target, value);
+    }
+
+    /**
+     * Finds a declared field in a class hierarchy.
+     *
+     * @param type class to inspect
+     * @param name field name
+     * @return declared field
+     * @throws NoSuchFieldException if no matching field exists
+     */
+    private static Field findField(Class<?> type, String name) throws NoSuchFieldException {
+        Class<?> current = type;
+        while (current != null) {
+            try {
+                return current.getDeclaredField(name);
+            } catch (NoSuchFieldException _) {
+                current = current.getSuperclass();
+            }
+        }
+        throw new NoSuchFieldException(name);
+    }
+
+    /**
+     * Extracts the most useful message from a parsing failure.
+     *
+     * @param failure parsing failure
+     * @return cause message when available, otherwise the failure message or class name
+     */
+    private static String parseFailureMessage(Throwable failure) {
+        Throwable cause = failure.getCause();
+        if (cause != null && cause.getMessage() != null && !cause.getMessage().isBlank()) {
+            return cause.getMessage();
+        }
+        return failure.getMessage() == null ? failure.getClass().getSimpleName() : failure.getMessage();
+    }
+
+    /**
+     * Creates a serialization exception that preserves the original cause.
+     *
+     * @param message diagnostic message
+     * @param cause   original failure
+     * @return serialization exception with the provided message and cause
+     */
+    private static SerializationException withCause(String message, Throwable cause) {
+        SerializationException exception = new SerializationException(message);
+        exception.initCause(cause);
+        return exception;
+    }
+
+    /**
+     * Emits a warning or fails depending on the configured validation mode.
+     *
+     * @param source  diagnostic source description
+     * @param message diagnostic message
+     * @throws SerializationException if strict validation is enabled
+     */
+    private void warnOrFail(String source, String message) throws SerializationException {
+        String formattedMessage = source + ": " + message;
+        if (strict) {
+            throw new SerializationException(formattedMessage);
+        }
+        LOGGER.warn(formattedMessage);
     }
 }

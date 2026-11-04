@@ -80,7 +80,7 @@ class CrossPluginMixinIntegrationTest {
                 loaderProvider,
                 mixinTransformer,
                 new PluginScanner(config),
-                new PluginManifestParser()
+                new PluginManifestParser(config.strict())
         );
         this.pluginManager.init();
     }
