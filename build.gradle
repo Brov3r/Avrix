@@ -213,6 +213,8 @@ tasks.register('runServer', JavaExec) {
     }
 }
 
+def benchmarkPluginCount = providers.gradleProperty('pluginCount')
+
 tasks.register('benchmark', JavaExec) {
     group = 'verification'
     description = 'Runs the Avrix performance benchmark.'
@@ -220,4 +222,8 @@ tasks.register('benchmark', JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
     mainClass = 'com.avrix.benchmark.AvrixBenchmark'
     jvmArgs '-Xmx1g'
+
+    if (benchmarkPluginCount.isPresent()) {
+        args benchmarkPluginCount.get()
+    }
 }
