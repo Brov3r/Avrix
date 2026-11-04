@@ -155,6 +155,18 @@ class ZomboidGameProviderDetectionTest {
     }
 
     @Test
+    @DisplayName("Should resolve the version directly from the game archive")
+    void shouldResolveVersionFromGameArchive() throws Exception {
+        VersionJarFixture.createGameArchive(tempDir, 42, 21, "", 0, "4a0e9546ec");
+        useGameDirectory(tempDir);
+
+        ZomboidGameProvider provider = new ZomboidGameProvider();
+
+        assertThat(provider.getRawVersion()).isEqualTo("42.21.0 4a0e9546ec");
+        assertThat(provider.getNormalizedVersion()).isEqualTo("42.21.0");
+    }
+
+    @Test
     @DisplayName("Should prefer server markers when both layouts are present")
     void shouldPreferServerMarkers() throws Exception {
         Files.createFile(tempDir.resolve("ProjectZomboid64.exe"));

@@ -72,6 +72,7 @@ public class ZomboidGameProvider implements GameProvider {
     }
     private String rawVersion;
     private String normalizedVersion;
+    private GameVersionInfo resolvedVersion;
 
     private volatile Boolean serverEnvironmentDetected;
     private volatile boolean initialized = false;
@@ -283,13 +284,17 @@ public class ZomboidGameProvider implements GameProvider {
             return normalizedVersion;
         }
 
-        normalizedVersion = versionResolver.resolveNormalizedVersion(getRawVersion());
+        getRawVersion();
+        normalizedVersion = resolvedVersion != null
+                ? resolvedVersion.normalized()
+                : versionResolver.resolveNormalizedVersion(rawVersion);
         return normalizedVersion;
     }
 
     /**
      * Inspects game class bytecode via Java 25 ClassFile API to extract accurate raw version tokens.
-     * <p><b>Implementation Note:</b> Parses {@code zombie.core.Core} static initializer and {@code zombie.GitVersion} constant pool.
+     * <p><b>Implementation Note:</b> Reads {@code projectzomboid.jar} directly when possible, so game classes are never
+     * loaded or initialized before launch.
      *
      * @return formatted raw version string containing major, minor, patch, and revision components
      */
@@ -299,12 +304,39 @@ public class ZomboidGameProvider implements GameProvider {
             return rawVersion;
         }
 
-        ClassLoader targetLoader = (classLoader != null)
-                ? classLoader
-                : getClass().getClassLoader();
+        Path gameArchive = resolveGameArchive();
+        if (gameArchive != null) {
+            resolvedVersion = versionResolver.resolve(gameArchive);
+        } else {
+            ClassLoader targetLoader = (classLoader != null)
+                    ? classLoader
+                    : getClass().getClassLoader();
+            resolvedVersion = versionResolver.resolve(targetLoader);
+        }
 
-        this.rawVersion = versionResolver.resolveRawVersion(targetLoader);
+        this.rawVersion = resolvedVersion.raw();
         return rawVersion;
+    }
+
+    /**
+     * Resolves the game archive used for bytecode-level version extraction.
+     *
+     * @return path to {@code projectzomboid.jar}, or {@code null} when it cannot be found
+     */
+    private Path resolveGameArchive() {
+        Path launchDirectory = getLaunchDirectory();
+        Path serverArchive = launchDirectory.resolve("java").resolve("projectzomboid.jar");
+        if (Files.isRegularFile(serverArchive)) {
+            return serverArchive;
+        }
+
+        Path clientArchive = launchDirectory.resolve("projectzomboid.jar");
+        if (Files.isRegularFile(clientArchive)) {
+            return clientArchive;
+        }
+
+        LOGGER.debug("Project Zomboid archive not found under [{}]", launchDirectory);
+        return null;
     }
 
     /**
