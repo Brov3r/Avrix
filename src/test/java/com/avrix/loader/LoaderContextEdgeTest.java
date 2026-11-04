@@ -30,7 +30,7 @@ class LoaderContextEdgeTest {
         RecordingPluginManager pluginManager = new RecordingPluginManager();
         pluginManager.failure = new IllegalStateException("plugin shutdown failure");
         CountingClassLoader classLoader = new CountingClassLoader();
-        LoaderContext context = new LoaderContext(classLoader, new StubGameProvider(), pluginManager);
+        LoaderContext context = new LoaderContext(classLoader, new StubGameProvider(), null, pluginManager);
 
         assertThatCode(context::close).doesNotThrowAnyException();
 
@@ -43,7 +43,7 @@ class LoaderContextEdgeTest {
     void shouldTolerateClassLoaderCloseFailure() {
         CountingClassLoader classLoader = new CountingClassLoader();
         classLoader.failure = new IOException("classloader shutdown failure");
-        LoaderContext context = new LoaderContext(classLoader, new StubGameProvider(), new RecordingPluginManager());
+        LoaderContext context = new LoaderContext(classLoader, new StubGameProvider(), null, new RecordingPluginManager());
 
         assertThatCode(context::close).doesNotThrowAnyException();
 
@@ -55,7 +55,7 @@ class LoaderContextEdgeTest {
     void shouldCloseEachDependencyOnce() {
         CountingClassLoader classLoader = new CountingClassLoader();
         RecordingPluginManager pluginManager = new RecordingPluginManager();
-        LoaderContext context = new LoaderContext(classLoader, new StubGameProvider(), pluginManager);
+        LoaderContext context = new LoaderContext(classLoader, new StubGameProvider(), null, pluginManager);
 
         context.close();
         context.close();
@@ -69,7 +69,7 @@ class LoaderContextEdgeTest {
     void shouldTolerateAlreadyClosedClassLoader() throws IOException {
         CountingClassLoader classLoader = new CountingClassLoader();
         classLoader.close();
-        LoaderContext context = new LoaderContext(classLoader, new StubGameProvider(), new RecordingPluginManager());
+        LoaderContext context = new LoaderContext(classLoader, new StubGameProvider(), null, new RecordingPluginManager());
 
         assertThatCode(context::close).doesNotThrowAnyException();
 

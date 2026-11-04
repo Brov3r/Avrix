@@ -65,6 +65,21 @@ class NativeLibraryLocatorTest {
     }
 
     @Test
+    @DisplayName("Should sort server native subdirectories deterministically")
+    void shouldSortServerNativeSubdirectories() throws Exception {
+        Path natives = Files.createDirectories(tempDir.resolve("natives"));
+        Path zeta = Files.createDirectories(natives.resolve("zeta"));
+        Path alpha = Files.createDirectories(natives.resolve("alpha"));
+
+        List<Path> paths = new NativeLibraryLocator("Windows", "amd64").locate(tempDir, true);
+        List<Path> subdirectories = paths.stream()
+                .filter(path -> natives.equals(path.getParent()))
+                .toList();
+
+        assertThat(subdirectories).containsExactly(alpha, zeta);
+    }
+
+    @Test
     @DisplayName("Should return an empty list for a missing launch directory")
     void shouldReturnEmptyForMissingDirectory() {
         List<Path> paths = new NativeLibraryLocator("Windows", "amd64")

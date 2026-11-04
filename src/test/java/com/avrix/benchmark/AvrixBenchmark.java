@@ -312,7 +312,7 @@ public final class AvrixBenchmark {
                     new DefaultLoaderProvider(),
                     mixinRegistrar,
                     new PluginScanner(config),
-                    new PluginManifestParser(config.strict())
+                    new PluginManifestParser()
             );
 
             manager.init();

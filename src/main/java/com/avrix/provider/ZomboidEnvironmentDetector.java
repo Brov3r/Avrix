@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -91,6 +92,8 @@ public final class ZomboidEnvironmentDetector {
      * @return detected environment, never {@code null}
      */
     public Environment detect(Path launchDirectory) {
+        Objects.requireNonNull(launchDirectory, "Launch directory cannot be null");
+
         Environment explicitEnvironment = detectExplicitOverride();
         if (explicitEnvironment != null) {
             LOGGER.info("Using explicitly configured game environment [{}]", explicitEnvironment);
@@ -155,6 +158,8 @@ public final class ZomboidEnvironmentDetector {
      * @return normalized directory containing the game files, or the normalized input when no bundle is found
      */
     public static Path resolveMacBundleGameRoot(Path candidate) {
+        Objects.requireNonNull(candidate, "Candidate path cannot be null");
+
         Path normalized = candidate.toAbsolutePath().normalize();
         Path bundle = findAppBundle(normalized);
         if (bundle == null) {
@@ -414,6 +419,7 @@ public final class ZomboidEnvironmentDetector {
      * @return {@code true} when a server marker is present
      */
     public boolean hasServerMarker(Path launchDirectory) {
+        Objects.requireNonNull(launchDirectory, "Launch directory cannot be null");
         return containsAnyFileName(launchDirectory, serverMarkers());
     }
 
@@ -424,6 +430,7 @@ public final class ZomboidEnvironmentDetector {
      * @return {@code true} when a client marker is present
      */
     public boolean hasClientMarker(Path launchDirectory) {
+        Objects.requireNonNull(launchDirectory, "Launch directory cannot be null");
         return containsAnyFileName(launchDirectory, clientMarkers());
     }
 
@@ -487,6 +494,7 @@ public final class ZomboidEnvironmentDetector {
      * @return {@code true} when the directory looks like a dedicated-server installation
      */
     public static boolean looksLikeServerLayout(Path launchDirectory) {
+        Objects.requireNonNull(launchDirectory, "Launch directory cannot be null");
         if (!Files.isRegularFile(launchDirectory.resolve("java").resolve("projectzomboid.jar"))) {
             return false;
         }
@@ -500,6 +508,7 @@ public final class ZomboidEnvironmentDetector {
      * @return {@code true} when the directory looks like a client installation
      */
     public static boolean looksLikeClientLayout(Path launchDirectory) {
+        Objects.requireNonNull(launchDirectory, "Launch directory cannot be null");
         if (looksLikeMacBundle(launchDirectory)) {
             return true;
         }

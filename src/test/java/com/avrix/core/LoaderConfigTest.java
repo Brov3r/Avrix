@@ -25,7 +25,7 @@ class LoaderConfigTest {
         assertThat(config.pluginExtension()).isEqualTo(Constants.PLUGIN_EXTENSION);
         assertThat(config.pluginIconName()).isEqualTo(Constants.PLUGIN_ICON_NAME);
         assertThat(config.providerId()).isEqualTo(Constants.DEFAULT_GAME_PROVIDER_ID);
-        assertThat(config.environment()).isEqualTo(Environment.BOTH);
+        assertThat(config.environment()).isEqualTo(Environment.AUTO);
         assertThat(config.redirectSystemStreams()).isTrue();
         assertThat(config.strict()).isFalse();
     }

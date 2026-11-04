@@ -16,7 +16,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,6 +80,8 @@ public class ZomboidGameProvider implements GameProvider {
 
     private PrintStream originalOut;
     private PrintStream originalErr;
+    private PrintStream redirectedOut;
+    private PrintStream redirectedErr;
     private String originalUserDir;
     private String originalJavaLibraryPath;
     private String originalLwjglLibraryPath;
@@ -112,44 +114,49 @@ public class ZomboidGameProvider implements GameProvider {
         validateInstallation(launchDirectory);
 
         captureSystemState();
+        try {
+            // Synchronize working directory with game root directory
+            System.setProperty("user.dir", launchDirectory.toAbsolutePath().toString());
 
-        // Synchronize working directory with game root directory
-        System.setProperty("user.dir", launchDirectory.toAbsolutePath().toString());
-
-        Map<String, String> providerProperties = getProviderArgs();
-        if (!providerProperties.isEmpty()) {
-            captureProviderProperties(providerProperties);
-            providerProperties.forEach(System::setProperty);
-            LOGGER.debug("Applied {} system properties for [{}]", providerProperties.size(), getId());
-        }
-
-        List<Path> nativePaths = getNativeLibsPath();
-        if (!nativePaths.isEmpty()) {
-            classLoader.addNativePaths(nativePaths);
-
-            String combinedNativePath = nativePaths.stream()
-                    .map(Path::toString)
-                    .reduce((a, b) -> a + File.pathSeparator + b)
-                    .orElse("");
-            System.setProperty("org.lwjgl.librarypath", appendPath(originalLwjglLibraryPath, combinedNativePath));
-            System.setProperty("java.library.path", appendPath(originalJavaLibraryPath, combinedNativePath));
-
-            LOGGER.debug("Registered {} native search path(s) for [{}]", nativePaths.size(), getId());
-        }
-
-        List<Path> javaLibraries = getJavaLibsPath();
-        if (!javaLibraries.isEmpty()) {
-            for (Path jarPath : javaLibraries) {
-                try {
-                    classLoader.addURL(jarPath.toUri().toURL());
-                } catch (Exception e) {
-                    LOGGER.warn("Failed to attach library JAR [{}] to classpath", jarPath, e);
-                }
+            Map<String, String> providerProperties = getProviderArgs();
+            if (!providerProperties.isEmpty()) {
+                captureProviderProperties(providerProperties);
+                providerProperties.forEach(System::setProperty);
+                LOGGER.debug("Applied {} system properties for [{}]", providerProperties.size(), getId());
             }
-            LOGGER.debug("Appended {} library JAR(s) to classpath for [{}]", javaLibraries.size(), getId());
+
+            List<Path> nativePaths = getNativeLibsPath();
+            if (!nativePaths.isEmpty()) {
+                classLoader.addNativePaths(nativePaths);
+
+                String combinedNativePath = nativePaths.stream()
+                        .map(Path::toString)
+                        .reduce((a, b) -> a + File.pathSeparator + b)
+                        .orElse("");
+                System.setProperty("org.lwjgl.librarypath", appendPath(originalLwjglLibraryPath, combinedNativePath));
+                System.setProperty("java.library.path", appendPath(originalJavaLibraryPath, combinedNativePath));
+
+                LOGGER.debug("Registered {} native search path(s) for [{}]", nativePaths.size(), getId());
+            }
+
+            List<Path> javaLibraries = getJavaLibsPath();
+            if (!javaLibraries.isEmpty()) {
+                for (Path jarPath : javaLibraries) {
+                    try {
+                        classLoader.addURL(jarPath.toUri().toURL());
+                    } catch (Exception e) {
+                        LOGGER.warn("Failed to attach library JAR [{}] to classpath", jarPath, e);
+                    }
+                }
+                LOGGER.debug("Appended {} library JAR(s) to classpath for [{}]", javaLibraries.size(), getId());
+            }
+
+            this.initialized = true;
+        } catch (RuntimeException | Error e) {
+            restoreSystemState();
+            throw e;
         }
 
-        this.initialized = true;
         LOGGER.info("Provider [{}] initialized successfully. (Environment={})", getId(), getEnvironment());
     }
 
@@ -349,10 +356,15 @@ public class ZomboidGameProvider implements GameProvider {
      */
     @Override
     public Path getLaunchDirectory() {
-        String explicitDir = System.getProperty("avrix.game.dir", System.getProperty("zomboid.dir"));
-        if (explicitDir == null || explicitDir.isBlank()) {
-            explicitDir = Optional.ofNullable(System.getenv("AVRIX_GAME_DIR"))
-                    .orElseGet(() -> System.getenv("ZOMBOID_DIR"));
+        String explicitDir = firstNonBlank(
+                System.getProperty("avrix.game.dir"),
+                System.getProperty("zomboid.dir")
+        );
+        if (explicitDir == null) {
+            explicitDir = firstNonBlank(
+                    System.getenv("AVRIX_GAME_DIR"),
+                    System.getenv("ZOMBOID_DIR")
+            );
         }
 
         if (explicitDir != null && !explicitDir.isBlank()) {
@@ -505,8 +517,11 @@ public class ZomboidGameProvider implements GameProvider {
 
         PrintStream previousOut = System.out;
         PrintStream previousErr = System.err;
+        Charset charset = consoleCharset();
+        PrintStream newOut = null;
+        PrintStream newErr = null;
         try {
-            PrintStream newOut = new PrintStream(
+            newOut = new PrintStream(
                     new LineReadingOutputStream(new ZomboidLogLineParser(
                             LOGGER::error,
                             LOGGER::warn,
@@ -514,12 +529,12 @@ public class ZomboidGameProvider implements GameProvider {
                             LOGGER::debug,
                             LOGGER::trace,
                             LOGGER::info
-                    ), StandardCharsets.UTF_8),
+                    ), charset),
                     true,
-                    StandardCharsets.UTF_8
+                    charset
             );
 
-            PrintStream newErr = new PrintStream(
+            newErr = new PrintStream(
                     new LineReadingOutputStream(new ZomboidLogLineParser(
                             LOGGER::error,
                             LOGGER::warn,
@@ -527,17 +542,21 @@ public class ZomboidGameProvider implements GameProvider {
                             LOGGER::debug,
                             LOGGER::trace,
                             LOGGER::error
-                    ), StandardCharsets.UTF_8),
+                    ), charset),
                     true,
-                    StandardCharsets.UTF_8
+                    charset
             );
 
             System.setOut(newOut);
             System.setErr(newErr);
             this.originalOut = previousOut;
             this.originalErr = previousErr;
+            this.redirectedOut = newOut;
+            this.redirectedErr = newErr;
             this.streamsRedirected = true;
         } catch (Exception e) {
+            closeQuietly(newOut);
+            closeQuietly(newErr);
             System.setOut(previousOut);
             System.setErr(previousErr);
             LOGGER.error("Failed to redirect system IO streams", e);
@@ -550,12 +569,34 @@ public class ZomboidGameProvider implements GameProvider {
      */
     @Override
     public synchronized void close() {
-        restoreSystemStreams();
+        restoreSystemState();
+        initialized = false;
+        serverEnvironmentDetected = null;
+        rawVersion = null;
+        normalizedVersion = null;
+        resolvedVersion = null;
+        launchArgs = new String[0];
+    }
+
+    private void restoreSystemState() {
+        try {
+            restoreSystemStreams();
+        } catch (RuntimeException e) {
+            LOGGER.warn("Failed to restore standard streams", e);
+        }
+        if (!systemStateCaptured) {
+            return;
+        }
+
+        restoreProviderProperties();
         restoreSystemProperty("user.dir", originalUserDir);
         restoreSystemProperty("java.library.path", originalJavaLibraryPath);
         restoreSystemProperty("org.lwjgl.librarypath", originalLwjglLibraryPath);
-        restoreProviderProperties();
-        initialized = false;
+
+        originalUserDir = null;
+        originalJavaLibraryPath = null;
+        originalLwjglLibraryPath = null;
+        systemStateCaptured = false;
     }
 
     private void captureSystemState() {
@@ -592,6 +633,12 @@ public class ZomboidGameProvider implements GameProvider {
         if (!streamsRedirected) {
             return;
         }
+
+        flushAndClose(redirectedOut);
+        flushAndClose(redirectedErr);
+        redirectedOut = null;
+        redirectedErr = null;
+
         if (originalOut != null) {
             System.setOut(originalOut);
             originalOut.flush();
@@ -600,7 +647,42 @@ public class ZomboidGameProvider implements GameProvider {
             System.setErr(originalErr);
             originalErr.flush();
         }
+        originalOut = null;
+        originalErr = null;
         streamsRedirected = false;
+    }
+
+    private static Charset consoleCharset() {
+        if (System.console() != null) {
+            return System.console().charset();
+        }
+        return System.out.charset();
+    }
+
+    private static void flushAndClose(PrintStream stream) {
+        if (stream == null) {
+            return;
+        }
+        stream.flush();
+        stream.close();
+    }
+
+    private static void closeQuietly(PrintStream stream) {
+        if (stream == null) {
+            return;
+        }
+        try {
+            stream.close();
+        } catch (RuntimeException _) {
+            // Best-effort cleanup after a failed redirection.
+        }
+    }
+
+    private static String firstNonBlank(String first, String second) {
+        if (first != null && !first.isBlank()) {
+            return first;
+        }
+        return (second != null && !second.isBlank()) ? second : null;
     }
 
     private static String appendPath(String existing, String addition) {

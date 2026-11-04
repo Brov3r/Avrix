@@ -110,6 +110,25 @@ class DefaultPluginManagerBranchesTest {
     }
 
     @Test
+    @DisplayName("Should allow initialization retry after a directory creation failure")
+    void shouldAllowInitializationRetryAfterDirectoryFailure() throws IOException {
+        Path blocker = tempRoot.resolve("retry-blocker");
+        Files.writeString(blocker, "blocking file");
+        Path nestedPlugins = blocker.resolve("plugins");
+        DefaultPluginManager manager = createManager(nestedPlugins, false, Constants.PLUGIN_ICON_NAME);
+
+        assertThatThrownBy(manager::init)
+                .isInstanceOf(UncheckedIOException.class);
+
+        Files.delete(blocker);
+        Files.createDirectories(blocker);
+        manager.init();
+        manager.loadPlugins();
+
+        assertThat(manager.getPlugins()).containsKeys(TestGameProvider.ID, Constants.LOADER_ID);
+    }
+
+    @Test
     @DisplayName("Should skip core metadata returned by the load-order resolver")
     void shouldSkipCoreMetadataReturnedByResolver() throws IOException {
         LoaderConfig config = config(pluginsDirectory, false, Constants.PLUGIN_ICON_NAME);
@@ -123,7 +142,7 @@ class DefaultPluginManagerBranchesTest {
                 loaderProvider,
                 mixinRegistrar,
                 new PluginScanner(config),
-                new PluginManifestParser(config.strict())
+                new PluginManifestParser()
         ) {
             @Override
             public List<Metadata> resolvePluginLoadOrder(List<Metadata> candidates) {
@@ -370,7 +389,7 @@ class DefaultPluginManagerBranchesTest {
                 new DefaultLoaderProvider(),
                 mixinRegistrar,
                 new PluginScanner(config),
-                new PluginManifestParser(config.strict())
+                new PluginManifestParser()
         ) {
             @Override
             public List<Metadata> resolvePluginLoadOrder(List<Metadata> candidates) {
@@ -391,7 +410,7 @@ class DefaultPluginManagerBranchesTest {
                 loaderProvider,
                 mixinRegistrar,
                 new PluginScanner(config),
-                new PluginManifestParser(config.strict())
+                new PluginManifestParser()
         );
     }
 

@@ -97,7 +97,7 @@ class MetadataTest {
                     List.of("Author"),
                     "MIT",
                     List.of("contact@example.com"),
-                    Map.of("dep", "1.0"),
+                    Map.of("dep", "1.0.0"),
                     List.of("target-after-me"),
                     List.of("target-before-me"),
                     "com.example.Main",
@@ -206,6 +206,75 @@ class MetadataTest {
                     .build())
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("Plugin 'id' cannot contain whitespace");
+        }
+
+        @Test
+        @DisplayName("Should enforce the canonical identifier pattern for plugin IDs")
+        void shouldRejectNonCanonicalIdentifier() {
+            assertThatThrownBy(() -> new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("UppercasePlugin")
+                    .name("Name")
+                    .version("1.0.0")
+                    .build())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("must match identifier pattern");
+        }
+
+        @Test
+        @DisplayName("Should validate plugin versions, entrypoints, mixins, and dependency identifiers")
+        void shouldValidateStructuredFields() {
+            assertThatThrownBy(() -> new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("version-plugin")
+                    .name("Name")
+                    .version("not-a-version")
+                    .build())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Invalid plugin version");
+
+            assertThatThrownBy(() -> new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("entrypoint-plugin")
+                    .name("Name")
+                    .version("1.0.0")
+                    .entrypoint("com.example..Main")
+                    .build())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("entrypoint")
+                    .hasMessageContaining("not a valid Java class name");
+
+            assertThatThrownBy(() -> new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("mixin-plugin")
+                    .name("Name")
+                    .version("1.0.0")
+                    .addMixin("not a class name")
+                    .build())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("mixin")
+                    .hasMessageContaining("not a valid Java class name");
+
+            assertThatThrownBy(() -> new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("dependency-plugin")
+                    .name("Name")
+                    .version("1.0.0")
+                    .addDependency("BadDependency", ">=1.0.0")
+                    .build())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Dependency identifier")
+                    .hasMessageContaining("must match identifier pattern");
+
+            assertThatThrownBy(() -> new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("dependency-plugin")
+                    .name("Name")
+                    .version("1.0.0")
+                    .addDependency("core-lib", "not-a-range")
+                    .build())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Dependency [core-lib] has invalid version constraint");
         }
     }
 

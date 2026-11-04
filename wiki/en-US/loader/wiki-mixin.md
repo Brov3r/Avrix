@@ -49,9 +49,14 @@ mixins:
 
 The entries are fully qualified transformer class names, not configuration file paths.
 
-Mixins are registered when their owning plugin is loaded. If another plugin can load the target class earlier, declare
-`loadBefore` so the mixin-providing plugin is loaded first. Avoid loading target classes during `onInitialize` unless
-the load order guarantees that the required mixin is already registered.
+All plugin archives are attached and all declared mixins are registered during the preparation phase, before any
+plugin entrypoint runs. A plugin's `onInitialize` can therefore load target classes without racing another plugin's
+mixin registration. `loadBefore` / `loadAfter` still control preparation order and therefore the order in which
+multiple mixins are applied to the same target.
+
+Multi-release JARs are supported for normal class loading, mixin targets, and wildcard class discovery. In strict mode
+a mixin transformation failure aborts startup; without `--strict` the affected class is loaded without the failed
+transformation and the error is logged.
 
 ---
 

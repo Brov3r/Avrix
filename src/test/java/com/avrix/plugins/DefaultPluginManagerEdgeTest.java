@@ -15,6 +15,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import test.plugin.BlockingPlugin;
+import test.plugin.BlockingPluginState;
 import test.plugin.ErrorThrowingPlugin;
 import test.plugin.LifecyclePlugin;
 import test.plugin.PhaseTracker;
@@ -26,11 +28,18 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.groups.Tuple.tuple;
@@ -262,6 +271,118 @@ class DefaultPluginManagerEdgeTest {
         }
 
         @Test
+        @DisplayName("Should initialize a plugin only once under concurrent loadPlugin calls")
+        void shouldInitializePluginOnlyOnceUnderConcurrentLoads() throws Exception {
+            DefaultPluginManager manager = createManager(false);
+            manager.init();
+
+            Path jarPath = pluginsDirectory.resolve("lifecycle-plugin.jar");
+            createPluginJar(
+                    jarPath,
+                    "lifecycle-plugin",
+                    LifecyclePlugin.class.getName(),
+                    LifecyclePlugin.class
+            );
+
+            Metadata metadata = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("lifecycle-plugin")
+                    .name("Lifecycle plugin")
+                    .version("1.0.0")
+                    .environment(Environment.BOTH)
+                    .entrypoint(LifecyclePlugin.class.getName())
+                    .build();
+            PluginData container = new PluginData(jarPath.toFile(), null, null, metadata);
+
+            int threadCount = 8;
+            CountDownLatch start = new CountDownLatch(1);
+            try (ExecutorService executor = Executors.newFixedThreadPool(threadCount)) {
+                List<Future<?>> futures = new ArrayList<>(threadCount);
+                for (int i = 0; i < threadCount; i++) {
+                    futures.add(executor.submit(() -> {
+                        start.await();
+                        manager.loadPlugin(container);
+                        return null;
+                    }));
+                }
+
+                start.countDown();
+                for (Future<?> future : futures) {
+                    future.get(10, TimeUnit.SECONDS);
+                }
+            }
+
+            assertThat(PhaseTracker.events()).containsExactly("init:lifecycle");
+            assertThat(manager.getLoadResults())
+                    .extracting(PluginLoadResult::pluginId, PluginLoadResult::status)
+                    .containsExactly(tuple("lifecycle-plugin", PluginLoadStatus.LOADED));
+        }
+
+        @Test
+        @DisplayName("Should not block close while a plugin entrypoint is initializing")
+        void shouldNotBlockCloseWhilePluginIsInitializing() throws Exception {
+            DefaultPluginManager manager = createManager(false);
+            manager.init();
+
+            Path jarPath = pluginsDirectory.resolve("blocking-plugin.jar");
+            createPluginJar(
+                    jarPath,
+                    "blocking-plugin",
+                    BlockingPlugin.class.getName(),
+                    BlockingPlugin.class
+            );
+            Metadata metadata = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("blocking-plugin")
+                    .name("Blocking plugin")
+                    .version("1.0.0")
+                    .environment(Environment.BOTH)
+                    .entrypoint(BlockingPlugin.class.getName())
+                    .build();
+            PluginData container = new PluginData(jarPath.toFile(), null, null, metadata);
+
+            try (ExecutorService loader = Executors.newSingleThreadExecutor();
+                 ExecutorService closer = Executors.newSingleThreadExecutor()) {
+                Future<?> loadFuture = loader.submit(() -> {
+                    manager.loadPlugin(container);
+                    return null;
+                });
+
+                assertThat(BlockingPluginState.ENTERED.await(5, TimeUnit.SECONDS)).isTrue();
+
+                Future<?> closeFuture = closer.submit(manager::close);
+                assertThatCode(() -> closeFuture.get(2, TimeUnit.SECONDS)).doesNotThrowAnyException();
+
+                BlockingPluginState.RELEASE.countDown();
+                loadFuture.get(5, TimeUnit.SECONDS);
+            }
+
+            assertThat(manager.getPlugins()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should reject a direct load when the plugin environment is incompatible")
+        void shouldRejectDirectLoadForIncompatibleEnvironment() throws Exception {
+            DefaultPluginManager manager = createManager(false);
+            manager.init();
+
+            Path jarPath = pluginsDirectory.resolve("server-only.jar");
+            createPluginJar(jarPath, "server-only", "");
+
+            Metadata metadata = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("server-only")
+                    .name("Server only")
+                    .version("1.0.0")
+                    .environment(Environment.SERVER)
+                    .build();
+
+            assertThatThrownBy(() -> manager.loadPlugin(new PluginData(jarPath.toFile(), null, null, metadata)))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("not compatible with environment");
+        }
+
+        @Test
         @DisplayName("Should reject loadPlugins and loadPlugin after close")
         void shouldRejectLoadingAfterClose() {
             DefaultPluginManager manager = createManager(false);
@@ -366,7 +487,7 @@ class DefaultPluginManagerEdgeTest {
                 loaderProvider,
                 mixinRegistrar,
                 new PluginScanner(config),
-                new PluginManifestParser(config.strict())
+                new PluginManifestParser()
         );
     }
 

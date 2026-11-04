@@ -15,8 +15,10 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -79,7 +81,7 @@ class CompositeClassProviderTest {
                     .hasMessageContaining("Class name");
 
             assertThatThrownBy(() -> provider.getClass("missing.absent.AbsentClass"))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(ClassNotFoundException.class)
                     .hasMessageContaining("Bytecode not found");
         }
     }
@@ -129,8 +131,62 @@ class CompositeClassProviderTest {
             assertThat(classes.get("scanned.sample.Nested.Beta").get()).isEqualTo(betaBytes);
             assertThat(classes.get("jarred.sample.Gamma").get()).isEqualTo(alphaBytes);
 
-            assertThatThrownBy(() -> classes.put("other.Placeholder", () -> new byte[0]))
-                    .isInstanceOf(UnsupportedOperationException.class);
+            classes.put("other.Placeholder", () -> new byte[0]);
+
+            assertThat(classes).containsKey("other.Placeholder");
+        }
+    }
+
+    @Test
+    @DisplayName("Should invalidate cached bytecode after a new classpath URL is registered")
+    void shouldInvalidateCacheAfterUrlRegistration() throws Exception {
+        Path classesDir = Files.createDirectories(tempDir.resolve("late-classes"));
+        String classPath = TargetGameService.class.getName().replace('.', '/') + ".class";
+        writeBytes(classesDir.resolve(classPath), readClassBytes(TargetGameService.class));
+
+        try (KnotClassLoader loader = new KnotClassLoader(new URL[0], PARENT)) {
+            CompositeClassProvider provider = new CompositeClassProvider(loader);
+            byte[] beforeRegistration = provider.getClass(TargetGameService.class.getName());
+
+            loader.addURL(classesDir.toUri().toURL());
+            byte[] afterRegistration = provider.getClass(TargetGameService.class.getName());
+
+            assertThat(afterRegistration).isNotSameAs(beforeRegistration);
+        }
+    }
+
+    @Test
+    @DisplayName("Should resolve versioned classes from multi-release JARs during class scanning")
+    void shouldResolveMultiReleaseJarClassesDuringClassScan() throws Exception {
+        Path jarPath = tempDir.resolve("multi-release.jar");
+        String classPath = TargetGameService.class.getName().replace('.', '/') + ".class";
+        byte[] baseBytes = readClassBytes(TargetGameService.class);
+        byte[] versionedBytes = {0x01, 0x02, 0x03};
+        String versionedPath = "META-INF/versions/" + Runtime.version().feature() + "/" + classPath;
+
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        manifest.getMainAttributes().put(new Attributes.Name("Multi-Release"), "true");
+
+        try (JarOutputStream outputStream = new JarOutputStream(Files.newOutputStream(jarPath))) {
+            outputStream.putNextEntry(new JarEntry("META-INF/MANIFEST.MF"));
+            manifest.write(outputStream);
+            outputStream.closeEntry();
+
+            outputStream.putNextEntry(new JarEntry(classPath));
+            outputStream.write(baseBytes);
+            outputStream.closeEntry();
+
+            outputStream.putNextEntry(new JarEntry(versionedPath));
+            outputStream.write(versionedBytes);
+            outputStream.closeEntry();
+        }
+
+        try (KnotClassLoader loader = new KnotClassLoader(new URL[]{jarPath.toUri().toURL()}, PARENT)) {
+            Map<String, Supplier<byte[]>> classes = new CompositeClassProvider(loader).getAllClasses();
+
+            assertThat(classes).containsKey(TargetGameService.class.getName());
+            assertThat(classes.get(TargetGameService.class.getName()).get()).isEqualTo(versionedBytes);
         }
     }
 

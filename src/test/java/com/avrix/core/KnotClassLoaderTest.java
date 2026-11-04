@@ -168,12 +168,17 @@ class KnotClassLoaderTest {
                     .isInstanceOf(NullPointerException.class)
                     .hasMessageContaining("URL");
 
-            URL malformedUrl = new URL("http", "example.com", "/invalid path.txt");
+            URL malformedUrl = malformedUrl();
 
             assertThatThrownBy(() -> loader.addURL(malformedUrl))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Invalid URI syntax");
         }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static URL malformedUrl() throws java.net.MalformedURLException {
+        return new URL("http", "example.com", "/invalid path.txt");
     }
 
     @Test

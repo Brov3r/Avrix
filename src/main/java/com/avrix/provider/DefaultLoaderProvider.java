@@ -3,11 +3,11 @@ package com.avrix.provider;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;
 import com.avrix.utils.Constants;
+import com.avrix.utils.LoaderProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -15,16 +15,15 @@ import java.util.Properties;
 /**
  * Production-ready default implementation of {@link LoaderProvider}.
  * <p>
- * Reads manifest properties dynamically injected during the Gradle build pipeline
- * via {@code avrix.properties} resource token replacement, falling back to static
- * constant definitions if the resource file is missing or unreadable.
+ * Reads optional {@code avrix.*} overrides from the packaged {@code avrix.properties} resource. The Gradle build
+ * replaces the {@code version} and {@code projectName} tokens; the remaining values fall back to {@link Constants}
+ * when no override is present. Missing or unreadable resources are handled gracefully.
  *
  * <p><b>API Note:</b> Instantiated and registered in {@code ServiceManager} during the bootstrap lifecycle phase.
  */
 public final class DefaultLoaderProvider implements LoaderProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultLoaderProvider.class);
-    private static final String PROPERTIES_RESOURCE = "avrix.properties";
 
     private final String id;
     private final String name;
@@ -37,22 +36,30 @@ public final class DefaultLoaderProvider implements LoaderProvider {
     /**
      * Constructs and initializes the loader provider descriptor.
      * <p>
-     * Attempts to read dynamically filtered build properties from {@code avrix.properties}
-     * on the classpath. If unavailable, falls back to default constant values defined in {@link Constants}.
+     * Attempts to read optional build-property overrides from {@code avrix.properties} on the classpath. If the
+     * resource is unavailable or an override is absent, falls back to default constant values defined in
+     * {@link Constants}.
      *
      * <p><b>Implementation Note:</b> Initializes an immutable synthetic {@link Metadata} instance representing the loader runtime.
      */
     public DefaultLoaderProvider() {
-        Properties properties = new Properties();
-
-        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(PROPERTIES_RESOURCE)) {
-            if (stream != null) {
-                properties.load(stream);
-            } else {
-                LOGGER.debug("Resource [{}] not found on classpath. Falling back to default constants.", PROPERTIES_RESOURCE);
+        Properties properties;
+        try {
+            properties = LoaderProperties.read(getClass().getClassLoader());
+            if (properties == null) {
+                LOGGER.debug(
+                        "Resource [{}] not found on classpath. Falling back to default constants.",
+                        LoaderProperties.RESOURCE_NAME
+                );
+                properties = new Properties();
             }
         } catch (IOException e) {
-            LOGGER.warn("Failed to read [{}]. Using default loader constants.", PROPERTIES_RESOURCE, e);
+            LOGGER.warn(
+                    "Failed to read [{}]. Using default loader constants.",
+                    LoaderProperties.RESOURCE_NAME,
+                    e
+            );
+            properties = new Properties();
         }
 
         this.id = properties.getProperty("avrix.id", Constants.LOADER_ID);

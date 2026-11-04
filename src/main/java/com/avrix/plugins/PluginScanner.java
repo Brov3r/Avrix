@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -51,6 +52,9 @@ public final class PluginScanner {
             return stream
                     .filter(Files::isRegularFile)
                     .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(config.pluginExtension()))
+                    .sorted(Comparator.comparing(
+                            path -> path.getFileName().toString().toLowerCase(Locale.ROOT)
+                    ))
                     .map(Path::toFile)
                     .toList();
         } catch (IOException e) {
@@ -77,6 +81,9 @@ public final class PluginScanner {
         try {
             for (String line : Files.readAllLines(disabledFile)) {
                 String entry = line;
+                if (!entry.isEmpty() && entry.charAt(0) == '\uFEFF') {
+                    entry = entry.substring(1);
+                }
                 int commentStart = entry.indexOf('#');
                 if (commentStart >= 0) {
                     entry = entry.substring(0, commentStart);

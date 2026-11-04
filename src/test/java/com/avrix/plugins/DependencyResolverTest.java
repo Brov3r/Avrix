@@ -53,16 +53,11 @@ class DependencyResolverTest {
     }
 
     @Test
-    @DisplayName("Should reject identifiers that differ only by case")
-    void shouldRejectCaseInsensitiveDuplicateIdentifiers() {
-        var resolver = new DependencyResolver(List.of());
-
-        assertThatThrownBy(() -> resolver.resolve(List.of(
-                meta("Plugin", "1.0.0"),
-                meta("plugin", "1.0.0")
-        )))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Duplicate plugin identifier [plugin] (case-insensitive conflict with [Plugin])");
+    @DisplayName("Should reject uppercase identifiers at the metadata layer")
+    void shouldRejectUppercaseIdentifiers() {
+        assertThatThrownBy(() -> meta("Plugin", "1.0.0"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("must match identifier pattern");
     }
 
     @Test
@@ -99,14 +94,11 @@ class DependencyResolverTest {
     }
 
     @Test
-    @DisplayName("Should match conflicts case-insensitively")
-    void shouldMatchConflictsCaseInsensitively() {
-        var pluginA = builder("plugin-a", "1.0.0").conflicts("PLUGIN-B").build();
-        var pluginB = meta("plugin-b", "1.0.0");
-
-        assertThatThrownBy(() -> new DependencyResolver(List.of(), true).resolve(List.of(pluginA, pluginB)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Plugin [plugin-a] conflicts with installed plugin [plugin-b]");
+    @DisplayName("Should reject uppercase conflict references at the metadata layer")
+    void shouldRejectUppercaseConflictReferences() {
+        assertThatThrownBy(() -> builder("plugin-a", "1.0.0").conflicts("PLUGIN-B").build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("must match identifier pattern");
     }
 
     @Test
@@ -132,21 +124,15 @@ class DependencyResolverTest {
     }
 
     @Test
-    @DisplayName("Should resolve dependencies and load order ignoring identifier case")
-    void shouldResolveIdentifiersIgnoringCase() {
-        var resolver = new DependencyResolver(List.of());
+    @DisplayName("Should reject uppercase dependency and load-order references at the metadata layer")
+    void shouldRejectUppercaseReferences() {
+        assertThatThrownBy(() -> withDependencies("consumer", "1.0.0", Map.of("MyPlugin", ">=1.0.0")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("must match identifier pattern");
 
-        var dependencyConsumer = withDependencies("consumer", "1.0.0", Map.of("MyPlugin", ">=1.0.0"));
-        var dependencyProvider = meta("myplugin", "1.0.0");
-        var dependencyOrder = resolver.resolve(List.of(dependencyConsumer, dependencyProvider));
-
-        assertThat(dependencyOrder).extracting(Metadata::id).containsExactly("myplugin", "consumer");
-
-        var orderConsumer = builder("order-consumer", "1.0.0").loadAfter("Plugin-B").build();
-        var orderProvider = meta("plugin-b", "1.0.0");
-        var order = resolver.resolve(List.of(orderConsumer, orderProvider));
-
-        assertThat(order).extracting(Metadata::id).containsExactly("plugin-b", "order-consumer");
+        assertThatThrownBy(() -> builder("order-consumer", "1.0.0").loadAfter("Plugin-B").build())
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("must match identifier pattern");
     }
 
     @Test
@@ -202,28 +188,21 @@ class DependencyResolverTest {
     }
 
     @Test
-    @DisplayName("Should report an invalid constraint before a missing dependency")
-    void shouldValidateConstraintBeforeMissingDependency() {
-        var resolver = new DependencyResolver(List.of());
-        var plugin = withDependencies("consumer", "1.0.0", Map.of("missing", "not-a-valid-range"));
-
-        assertThatThrownBy(() -> resolver.resolve(List.of(plugin)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Invalid version constraint in plugin [consumer] for dependency [missing]");
+    @DisplayName("Should reject an invalid dependency constraint at the metadata layer")
+    void shouldRejectInvalidConstraintBeforeResolution() {
+        assertThatThrownBy(() -> withDependencies("consumer", "1.0.0", Map.of("missing", "not-a-valid-range")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Dependency [missing] has invalid version constraint");
     }
 
     @Test
-    @DisplayName("Should distinguish a malformed dependency version from a constraint mismatch")
-    void shouldDistinguishMalformedVersionFromMismatch() {
+    @DisplayName("Should reject malformed versions at the metadata layer and report constraint mismatches")
+    void shouldRejectMalformedVersionsAndDistinguishMismatch() {
+        assertThatThrownBy(() -> meta("provider", "not-a-semver"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid plugin version");
+
         var resolver = new DependencyResolver(List.of());
-
-        var malformedProvider = meta("provider", "not-a-semver");
-        var malformedConsumer = withDependencies("consumer", "1.0.0", Map.of("provider", ">=1.0.0"));
-
-        assertThatThrownBy(() -> resolver.resolve(List.of(malformedConsumer, malformedProvider)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Invalid version [not-a-semver] declared by plugin [provider] required by plugin [consumer]");
-
         var newerProvider = meta("provider", "3.0.0");
         var incompatibleConsumer = withDependencies("consumer", "1.0.0", Map.of("provider", "^2.1.0"));
 
@@ -233,15 +212,11 @@ class DependencyResolverTest {
     }
 
     @Test
-    @DisplayName("Should report an invalid version constraint separately from a version mismatch")
+    @DisplayName("Should reject an invalid version constraint while building metadata")
     void shouldRejectInvalidVersionConstraint() {
-        var resolver = new DependencyResolver(List.of());
-        var consumer = withDependencies("consumer", "1.0.0", Map.of("provider", "not-a-valid-range"));
-        var provider = meta("provider", "1.0.0");
-
-        assertThatThrownBy(() -> resolver.resolve(List.of(consumer, provider)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Invalid version constraint in plugin [consumer] for dependency [provider]");
+        assertThatThrownBy(() -> withDependencies("consumer", "1.0.0", Map.of("provider", "not-a-valid-range")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Dependency [provider] has invalid version constraint");
     }
 
     @Test

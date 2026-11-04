@@ -3,6 +3,7 @@ package com.avrix.provider;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -75,6 +76,9 @@ public final class NativeLibraryLocator {
             stream.filter(Files::isDirectory)
                     .map(Path::toAbsolutePath)
                     .map(Path::normalize)
+                    .sorted(Comparator.comparing(
+                            path -> path.getFileName().toString().toLowerCase(Locale.ROOT)
+                    ))
                     .forEach(nativeCollector::add);
         } catch (Exception _) {
             // Keep the already discovered paths; native discovery is best-effort.

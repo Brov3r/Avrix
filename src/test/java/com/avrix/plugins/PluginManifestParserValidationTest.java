@@ -32,14 +32,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class PluginManifestParserValidationTest {
 
     private final PluginManifestParser lenientParser = new PluginManifestParser();
-    private final PluginManifestParser strictParser = new PluginManifestParser(true);
 
     @TempDir
     Path tempDir;
 
     @Test
-    @DisplayName("Should reject unknown top-level keys in strict mode")
-    void shouldRejectUnknownTopLevelKeysInStrictMode() throws IOException {
+    @DisplayName("Should warn about unknown top-level keys in every validation mode")
+    void shouldWarnAboutUnknownTopLevelKeys() throws IOException {
         ConfigurationNode node = load("""
                 schema: 1
                 id: valid-plugin
@@ -49,9 +48,7 @@ class PluginManifestParserValidationTest {
                 """);
 
         assertThat(lenientParser.fromNode(node).id()).isEqualTo("valid-plugin");
-        assertThatThrownBy(() -> strictParser.fromNode(node))
-                .isInstanceOf(SerializationException.class)
-                .hasMessageContaining("Unknown metadata key [entryPoint]");
+        assertThat(lenientParser.fromNode(node).id()).isEqualTo("valid-plugin");
     }
 
     @Test
@@ -66,7 +63,7 @@ class PluginManifestParserValidationTest {
         assertThatThrownBy(() -> lenientParser.fromNode(node))
                 .isInstanceOf(SerializationException.class)
                 .hasMessageContaining("Missing required metadata key [schema]");
-        assertThatThrownBy(() -> strictParser.fromNode(node))
+        assertThatThrownBy(() -> lenientParser.fromNode(node))
                 .isInstanceOf(SerializationException.class)
                 .hasMessageContaining("Missing required metadata key [schema]");
     }
@@ -103,7 +100,7 @@ class PluginManifestParserValidationTest {
     }
 
     @Test
-    @DisplayName("Should reject unknown environments in strict mode and default to BOTH in lenient mode")
+    @DisplayName("Should default unknown environments to BOTH in every validation mode")
     void shouldValidateEnvironment() throws IOException {
         ConfigurationNode node = load("""
                 schema: 1
@@ -114,9 +111,7 @@ class PluginManifestParserValidationTest {
                 """);
 
         assertThat(lenientParser.fromNode(node).environment()).isEqualTo(Environment.BOTH);
-        assertThatThrownBy(() -> strictParser.fromNode(node))
-                .isInstanceOf(SerializationException.class)
-                .hasMessageContaining("Unknown metadata environment [cliet]");
+        assertThat(lenientParser.fromNode(node).environment()).isEqualTo(Environment.BOTH);
     }
 
     @Test
@@ -183,7 +178,7 @@ class PluginManifestParserValidationTest {
         assertThatThrownBy(() -> lenientParser.fromNode(node))
                 .isInstanceOf(SerializationException.class)
                 .hasMessageContaining("Dependency [core-lib]")
-                .hasMessageContaining("Invalid version constraint [not-a-range]");
+                .hasMessageContaining("invalid version constraint [not-a-range]");
     }
 
     @Test
@@ -200,13 +195,13 @@ class PluginManifestParserValidationTest {
 
         assertThatThrownBy(() -> lenientParser.fromNode(node))
                 .isInstanceOf(SerializationException.class)
-                .hasMessageContaining("Metadata key [loadBefore]")
+                .hasMessageContaining("Plugin 'loadBefore'")
                 .hasMessageContaining("cannot contain whitespace");
     }
 
     @Test
-    @DisplayName("Should deduplicate load order identifiers in lenient mode and reject them in strict mode")
-    void shouldRejectDuplicateLoadOrderIdentifiers() throws IOException {
+    @DisplayName("Should deduplicate load order identifiers in every validation mode")
+    void shouldDeduplicateLoadOrderIdentifiers() throws IOException {
         ConfigurationNode node = load("""
                 schema: 1
                 id: order-plugin
@@ -218,9 +213,7 @@ class PluginManifestParserValidationTest {
                 """);
 
         assertThat(lenientParser.fromNode(node).loadBefore()).containsExactly("plugin-a");
-        assertThatThrownBy(() -> strictParser.fromNode(node))
-                .isInstanceOf(SerializationException.class)
-                .hasMessageContaining("Metadata key [loadBefore] contains duplicate identifier [plugin-a]");
+        assertThat(lenientParser.fromNode(node).loadBefore()).containsExactly("plugin-a");
     }
 
     @Test
@@ -236,7 +229,7 @@ class PluginManifestParserValidationTest {
 
         assertThatThrownBy(() -> lenientParser.fromNode(node))
                 .isInstanceOf(SerializationException.class)
-                .hasMessageContaining("Metadata key [entrypoint]")
+                .hasMessageContaining("Plugin 'entrypoint'")
                 .hasMessageContaining("not a valid Java class name");
     }
 
@@ -273,7 +266,7 @@ class PluginManifestParserValidationTest {
 
         assertThatThrownBy(() -> lenientParser.fromNode(node))
                 .isInstanceOf(SerializationException.class)
-                .hasMessageContaining("Metadata key [mixins]")
+                .hasMessageContaining("Plugin mixin")
                 .hasMessageContaining("not a valid Java class name");
     }
 
@@ -308,7 +301,7 @@ class PluginManifestParserValidationTest {
 
         assertThatThrownBy(() -> lenientParser.fromNode(node))
                 .isInstanceOf(SerializationException.class)
-                .hasMessageContaining("Metadata key [conflicts]")
+                .hasMessageContaining("Plugin 'conflicts'")
                 .hasMessageContaining("must match identifier pattern");
     }
 
@@ -354,7 +347,7 @@ class PluginManifestParserValidationTest {
 
         assertThatThrownBy(() -> lenientParser.fromNode(node))
                 .isInstanceOf(SerializationException.class)
-                .hasMessageContaining("Metadata key [id] cannot contain whitespace");
+                .hasMessageContaining("Plugin 'id' cannot contain whitespace");
     }
 
     @Test
@@ -370,14 +363,14 @@ class PluginManifestParserValidationTest {
         assertThatThrownBy(() -> lenientParser.fromNode(node))
                 .isInstanceOf(SerializationException.class)
                 .hasMessageContaining("must match identifier pattern");
-        assertThatThrownBy(() -> strictParser.fromNode(node))
+        assertThatThrownBy(() -> lenientParser.fromNode(node))
                 .isInstanceOf(SerializationException.class)
                 .hasMessageContaining("must match identifier pattern");
     }
 
     @Test
-    @DisplayName("Should reject blank list entries in strict mode")
-    void shouldRejectBlankListEntriesInStrictMode() throws IOException {
+    @DisplayName("Should ignore blank list entries in every validation mode")
+    void shouldIgnoreBlankListEntries() throws IOException {
         ConfigurationNode node = load("""
                 schema: 1
                 id: list-plugin
@@ -388,9 +381,7 @@ class PluginManifestParserValidationTest {
                 """);
 
         assertThat(lenientParser.fromNode(node).authors()).isEmpty();
-        assertThatThrownBy(() -> strictParser.fromNode(node))
-                .isInstanceOf(SerializationException.class)
-                .hasMessageContaining("Metadata key [authors] contains a blank list entry");
+        assertThat(lenientParser.fromNode(node).authors()).isEmpty();
     }
 
     @Test
@@ -442,8 +433,8 @@ class PluginManifestParserValidationTest {
     }
 
     @Test
-    @DisplayName("Should include the JAR source in manifest validation errors")
-    void shouldIncludeJarSourceInValidationErrors() throws IOException {
+    @DisplayName("Should include the JAR source in non-fatal manifest warnings")
+    void shouldIncludeJarSourceInWarningsForBothModes() throws IOException {
         Path jarPath = tempDir.resolve("plugin.jar");
         writeJar(jarPath, """
                 schema: 1
@@ -453,11 +444,37 @@ class PluginManifestParserValidationTest {
                 typoKey: value
                 """);
 
-        assertThatThrownBy(() -> strictParser.fromJarFile(jarPath, Constants.METADATA_NAME))
-                .isInstanceOf(SerializationException.class)
-                .hasMessageContaining("Invalid metadata in JAR")
-                .hasMessageContaining("plugin.jar")
-                .hasMessageContaining("Unknown metadata key [typoKey]");
+        Logger logger = (Logger) LoggerFactory.getLogger(PluginManifestParser.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+
+        try {
+            assertThat(lenientParser.fromJarFile(jarPath, Constants.METADATA_NAME).id())
+                    .isEqualTo("jar-plugin");
+        } finally {
+            logger.detachAppender(appender);
+        }
+
+        assertThat(appender.list).anySatisfy(event -> assertThat(event.getFormattedMessage())
+                .contains("plugin.jar")
+                .contains("Unknown metadata key [typoKey]"));
+    }
+
+    @Test
+    @DisplayName("Should reject duplicate YAML keys inside a JAR manifest")
+    void shouldRejectDuplicateYamlKeysInJar() throws IOException {
+        Path jarPath = tempDir.resolve("duplicate-keys.jar");
+        writeJar(jarPath, """
+                schema: 1
+                id: first-plugin
+                id: second-plugin
+                name: Duplicate Plugin
+                version: "1.0.0"
+                """);
+
+        assertThatThrownBy(() -> lenientParser.fromJarFile(jarPath, Constants.METADATA_NAME))
+                .hasMessageContaining("duplicate key");
     }
 
     private ConfigurationNode load(String yaml) throws IOException {

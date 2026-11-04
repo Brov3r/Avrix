@@ -97,7 +97,7 @@ class DefaultPluginManagerTest {
                 loaderProvider,
                 mixinRegistrar,
                 new PluginScanner(config),
-                new PluginManifestParser(config.strict())
+                new PluginManifestParser()
         );
     }
 
@@ -184,9 +184,9 @@ class DefaultPluginManagerTest {
         @Test
         @DisplayName("Should sort independent plugins without ordering constraints")
         void shouldSortIndependentPlugins() {
-            var meta1 = createMeta("pluginA", "1.0.0");
-            var meta2 = createMeta("pluginB", "1.0.0");
-            var meta3 = createMeta("pluginC", "1.0.0");
+            var meta1 = createMeta("plugina", "1.0.0");
+            var meta2 = createMeta("pluginb", "1.0.0");
+            var meta3 = createMeta("pluginc", "1.0.0");
 
             var result = manager.resolvePluginLoadOrder(List.of(meta1, meta2, meta3));
 
@@ -200,15 +200,15 @@ class DefaultPluginManagerTest {
         void shouldSortLinearDependencies() {
             // A -> B -> C (A depends on B, B depends on C)
             // Expected load order: C, B, A
-            var metaA = createMetaWithDeps("pluginA", "1.0.0", Map.of("pluginB", ">=1.0.0"));
-            var metaB = createMetaWithDeps("pluginB", "1.0.0", Map.of("pluginC", ">=1.0.0"));
-            var metaC = createMeta("pluginC", "1.0.0");
+            var metaA = createMetaWithDeps("plugina", "1.0.0", Map.of("pluginb", ">=1.0.0"));
+            var metaB = createMetaWithDeps("pluginb", "1.0.0", Map.of("pluginc", ">=1.0.0"));
+            var metaC = createMeta("pluginc", "1.0.0");
 
             var result = manager.resolvePluginLoadOrder(List.of(metaA, metaC, metaB));
 
             assertThat(result)
                     .extracting(Metadata::id)
-                    .containsExactly("pluginC", "pluginB", "pluginA");
+                    .containsExactly("pluginc", "pluginb", "plugina");
         }
 
         @Test
@@ -216,43 +216,43 @@ class DefaultPluginManagerTest {
         void shouldSortComplexGraph() {
             // A depends on B and C; B and C depend on D
             // Expected load order: D, (B/C in any order), A
-            var metaA = createMetaWithDeps("A", "1.0.0", Map.of("B", ">=1.0.0", "C", ">=1.0.0"));
-            var metaB = createMetaWithDeps("B", "1.0.0", Map.of("D", ">=1.0.0"));
-            var metaC = createMetaWithDeps("C", "1.0.0", Map.of("D", ">=1.0.0"));
-            var metaD = createMeta("D", "1.0.0");
+            var metaA = createMetaWithDeps("a", "1.0.0", Map.of("b", ">=1.0.0", "c", ">=1.0.0"));
+            var metaB = createMetaWithDeps("b", "1.0.0", Map.of("d", ">=1.0.0"));
+            var metaC = createMetaWithDeps("c", "1.0.0", Map.of("d", ">=1.0.0"));
+            var metaD = createMeta("d", "1.0.0");
 
             var result = manager.resolvePluginLoadOrder(List.of(metaA, metaB, metaC, metaD));
 
             assertThat(result).hasSize(4);
-            assertThat(result.get(0).id()).isEqualTo("D");
-            assertThat(result.get(3).id()).isEqualTo("A");
-            assertThat(result.subList(1, 3)).extracting(Metadata::id).containsExactlyInAnyOrder("B", "C");
+            assertThat(result.get(0).id()).isEqualTo("d");
+            assertThat(result.get(3).id()).isEqualTo("a");
+            assertThat(result.subList(1, 3)).extracting(Metadata::id).containsExactlyInAnyOrder("b", "c");
         }
 
         @Test
         @DisplayName("Should throw IllegalStateException when a required dependency is missing")
         void shouldFailOnMissingDependency() {
-            var metaA = createMetaWithDeps("pluginA", "1.0.0", Map.of("missing-plugin", ">=1.0.0"));
+            var metaA = createMetaWithDeps("plugina", "1.0.0", Map.of("missing-plugin", ">=1.0.0"));
 
             assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(metaA)))
                     .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("Plugin [pluginA] depends on missing component [missing-plugin]");
+                    .hasMessageContaining("Plugin [plugina] depends on missing component [missing-plugin]");
         }
 
         @Test
         @DisplayName("Should detect and reject cyclic plugin dependency graphs")
         void shouldFailOnCircularDependency() {
             // A -> B -> C -> A
-            var metaA = createMetaWithDeps("A", "1.0.0", Map.of("B", ">=1.0.0"));
-            var metaB = createMetaWithDeps("B", "1.0.0", Map.of("C", ">=1.0.0"));
-            var metaC = createMetaWithDeps("C", "1.0.0", Map.of("A", ">=1.0.0"));
+            var metaA = createMetaWithDeps("a", "1.0.0", Map.of("b", ">=1.0.0"));
+            var metaB = createMetaWithDeps("b", "1.0.0", Map.of("c", ">=1.0.0"));
+            var metaC = createMetaWithDeps("c", "1.0.0", Map.of("a", ">=1.0.0"));
 
             assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(metaA, metaB, metaC)))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Cyclic plugin dependency or load order detected")
-                    .hasMessageContaining("A")
-                    .hasMessageContaining("B")
-                    .hasMessageContaining("C");
+                    .hasMessageContaining("a")
+                    .hasMessageContaining("b")
+                    .hasMessageContaining("c");
         }
     }
 
@@ -267,18 +267,18 @@ class DefaultPluginManagerTest {
             // Expected load order: B, A
             var metaA = new Metadata.Builder()
                     .schema(SCHEMA)
-                    .id("pluginA")
+                    .id("plugina")
                     .name("A")
                     .version("1.0.0")
-                    .loadAfter("pluginB", "optional-missing-plugin")
+                    .loadAfter("pluginb", "optional-missing-plugin")
                     .build();
-            var metaB = createMeta("pluginB", "1.0.0");
+            var metaB = createMeta("pluginb", "1.0.0");
 
             var result = manager.resolvePluginLoadOrder(List.of(metaA, metaB));
 
             assertThat(result)
                     .extracting(Metadata::id)
-                    .containsExactly("pluginB", "pluginA");
+                    .containsExactly("pluginb", "plugina");
         }
 
         @Test
@@ -288,18 +288,18 @@ class DefaultPluginManagerTest {
             // Expected load order: A, B
             var metaA = new Metadata.Builder()
                     .schema(SCHEMA)
-                    .id("pluginA")
+                    .id("plugina")
                     .name("A")
                     .version("1.0.0")
-                    .loadBefore("pluginB")
+                    .loadBefore("pluginb")
                     .build();
-            var metaB = createMeta("pluginB", "1.0.0");
+            var metaB = createMeta("pluginb", "1.0.0");
 
             var result = manager.resolvePluginLoadOrder(List.of(metaB, metaA));
 
             assertThat(result)
                     .extracting(Metadata::id)
-                    .containsExactly("pluginA", "pluginB");
+                    .containsExactly("plugina", "pluginb");
         }
 
         @Test
@@ -358,8 +358,8 @@ class DefaultPluginManagerTest {
         @DisplayName("Should detect circular dependency introduced by conflicting loadBefore and loadAfter")
         void shouldFailOnConflictingSoftRules() {
             // A loadBefore B and B loadBefore A
-            var metaA = new Metadata.Builder().schema(SCHEMA).id("A").name("A").version("1.0.0").loadBefore("B").build();
-            var metaB = new Metadata.Builder().schema(SCHEMA).id("B").name("B").version("1.0.0").loadBefore("A").build();
+            var metaA = new Metadata.Builder().schema(SCHEMA).id("a").name("A").version("1.0.0").loadBefore("b").build();
+            var metaB = new Metadata.Builder().schema(SCHEMA).id("b").name("B").version("1.0.0").loadBefore("a").build();
 
             assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(metaA, metaB)))
                     .isInstanceOf(IllegalStateException.class)
@@ -451,11 +451,11 @@ class DefaultPluginManagerTest {
         @Test
         @DisplayName("Should detect multi-step indirect circular dependency across 5 plugins via soft ordering")
         void shouldDetectIndirectLongCycle() {
-            var p1 = new Metadata.Builder().schema(SCHEMA).id("p1").name("P1").version("1.0").loadBefore("p2").build();
-            var p2 = new Metadata.Builder().schema(SCHEMA).id("p2").name("P2").version("1.0").loadBefore("p3").build();
-            var p3 = new Metadata.Builder().schema(SCHEMA).id("p3").name("P3").version("1.0").loadBefore("p4").build();
-            var p4 = new Metadata.Builder().schema(SCHEMA).id("p4").name("P4").version("1.0").loadBefore("p5").build();
-            var p5 = new Metadata.Builder().schema(SCHEMA).id("p5").name("P5").version("1.0").loadBefore("p1").build();
+            var p1 = new Metadata.Builder().schema(SCHEMA).id("p1").name("P1").version("1.0.0").loadBefore("p2").build();
+            var p2 = new Metadata.Builder().schema(SCHEMA).id("p2").name("P2").version("1.0.0").loadBefore("p3").build();
+            var p3 = new Metadata.Builder().schema(SCHEMA).id("p3").name("P3").version("1.0.0").loadBefore("p4").build();
+            var p4 = new Metadata.Builder().schema(SCHEMA).id("p4").name("P4").version("1.0.0").loadBefore("p5").build();
+            var p5 = new Metadata.Builder().schema(SCHEMA).id("p5").name("P5").version("1.0.0").loadBefore("p1").build();
 
             assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(p3, p1, p5, p2, p4)))
                     .isInstanceOf(IllegalStateException.class)
@@ -467,12 +467,12 @@ class DefaultPluginManagerTest {
         @Test
         @DisplayName("Should resolve two wildcard plugins when disambiguated by explicit loadAfter rule")
         void shouldDisambiguateMultipleWildcardPlugins() {
-            var pluginA = new Metadata.Builder()
+            var plugina = new Metadata.Builder()
                     .schema(SCHEMA).id("plugin-a").name("A").version("1.0.0")
                     .loadBefore("*")
                     .build();
 
-            var pluginB = new Metadata.Builder()
+            var pluginb = new Metadata.Builder()
                     .schema(SCHEMA).id("plugin-b").name("B").version("1.0.0")
                     .loadBefore("*")
                     .loadAfter("plugin-a")
@@ -481,7 +481,7 @@ class DefaultPluginManagerTest {
             var normal1 = createMeta("normal-1", "1.0.0");
             var normal2 = createMeta("normal-2", "1.0.0");
 
-            var sorted = manager.resolvePluginLoadOrder(List.of(normal2, pluginB, normal1, pluginA));
+            var sorted = manager.resolvePluginLoadOrder(List.of(normal2, pluginb, normal1, plugina));
             List<String> order = sorted.stream().map(Metadata::id).toList();
 
             assertThat(order.get(0)).isEqualTo("plugin-a");
@@ -530,10 +530,10 @@ class DefaultPluginManagerTest {
         @DisplayName("Should produce a deterministic order for independent plugins")
         void shouldProduceDeterministicOrderForIndependentPlugins() {
             var pluginZ = createMeta("plugin-z", "1.0.0");
-            var pluginA = createMeta("plugin-a", "1.0.0");
+            var plugina = createMeta("plugin-a", "1.0.0");
             var pluginM = createMeta("plugin-m", "1.0.0");
 
-            var result = manager.resolvePluginLoadOrder(List.of(pluginZ, pluginA, pluginM));
+            var result = manager.resolvePluginLoadOrder(List.of(pluginZ, plugina, pluginM));
 
             assertThat(result).extracting(Metadata::id).containsExactly("plugin-a", "plugin-m", "plugin-z");
         }
@@ -622,6 +622,29 @@ class DefaultPluginManagerTest {
             assertThat(loaded).isNotNull();
             assertThat(loaded.isSynthetic()).isFalse();
             assertThat(loaded.getPluginFile()).contains(jarFile);
+            assertThat(loaded.getPluginIconURI()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should expose an icon URI only when the archive contains the icon")
+        void shouldExposeIconOnlyWhenPresent() throws Exception {
+            Path jarPath = tempDir.resolve("icon-plugin.jar");
+            try (var jos = new JarOutputStream(Files.newOutputStream(jarPath))) {
+                jos.putNextEntry(new JarEntry(Constants.PLUGIN_ICON_NAME));
+                jos.write(new byte[]{1, 2, 3});
+                jos.closeEntry();
+            }
+
+            var meta = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("icon-plugin")
+                    .name("Icon Plugin")
+                    .version("1.0.0")
+                    .build();
+
+            manager.loadPlugin(new PluginData(jarPath.toFile(), null, null, meta));
+
+            assertThat(manager.getPlugins().get("icon-plugin").getPluginIconURI()).isPresent();
         }
 
         @Test
@@ -646,6 +669,10 @@ class DefaultPluginManagerTest {
             assertThat(loaded.isSynthetic()).isFalse();
             assertThat(ValidStubPlugin.initializedData).isNotNull();
             assertThat(ValidStubPlugin.initializedData.id()).isEqualTo("exec-plugin");
+            assertThat(ValidStubPlugin.initializedData.getPluginInstance()).isPresent();
+            assertThat(manager.getLoadResults())
+                    .extracting(PluginLoadResult::pluginId, PluginLoadResult::status)
+                    .containsExactly(tuple("exec-plugin", PluginLoadStatus.LOADED));
         }
 
         @Test
@@ -713,7 +740,7 @@ class DefaultPluginManagerTest {
         void shouldReturnUnmodifiablePluginsMap() {
             var pluginsMap = manager.getPlugins();
 
-            assertThatThrownBy(() -> pluginsMap.put("illegal", new PluginData(createMeta("illegal", "1.0"))))
+            assertThatThrownBy(() -> pluginsMap.put("illegal", new PluginData(createMeta("illegal", "1.0.0"))))
                     .isInstanceOf(UnsupportedOperationException.class);
         }
 
@@ -937,7 +964,7 @@ class DefaultPluginManagerTest {
                     loaderProvider,
                     mixin -> PhaseTracker.record("mixin:" + mixin),
                     new PluginScanner(config),
-                    new PluginManifestParser(config.strict())
+                    new PluginManifestParser()
             );
             twoPhaseManager.init();
 
@@ -984,22 +1011,22 @@ class DefaultPluginManagerTest {
             manager.init();
             Files.createDirectories(pluginsDirectory);
 
-            var pluginA = new Metadata.Builder()
+            var plugina = new Metadata.Builder()
                     .schema(SCHEMA)
                     .id("conflict-a")
                     .name("Conflict A")
                     .version("1.0.0")
                     .conflicts("conflict-b")
                     .build();
-            var pluginB = new Metadata.Builder()
+            var pluginb = new Metadata.Builder()
                     .schema(SCHEMA)
                     .id("conflict-b")
                     .name("Conflict B")
                     .version("1.0.0")
                     .build();
 
-            createPluginJarOnDisk(pluginsDirectory.resolve("conflict-a.jar"), pluginA);
-            createPluginJarOnDisk(pluginsDirectory.resolve("conflict-b.jar"), pluginB);
+            createPluginJarOnDisk(pluginsDirectory.resolve("conflict-a.jar"), plugina);
+            createPluginJarOnDisk(pluginsDirectory.resolve("conflict-b.jar"), pluginb);
 
             manager.loadPlugins();
 
@@ -1013,22 +1040,22 @@ class DefaultPluginManagerTest {
             strictManager.init();
             Files.createDirectories(pluginsDirectory);
 
-            var pluginA = new Metadata.Builder()
+            var plugina = new Metadata.Builder()
                     .schema(SCHEMA)
                     .id("conflict-a")
                     .name("Conflict A")
                     .version("1.0.0")
                     .conflicts("conflict-b")
                     .build();
-            var pluginB = new Metadata.Builder()
+            var pluginb = new Metadata.Builder()
                     .schema(SCHEMA)
                     .id("conflict-b")
                     .name("Conflict B")
                     .version("1.0.0")
                     .build();
 
-            createPluginJarOnDisk(pluginsDirectory.resolve("conflict-a.jar"), pluginA);
-            createPluginJarOnDisk(pluginsDirectory.resolve("conflict-b.jar"), pluginB);
+            createPluginJarOnDisk(pluginsDirectory.resolve("conflict-a.jar"), plugina);
+            createPluginJarOnDisk(pluginsDirectory.resolve("conflict-b.jar"), pluginb);
 
             assertThatThrownBy(strictManager::loadPlugins)
                     .isInstanceOf(IllegalStateException.class)
@@ -1044,45 +1071,39 @@ class DefaultPluginManagerTest {
         @Test
         @DisplayName("Should accept valid SemVer caret constraints")
         void shouldAcceptValidConstraints() {
-            var metaA = createMetaWithDeps("pluginA", "1.0.0", Map.of("pluginB", "^2.1.0"));
-            var metaB = createMeta("pluginB", "2.1.5");
+            var metaA = createMetaWithDeps("plugina", "1.0.0", Map.of("pluginb", "^2.1.0"));
+            var metaB = createMeta("pluginb", "2.1.5");
 
             var result = manager.resolvePluginLoadOrder(List.of(metaA, metaB));
 
-            assertThat(result).extracting(Metadata::id).containsExactly("pluginB", "pluginA");
+            assertThat(result).extracting(Metadata::id).containsExactly("pluginb", "plugina");
         }
 
         @Test
         @DisplayName("Should reject incompatible SemVer versions")
         void shouldRejectInvalidConstraints() {
-            var metaA = createMetaWithDeps("pluginA", "1.0.0", Map.of("pluginB", "^2.1.0"));
-            var metaB = createMeta("pluginB", "3.0.0");
+            var metaA = createMetaWithDeps("plugina", "1.0.0", Map.of("pluginb", "^2.1.0"));
+            var metaB = createMeta("pluginb", "3.0.0");
 
             assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(metaA, metaB)))
                     .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("Plugin [pluginA] requires [pluginB] matching [^2.1.0], but found version [3.0.0]");
+                    .hasMessageContaining("Plugin [plugina] requires [pluginb] matching [^2.1.0], but found version [3.0.0]");
         }
 
         @Test
-        @DisplayName("Should throw IllegalStateException when version format is malformed")
+        @DisplayName("Should reject a malformed version while building metadata")
         void shouldFailOnMalformedDependencyVersion() {
-            var metaA = createMetaWithDeps("pluginA", "1.0.0", Map.of("pluginB", ">=1.0.0"));
-            var metaB = createMeta("pluginB", "invalid-semver-string");
-
-            assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(metaA, metaB)))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("Invalid version [invalid-semver-string] declared by plugin [pluginB] required by plugin [pluginA]");
+            assertThatThrownBy(() -> createMeta("pluginb", "invalid-semver-string"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Invalid plugin version");
         }
 
         @Test
-        @DisplayName("Should report an invalid version constraint separately from a version mismatch")
+        @DisplayName("Should reject an invalid version constraint while building metadata")
         void shouldFailOnMalformedConstraint() {
-            var metaA = createMetaWithDeps("pluginA", "1.0.0", Map.of("pluginB", "not-a-valid-range"));
-            var metaB = createMeta("pluginB", "1.0.0");
-
-            assertThatThrownBy(() -> manager.resolvePluginLoadOrder(List.of(metaA, metaB)))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("Invalid version constraint in plugin [pluginA] for dependency [pluginB]");
+            assertThatThrownBy(() -> createMetaWithDeps("plugina", "1.0.0", Map.of("pluginb", "not-a-valid-range")))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Dependency [pluginb] has invalid version constraint");
         }
     }
 

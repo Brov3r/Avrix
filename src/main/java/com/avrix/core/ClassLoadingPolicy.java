@@ -14,7 +14,13 @@ public final class ClassLoadingPolicy {
             "jdk.",
             "org.slf4j.",
             "ch.qos.logback.",
-            "com.avrix."
+            "com.avrix.",
+            "org.objectweb.asm.",
+            "net.lenni0451.classtransform.",
+            "org.spongepowered.configurate.",
+            "com.github.zafarkhaja.semver.",
+            "org.yaml.snakeyaml.",
+            "io.leangen.geantyref."
     );
 
     private final Set<String> parentDelegatedPrefixes;
@@ -90,10 +96,14 @@ public final class ClassLoadingPolicy {
 
             for (String prefix : prefixes) {
                 Objects.requireNonNull(prefix, "Prefix cannot be null");
-                if (prefix.isBlank()) {
+                String normalized = prefix.strip();
+                if (normalized.isEmpty()) {
                     throw new IllegalArgumentException("Prefix cannot be blank");
                 }
-                parentDelegatedPrefixes.add(prefix);
+                if (!normalized.endsWith(".")) {
+                    normalized = normalized + ".";
+                }
+                parentDelegatedPrefixes.add(normalized);
             }
             return this;
         }

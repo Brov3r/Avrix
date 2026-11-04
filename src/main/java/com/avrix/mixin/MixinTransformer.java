@@ -5,6 +5,7 @@ import com.avrix.core.KnotClassLoader;
 import com.avrix.core.MixinRegistrar;
 import net.lenni0451.classtransform.TransformerManager;
 import net.lenni0451.classtransform.mixinstranslator.MixinsTranslator;
+import net.lenni0451.classtransform.utils.FailStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,21 +25,37 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
     private final TransformerManager manager;
 
     /**
-     * Creates a mixin transformer for the provided {@link KnotClassLoader}.
+     * Creates a lenient mixin transformer for the provided {@link KnotClassLoader}.
      *
      * @param knotClassLoader the flat classloader containing game classes, dependencies, and plugins
      * @throws NullPointerException if {@code knotClassLoader} is null
      */
     public MixinTransformer(KnotClassLoader knotClassLoader) {
+        this(knotClassLoader, false);
+    }
+
+    /**
+     * Creates a mixin transformer for the provided {@link KnotClassLoader}.
+     *
+     * <p>In lenient mode transformation failures cancel only the affected class and are logged. In strict mode
+     * failures are propagated to the classloader so startup can be aborted by the existing {@code --strict}
+     * handling.
+     *
+     * @param knotClassLoader the flat classloader containing game classes, dependencies, and plugins
+     * @param strict          whether transformation failures should abort class loading
+     * @throws NullPointerException if {@code knotClassLoader} is null
+     */
+    public MixinTransformer(KnotClassLoader knotClassLoader, boolean strict) {
         Objects.requireNonNull(knotClassLoader, "KnotClassLoader cannot be null");
 
         CompositeClassProvider classProvider = new CompositeClassProvider(knotClassLoader);
         this.manager = new TransformerManager(classProvider);
+        this.manager.setFailStrategy(strict ? FailStrategy.THROW : FailStrategy.CANCEL);
 
         // Translate SpongePowered Mixin annotations into ClassTransform format
         this.manager.addTransformerPreprocessor(new MixinsTranslator());
 
-        LOGGER.info("Mixin environment initialized successfully.");
+        LOGGER.info("Mixin environment initialized successfully (strict={}).", strict);
     }
 
     /**

@@ -54,7 +54,7 @@ public final class Main {
                     Constants.PLUGIN_EXTENSION,
                     Constants.PLUGIN_ICON_NAME,
                     providerId,
-                    Environment.BOTH,
+                    Environment.AUTO,
                     !argumentsSet.contains(Constants.NO_REDIRECT_FLAG_NAME),
                     argumentsSet.contains(Constants.STRICT_FLAG_NAME)
             );

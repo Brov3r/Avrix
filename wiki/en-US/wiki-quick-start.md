@@ -40,9 +40,13 @@ java -Davrix.game.dir="C:\Path\To\ProjectZomboid" -jar ./Avrix-Loader-<version>.
 # Keep the original Project Zomboid console output
 java -jar ./Avrix-Loader-<version>.jar --no-redirect-log
 
-# Abort startup when any plugin fails to load
+# Abort startup when any plugin fails to load or a mixin transformation fails
 java -jar ./Avrix-Loader-<version>.jar --strict
 ```
+
+`--strict` aborts startup on plugin load failures, dependency/conflict resolution errors, and mixin transformation
+failures. Non-fatal metadata warnings (unknown keys, duplicate load-order entries, blank list entries, unknown
+environment values) remain warnings even in strict mode.
 
 The game directory can also be provided through the `AVRIX_GAME_DIR` environment variable (or `ZOMBOID_DIR`), or
 through the `-Dzomboid.dir` JVM property. Avrix detects the client or dedicated server from installation metadata and
@@ -51,8 +55,9 @@ files: the `mainClass` in `ProjectZomboid64.json` takes priority, followed by la
 installation directory name. No environment flag is required, but `-Davrix.environment=client|server` (or
 `AVRIX_ENVIRONMENT`) can be used as an explicit override.
 
-Avrix writes a log file to `logs/log_<timestamp>.log` in the working directory. The console threshold is controlled by
-`-Dconsole.level`, while the file appender records `DEBUG` and above.
+Avrix writes a rotating log to `logs/log_<timestamp>.log` in the working directory. Log files roll at 10 MB, are kept
+for 7 days, and the total archive size is capped at 1 GB. Override the log directory with `-Davrix.log.dir=...`. The
+console threshold is controlled by `-Dconsole.level`, while the file appender records `DEBUG` and above.
 
 ---
 
@@ -61,7 +66,7 @@ Avrix writes a log file to `logs/log_<timestamp>.log` in the working directory. 
 To disable a plugin without deleting it from the plugins directory, create `plugins/disabled.txt`.
 
 Each non-blank line contains either the plugin `id` or the plugin archive name. Matching is case-insensitive. Lines
-starting with `#` and inline comments are ignored.
+starting with `#` and inline comments are ignored. The file is read as UTF-8; a UTF-8 BOM at the beginning is ignored.
 
 ```text
 # plugins/disabled.txt
@@ -242,8 +247,11 @@ because the referenced plugin may be optional. To require a minimum loader or ga
 `avrix-loader` or `project-zomboid` respectively. The `mixins` entries are fully qualified mixin class names, not
 resource paths. Plugin IDs in `metadata.yml` must match `[a-z0-9][a-z0-9._-]{0,63}`; uppercase or space-containing IDs
 are rejected. The `conflicts` field declares plugin IDs that are incompatible with this plugin. A single declaration is
-sufficient, identifiers are matched case-insensitively, and conflicts with plugins that are not installed are ignored.
-In normal mode a detected conflict is logged as a warning; under `--strict` it aborts load order resolution. For game
+sufficient and all identifiers, including conflict references, must use the canonical lowercase form; uppercase
+references are rejected. Conflicts with plugins that are not installed are ignored. In normal mode a detected conflict
+is logged as a warning; under `--strict` it aborts load order resolution. Non-fatal metadata warnings are reported but
+never abort parsing; invalid schema, identifiers, versions, entrypoints, mixins, and dependency structure always fail.
+For game
 provider descriptors, `entrypoint` means the game's main class rather than a `Plugin` implementation; loader
 descriptors leave it empty. Parser dispatch is keyed by `schema`, so a future schema version can be added without
 changing existing version-1 manifests.
@@ -289,8 +297,9 @@ public class ExamplePlugin implements Plugin {
 
 `Plugin` exposes two lifecycle callbacks:
 
-- `onInitialize(PluginData)` is invoked once, after the plugin JAR is attached and its mixins are registered but before
-  the game starts. Acquire resources and register services here.
+- `onInitialize(PluginData)` is invoked once, after all plugin archives are attached and all plugin mixins are
+  registered, but before the game starts. The passed `PluginData` already contains the initialized plugin instance.
+  Acquire resources and register services here.
 - `onShutdown()` is invoked when the loader shuts down. Loaded plugins are shut down in reverse load order, and the
   default implementation does nothing.
 

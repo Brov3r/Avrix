@@ -1,6 +1,8 @@
 package com.avrix.core;
 
 import com.avrix.utils.Constants;
+import com.avrix.utils.PluginIdentifiers;
+import com.avrix.utils.VersionValidation;
 
 import java.util.*;
 
@@ -14,7 +16,8 @@ import java.util.*;
  * @param schema       metadata specification schema version (mandatory, must match {@link Constants#METADATA_SCHEMA})
  * @param name         human-readable display name of the plugin (mandatory, non-blank)
  * @param description  brief summary of plugin functionality; defaults to empty string
- * @param id           unique alphanumeric identifier (mandatory, non-blank)
+ * @param id           unique canonical identifier (mandatory, non-blank, matching
+ *                     {@link PluginIdentifiers#PATTERN})
  * @param version      semantic version string conforming to SemVer (mandatory, non-blank)
  * @param environment  target execution environment constraint; defaults to {@link Environment#BOTH}
  * @param authors      unmodifiable list of author attribution names
@@ -50,9 +53,10 @@ public record Metadata(
     /**
      * Compact constructor enforcing domain invariants, normalizing string values, and collection immutability.
      *
-     * @throws NullPointerException     if any mandatory string field ({@code id}, {@code name}, {@code version}) is {@code null}
-     * @throws IllegalArgumentException if string invariants (non-blank, no embedded whitespace in identifiers) or supported
-     *                                  schema versions are violated
+     * @throws NullPointerException     if any mandatory string field ({@code id}, {@code name}, {@code version}) is
+     *                                  {@code null}
+     * @throws IllegalArgumentException if identifiers, version, entrypoint, mixin names, or dependency identifiers are
+     *                                  invalid, or the schema version is unsupported
      */
     public Metadata {
         // Mandatory schema verification
@@ -86,6 +90,16 @@ public record Metadata(
         if (id.chars().anyMatch(Character::isISOControl)) {
             throw new IllegalArgumentException("Plugin 'id' cannot contain control characters");
         }
+        if (!PluginIdentifiers.isValid(id)) {
+            throw new IllegalArgumentException(
+                    "Plugin 'id' value [" + id + "] must match identifier pattern "
+                            + PluginIdentifiers.PATTERN.pattern()
+            );
+        }
+
+        if (!VersionValidation.isValidVersion(version)) {
+            throw new IllegalArgumentException("Invalid plugin version [" + version + "]");
+        }
 
         // Optional scalar fields normalization
         environment = Objects.requireNonNullElse(environment, Environment.BOTH);
@@ -95,15 +109,20 @@ public record Metadata(
         if (license.isBlank()) {
             license = "UNLICENSED";
         }
+        if (!entrypoint.isEmpty() && !PluginIdentifiers.isValidJavaName(entrypoint)) {
+            throw new IllegalArgumentException(
+                    "Plugin 'entrypoint' value [" + entrypoint + "] is not a valid Java class name"
+            );
+        }
 
         // Defensive copy, normalization, and unmodifiable collection creation
         authors = normalizeList(authors);
         contacts = normalizeList(contacts);
-        mixins = normalizeList(mixins);
+        mixins = normalizeJavaNames(normalizeList(mixins), "Plugin mixin");
         dependencies = normalizeDependencies(dependencies);
-        loadBefore = normalizeList(loadBefore);
-        loadAfter = normalizeList(loadAfter);
-        conflicts = normalizeList(conflicts);
+        loadBefore = normalizeIdentifierList(loadBefore, "Plugin 'loadBefore'", true);
+        loadAfter = normalizeIdentifierList(loadAfter, "Plugin 'loadAfter'", true);
+        conflicts = normalizeIdentifierList(conflicts, "Plugin 'conflicts'", false);
     }
 
     /**
@@ -131,11 +150,51 @@ public record Metadata(
     }
 
     /**
-     * Creates an immutable dependency map with trimmed identifiers and constraints.
+     * Creates an immutable list of plugin identifiers with trimmed values.
+     *
+     * @param values        source values, may be {@code null}
+     * @param field         human-readable field name used in exception messages
+     * @param allowWildcard whether the special {@code "*"} value is accepted
+     * @return immutable normalized identifier list
+     * @throws IllegalArgumentException if an identifier is invalid
+     */
+    private static List<String> normalizeIdentifierList(List<String> values, String field, boolean allowWildcard) {
+        List<String> normalized = normalizeList(values);
+        for (String value : normalized) {
+            if (allowWildcard && "*".equals(value)) {
+                continue;
+            }
+            PluginIdentifiers.requireValid(value, field);
+        }
+        return normalized;
+    }
+
+    /**
+     * Creates an immutable list of fully qualified Java class names.
+     *
+     * @param values source values, may be {@code null}
+     * @param field  human-readable field name used in exception messages
+     * @return immutable normalized class-name list
+     * @throws IllegalArgumentException if a class name is invalid
+     */
+    private static List<String> normalizeJavaNames(List<String> values, String field) {
+        for (String value : values) {
+            if (!PluginIdentifiers.isValidJavaName(value)) {
+                throw new IllegalArgumentException(
+                        field + " value [" + value + "] is not a valid Java class name"
+                );
+            }
+        }
+        return values;
+    }
+
+    /**
+     * Creates an immutable dependency map with trimmed and validated identifiers.
      *
      * @param values source dependency map, may be {@code null}
      * @return immutable normalized dependency map
-     * @throws NullPointerException if a dependency identifier or constraint is {@code null}
+     * @throws NullPointerException     if a dependency identifier or constraint is {@code null}
+     * @throws IllegalArgumentException if a dependency identifier or constraint is blank or invalid
      */
     private static Map<String, String> normalizeDependencies(Map<String, String> values) {
         if (values == null || values.isEmpty()) {
@@ -144,7 +203,20 @@ public record Metadata(
 
         Map<String, String> normalized = new LinkedHashMap<>(values.size());
         for (Map.Entry<String, String> entry : values.entrySet()) {
-            normalized.put(entry.getKey().strip(), entry.getValue().strip());
+            String dependencyId = Objects.requireNonNull(entry.getKey(), "Dependency identifier cannot be null").strip();
+            String constraint = Objects.requireNonNull(entry.getValue(), "Dependency constraint cannot be null").strip();
+            PluginIdentifiers.requireValid(dependencyId, "Dependency identifier");
+            if (constraint.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Dependency [" + dependencyId + "] cannot have a blank version constraint"
+                );
+            }
+            if (!VersionValidation.isValidConstraint(constraint)) {
+                throw new IllegalArgumentException(
+                        "Dependency [" + dependencyId + "] has invalid version constraint [" + constraint + "]"
+                );
+            }
+            normalized.put(dependencyId, constraint);
         }
         return Map.copyOf(normalized);
     }

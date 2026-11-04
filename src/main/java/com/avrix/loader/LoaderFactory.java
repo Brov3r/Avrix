@@ -12,7 +12,10 @@ import com.avrix.plugins.PluginScanner;
 import com.avrix.provider.DefaultLoaderProvider;
 import com.avrix.provider.GameProvider;
 import com.avrix.provider.LoaderProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
 
@@ -24,6 +27,8 @@ import java.util.Objects;
  * without changing the bootstrap entrypoint.
  */
 public final class LoaderFactory {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoaderFactory.class);
 
     /**
      * Prevents instantiation of this static factory.
@@ -37,41 +42,105 @@ public final class LoaderFactory {
      *
      * @param config loader configuration
      * @return initialized loader context
-     * @throws NullPointerException     if {@code config} is null
-     * @throws IllegalStateException    if a required service cannot be initialized
+     * @throws NullPointerException  if {@code config} is null
+     * @throws IllegalStateException if a required service cannot be initialized
      */
     public static LoaderContext create(LoaderConfig config) {
         Objects.requireNonNull(config, "Loader config cannot be null");
 
+        ClassLoader previousContextClassLoader = Thread.currentThread().getContextClassLoader();
         KnotClassLoader classLoader = new KnotClassLoader(new URL[0], ClassLoader.getSystemClassLoader());
-        Thread.currentThread().setContextClassLoader(classLoader);
-        ServiceManager.register(KnotClassLoader.class, classLoader);
 
-        MixinTransformer mixinTransformer = new MixinTransformer(classLoader);
-        classLoader.setClassTransformer(mixinTransformer);
+        boolean knotRegistered = false;
+        LoaderProvider loaderProvider = null;
+        boolean loaderProviderRegistered = false;
+        GameProvider gameProvider = null;
+        boolean gameProviderRegistered = false;
+        PluginManager pluginManager = null;
+        boolean pluginManagerRegistered = false;
 
-        LoaderProvider loaderProvider = new DefaultLoaderProvider();
-        ServiceManager.register(LoaderProvider.class, loaderProvider);
+        try {
+            Thread.currentThread().setContextClassLoader(classLoader);
+            ServiceManager.register(KnotClassLoader.class, classLoader);
+            knotRegistered = true;
 
-        GameProvider gameProvider = GameProviderFactory.load(config.providerId(), classLoader);
-        ServiceManager.register(GameProvider.class, gameProvider);
-        gameProvider.init(classLoader);
+            MixinTransformer mixinTransformer = new MixinTransformer(classLoader, config.strict());
+            classLoader.setStrictTransformationFailures(config.strict());
+            classLoader.setClassTransformer(mixinTransformer);
 
-        Environment resolvedEnvironment = config.environment() == Environment.BOTH
-                ? gameProvider.getEnvironment()
-                : config.environment();
+            loaderProvider = new DefaultLoaderProvider();
+            ServiceManager.register(LoaderProvider.class, loaderProvider);
+            loaderProviderRegistered = true;
 
-        PluginManager pluginManager = new DefaultPluginManager(
-                config.withEnvironment(resolvedEnvironment),
-                classLoader,
-                gameProvider,
-                loaderProvider,
-                mixinTransformer,
-                new PluginScanner(config),
-                new PluginManifestParser(config.strict())
-        );
-        ServiceManager.register(PluginManager.class, pluginManager);
+            gameProvider = GameProviderFactory.load(config.providerId(), classLoader);
+            ServiceManager.register(GameProvider.class, gameProvider);
+            gameProviderRegistered = true;
+            gameProvider.init(classLoader);
 
-        return new LoaderContext(classLoader, gameProvider, pluginManager);
+            Environment resolvedEnvironment = config.environment() == Environment.AUTO
+                    ? gameProvider.getEnvironment()
+                    : config.environment();
+
+            pluginManager = new DefaultPluginManager(
+                    config.withEnvironment(resolvedEnvironment),
+                    classLoader,
+                    gameProvider,
+                    loaderProvider,
+                    mixinTransformer,
+                    new PluginScanner(config),
+                    new PluginManifestParser()
+            );
+            ServiceManager.register(PluginManager.class, pluginManager);
+            pluginManagerRegistered = true;
+
+            return new LoaderContext(classLoader, gameProvider, loaderProvider, pluginManager);
+        } catch (RuntimeException | Error e) {
+            closeQuietly(pluginManager);
+            closeQuietly(gameProvider);
+
+            if (pluginManagerRegistered) {
+                ServiceManager.unregister(PluginManager.class);
+            }
+            if (gameProviderRegistered) {
+                ServiceManager.unregister(GameProvider.class);
+            }
+            if (loaderProviderRegistered) {
+                ServiceManager.unregister(LoaderProvider.class);
+            }
+            if (knotRegistered) {
+                ServiceManager.unregister(KnotClassLoader.class);
+            }
+
+            try {
+                classLoader.close();
+            } catch (IOException closeFailure) {
+                LOGGER.debug("Failed to close classloader after loader factory failure", closeFailure);
+            }
+
+            Thread.currentThread().setContextClassLoader(previousContextClassLoader);
+            throw e;
+        }
+    }
+
+    private static void closeQuietly(PluginManager pluginManager) {
+        if (pluginManager == null) {
+            return;
+        }
+        try {
+            pluginManager.close();
+        } catch (Throwable throwable) {
+            LOGGER.debug("Failed to close plugin manager after loader factory failure", throwable);
+        }
+    }
+
+    private static void closeQuietly(GameProvider gameProvider) {
+        if (gameProvider == null) {
+            return;
+        }
+        try {
+            gameProvider.close();
+        } catch (Throwable throwable) {
+            LOGGER.debug("Failed to close game provider after loader factory failure", throwable);
+        }
     }
 }

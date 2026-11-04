@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link ZomboidEnvironmentDetector}.
@@ -165,5 +166,30 @@ class ZomboidEnvironmentDetectorTest {
         Environment environment = new ZomboidEnvironmentDetector().detect(install);
 
         assertThat(environment).isEqualTo(Environment.SERVER);
+    }
+
+    @Test
+    @DisplayName("Should reject null paths in public detection helpers")
+    void shouldRejectNullPaths() {
+        ZomboidEnvironmentDetector detector = new ZomboidEnvironmentDetector();
+
+        assertThatThrownBy(() -> detector.detect(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("Launch directory");
+        assertThatThrownBy(() -> detector.hasClientMarker(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("Launch directory");
+        assertThatThrownBy(() -> detector.hasServerMarker(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("Launch directory");
+        assertThatThrownBy(() -> ZomboidEnvironmentDetector.looksLikeClientLayout(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("Launch directory");
+        assertThatThrownBy(() -> ZomboidEnvironmentDetector.looksLikeServerLayout(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("Launch directory");
+        assertThatThrownBy(() -> ZomboidEnvironmentDetector.resolveMacBundleGameRoot(null))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining("Candidate path");
     }
 }

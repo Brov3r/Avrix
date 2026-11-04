@@ -2,6 +2,7 @@ package com.avrix.mixin;
 
 import com.avrix.core.KnotClassLoader;
 import com.avrix.core.ServiceManager;
+import net.lenni0451.classtransform.utils.FailStrategy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -59,6 +60,14 @@ class KnotClassLoaderMixinTest {
             knotClassLoader.close();
             knotClassLoader = null;
         }
+    }
+
+    @Test
+    @DisplayName("Should configure the transformation failure strategy from the strict flag")
+    void shouldConfigureTransformationFailureStrategy() {
+        assertThat(mixinTransformer.getManager().getFailStrategy()).isEqualTo(FailStrategy.CANCEL);
+        assertThat(new MixinTransformer(knotClassLoader, true).getManager().getFailStrategy())
+                .isEqualTo(FailStrategy.THROW);
     }
 
     @Test

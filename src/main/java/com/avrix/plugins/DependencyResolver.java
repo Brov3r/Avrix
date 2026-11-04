@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
@@ -71,8 +70,6 @@ public final class DependencyResolver {
         Objects.requireNonNull(candidates, "Candidates list cannot be null");
 
         Map<String, Metadata> registry = new TreeMap<>();
-        Map<String, Metadata> normalizedRegistry = new HashMap<>();
-        Map<String, String> normalizedIds = new HashMap<>();
         for (Metadata meta : candidates) {
             String id = meta.id();
 
@@ -80,22 +77,12 @@ public final class DependencyResolver {
                 throw new IllegalStateException("Plugin ID [%s] is reserved for a core component".formatted(id));
             }
 
-            String normalizedId = id.toLowerCase(Locale.ROOT);
-            String existingId = normalizedIds.putIfAbsent(normalizedId, id);
-            if (existingId != null) {
-                if (existingId.equals(id)) {
-                    throw new IllegalStateException("Duplicate plugin identifier [%s]".formatted(id));
-                }
-                throw new IllegalStateException(
-                        "Duplicate plugin identifier [%s] (case-insensitive conflict with [%s])".formatted(id, existingId)
-                );
+            if (registry.put(id, meta) != null) {
+                throw new IllegalStateException("Duplicate plugin identifier [%s]".formatted(id));
             }
-
-            registry.put(id, meta);
-            normalizedRegistry.put(normalizedId, meta);
         }
 
-        validateConflicts(registry.values(), normalizedRegistry);
+        validateConflicts(registry.values(), registry);
 
         Map<String, Set<String>> adjacencyList = new TreeMap<>();
         for (String id : registry.keySet()) {
@@ -118,7 +105,7 @@ public final class DependencyResolver {
                 String requiredId = dependency.getKey();
                 String constraint = dependency.getValue();
 
-                if (currentId.equalsIgnoreCase(requiredId)) {
+                if (currentId.equals(requiredId)) {
                     throw new IllegalStateException("Plugin [%s] cannot depend on itself".formatted(currentId));
                 }
 
@@ -133,9 +120,6 @@ public final class DependencyResolver {
                 }
 
                 Metadata requiredMeta = registry.get(requiredId);
-                if (requiredMeta == null) {
-                    requiredMeta = normalizedRegistry.get(requiredId.toLowerCase(Locale.ROOT));
-                }
 
                 if (requiredMeta == null) {
                     throw new IllegalStateException(
@@ -176,13 +160,10 @@ public final class DependencyResolver {
             for (String afterId : meta.loadAfter()) {
                 if ("*".equals(afterId)) {
                     wildcardAfterPlugins.add(currentId);
-                } else if (currentId.equalsIgnoreCase(afterId)) {
+                } else if (currentId.equals(afterId)) {
                     throw new IllegalStateException("Plugin [%s] cannot declare loadAfter itself".formatted(currentId));
                 } else {
                     Metadata afterMeta = registry.get(afterId);
-                    if (afterMeta == null) {
-                        afterMeta = normalizedRegistry.get(afterId.toLowerCase(Locale.ROOT));
-                    }
                     if (afterMeta == null) {
                         LOGGER.warn("Plugin [{}] declares loadAfter for unknown plugin [{}]", currentId, afterId);
                     } else {
@@ -194,13 +175,10 @@ public final class DependencyResolver {
             for (String beforeId : meta.loadBefore()) {
                 if ("*".equals(beforeId)) {
                     wildcardBeforePlugins.add(currentId);
-                } else if (currentId.equalsIgnoreCase(beforeId)) {
+                } else if (currentId.equals(beforeId)) {
                     throw new IllegalStateException("Plugin [%s] cannot declare loadBefore itself".formatted(currentId));
                 } else {
                     Metadata beforeMeta = registry.get(beforeId);
-                    if (beforeMeta == null) {
-                        beforeMeta = normalizedRegistry.get(beforeId.toLowerCase(Locale.ROOT));
-                    }
                     if (beforeMeta == null) {
                         LOGGER.warn("Plugin [{}] declares loadBefore for unknown plugin [{}]", currentId, beforeId);
                     } else {
@@ -314,26 +292,25 @@ public final class DependencyResolver {
      * Validates declared plugin conflicts against installed plugins.
      * <p>
      * A single declaration is sufficient: if plugin A declares a conflict with B, the conflict is reported even when B
-     * does not declare A. Conflict identifiers are matched case-insensitively and declarations against plugins that
-     * are not installed are ignored.
+     * does not declare A. Conflict identifiers use the canonical lower-case form validated by {@link Metadata}, and
+     * declarations against plugins that are not installed are ignored.
      *
-     * @param installedPlugins  installed plugin descriptors in deterministic order
-     * @param normalizedRegistry installed plugin descriptors keyed by lowercase identifier
+     * @param installedPlugins installed plugin descriptors in deterministic order
+     * @param registry         installed plugin descriptors keyed by identifier
      * @throws IllegalStateException if strict mode is enabled and a conflict is detected
      */
     private void validateConflicts(
             Collection<Metadata> installedPlugins,
-            Map<String, Metadata> normalizedRegistry
+            Map<String, Metadata> registry
     ) {
         for (Metadata metadata : installedPlugins) {
             Set<String> checkedConflicts = new TreeSet<>();
             for (String conflictId : metadata.conflicts()) {
-                String normalizedConflictId = conflictId.toLowerCase(Locale.ROOT);
-                if (!checkedConflicts.add(normalizedConflictId)) {
+                if (!checkedConflicts.add(conflictId)) {
                     continue;
                 }
 
-                Metadata conflictingPlugin = normalizedRegistry.get(normalizedConflictId);
+                Metadata conflictingPlugin = registry.get(conflictId);
                 if (conflictingPlugin == null) {
                     continue;
                 }

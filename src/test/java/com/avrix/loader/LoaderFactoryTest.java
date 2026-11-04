@@ -17,6 +17,7 @@ import org.junit.jupiter.api.io.TempDir;
 import test.loader.TestGameProvider;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
@@ -32,6 +33,8 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -101,6 +104,121 @@ class LoaderFactoryTest {
     }
 
     @Test
+    @DisplayName("Should roll back services and the context class loader when provider discovery fails")
+    void shouldRollBackWhenProviderDiscoveryFails() {
+        ClassLoader previous = Thread.currentThread().getContextClassLoader();
+        LoaderConfig config = new LoaderConfig(
+                tempDir.resolve("plugins"),
+                Constants.METADATA_NAME,
+                Constants.PLUGIN_EXTENSION,
+                Constants.PLUGIN_ICON_NAME,
+                "missing-provider",
+                Environment.AUTO,
+                true,
+                false
+        );
+
+        assertThatThrownBy(() -> LoaderFactory.create(config))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("No GameProvider registered");
+
+        assertThat(ServiceManager.getRegisteredTypes()).isEmpty();
+        assertThat(Thread.currentThread().getContextClassLoader()).isSameAs(previous);
+    }
+
+    @Test
+    @DisplayName("Should roll back services when provider initialization fails")
+    void shouldRollBackWhenProviderInitializationFails() {
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+                canRunInProcess(),
+                "Test provider is not visible through the system class loader"
+        );
+
+        TestGameProvider.failInit = true;
+        ClassLoader previous = Thread.currentThread().getContextClassLoader();
+        LoaderConfig config = new LoaderConfig(
+                tempDir.resolve("plugins"),
+                Constants.METADATA_NAME,
+                Constants.PLUGIN_EXTENSION,
+                Constants.PLUGIN_ICON_NAME,
+                TestGameProvider.ID,
+                Environment.AUTO,
+                true,
+                false
+        );
+
+        assertThatThrownBy(() -> LoaderFactory.create(config))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("simulated provider init failure");
+
+        assertThat(ServiceManager.getRegisteredTypes()).isEmpty();
+        assertThat(Thread.currentThread().getContextClassLoader()).isSameAs(previous);
+        assertThat(TestGameProvider.closeCalls).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Should resolve AUTO environment from the active provider")
+    void shouldResolveAutoEnvironmentFromProvider() throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+                canRunInProcess(),
+                "Test provider is not visible through the system class loader"
+        );
+
+        TestGameProvider.environment = Environment.CLIENT;
+        Path pluginsDirectory = tempDir.resolve("auto-plugins");
+        writePluginJar(pluginsDirectory.resolve("client-mod.jar"), "client-mod", Environment.CLIENT);
+        writePluginJar(pluginsDirectory.resolve("server-mod.jar"), "server-mod", Environment.SERVER);
+
+        LoaderConfig config = new LoaderConfig(
+                pluginsDirectory,
+                Constants.METADATA_NAME,
+                Constants.PLUGIN_EXTENSION,
+                Constants.PLUGIN_ICON_NAME,
+                TestGameProvider.ID,
+                Environment.AUTO,
+                true,
+                false
+        );
+
+        LoaderContext context = LoaderFactory.create(config);
+        try {
+            context.initialize();
+            PluginManager pluginManager = ServiceManager.get(PluginManager.class);
+
+            assertThat(pluginManager.getPlugins())
+                    .containsKey("client-mod")
+                    .doesNotContainKey("server-mod");
+        } finally {
+            context.close();
+        }
+    }
+
+    @Test
+    @DisplayName("Should unregister loader-owned services when the context is closed")
+    void shouldUnregisterServicesWhenContextIsClosed() {
+        org.junit.jupiter.api.Assumptions.assumeTrue(
+                canRunInProcess(),
+                "Test provider is not visible through the system class loader"
+        );
+
+        LoaderConfig config = new LoaderConfig(
+                tempDir.resolve("plugins"),
+                Constants.METADATA_NAME,
+                Constants.PLUGIN_EXTENSION,
+                Constants.PLUGIN_ICON_NAME,
+                TestGameProvider.ID,
+                Environment.AUTO,
+                true,
+                false
+        );
+
+        LoaderContext context = LoaderFactory.create(config);
+        context.close();
+
+        assertThat(ServiceManager.getRegisteredTypes()).isEmpty();
+    }
+
+    @Test
     @DisplayName("Should prevent instantiation of the factory")
     void shouldPreventInstantiation() throws NoSuchMethodException {
         Constructor<LoaderFactory> constructor = LoaderFactory.class.getDeclaredConstructor();
@@ -121,7 +239,7 @@ class LoaderFactoryTest {
                 Constants.PLUGIN_EXTENSION,
                 Constants.PLUGIN_ICON_NAME,
                 TestGameProvider.ID,
-                Environment.BOTH,
+                Environment.AUTO,
                 true,
                 false
         );
@@ -175,6 +293,28 @@ class LoaderFactoryTest {
             return false;
         } catch (IllegalStateException exception) {
             return exception.getMessage() != null && exception.getMessage().contains("closed");
+        }
+    }
+
+    private static void writePluginJar(Path jarPath, String id, Environment environment) throws IOException {
+        Files.createDirectories(jarPath.getParent());
+
+        try (JarOutputStream outputStream = new JarOutputStream(Files.newOutputStream(jarPath))) {
+            outputStream.putNextEntry(new JarEntry(Constants.METADATA_NAME));
+            String metadata = """
+                    schema: %d
+                    id: %s
+                    name: %s
+                    version: 1.0.0
+                    environment: %s
+                    """.formatted(
+                    Constants.METADATA_SCHEMA,
+                    id,
+                    id,
+                    environment.getValue()
+            );
+            outputStream.write(metadata.getBytes(StandardCharsets.UTF_8));
+            outputStream.closeEntry();
         }
     }
 

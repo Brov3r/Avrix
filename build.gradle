@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.avrix'
-version = '2.3.0'
+version = providers.gradleProperty('version').orElse('0.0.0').get()
 
 def baseSuffix = 'Loader'
 def baseArchiveName = "${rootProject.name.capitalize()}-${baseSuffix}"
@@ -49,6 +49,7 @@ java {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
     options.release = 25
+    options.compilerArgs.add('-Xlint:deprecation')
 }
 
 tasks.withType(Javadoc).configureEach {

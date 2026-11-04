@@ -18,6 +18,7 @@ class EnvironmentTest {
         assertThat(Environment.CLIENT.getValue()).isEqualTo("client");
         assertThat(Environment.SERVER.getValue()).isEqualTo("server");
         assertThat(Environment.BOTH.getValue()).isEqualTo("both");
+        assertThat(Environment.AUTO.getValue()).isEqualTo("auto");
     }
 
     @Test
@@ -36,6 +37,7 @@ class EnvironmentTest {
         assertThat(Environment.fromString("server")).isEqualTo(Environment.SERVER);
         assertThat(Environment.fromString("SERVER")).isEqualTo(Environment.SERVER);
         assertThat(Environment.fromString("both")).isEqualTo(Environment.BOTH);
+        assertThat(Environment.fromString("auto")).isEqualTo(Environment.AUTO);
     }
 
     @Test
@@ -51,6 +53,10 @@ class EnvironmentTest {
         assertThat(Environment.BOTH.isCompatibleWith(Environment.CLIENT)).isTrue();
         assertThat(Environment.BOTH.isCompatibleWith(Environment.SERVER)).isTrue();
         assertThat(Environment.BOTH.isCompatibleWith(Environment.BOTH)).isTrue();
+        assertThat(Environment.AUTO.isCompatibleWith(Environment.CLIENT)).isTrue();
+        assertThat(Environment.AUTO.isCompatibleWith(Environment.SERVER)).isTrue();
+        assertThat(Environment.CLIENT.isCompatibleWith(Environment.AUTO)).isTrue();
+        assertThat(Environment.SERVER.isCompatibleWith(Environment.AUTO)).isTrue();
     }
 
     @Test

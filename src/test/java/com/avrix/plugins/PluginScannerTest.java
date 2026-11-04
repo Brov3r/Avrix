@@ -35,7 +35,7 @@ class PluginScannerTest {
 
         assertThat(pluginFiles)
                 .extracting(File::getName)
-                .containsExactlyInAnyOrder("plugin.jar", "secondary.JAR");
+                .containsExactly("plugin.jar", "secondary.JAR");
     }
 
     @Test

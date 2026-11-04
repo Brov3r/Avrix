@@ -32,6 +32,21 @@ public class TestGameProvider implements GameProvider {
     public static volatile int redirectCalls;
 
     /**
+     * Number of {@link #close()} invocations.
+     */
+    public static volatile int closeCalls;
+
+    /**
+     * Whether {@link #init()} should fail with a simulated error.
+     */
+    public static volatile boolean failInit;
+
+    /**
+     * Environment reported by this provider.
+     */
+    public static volatile Environment environment = Environment.BOTH;
+
+    /**
      * Arguments captured by the most recent {@link #launch(String[])} call.
      */
     public static volatile String[] lastLaunchArgs = new String[0];
@@ -43,12 +58,18 @@ public class TestGameProvider implements GameProvider {
         initCalls = 0;
         launchCalls = 0;
         redirectCalls = 0;
+        closeCalls = 0;
+        failInit = false;
+        environment = Environment.BOTH;
         lastLaunchArgs = new String[0];
     }
 
     /** {@inheritDoc} */
     @Override
     public void init() {
+        if (failInit) {
+            throw new IllegalStateException("simulated provider init failure");
+        }
         initCalls++;
     }
 
@@ -122,13 +143,18 @@ public class TestGameProvider implements GameProvider {
     /** {@inheritDoc} */
     @Override
     public Environment getEnvironment() {
-        return Environment.BOTH;
+        return environment;
     }
 
     /** {@inheritDoc} */
     @Override
     public void redirectSystemStreamsToLogger() {
         redirectCalls++;
+    }
+
+    @Override
+    public void close() {
+        closeCalls++;
     }
 
     /**

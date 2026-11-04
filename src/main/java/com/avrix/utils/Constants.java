@@ -1,9 +1,6 @@
 package com.avrix.utils;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -94,19 +91,21 @@ public final class Constants {
      */
     public static final String LOADER_CONTACTS = "https://github.com/Brov3r/Avrix";
 
-    private static final String PROPERTIES_RESOURCE = "/avrix.properties";
-
     static {
-        try (InputStream in = Constants.class.getResourceAsStream(PROPERTIES_RESOURCE)) {
-            if (in == null) {
-                throw new IllegalStateException("Resource '" + PROPERTIES_RESOURCE + "' not found in classpath");
+        try {
+            Properties props = LoaderProperties.read(Constants.class.getClassLoader());
+            if (props == null) {
+                throw new IllegalStateException("Resource '" + LoaderProperties.RESOURCE_NAME + "' not found in classpath");
             }
 
-            var props = new Properties();
-            props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
-
-            LOADER_VERSION = Objects.requireNonNull(props.getProperty("version"), "Missing 'version' in " + PROPERTIES_RESOURCE);
-            LOADER_NAME = Objects.requireNonNull(props.getProperty("projectName"), "Missing 'projectName' in " + PROPERTIES_RESOURCE);
+            LOADER_VERSION = Objects.requireNonNull(
+                    props.getProperty("version"),
+                    "Missing 'version' in " + LoaderProperties.RESOURCE_NAME
+            );
+            LOADER_NAME = Objects.requireNonNull(
+                    props.getProperty("projectName"),
+                    "Missing 'projectName' in " + LoaderProperties.RESOURCE_NAME
+            );
         } catch (IOException | IllegalStateException e) {
             throw new ExceptionInInitializerError(e);
         }

@@ -29,7 +29,7 @@ class LoaderContextTest {
         try (KnotClassLoader classLoader = newClassLoader()) {
             RecordingGameProvider gameProvider = new RecordingGameProvider();
             RecordingPluginManager pluginManager = new RecordingPluginManager();
-            LoaderContext context = new LoaderContext(classLoader, gameProvider, pluginManager);
+            LoaderContext context = new LoaderContext(classLoader, gameProvider, null, pluginManager);
 
             context.initialize();
             context.redirectSystemStreams();
@@ -49,7 +49,7 @@ class LoaderContextTest {
         try (KnotClassLoader classLoader = newClassLoader()) {
             RecordingGameProvider gameProvider = new RecordingGameProvider();
             RecordingPluginManager pluginManager = new RecordingPluginManager();
-            LoaderContext context = new LoaderContext(classLoader, gameProvider, pluginManager);
+            LoaderContext context = new LoaderContext(classLoader, gameProvider, null, pluginManager);
 
             context.close();
             context.close();
@@ -65,15 +65,15 @@ class LoaderContextTest {
             RecordingGameProvider gameProvider = new RecordingGameProvider();
             RecordingPluginManager pluginManager = new RecordingPluginManager();
 
-            assertThatThrownBy(() -> new LoaderContext(null, gameProvider, pluginManager))
+            assertThatThrownBy(() -> new LoaderContext(null, gameProvider, null, pluginManager))
                     .isInstanceOf(NullPointerException.class)
                     .hasMessageContaining("KnotClassLoader");
 
-            assertThatThrownBy(() -> new LoaderContext(classLoader, null, pluginManager))
+            assertThatThrownBy(() -> new LoaderContext(classLoader, null, null, pluginManager))
                     .isInstanceOf(NullPointerException.class)
                     .hasMessageContaining("GameProvider");
 
-            assertThatThrownBy(() -> new LoaderContext(classLoader, gameProvider, null))
+            assertThatThrownBy(() -> new LoaderContext(classLoader, gameProvider, null, null))
                     .isInstanceOf(NullPointerException.class)
                     .hasMessageContaining("PluginManager");
         }

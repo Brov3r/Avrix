@@ -87,6 +87,60 @@ class KnotClassLoaderEdgeTest {
     }
 
     @Test
+    @DisplayName("Should prefer the first registered native directory for duplicate library names")
+    void shouldPreferFirstRegisteredNativeDirectory() throws Exception {
+        Path firstDir = Files.createDirectories(tempDir.resolve("native-first"));
+        Path secondDir = Files.createDirectories(tempDir.resolve("native-second"));
+        Path firstLibrary = Files.writeString(firstDir.resolve("dupe.dll"), "first");
+        Files.writeString(secondDir.resolve("dupe.dll"), "second");
+
+        try (TestableKnotClassLoader loader = new TestableKnotClassLoader(new URL[0], PARENT)) {
+            loader.addNativePath(firstDir);
+            loader.addNativePath(secondDir);
+
+            String resolved = loader.resolveLibrary("dupe");
+
+            assertThat(resolved).isEqualTo(firstLibrary.toAbsolutePath().normalize().toString());
+        }
+    }
+
+    @Test
+    @DisplayName("Should prefer a higher-priority candidate name across native directories")
+    void shouldPreferCandidatePriorityAcrossDirectories() throws Exception {
+        Path firstDir = Files.createDirectories(tempDir.resolve("native-priority-first"));
+        Path secondDir = Files.createDirectories(tempDir.resolve("native-priority-second"));
+        String mappedName = System.mapLibraryName("priority");
+        Files.writeString(firstDir.resolve("priority"), "lower-priority");
+        Path mappedLibrary = Files.writeString(secondDir.resolve(mappedName), "higher-priority");
+
+        try (TestableKnotClassLoader loader = new TestableKnotClassLoader(new URL[0], PARENT)) {
+            loader.addNativePath(firstDir);
+            loader.addNativePath(secondDir);
+
+            String resolved = loader.resolveLibrary("priority");
+
+            assertThat(resolved).isEqualTo(mappedLibrary.toAbsolutePath().normalize().toString());
+        }
+    }
+
+    @Test
+    @DisplayName("Should delegate native library lookup to a parent KnotClassLoader")
+    void shouldDelegateNativeLookupToParentKnotClassLoader() throws Exception {
+        Path nativeDir = Files.createDirectories(tempDir.resolve("native-parent"));
+        Path library = Files.writeString(nativeDir.resolve(System.mapLibraryName("parentlib")), "parent");
+
+        try (TestableKnotClassLoader parent = new TestableKnotClassLoader(new URL[0], PARENT)) {
+            parent.addNativePath(nativeDir);
+
+            try (TestableKnotClassLoader child = new TestableKnotClassLoader(new URL[0], parent)) {
+                String resolved = child.resolveLibrary("parentlib");
+
+                assertThat(resolved).isEqualTo(library.toAbsolutePath().normalize().toString());
+            }
+        }
+    }
+
+    @Test
     @DisplayName("Should fall back to local resolution when the parent cannot load a delegated class")
     void shouldFallBackWhenParentDelegationFails() throws Exception {
         Path classesDir = Files.createDirectories(tempDir.resolve("classes"));
@@ -117,6 +171,45 @@ class KnotClassLoaderEdgeTest {
             Class<?> loaded = loader.loadResolved(TargetGameService.class.getName());
 
             assertThat(loaded.getClassLoader()).isSameAs(loader);
+        }
+    }
+
+    @Test
+    @DisplayName("Should propagate transformation failures when strict transformation is enabled")
+    void shouldPropagateTransformationFailureInStrictMode() throws Exception {
+        Path classesDir = Files.createDirectories(tempDir.resolve("strict-failure-classes"));
+        writeClassFile(classesDir, TargetGameService.class.getName());
+
+        try (TestableKnotClassLoader loader = new TestableKnotClassLoader(
+                new URL[]{classesDir.toUri().toURL()}, PARENT)) {
+            loader.setClassTransformer((name, bytes) -> {
+                throw new IllegalStateException("simulated mixin failure");
+            });
+            loader.setStrictTransformationFailures(true);
+
+            assertThatThrownBy(() -> loader.findClassDirect(TargetGameService.class.getName()))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Failed to transform class")
+                    .hasCauseInstanceOf(IllegalStateException.class);
+        }
+    }
+
+    @Test
+    @DisplayName("Should use raw bytecode when strict transformation is disabled")
+    void shouldUseRawBytecodeWhenTransformationFailsLeniently() throws Exception {
+        Path classesDir = Files.createDirectories(tempDir.resolve("lenient-failure-classes"));
+        writeClassFile(classesDir, TargetGameService.class.getName());
+
+        try (TestableKnotClassLoader loader = new TestableKnotClassLoader(
+                new URL[]{classesDir.toUri().toURL()}, PARENT)) {
+            loader.setClassTransformer((name, bytes) -> {
+                throw new IllegalStateException("simulated mixin failure");
+            });
+
+            Class<?> loaded = loader.findClassDirect(TargetGameService.class.getName());
+
+            assertThat(loaded).isNotNull();
+            assertThat(loaded.getDeclaredConstructor().newInstance()).isNotNull();
         }
     }
 
@@ -157,7 +250,7 @@ class KnotClassLoaderEdgeTest {
         Files.createDirectories(resourcesDir.resolve("shared"));
         Files.writeString(resourcesDir.resolve("shared/data.txt"), "data");
 
-        URL malformed = new URL("http", "example.com", "/invalid path.txt");
+        URL malformed = malformedUrl();
 
         try (TestableKnotClassLoader loader = new TestableKnotClassLoader(
                 new URL[]{resourcesDir.toUri().toURL()}, PARENT)) {
@@ -217,8 +310,8 @@ class KnotClassLoaderEdgeTest {
     void shouldDeduplicateNormalizedUrls() throws Exception {
         Files.createDirectories(tempDir.resolve("norm"));
         String rawPath = tempDir.toUri().getRawPath();
-        URL direct = new URL("file:" + rawPath + "norm");
-        URL dotted = new URL("file:" + rawPath + "norm/../norm");
+        URL direct = URI.create("file:" + rawPath + "norm").toURL();
+        URL dotted = URI.create("file:" + rawPath + "norm/../norm").toURL();
 
         try (KnotClassLoader loader = new KnotClassLoader(new URL[]{direct}, PARENT)) {
             loader.addURL(dotted);
@@ -231,9 +324,9 @@ class KnotClassLoaderEdgeTest {
     @DisplayName("Should format display names for non-file, root, and fragment URLs")
     void shouldFormatDisplayNamesForSpecialUrls() throws Exception {
         try (KnotClassLoader loader = new KnotClassLoader(new URL[0], PARENT)) {
-            loader.addURL(new URL("http://example.com/plugin.jar"));
-            loader.addURL(new URL("file", "", "/"));
-            loader.addURL(new URL("file:" + tempDir.toUri().getRawPath() + "placeholder.txt#fragment"));
+            loader.addURL(URI.create("http://example.com/plugin.jar").toURL());
+            loader.addURL(URI.create("file:/").toURL());
+            loader.addURL(URI.create("file:" + tempDir.toUri().getRawPath() + "placeholder.txt#fragment").toURL());
 
             assertThat(loader.getURLs()).hasSize(3);
         }
@@ -243,7 +336,7 @@ class KnotClassLoaderEdgeTest {
     @DisplayName("Should reject URLs that cannot be converted to a URI")
     void shouldRejectUnparseableUrl() throws Exception {
         try (KnotClassLoader loader = new KnotClassLoader(new URL[0], PARENT)) {
-            URL malformed = new URL("http", "example.com", "/invalid path.txt");
+            URL malformed = malformedUrl();
 
             assertThatThrownBy(() -> loader.addURL(malformed))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -431,7 +524,12 @@ class KnotClassLoaderEdgeTest {
                 };
             }
         };
-        return new URL(null, "avrix-test:broken", handler);
+        return URL.of(URI.create("avrix-test:broken"), handler);
+    }
+
+    @SuppressWarnings("deprecation")
+    private static URL malformedUrl() throws MalformedURLException {
+        return new URL("http", "example.com", "/invalid path.txt");
     }
 
     private static URL flakyCodeSourceUrl(byte[] classBytes) throws MalformedURLException {
@@ -454,7 +552,7 @@ class KnotClassLoaderEdgeTest {
                 throw new IOException("code source connection failure");
             }
         };
-        return new URL(null, "avrix-test:class", handler);
+        return URL.of(URI.create("avrix-test:class"), handler);
     }
 
     /**

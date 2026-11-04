@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -42,14 +44,16 @@ public class KnotClassLoader extends URLClassLoader {
     private static final boolean DIAGNOSE_RESOURCE_COLLISIONS =
             Boolean.getBoolean("avrix.debug.resourceCollisions");
 
-    private final Set<Path> nativePaths = ConcurrentHashMap.newKeySet();
+    private final Set<Path> nativePaths = new CopyOnWriteArraySet<>();
     private final Set<String> registeredUrls = ConcurrentHashMap.newKeySet();
     private final Set<String> diagnosedResources = ConcurrentHashMap.newKeySet();
     private final Map<String, IndexedClassResource> classResourceIndex = new ConcurrentHashMap<>();
+    private final AtomicLong classpathVersion = new AtomicLong();
     private final ClassLoadingPolicy loadingPolicy;
     private int nextUrlPosition;
     private volatile int firstNonIndexedUrlPosition = Integer.MAX_VALUE;
     private volatile ClassTransformer classTransformer;
+    private volatile boolean strictTransformationFailures = false;
 
     static {
         registerAsParallelCapable();
@@ -80,7 +84,7 @@ public class KnotClassLoader extends URLClassLoader {
         this.loadingPolicy = Objects.requireNonNull(loadingPolicy, "ClassLoadingPolicy must not be null");
 
         for (URL url : urls) {
-            addURL(url, false);
+            addURL(url, true);
         }
     }
 
@@ -91,6 +95,18 @@ public class KnotClassLoader extends URLClassLoader {
      */
     public void setClassTransformer(ClassTransformer classTransformer) {
         this.classTransformer = classTransformer;
+    }
+
+    /**
+     * Configures whether class transformation failures abort class loading.
+     *
+     * <p>When disabled, a transformation failure is logged and the original bytecode is used. When enabled,
+     * the failure is propagated so the loader can abort startup in {@code --strict} mode.
+     *
+     * @param strict {@code true} to propagate transformation failures
+     */
+    public void setStrictTransformationFailures(boolean strict) {
+        this.strictTransformationFailures = strict;
     }
 
     /**
@@ -127,7 +143,9 @@ public class KnotClassLoader extends URLClassLoader {
     /**
      * Resolves a native library by name against the registered native paths.
      * <p>
-     * Falls back to the parent class loader when no matching file exists in the registered directories.
+     * Candidate file names are checked in priority order across all registered directories. When no local
+     * candidate exists, a parent {@link KnotClassLoader} is asked to resolve the library. For any other parent
+     * type, {@code null} is returned so the JVM can continue its normal {@code java.library.path} lookup.
      *
      * @param libName platform-independent library name
      * @return absolute path to the resolved library, or {@code null} if no candidate exists
@@ -148,8 +166,8 @@ public class KnotClassLoader extends URLClassLoader {
                 "lib" + libName + ".dylib"
         );
 
-        for (Path dir : nativePaths) {
-            for (String candidateName : lookupCandidates) {
+        for (String candidateName : lookupCandidates) {
+            for (Path dir : nativePaths) {
                 Path candidateFile = dir.resolve(candidateName);
                 if (Files.isRegularFile(candidateFile)) {
                     Path absolute = candidateFile.toAbsolutePath().normalize();
@@ -159,10 +177,13 @@ public class KnotClassLoader extends URLClassLoader {
             }
         }
 
-        String fallback = super.findLibrary(libName);
-        if (fallback != null) {
-            LOGGER.trace("Native library '{}' resolved via parent to [{}]", libName, fallback);
-            return fallback;
+        ClassLoader parent = getParent();
+        if (parent instanceof KnotClassLoader parentKnot) {
+            String fallback = parentKnot.findLibrary(libName);
+            if (fallback != null) {
+                LOGGER.trace("Native library '{}' resolved via parent to [{}]", libName, fallback);
+                return fallback;
+            }
         }
 
         LOGGER.warn("Native library '{}' could not be resolved in registered paths", libName);
@@ -193,7 +214,7 @@ public class KnotClassLoader extends URLClassLoader {
      * @throws IllegalArgumentException if the URL cannot be converted to a valid URI
      */
     public synchronized void addURL(URL url, boolean indexClassResources) {
-        addURL(url, indexClassResources, null);
+        addURLInternal(url, indexClassResources, null, null);
     }
 
     /**
@@ -209,6 +230,36 @@ public class KnotClassLoader extends URLClassLoader {
      * @throws IllegalArgumentException if the URL cannot be converted to a valid URI
      */
     public synchronized void addURL(URL url, boolean indexClassResources, Collection<String> classEntries) {
+        addURLInternal(url, indexClassResources, classEntries, null);
+    }
+
+    /**
+     * Adds a URL to the local classpath and indexes the provided class entries with a known multi-release flag.
+     *
+     * <p>This overload avoids reopening the archive to inspect its manifest when the caller already parsed the JAR.
+     *
+     * @param url                 classpath URL to add
+     * @param indexClassResources whether class entries of a file-based JAR should be indexed
+     * @param classEntries        class resource paths, or {@code null} to scan the JAR
+     * @param multiRelease        whether the archive is a multi-release JAR
+     * @throws NullPointerException     if {@code url} is null
+     * @throws IllegalArgumentException if the URL cannot be converted to a valid URI
+     */
+    public synchronized void addURL(
+            URL url,
+            boolean indexClassResources,
+            Collection<String> classEntries,
+            boolean multiRelease
+    ) {
+        addURLInternal(url, indexClassResources, classEntries, multiRelease);
+    }
+
+    private void addURLInternal(
+            URL url,
+            boolean indexClassResources,
+            Collection<String> classEntries,
+            Boolean multiRelease
+    ) {
         Objects.requireNonNull(url, "URL cannot be null");
         final String key;
         try {
@@ -229,13 +280,50 @@ public class KnotClassLoader extends URLClassLoader {
         boolean indexed = false;
         if (indexClassResources) {
             indexed = (classEntries != null)
-                    ? indexClassResources(url, urlPosition, classEntries)
+                    ? indexClassResources(url, urlPosition, classEntries, multiRelease)
                     : indexClassResources(url, urlPosition);
         }
         if (!indexed) {
             firstNonIndexedUrlPosition = Math.min(firstNonIndexedUrlPosition, urlPosition);
         }
+        classpathVersion.incrementAndGet();
         LOGGER.trace("Added URL to classpath: [{}]", formatDisplayName(url));
+    }
+
+    /**
+     * Returns a monotonically increasing version of the registered classpath.
+     *
+     * <p>Consumers that cache bytecode can compare this value to invalidate caches after {@link #addURL(URL)} calls.
+     *
+     * @return current classpath version
+     */
+    public long getClasspathVersion() {
+        return classpathVersion.get();
+    }
+
+    /**
+     * Checks whether a class name is delegated to the parent classloader by the active policy.
+     *
+     * @param className binary class name
+     * @return {@code true} when the class must be loaded by the parent
+     * @throws NullPointerException if {@code className} is null
+     */
+    public boolean delegatesToParent(String className) {
+        return loadingPolicy.delegatesToParent(className);
+    }
+
+    /**
+     * Returns an indexed local class resource without scanning non-indexed classpath entries.
+     *
+     * @param resourcePath class resource path such as {@code "zombie/core/Core.class"}
+     * @return indexed resource URL, or {@code null} when no safe indexed entry exists
+     */
+    public URL findIndexedResource(String resourcePath) {
+        IndexedClassResource indexedResource = classResourceIndex.get(resourcePath);
+        if (indexedResource != null && indexedResource.urlPosition() < firstNonIndexedUrlPosition) {
+            return indexedResource.url();
+        }
+        return null;
     }
 
     /**
@@ -258,6 +346,11 @@ public class KnotClassLoader extends URLClassLoader {
 
             String jarBase = "jar:" + path.toUri().toASCIIString() + "!/";
             try (JarFile jar = new JarFile(path.toFile(), false)) {
+                if (jar.isMultiRelease()) {
+                    LOGGER.debug("Skipping class index for multi-release JAR [{}]", formatDisplayName(url));
+                    return false;
+                }
+
                 Enumeration<JarEntry> entries = jar.entries();
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
@@ -293,15 +386,37 @@ public class KnotClassLoader extends URLClassLoader {
      * @param classEntries class resource paths collected from the archive
      * @return {@code true} if the URL was indexed, {@code false} if it is not a regular file-based JAR
      */
-    private boolean indexClassResources(URL url, int urlPosition, Collection<String> classEntries) {
+    private boolean indexClassResources(
+            URL url,
+            int urlPosition,
+            Collection<String> classEntries,
+            Boolean multiRelease
+    ) {
         if (!"file".equalsIgnoreCase(url.getProtocol())) {
             return false;
+        }
+
+        if (classEntries.isEmpty()) {
+            return true;
         }
 
         try {
             Path path = Paths.get(url.toURI());
             if (!Files.isRegularFile(path)) {
                 return false;
+            }
+
+            if (Boolean.TRUE.equals(multiRelease)) {
+                LOGGER.debug("Skipping class index for multi-release JAR [{}]", formatDisplayName(url));
+                return false;
+            }
+            if (multiRelease == null) {
+                try (JarFile jar = new JarFile(path.toFile(), false)) {
+                    if (jar.isMultiRelease()) {
+                        LOGGER.debug("Skipping class index for multi-release JAR [{}]", formatDisplayName(url));
+                        return false;
+                    }
+                }
             }
 
             String jarBase = "jar:" + path.toUri().toASCIIString() + "!/";
@@ -496,6 +611,9 @@ public class KnotClassLoader extends URLClassLoader {
             }
             return result;
         } catch (Throwable t) {
+            if (strictTransformationFailures) {
+                throw new IllegalStateException("Failed to transform class: " + className, t);
+            }
             LOGGER.error("Error occurred while transforming class: [{}]", className, t);
             return null;
         }

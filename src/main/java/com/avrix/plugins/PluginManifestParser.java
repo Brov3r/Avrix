@@ -3,7 +3,6 @@ package com.avrix.plugins;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;
 import com.avrix.utils.Constants;
-import com.github.zafarkhaja.semver.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spongepowered.configurate.ConfigurationNode;
@@ -11,7 +10,6 @@ import org.spongepowered.configurate.loader.ParsingException;
 import org.spongepowered.configurate.serialize.SerializationException;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
-import javax.lang.model.SourceVersion;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,7 +29,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -41,8 +38,6 @@ import java.util.jar.JarFile;
 public final class PluginManifestParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginManifestParser.class);
-
-    private static final Pattern ID_PATTERN = Pattern.compile("[a-z0-9][a-z0-9._-]{0,63}");
 
     private static final Set<String> KNOWN_KEYS = Set.of(
             "schema",
@@ -62,22 +57,10 @@ public final class PluginManifestParser {
             "conflicts"
     );
 
-    private final boolean strict;
-
     /**
      * Constructs a lenient plugin manifest parser.
      */
     public PluginManifestParser() {
-        this(false);
-    }
-
-    /**
-     * Constructs a plugin manifest parser with the requested validation mode.
-     *
-     * @param strict whether manifest compatibility issues should abort parsing
-     */
-    public PluginManifestParser(boolean strict) {
-        this.strict = strict;
     }
 
     /**
@@ -114,6 +97,28 @@ public final class PluginManifestParser {
      * @throws IOException           if an I/O error occurs while reading the JAR or parsing YAML
      */
     public ParsedJarManifest fromJarFileWithClassEntries(Path jarPath, String entryPath) throws IOException {
+        return fromJarFileWithClassEntries(jarPath, entryPath, null);
+    }
+
+    /**
+     * Parses a plugin manifest and collects archive metadata from the same open archive.
+     * <p>
+     * The returned descriptor also reports whether the archive is multi-release and whether it contains the
+     * requested icon. This avoids reopening the archive later during plugin preparation.
+     *
+     * @param jarPath   the path to the physical JAR file on disk
+     * @param entryPath internal relative path to the YAML manifest
+     * @param iconName  icon entry name to probe, or {@code null} to skip the icon check
+     * @return parsed metadata together with archive class entries and archive flags
+     * @throws NullPointerException  if {@code jarPath} or {@code entryPath} is {@code null}
+     * @throws FileNotFoundException if the specified entry is missing inside the JAR
+     * @throws IOException           if an I/O error occurs while reading the JAR or parsing YAML
+     */
+    public ParsedJarManifest fromJarFileWithClassEntries(
+            Path jarPath,
+            String entryPath,
+            String iconName
+    ) throws IOException {
         Objects.requireNonNull(jarPath, "JAR path cannot be null");
         Objects.requireNonNull(entryPath, "Entry path cannot be null");
 
@@ -121,7 +126,13 @@ public final class PluginManifestParser {
         LOGGER.debug("Loading plugin metadata from JAR [{}] at entry [{}]", jarPath, entryPath);
         try (JarFile jar = openJar(jarPath)) {
             Metadata metadata = parseJarEntry(jar, jarPath, entryPath, source);
-            return new ParsedJarManifest(metadata, collectClassEntries(jar));
+            boolean iconPresent = iconName != null && !iconName.isBlank() && jar.getJarEntry(iconName) != null;
+            return new ParsedJarManifest(
+                    metadata,
+                    collectClassEntries(jar),
+                    jar.isMultiRelease(),
+                    iconPresent
+            );
         }
     }
 
@@ -293,19 +304,8 @@ public final class PluginManifestParser {
      */
     private Metadata parseSchema1(ConfigurationNode node, String source) throws SerializationException {
         String id = node.node("id").getString();
-        if (id != null && !id.isBlank()) {
-            validateIdentifier(id.strip(), "id", source);
-        }
-
         String entrypoint = node.node("entrypoint").getString("");
-        if (entrypoint != null && !entrypoint.isBlank()) {
-            validateJavaName(entrypoint.strip(), "entrypoint", source);
-        }
-
         List<String> mixins = readStringList(node, "mixins", source);
-        for (String mixin : mixins) {
-            validateJavaName(mixin, "mixins", source);
-        }
 
         Metadata.Builder builder = new Metadata.Builder()
                 .schema(Constants.METADATA_SCHEMA)
@@ -335,7 +335,6 @@ public final class PluginManifestParser {
             throw withCause(source + ": Invalid metadata: " + e.getMessage(), e);
         }
 
-        validateVersion(metadata, source);
         return metadata;
     }
 
@@ -364,7 +363,7 @@ public final class PluginManifestParser {
         List<String> normalized = new ArrayList<>(values.size());
         for (String value : values) {
             if (value == null || value.isBlank()) {
-                warnOrFail(source, "Metadata key [%s] contains a blank list entry".formatted(key));
+                warn(source, "Metadata key [%s] contains a blank list entry".formatted(key));
                 continue;
             }
             normalized.add(value.strip());
@@ -395,16 +394,15 @@ public final class PluginManifestParser {
         for (String value : values) {
             if (allowWildcard && "*".equals(value)) {
                 if (!seen.add(value)) {
-                    warnOrFail(source, "Metadata key [%s] contains duplicate identifier [%s]".formatted(key, value));
+                    warn(source, "Metadata key [%s] contains duplicate identifier [%s]".formatted(key, value));
                     continue;
                 }
                 normalized.add(value);
                 continue;
             }
 
-            validateIdentifier(value, key, source);
             if (!seen.add(value)) {
-                warnOrFail(source, "Metadata key [%s] contains duplicate identifier [%s]".formatted(key, value));
+                warn(source, "Metadata key [%s] contains duplicate identifier [%s]".formatted(key, value));
                 continue;
             }
             normalized.add(value);
@@ -437,7 +435,6 @@ public final class PluginManifestParser {
             if (dependencyId.isEmpty()) {
                 throw new SerializationException(source + ": Dependency identifier cannot be blank");
             }
-            validateIdentifier(dependencyId, "dependencies." + dependencyId, source);
 
             ConfigurationNode valueNode = entry.getValue();
             String versionConstraint;
@@ -461,75 +458,11 @@ public final class PluginManifestParser {
                 }
             }
 
-            try {
-                SemVerConstraints.validate(versionConstraint);
-            } catch (IllegalArgumentException e) {
-                throw withCause(source + ": Dependency [" + dependencyId + "] has " + e.getMessage(), e);
-            }
-
             if (dependencies.putIfAbsent(dependencyId, versionConstraint) != null) {
                 throw new SerializationException(source + ": Duplicate dependency identifier [" + dependencyId + "]");
             }
         }
         return Map.copyOf(dependencies);
-    }
-
-    /**
-     * Validates a plugin identifier against the canonical lowercase format.
-     *
-     * @param identifier identifier value to validate
-     * @param key        manifest key that contains the identifier
-     * @param source     diagnostic source description
-     * @throws SerializationException if the identifier is invalid
-     */
-    private void validateIdentifier(String identifier, String key, String source) throws SerializationException {
-        if (identifier.chars().anyMatch(Character::isWhitespace)) {
-            throw new SerializationException(source + ": Metadata key [" + key + "] cannot contain whitespace");
-        }
-        if (identifier.chars().anyMatch(Character::isISOControl)) {
-            throw new SerializationException(source + ": Metadata key [" + key + "] cannot contain control characters");
-        }
-        if (!ID_PATTERN.matcher(identifier).matches()) {
-            throw new SerializationException(
-                    "%s: Metadata key [%s] value [%s] must match identifier pattern %s"
-                            .formatted(source, key, identifier, ID_PATTERN.pattern())
-            );
-        }
-    }
-
-    /**
-     * Validates a fully qualified Java class name.
-     *
-     * @param className class name to validate
-     * @param key       manifest key that contains the class name
-     * @param source    diagnostic source description
-     * @throws SerializationException if the value is not a valid Java class name
-     */
-    private void validateJavaName(String className, String key, String source) throws SerializationException {
-        if (!SourceVersion.isName(className)) {
-            throw new SerializationException(
-                    source + ": Metadata key [" + key + "] value [" + className + "] is not a valid Java class name"
-            );
-        }
-    }
-
-    /**
-     * Verifies that the declared plugin version is a valid semantic version.
-     *
-     * @param metadata parsed metadata descriptor
-     * @param source   diagnostic source description
-     * @throws SerializationException if the version is not valid SemVer
-     */
-    private void validateVersion(Metadata metadata, String source) throws SerializationException {
-        try {
-            Version.parse(metadata.version());
-        } catch (RuntimeException e) {
-            throw withCause(
-                    "%s: Invalid plugin version [%s] for [%s]: %s"
-                            .formatted(source, metadata.version(), metadata.id(), e.getMessage()),
-                    e
-            );
-        }
     }
 
     /**
@@ -591,7 +524,7 @@ public final class PluginManifestParser {
             case "server" -> Environment.SERVER;
             case "both", "*" -> Environment.BOTH;
             default -> {
-                warnOrFail(source, "Unknown metadata environment [" + rawValue + "]; assuming [both]");
+                warn(source, "Unknown metadata environment [" + rawValue + "]; assuming [both]");
                 yield Environment.BOTH;
             }
         };
@@ -608,7 +541,7 @@ public final class PluginManifestParser {
         for (Object key : node.childrenMap().keySet()) {
             String keyName = String.valueOf(key);
             if (!KNOWN_KEYS.contains(keyName)) {
-                warnOrFail(source, "Unknown metadata key [" + keyName + "]");
+                warn(source, "Unknown metadata key [" + keyName + "]");
             }
         }
     }
@@ -716,27 +649,39 @@ public final class PluginManifestParser {
     }
 
     /**
-     * Emits a warning or fails depending on the configured validation mode.
+     * Emits a non-fatal metadata warning.
      *
      * @param source  diagnostic source description
      * @param message diagnostic message
-     * @throws SerializationException if strict validation is enabled
      */
-    private void warnOrFail(String source, String message) throws SerializationException {
-        String formattedMessage = source + ": " + message;
-        if (strict) {
-            throw new SerializationException(formattedMessage);
-        }
-        LOGGER.warn(formattedMessage);
+    private void warn(String source, String message) {
+        LOGGER.warn(source + ": " + message);
     }
 
     /**
-     * Parsed plugin manifest together with class entries from the same archive.
+     * Parsed plugin manifest together with archive metadata from the same open JAR.
      *
      * @param metadata     parsed manifest descriptor
      * @param classEntries immutable list of class resource paths
+     * @param multiRelease whether the archive is a multi-release JAR
+     * @param iconPresent  whether the archive contains the configured plugin icon
      */
-    public record ParsedJarManifest(Metadata metadata, List<String> classEntries) {
+    public record ParsedJarManifest(
+            Metadata metadata,
+            List<String> classEntries,
+            boolean multiRelease,
+            boolean iconPresent
+    ) {
+
+        /**
+         * Creates a manifest descriptor without archive feature flags.
+         *
+         * @param metadata     parsed manifest descriptor
+         * @param classEntries immutable list of class resource paths
+         */
+        public ParsedJarManifest(Metadata metadata, List<String> classEntries) {
+            this(metadata, classEntries, false, false);
+        }
 
         /**
          * Validates and defensively copies the parsed manifest data.

@@ -24,6 +24,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -50,8 +51,14 @@ public class DefaultPluginManager implements PluginManager {
     private final Map<String, PluginData> plugins = new ConcurrentHashMap<>();
     private final List<Metadata> corePlugins = new CopyOnWriteArrayList<>();
     private final List<PluginLoadResult> loadResults = new CopyOnWriteArrayList<>();
+    private final Set<String> attachedPlugins = ConcurrentHashMap.newKeySet();
+    private final Set<String> mixinsRegisteredPlugins = ConcurrentHashMap.newKeySet();
+    private final Set<String> iconlessPlugins = ConcurrentHashMap.newKeySet();
     private final Set<String> preparedPlugins = ConcurrentHashMap.newKeySet();
+    private final Map<String, Object> pluginLocks = new ConcurrentHashMap<>();
     private final List<String> loadedPluginOrder = new CopyOnWriteArrayList<>();
+    private final AtomicBoolean loadAllInProgress = new AtomicBoolean();
+    private final Object stateLock = new Object();
     private volatile Map<String, PluginData> cachedPlugins = Map.of();
 
     private volatile boolean initialized = false;
@@ -102,10 +109,6 @@ public class DefaultPluginManager implements PluginManager {
             throw new IllegalStateException("PluginManager is already initialized");
         }
 
-        // Register synthetic metadata descriptors for Game and Loader
-        corePlugins.add(gameProvider.getMetadata());
-        corePlugins.add(loaderProvider.getMetadata());
-
         Path pluginsDir = config.pluginsDirectory().toAbsolutePath().normalize();
         try {
             if (Files.notExists(pluginsDir)) {
@@ -117,6 +120,11 @@ public class DefaultPluginManager implements PluginManager {
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to create plugins directory: " + pluginsDir, e);
         }
+
+        // Build descriptors before publishing them so a failure cannot leave a partial core list behind.
+        List<Metadata> descriptors = List.of(gameProvider.getMetadata(), loaderProvider.getMetadata());
+        corePlugins.clear();
+        corePlugins.addAll(descriptors);
 
         this.initialized = true;
         LOGGER.info("Plugin manager initialized successfully with {} core descriptor(s).", corePlugins.size());
@@ -130,6 +138,17 @@ public class DefaultPluginManager implements PluginManager {
      */
     @Override
     public void loadPlugins() {
+        if (!loadAllInProgress.compareAndSet(false, true)) {
+            throw new IllegalStateException("Plugin loading is already in progress");
+        }
+        try {
+            loadPluginsInternal();
+        } finally {
+            loadAllInProgress.set(false);
+        }
+    }
+
+    private void loadPluginsInternal() {
         if (closed) {
             throw new IllegalStateException("PluginManager is closed");
         }
@@ -150,6 +169,8 @@ public class DefaultPluginManager implements PluginManager {
         List<Metadata> candidates = new ArrayList<>(pluginFiles.size());
         Map<String, File> candidatesFiles = new HashMap<>();
         Map<String, List<String>> candidatesClassEntries = new HashMap<>();
+        Map<String, Boolean> candidatesMultiRelease = new HashMap<>();
+        Map<String, Boolean> candidatesIconPresent = new HashMap<>();
 
         for (ParsedPlugin parsedPlugin : parsePluginMetadata(pluginFiles, disabledPlugins)) {
             File pluginFile = parsedPlugin.file();
@@ -192,6 +213,8 @@ public class DefaultPluginManager implements PluginManager {
             candidates.add(metadata);
             candidatesFiles.put(metadata.id(), pluginFile);
             candidatesClassEntries.put(metadata.id(), parsedPlugin.classEntries());
+            candidatesMultiRelease.put(metadata.id(), parsedPlugin.multiRelease());
+            candidatesIconPresent.put(metadata.id(), parsedPlugin.iconPresent());
             LOGGER.debug("Candidate plugin discovered: [{}] ({}@{})", metadata.name(), metadata.id(), metadata.version());
         }
 
@@ -215,21 +238,39 @@ public class DefaultPluginManager implements PluginManager {
             return;
         }
 
-        List<PluginData> preparedPlugins = new ArrayList<>(sortedPlugins.size());
+        List<PluginData> attachedContainers = new ArrayList<>(sortedPlugins.size());
         for (Metadata meta : sortedPlugins) {
             if (corePlugins.stream().anyMatch(core -> core.id().equals(meta.id()))) {
                 continue;
             }
 
             File pluginFile = candidatesFiles.get(meta.id());
-            PluginData container = new PluginData(pluginFile, buildIconUri(pluginFile), null, meta);
+            boolean iconPresent = Boolean.TRUE.equals(candidatesIconPresent.get(meta.id()));
+            if (!iconPresent) {
+                iconlessPlugins.add(meta.id());
+            }
+            PluginData container = new PluginData(
+                    pluginFile,
+                    buildIconUri(pluginFile, iconPresent),
+                    null,
+                    meta
+            );
 
             try {
-                if (preparePlugin(container, candidatesClassEntries.get(meta.id()))) {
-                    preparedPlugins.add(container);
+                synchronized (pluginLock(meta.id())) {
+                    if (closed) {
+                        throw new IllegalStateException("PluginManager is closed");
+                    }
+                    if (attachPlugin(
+                            container,
+                            candidatesClassEntries.get(meta.id()),
+                            Boolean.TRUE.equals(candidatesMultiRelease.get(meta.id()))
+                    )) {
+                        attachedContainers.add(container);
+                    }
                 }
             } catch (Throwable throwable) {
-                LOGGER.error("Failed to prepare plugin [{}]. Skipping execution.", meta.name(), throwable);
+                LOGGER.error("Failed to attach plugin [{}]. Skipping execution.", meta.name(), throwable);
                 loadResults.add(PluginLoadResult.failed(meta.id(), throwable));
 
                 if (config.strict()) {
@@ -238,11 +279,42 @@ public class DefaultPluginManager implements PluginManager {
             }
         }
 
-        for (PluginData container : preparedPlugins) {
+        List<PluginData> preparedContainers = new ArrayList<>(attachedContainers.size());
+        for (PluginData container : attachedContainers) {
             String pluginId = container.metadata().id();
             try {
-                startPlugin(container);
-                loadResults.add(PluginLoadResult.loaded(pluginId));
+                synchronized (pluginLock(pluginId)) {
+                    if (closed) {
+                        throw new IllegalStateException("PluginManager is closed");
+                    }
+                    if (!attachedPlugins.contains(pluginId)) {
+                        continue;
+                    }
+                    registerMixins(container);
+                    preparedPlugins.add(pluginId);
+                    preparedContainers.add(container);
+                }
+            } catch (Throwable throwable) {
+                LOGGER.error("Failed to prepare plugin [{}]. Skipping execution.", container.metadata().name(), throwable);
+                loadResults.add(PluginLoadResult.failed(pluginId, throwable));
+
+                if (config.strict()) {
+                    throw new IllegalStateException("Plugin preparation failed: " + pluginId, throwable);
+                }
+            }
+        }
+
+        for (PluginData container : preparedContainers) {
+            String pluginId = container.metadata().id();
+            try {
+                synchronized (pluginLock(pluginId)) {
+                    if (closed) {
+                        throw new IllegalStateException("PluginManager is closed");
+                    }
+                    if (startPlugin(container)) {
+                        loadResults.add(PluginLoadResult.loaded(pluginId));
+                    }
+                }
             } catch (Throwable throwable) {
                 LOGGER.error("Failed to initialize plugin [{}]. Skipping execution.", container.metadata().name(), throwable);
                 loadResults.add(PluginLoadResult.failed(pluginId, throwable));
@@ -307,9 +379,16 @@ public class DefaultPluginManager implements PluginManager {
         try {
             PluginManifestParser.ParsedJarManifest manifest = manifestParser.fromJarFileWithClassEntries(
                     pluginFile.toPath(),
-                    config.metadataFileName()
+                    config.metadataFileName(),
+                    config.pluginIconName()
             );
-            return ParsedPlugin.parsed(pluginFile, manifest.metadata(), manifest.classEntries());
+            return ParsedPlugin.parsed(
+                    pluginFile,
+                    manifest.metadata(),
+                    manifest.classEntries(),
+                    manifest.multiRelease(),
+                    manifest.iconPresent()
+            );
         } catch (Throwable throwable) {
             return ParsedPlugin.failed(pluginFile, throwable);
         }
@@ -321,6 +400,8 @@ public class DefaultPluginManager implements PluginManager {
      * @param file               plugin archive
      * @param metadata           parsed metadata, or {@code null} for skipped/failed entries
      * @param classEntries       class resource paths from the same archive
+     * @param multiRelease       whether the archive is a multi-release JAR
+     * @param iconPresent        whether the archive contains the configured icon
      * @param failure            parsing failure, or {@code null}
      * @param disabledByFileName whether the archive name is listed in the disabled plugin file
      */
@@ -328,20 +409,28 @@ public class DefaultPluginManager implements PluginManager {
             File file,
             Metadata metadata,
             List<String> classEntries,
+            boolean multiRelease,
+            boolean iconPresent,
             Throwable failure,
             boolean disabledByFileName
     ) {
 
         private static ParsedPlugin disabled(File file) {
-            return new ParsedPlugin(file, null, List.of(), null, true);
+            return new ParsedPlugin(file, null, List.of(), false, false, null, true);
         }
 
-        private static ParsedPlugin parsed(File file, Metadata metadata, List<String> classEntries) {
-            return new ParsedPlugin(file, metadata, classEntries, null, false);
+        private static ParsedPlugin parsed(
+                File file,
+                Metadata metadata,
+                List<String> classEntries,
+                boolean multiRelease,
+                boolean iconPresent
+        ) {
+            return new ParsedPlugin(file, metadata, classEntries, multiRelease, iconPresent, null, false);
         }
 
         private static ParsedPlugin failed(File file, Throwable failure) {
-            return new ParsedPlugin(file, null, List.of(), failure, false);
+            return new ParsedPlugin(file, null, List.of(), false, false, failure, false);
         }
     }
 
@@ -365,9 +454,11 @@ public class DefaultPluginManager implements PluginManager {
         Metadata meta = container.metadata();
         String id = meta.id();
 
-        if (plugins.containsKey(id)) {
-            LOGGER.debug("Plugin [{}] is already loaded. Skipping duplicate load request.", id);
-            return;
+        if (!meta.environment().isCompatibleWith(config.environment())) {
+            throw new IllegalStateException(
+                    "Plugin [%s] is not compatible with environment [%s]"
+                            .formatted(id, config.environment())
+            );
         }
 
         container.getPluginFile()
@@ -375,17 +466,30 @@ public class DefaultPluginManager implements PluginManager {
                         "Cannot load user plugin '" + id + "' without a physical JAR file"
                 ));
 
-        try {
-            preparePlugin(container);
-            startPlugin(container);
-        } catch (Throwable throwable) {
-            LOGGER.error("Failed to load plugin [{}]: {}", id, throwable.getMessage(), throwable);
-            throw new RuntimeException("Failed to load plugin: " + id, throwable);
+        synchronized (pluginLock(id)) {
+            if (closed) {
+                throw new IllegalStateException("PluginManager is closed");
+            }
+            if (plugins.containsKey(id)) {
+                LOGGER.debug("Plugin [{}] is already loaded. Skipping duplicate load request.", id);
+                return;
+            }
+
+            try {
+                if (!preparePlugin(container) || !startPlugin(container)) {
+                    return;
+                }
+                loadResults.add(PluginLoadResult.loaded(id));
+            } catch (Throwable throwable) {
+                loadResults.add(PluginLoadResult.failed(id, throwable));
+                LOGGER.error("Failed to load plugin [{}]: {}", id, throwable.getMessage(), throwable);
+                throw new RuntimeException("Failed to load plugin: " + id, throwable);
+            }
         }
     }
 
     /**
-     * Attaches a plugin archive and registers its mixins without starting the entrypoint.
+     * Attaches a plugin archive, registers its mixins, and marks it ready for startup.
      *
      * @param container plugin metadata and file container
      * @return {@code true} if the plugin is ready for startup, {@code false} if it is already loaded
@@ -396,7 +500,7 @@ public class DefaultPluginManager implements PluginManager {
     }
 
     /**
-     * Attaches a plugin archive and registers its mixins without starting the entrypoint.
+     * Attaches a plugin archive, registers its mixins, and marks it ready for startup.
      *
      * @param container    plugin metadata and file container
      * @param classEntries class entries collected while parsing the manifest, or {@code null} when unavailable
@@ -405,8 +509,7 @@ public class DefaultPluginManager implements PluginManager {
      * @throws MalformedURLException if the plugin archive cannot be converted to a URL
      */
     private boolean preparePlugin(PluginData container, List<String> classEntries) throws MalformedURLException {
-        Metadata meta = container.metadata();
-        String id = meta.id();
+        String id = container.metadata().id();
 
         if (plugins.containsKey(id)) {
             return false;
@@ -415,14 +518,91 @@ public class DefaultPluginManager implements PluginManager {
             return true;
         }
 
+        if (!attachPlugin(container, classEntries, null)) {
+            return false;
+        }
+        registerMixins(container);
+        preparedPlugins.add(id);
+        LOGGER.debug("Prepared plugin [{}] ({})", container.metadata().name(), id);
+        return true;
+    }
+
+    /**
+     * Attaches a plugin archive to the flat classloader without registering mixins.
+     *
+     * @param container    plugin metadata and file container
+     * @param classEntries class entries collected while parsing the manifest, or {@code null} when unavailable
+     * @return {@code true} if the archive is attached, {@code false} if the plugin is already loaded
+     * @throws IllegalStateException if the plugin has no physical JAR file
+     * @throws MalformedURLException if the plugin archive cannot be converted to a URL
+     */
+    private boolean attachPlugin(PluginData container, List<String> classEntries) throws MalformedURLException {
+        return attachPlugin(container, classEntries, null);
+    }
+
+    /**
+     * Attaches a plugin archive using optionally pre-computed archive flags.
+     *
+     * @param container    plugin metadata and file container
+     * @param classEntries class entries collected while parsing the manifest, or {@code null} when unavailable
+     * @param multiRelease known multi-release flag, or {@code null} when it must be detected
+     * @return {@code true} if the archive is attached, {@code false} if the plugin is already loaded
+     * @throws IllegalStateException if the plugin has no physical JAR file
+     * @throws MalformedURLException if the plugin archive cannot be converted to a URL
+     */
+    private boolean attachPlugin(
+            PluginData container,
+            List<String> classEntries,
+            Boolean multiRelease
+    ) throws MalformedURLException {
+        Metadata meta = container.metadata();
+        String id = meta.id();
+
+        if (plugins.containsKey(id)) {
+            return false;
+        }
+        if (attachedPlugins.contains(id)) {
+            return true;
+        }
+
         File jarFile = container.getPluginFile()
                 .orElseThrow(() -> new IllegalStateException("Cannot load user plugin '" + id + "' without a physical JAR file"));
 
-        URL jarUrl = jarFile.toURI().toURL();
-        if (classEntries != null) {
-            classLoader.addURL(jarUrl, true, classEntries);
-        } else {
-            classLoader.addURL(jarUrl, !meta.mixins().isEmpty());
+        if (!attachedPlugins.add(id)) {
+            return true;
+        }
+
+        try {
+            URL jarUrl = jarFile.toURI().toURL();
+            if (classEntries != null && multiRelease != null) {
+                if (classEntries.isEmpty()) {
+                    classLoader.addURL(jarUrl, false);
+                } else {
+                    classLoader.addURL(jarUrl, true, classEntries, multiRelease);
+                }
+            } else {
+                classLoader.addURL(jarUrl, !meta.mixins().isEmpty());
+            }
+        } catch (MalformedURLException | RuntimeException e) {
+            attachedPlugins.remove(id);
+            throw e;
+        }
+
+        LOGGER.debug("Attached plugin archive [{}] ({})", meta.name(), id);
+        return true;
+    }
+
+    /**
+     * Registers all declared mixins for an attached plugin.
+     *
+     * @param container plugin metadata and file container
+     */
+    private void registerMixins(PluginData container) {
+        Metadata meta = container.metadata();
+        String id = meta.id();
+
+        if (mixinsRegisteredPlugins.contains(id)) {
+            return;
         }
 
         if (!meta.mixins().isEmpty()) {
@@ -431,10 +611,7 @@ public class DefaultPluginManager implements PluginManager {
             }
             LOGGER.debug("Registered {} mixin configuration(s) for plugin [{}]", meta.mixins().size(), id);
         }
-
-        preparedPlugins.add(id);
-        LOGGER.debug("Prepared plugin [{}] ({})", meta.name(), id);
-        return true;
+        mixinsRegisteredPlugins.add(id);
     }
 
     /**
@@ -444,14 +621,11 @@ public class DefaultPluginManager implements PluginManager {
      * @throws IllegalStateException  if the plugin was not prepared or cannot be started
      * @throws ReflectiveOperationException if the entrypoint cannot be loaded or instantiated
      */
-    private void startPlugin(PluginData container) throws ReflectiveOperationException {
+    private boolean startPlugin(PluginData container) throws ReflectiveOperationException {
         Metadata meta = container.metadata();
         String id = meta.id();
         String entrypoint = meta.entrypoint();
 
-        if (plugins.containsKey(id)) {
-            return;
-        }
         if (!preparedPlugins.contains(id)) {
             throw new IllegalStateException("Plugin was not prepared: " + id);
         }
@@ -459,65 +633,110 @@ public class DefaultPluginManager implements PluginManager {
         File jarFile = container.getPluginFile()
                 .orElseThrow(() -> new IllegalStateException("Cannot load user plugin '" + id + "' without a physical JAR file"));
 
-        long startTime = System.nanoTime();
-        Plugin instance = null;
+        synchronized (stateLock) {
+            if (closed || plugins.containsKey(id)) {
+                return false;
+            }
+        }
 
+        long startTime = System.nanoTime();
+
+        URI iconUri = container.iconURI();
+        if (iconUri == null && !iconlessPlugins.contains(id)) {
+            iconUri = buildIconUri(jarFile);
+            if (iconUri == null) {
+                iconlessPlugins.add(id);
+            }
+        }
+        Plugin instance = null;
         if (entrypoint != null && !entrypoint.isBlank()) {
-            Class<?> pluginClass = Class.forName(entrypoint, true, classLoader);
+            Class<?> pluginClass = Class.forName(entrypoint, false, classLoader);
 
             if (!Plugin.class.isAssignableFrom(pluginClass)) {
                 throw new IllegalArgumentException("Declared entrypoint [" + entrypoint + "] does not implement Plugin interface");
             }
 
             instance = (Plugin) pluginClass.getDeclaredConstructor().newInstance();
-            instance.onInitialize(container);
+        }
+
+        PluginData finalizedContainer = new PluginData(jarFile, iconUri, instance, meta);
+        if (instance != null) {
+            instance.onInitialize(finalizedContainer);
             LOGGER.debug("Initialized entrypoint [{}] for plugin [{}]", entrypoint, id);
         }
 
-        PluginData finalizedContainer = (instance != null)
-                ? new PluginData(jarFile, container.iconURI(), instance, meta)
-                : container;
+        boolean closedDuringStart;
+        synchronized (stateLock) {
+            closedDuringStart = closed;
+            if (!closedDuringStart) {
+                plugins.put(id, finalizedContainer);
+                loadedPluginOrder.add(id);
+                cachedPlugins = Map.of();
+            }
+        }
 
-        plugins.put(id, finalizedContainer);
-        loadedPluginOrder.add(id);
-        cachedPlugins = Map.of();
+        if (closedDuringStart) {
+            shutdownQuietly(id, instance);
+            return false;
+        }
 
         long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
         String pluginType = (entrypoint != null && !entrypoint.isBlank()) ? "plugin" : "library";
         LOGGER.info("Loaded {} [{}] ({}@{}) in {}ms", pluginType, meta.name(), id, meta.version(), elapsedMillis);
+        return true;
+    }
+
+    /**
+     * Shuts down a plugin instance without allowing its failure to escape.
+     *
+     * @param pluginId plugin identifier used for logging
+     * @param instance plugin instance, may be {@code null}
+     */
+    private static void shutdownQuietly(String pluginId, Plugin instance) {
+        if (instance == null) {
+            return;
+        }
+        try {
+            instance.onShutdown();
+        } catch (Throwable throwable) {
+            LOGGER.error("Failed to shut down plugin [{}]", pluginId, throwable);
+        }
     }
 
     /**
      * Shuts down loaded plugins in reverse load order and clears plugin manager state.
      */
     @Override
-    public synchronized void close() {
-        if (closed) {
-            return;
+    public void close() {
+        List<String> pluginOrder;
+        synchronized (stateLock) {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            pluginOrder = new ArrayList<>(loadedPluginOrder);
         }
-        closed = true;
 
-        for (int i = loadedPluginOrder.size() - 1; i >= 0; i--) {
-            String pluginId = loadedPluginOrder.get(i);
+        for (int i = pluginOrder.size() - 1; i >= 0; i--) {
+            String pluginId = pluginOrder.get(i);
             PluginData pluginData = plugins.get(pluginId);
             if (pluginData == null) {
                 continue;
             }
-
-            pluginData.getPluginInstance().ifPresent(plugin -> {
-                try {
-                    plugin.onShutdown();
-                } catch (Throwable throwable) {
-                    LOGGER.error("Failed to shut down plugin [{}]", pluginId, throwable);
-                }
-            });
+            pluginData.getPluginInstance().ifPresent(plugin -> shutdownQuietly(pluginId, plugin));
         }
 
-        plugins.clear();
-        corePlugins.clear();
-        preparedPlugins.clear();
-        loadedPluginOrder.clear();
-        cachedPlugins = Map.of();
+        synchronized (stateLock) {
+            plugins.clear();
+            corePlugins.clear();
+            attachedPlugins.clear();
+            mixinsRegisteredPlugins.clear();
+            iconlessPlugins.clear();
+            preparedPlugins.clear();
+            pluginLocks.clear();
+            loadedPluginOrder.clear();
+            cachedPlugins = Map.of();
+        }
 
         LOGGER.info("Plugin manager closed.");
     }
@@ -561,6 +780,16 @@ public class DefaultPluginManager implements PluginManager {
     @Override
     public List<Metadata> resolvePluginLoadOrder(List<Metadata> candidates) {
         return new DependencyResolver(corePlugins, config.strict()).resolve(candidates);
+    }
+
+    /**
+     * Returns the per-plugin lifecycle lock.
+     *
+     * @param pluginId plugin identifier
+     * @return lock object dedicated to the specified plugin
+     */
+    private Object pluginLock(String pluginId) {
+        return pluginLocks.computeIfAbsent(pluginId, ignored -> new Object());
     }
 
     /**
@@ -609,6 +838,31 @@ public class DefaultPluginManager implements PluginManager {
         if (file == null) {
             return null;
         }
+
+        try {
+            if (!PluginResourceCache.containsEntry(file.toPath(), config.pluginIconName())) {
+                return null;
+            }
+        } catch (IOException e) {
+            LOGGER.debug("Failed to inspect plugin icon in [{}]", file.getName(), e);
+            return null;
+        }
+
+        return buildIconUri(file, true);
+    }
+
+    /**
+     * Builds an icon URI when the caller already knows whether the archive contains the icon.
+     *
+     * @param file        plugin archive
+     * @param iconPresent whether the archive contains the configured icon
+     * @return icon URI, or {@code null} when the icon is absent or the URI cannot be built
+     */
+    private URI buildIconUri(File file, boolean iconPresent) {
+        if (file == null || !iconPresent) {
+            return null;
+        }
+
         try {
             return new URI("jar:" + file.toURI() + "!/" + config.pluginIconName());
         } catch (URISyntaxException _) {

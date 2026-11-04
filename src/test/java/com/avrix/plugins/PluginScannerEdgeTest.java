@@ -59,18 +59,17 @@ class PluginScannerEdgeTest {
     }
 
     @Test
-    @DisplayName("Should keep parsing entries after a UTF-8 BOM-prefixed first line")
-    void shouldKeepParsingAfterBomPrefixedLine() throws IOException {
+    @DisplayName("Should strip a UTF-8 BOM from the first disabled entry")
+    void shouldStripBomFromFirstDisabledEntry() throws IOException {
         byte[] bom = {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF};
-        byte[] body = "# header\nPlugin-ID\n".getBytes(StandardCharsets.UTF_8);
+        byte[] body = "Plugin-ID\n# header\n".getBytes(StandardCharsets.UTF_8);
         byte[] content = new byte[bom.length + body.length];
         System.arraycopy(bom, 0, content, 0, bom.length);
         System.arraycopy(body, 0, content, bom.length, body.length);
 
         Files.write(tempDir.resolve(Constants.DISABLED_PLUGINS_FILE_NAME), content);
 
-        // Files.readAllLines does not strip a BOM, so only later entries are guaranteed to be clean.
-        assertThat(scanner().readDisabledPlugins()).contains("plugin-id");
+        assertThat(scanner().readDisabledPlugins()).containsExactly("plugin-id");
     }
 
     @Test

@@ -138,9 +138,8 @@ public record PluginData(
             return false;
         }
 
-        try (JarFile jar = new JarFile(pluginPath.toFile(), false)) {
-            JarEntry entry = jar.getJarEntry(normalizedPath);
-            return entry != null && !entry.isDirectory();
+        try {
+            return PluginResourceCache.containsEntry(pluginPath, normalizedPath);
         } catch (IOException e) {
             LOGGER.warn("Failed to inspect resource [{}] in plugin [{}]: {}", normalizedPath, id(), e.getMessage());
             return false;
@@ -175,18 +174,7 @@ public record PluginData(
             return Optional.empty();
         }
 
-        try (JarFile jar = new JarFile(pluginPath.toFile(), false)) {
-            JarEntry entry = jar.getJarEntry(normalizedPath);
-            if (entry == null || entry.isDirectory()) {
-                return Optional.empty();
-            }
-
-            try (InputStream in = jar.getInputStream(entry)) {
-                return Optional.of(in.readAllBytes());
-            }
-        } catch (FileNotFoundException _) {
-            return Optional.empty();
-        }
+        return PluginResourceCache.read(pluginPath, normalizedPath);
     }
 
     /**
@@ -386,13 +374,9 @@ public record PluginData(
         }
 
         List<String> results = new ArrayList<>();
-        try (JarFile jar = new JarFile(pluginPath.toFile(), false)) {
-            var entries = jar.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                String name = entry.getName();
-
-                if (entry.isDirectory() || !name.startsWith(normalizedDir)) {
+        try {
+            for (String name : PluginResourceCache.entryNames(pluginPath)) {
+                if (!name.startsWith(normalizedDir)) {
                     continue;
                 }
 
@@ -405,7 +389,7 @@ public record PluginData(
 
                 results.add(name);
             }
-            return Collections.unmodifiableList(results);
+            return List.copyOf(results);
         } catch (IOException e) {
             LOGGER.warn("Failed to list resources in directory [{}] for plugin [{}]: {}", directoryPath, id(), e.getMessage());
             return List.of();
@@ -424,15 +408,13 @@ public record PluginData(
         }
 
         List<String> results = new ArrayList<>();
-        try (JarFile jar = new JarFile(pluginPath.toFile(), false)) {
-            var entries = jar.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                if (!entry.isDirectory() && filter.test(entry.getName())) {
-                    results.add(entry.getName());
+        try {
+            for (String name : PluginResourceCache.entryNames(pluginPath)) {
+                if (filter.test(name)) {
+                    results.add(name);
                 }
             }
-            return Collections.unmodifiableList(results);
+            return List.copyOf(results);
         } catch (IOException e) {
             LOGGER.warn("Failed to filter resources for plugin [{}]: {}", id(), e.getMessage());
             return List.of();

@@ -17,7 +17,8 @@ import java.util.Objects;
  * @param pluginExtension        file extension used to discover plugin archives
  * @param pluginIconName         icon file name inside each plugin archive
  * @param providerId             identifier of the game provider to load
- * @param environment            target environment used for plugin filtering
+ * @param environment            target environment used for plugin filtering, or {@link Environment#AUTO}
+ *                               to detect it through the active game provider
  * @param redirectSystemStreams  whether game output streams should be redirected to the loader logger
  * @param strict                 whether plugin load failures should abort the entire startup
  */
@@ -77,7 +78,7 @@ public record LoaderConfig(
                 Constants.PLUGIN_EXTENSION,
                 Constants.PLUGIN_ICON_NAME,
                 Constants.DEFAULT_GAME_PROVIDER_ID,
-                Environment.BOTH,
+                Environment.AUTO,
                 true,
                 false
         );

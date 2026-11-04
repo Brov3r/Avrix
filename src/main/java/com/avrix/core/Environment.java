@@ -21,7 +21,12 @@ public enum Environment {
     /**
      * Both client and server {@link Environment}.
      */
-    BOTH("both");
+    BOTH("both"),
+
+    /**
+     * Automatic environment detection by the active game provider.
+     */
+    AUTO("auto");
 
     private final String value;
 
@@ -47,12 +52,13 @@ public enum Environment {
      * Checks whether this target environment constraint is compatible with the active runtime environment.
      *
      * @param activeEnvironment the active running environment, cannot be null
-     * @return {@code true} if this environment matches or is {@link #BOTH}; {@code false} otherwise
+     * @return {@code true} if this environment matches, is {@link #BOTH}, {@link #AUTO}, or the active
+     *         environment is {@link #AUTO}; {@code false} otherwise
      * @throws NullPointerException if {@code activeEnvironment} is null
      */
     public boolean isCompatibleWith(Environment activeEnvironment) {
         Objects.requireNonNull(activeEnvironment, "Active environment cannot be null");
-        return this == BOTH || this == activeEnvironment;
+        return this == BOTH || this == AUTO || activeEnvironment == AUTO || this == activeEnvironment;
     }
 
     /**
@@ -72,6 +78,7 @@ public enum Environment {
         return switch (normalized) {
             case "client" -> CLIENT;
             case "server" -> SERVER;
+            case "auto" -> AUTO;
             default -> BOTH;
         };
     }

@@ -1,13 +1,11 @@
 package com.avrix.plugins;
 
-import com.github.zafarkhaja.semver.Version;
+import com.avrix.utils.VersionValidation;
 
 /**
  * Validates semantic version constraint expressions used by plugin dependencies.
  */
 public final class SemVerConstraints {
-
-    private static final Version PROBE_VERSION = Version.parse("0.0.0");
 
     /**
      * Prevents instantiation of this utility class.
@@ -25,10 +23,8 @@ public final class SemVerConstraints {
      * @throws IllegalArgumentException if the constraint syntax is invalid
      */
     public static void validate(String constraint) {
-        try {
-            PROBE_VERSION.satisfies(constraint);
-        } catch (RuntimeException e) {
-            throw new IllegalArgumentException("Invalid version constraint [" + constraint + "]", e);
+        if (!VersionValidation.isValidConstraint(constraint)) {
+            throw new IllegalArgumentException("Invalid version constraint [" + constraint + "]");
         }
     }
 }

@@ -37,11 +37,25 @@ jobs:
     - name: Build and verify
       run: ./gradlew build releaseBuildJar
 
+    - name: Verify release version
+      shell: bash
+      run: |
+        set -euo pipefail
+        version="$(grep -E '^version=' gradle.properties | head -n1 | cut -d= -f2 | tr -d '[:space:]')"
+        if [[ -z "$version" ]]; then
+          echo "::error::Missing version entry in gradle.properties"
+          exit 1
+        fi
+        if [[ "$GITHUB_REF_NAME" != "v${version}" ]]; then
+          echo "::error::Tag ${GITHUB_REF_NAME} does not match gradle.properties version v${version}"
+          exit 1
+        fi
+
     - name: Generate checksums
       shell: bash
       run: |
         set -euo pipefail
-        version="${GITHUB_REF_NAME#v}"
+        version="$(grep -E '^version=' gradle.properties | head -n1 | cut -d= -f2 | tr -d '[:space:]')"
         jar="build/Avrix-Loader-${version}.jar"
         sources="build/Avrix-Loader-${version}-sources.jar"
 

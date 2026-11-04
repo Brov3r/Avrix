@@ -73,7 +73,7 @@ class CompositeClassProviderEdgeTest {
             CompositeClassProvider provider = new CompositeClassProvider(loader);
 
             assertThatThrownBy(() -> provider.getClass("missing.edge.AbsentClass"))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(ClassNotFoundException.class)
                     .hasMessageContaining("Bytecode not found");
         }
     }

@@ -22,8 +22,9 @@ The loader registers these contracts during bootstrap:
 | `PluginManager`   | Active plugin manager                                 |
 
 These services are loader-owned. Never unregister or replace them. All four are available by the time plugin
-`onInitialize` callbacks run. A plugin that consumes a service registered by another plugin should declare a dependency
-or a `loadAfter` entry so the provider plugin is initialized first.
+`onInitialize` callbacks run. The loader removes its own service registrations when the runtime closes; plugin-owned
+services should be unregistered by their plugins in `onShutdown`. A plugin that consumes a service registered by another
+plugin should declare a dependency or a `loadAfter` entry so the provider plugin is initialized first.
 
 ---
 
