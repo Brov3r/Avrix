@@ -12,5 +12,5 @@ public interface ClassTransformer {
      * @param originalBytes original class bytes
      * @return transformed class bytes, or {@code null} if no transformation is required
      */
-    byte[] transform(String className, byte[] originalBytes);
+    public byte[] transform(String className, byte[] originalBytes);
 }

@@ -281,7 +281,11 @@ public final class AvrixBenchmark {
             URL[] initialUrls,
             boolean transformMixins
     ) {
-        try (KnotClassLoader classLoader = new KnotClassLoader(initialUrls, ClassLoader.getSystemClassLoader())) {
+        try (KnotClassLoader classLoader = new KnotClassLoader(new URL[0], ClassLoader.getSystemClassLoader())) {
+            for (URL initialUrl : initialUrls) {
+                classLoader.addURL(initialUrl);
+            }
+
             MixinRegistrar mixinRegistrar = mixin -> {
             };
             if (transformMixins) {

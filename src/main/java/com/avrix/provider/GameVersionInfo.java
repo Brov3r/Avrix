@@ -11,7 +11,7 @@ package com.avrix.provider;
  * @param raw        raw game version string
  * @param normalized normalized SemVer-like version string
  */
-record GameVersionInfo(
+public record GameVersionInfo(
         int major,
         int minor,
         int patch,
@@ -21,7 +21,18 @@ record GameVersionInfo(
         String normalized
 ) {
 
-    GameVersionInfo {
+    /**
+     * Creates a normalized version descriptor, replacing null string components with empty defaults.
+     *
+     * @param major      major game version component
+     * @param minor      minor game version component
+     * @param patch      patch/build component
+     * @param suffix     version suffix appended to the minor component by the game
+     * @param revision   Git revision embedded in the game archive
+     * @param raw        raw game version string
+     * @param normalized normalized SemVer-like version string
+     */
+    public GameVersionInfo {
         suffix = suffix == null ? "" : suffix;
         revision = revision == null ? "" : revision;
         raw = raw == null ? "" : raw;
@@ -33,7 +44,7 @@ record GameVersionInfo(
      *
      * @return fallback version information
      */
-    static GameVersionInfo fallback() {
+    public static GameVersionInfo fallback() {
         return new GameVersionInfo(0, 0, 0, "", "", "0.0.0", "0.0.0");
     }
 }

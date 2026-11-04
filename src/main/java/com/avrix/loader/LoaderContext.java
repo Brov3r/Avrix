@@ -33,7 +33,7 @@ public final class LoaderContext implements AutoCloseable {
      * @param pluginManager active plugin manager
      * @throws NullPointerException if any dependency is null
      */
-    LoaderContext(KnotClassLoader classLoader, GameProvider gameProvider, PluginManager pluginManager) {
+    public LoaderContext(KnotClassLoader classLoader, GameProvider gameProvider, PluginManager pluginManager) {
         this.classLoader = Objects.requireNonNull(classLoader, "KnotClassLoader cannot be null");
         this.gameProvider = Objects.requireNonNull(gameProvider, "GameProvider cannot be null");
         this.pluginManager = Objects.requireNonNull(pluginManager, "PluginManager cannot be null");

@@ -10,5 +10,5 @@ public interface MixinRegistrar {
      *
      * @param mixinClass fully qualified mixin class name
      */
-    void addMixin(String mixinClass);
+    public void addMixin(String mixinClass);
 }

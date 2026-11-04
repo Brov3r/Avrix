@@ -30,7 +30,7 @@ public enum Environment {
      *
      * @param value the string representation of the {@link Environment}
      */
-    Environment(String value) {
+    private Environment(String value) {
         this.value = value;
     }
 

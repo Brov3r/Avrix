@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -95,7 +96,63 @@ public final class PluginManifestParser {
 
         String source = "Invalid metadata in JAR [%s] at entry [%s]".formatted(jarPath, entryPath);
         LOGGER.debug("Loading plugin metadata from JAR [{}] at entry [{}]", jarPath, entryPath);
-        try (JarFile jar = new JarFile(jarPath.toFile())) {
+        try (JarFile jar = openJar(jarPath)) {
+            return parseJarEntry(jar, jarPath, entryPath, source);
+        }
+    }
+
+    /**
+     * Parses a plugin manifest and collects class entries from the same open archive.
+     * <p>
+     * This avoids reopening the plugin JAR later when building the class resource index.
+     *
+     * @param jarPath   the path to the physical JAR file on disk
+     * @param entryPath internal relative path to the YAML manifest
+     * @return parsed metadata together with class entries of the same JAR
+     * @throws NullPointerException  if {@code jarPath} or {@code entryPath} is {@code null}
+     * @throws FileNotFoundException if the specified entry is missing inside the JAR
+     * @throws IOException           if an I/O error occurs while reading the JAR or parsing YAML
+     */
+    public ParsedJarManifest fromJarFileWithClassEntries(Path jarPath, String entryPath) throws IOException {
+        Objects.requireNonNull(jarPath, "JAR path cannot be null");
+        Objects.requireNonNull(entryPath, "Entry path cannot be null");
+
+        String source = "Invalid metadata in JAR [%s] at entry [%s]".formatted(jarPath, entryPath);
+        LOGGER.debug("Loading plugin metadata from JAR [{}] at entry [{}]", jarPath, entryPath);
+        try (JarFile jar = openJar(jarPath)) {
+            Metadata metadata = parseJarEntry(jar, jarPath, entryPath, source);
+            return new ParsedJarManifest(metadata, collectClassEntries(jar));
+        }
+    }
+
+    /**
+     * Opens a plugin JAR for metadata parsing.
+     *
+     * @param jarPath physical JAR path
+     * @return open JAR file
+     * @throws IOException if the archive cannot be opened
+     */
+    private static JarFile openJar(Path jarPath) throws IOException {
+        try {
+            return new JarFile(jarPath.toFile(), false);
+        } catch (IOException e) {
+            LOGGER.error("Failed to parse metadata manifest from JAR [{}]: {}", jarPath.getFileName(), e.getMessage(), e);
+            throw e;
+        }
+    }
+
+    /**
+     * Parses a manifest entry from an already-open JAR.
+     *
+     * @param jar       open plugin archive
+     * @param jarPath   physical JAR path used for diagnostics
+     * @param entryPath internal manifest entry path
+     * @param source    diagnostic source description
+     * @return parsed immutable metadata
+     * @throws IOException if reading or parsing fails
+     */
+    private Metadata parseJarEntry(JarFile jar, Path jarPath, String entryPath, String source) throws IOException {
+        try {
             JarEntry entry = jar.getJarEntry(entryPath);
             if (entry == null) {
                 throw new FileNotFoundException("Metadata entry [%s] not found in JAR [%s]".formatted(entryPath, jarPath));
@@ -124,6 +181,31 @@ public final class PluginManifestParser {
         } catch (RuntimeException e) {
             throw withCause(source + ": " + parseFailureMessage(e), e);
         }
+    }
+
+    /**
+     * Collects class entries from an open plugin archive.
+     *
+     * @param jar open plugin archive
+     * @return immutable list of class resource paths
+     */
+    private static List<String> collectClassEntries(JarFile jar) {
+        List<String> classEntries = new ArrayList<>();
+        Enumeration<JarEntry> entries = jar.entries();
+        while (entries.hasMoreElements()) {
+            JarEntry entry = entries.nextElement();
+            if (entry.isDirectory()) {
+                continue;
+            }
+
+            String entryName = entry.getName();
+            if (entryName.endsWith(".class")
+                    && !entryName.startsWith("META-INF/")
+                    && !"module-info.class".equals(entryName)) {
+                classEntries.add(entryName);
+            }
+        }
+        return List.copyOf(classEntries);
     }
 
     /**
@@ -646,5 +728,24 @@ public final class PluginManifestParser {
             throw new SerializationException(formattedMessage);
         }
         LOGGER.warn(formattedMessage);
+    }
+
+    /**
+     * Parsed plugin manifest together with class entries from the same archive.
+     *
+     * @param metadata     parsed manifest descriptor
+     * @param classEntries immutable list of class resource paths
+     */
+    public record ParsedJarManifest(Metadata metadata, List<String> classEntries) {
+
+        /**
+         * Validates and defensively copies the parsed manifest data.
+         *
+         * @throws NullPointerException if {@code metadata} or {@code classEntries} is {@code null}
+         */
+        public ParsedJarManifest {
+            Objects.requireNonNull(metadata, "Metadata cannot be null");
+            classEntries = List.copyOf(classEntries);
+        }
     }
 }

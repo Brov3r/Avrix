@@ -13,40 +13,40 @@ public interface PluginManager {
     /**
      * Initializes the plugin manager.
      */
-    void init();
+    public void init();
 
     /**
      * Discovers and loads all available plugins.
      */
-    void loadPlugins();
+    public void loadPlugins();
 
     /**
      * Loads and initializes a specific plugin.
      *
      * @param container the plugin data container
      */
-    void loadPlugin(PluginData container);
+    public void loadPlugin(PluginData container);
 
     /**
      * Returns a map of all loaded plugins, keyed by their unique ID.
      *
      * @return map of plugin IDs to their data containers
      */
-    Map<String, PluginData> getPlugins();
+    public Map<String, PluginData> getPlugins();
 
     /**
      * Returns the results of the most recent plugin load attempt.
      *
      * @return immutable list of load results
      */
-    default List<PluginLoadResult> getLoadResults() {
+    public default List<PluginLoadResult> getLoadResults() {
         return List.of();
     }
 
     /**
      * Shuts down loaded plugins and releases plugin manager resources.
      */
-    default void close() {
+    public default void close() {
     }
 
     /**
@@ -55,5 +55,5 @@ public interface PluginManager {
      * @param candidates the list of plugin metadata to sort
      * @return a sorted list representing the correct load order
      */
-    List<Metadata> resolvePluginLoadOrder(List<Metadata> candidates);
+    public List<Metadata> resolvePluginLoadOrder(List<Metadata> candidates);
 }

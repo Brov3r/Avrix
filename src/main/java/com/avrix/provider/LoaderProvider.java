@@ -14,47 +14,47 @@ public interface LoaderProvider {
      *
      * @return loader identifier
      */
-    String getId();
+    public String getId();
 
     /**
      * Returns the human-readable display name of the loader.
      *
      * @return loader display name
      */
-    String getName();
+    public String getName();
 
     /**
      * Returns the semantic version of the loader runtime.
      *
      * @return SemVer version string
      */
-    String getVersion();
+    public String getVersion();
 
     /**
      * Returns the author attribution list of the loader project.
      *
      * @return unmodifiable list of author names
      */
-    List<String> getAuthors();
+    public List<String> getAuthors();
 
     /**
      * Returns the licensing model descriptor of the loader.
      *
      * @return license identifier string
      */
-    String getLicense();
+    public String getLicense();
 
     /**
      * Returns official contact and repository URLs for the loader.
      *
      * @return list of contact URL strings
      */
-    List<String> getContacts();
+    public List<String> getContacts();
 
     /**
      * Synthesizes an immutable {@link Metadata} descriptor representing the loader.
      *
      * @return non-null {@link Metadata} record
      */
-    Metadata getMetadata();
+    public Metadata getMetadata();
 }

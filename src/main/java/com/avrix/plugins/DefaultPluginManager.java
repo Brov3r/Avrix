@@ -23,6 +23,10 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -145,44 +149,50 @@ public class DefaultPluginManager implements PluginManager {
 
         List<Metadata> candidates = new ArrayList<>(pluginFiles.size());
         Map<String, File> candidatesFiles = new HashMap<>();
+        Map<String, List<String>> candidatesClassEntries = new HashMap<>();
 
-        for (File pluginFile : pluginFiles) {
+        for (ParsedPlugin parsedPlugin : parsePluginMetadata(pluginFiles, disabledPlugins)) {
+            File pluginFile = parsedPlugin.file();
             String pluginFileName = pluginFile.getName();
-            if (disabledPlugins.contains(pluginFileName.toLowerCase(Locale.ROOT))) {
+
+            if (parsedPlugin.disabledByFileName()) {
                 LOGGER.debug("Skipping plugin archive [{}] because it is listed in {}",
                         pluginFileName, Constants.DISABLED_PLUGINS_FILE_NAME);
                 loadResults.add(PluginLoadResult.skipped(pluginFileName, "Disabled by " + Constants.DISABLED_PLUGINS_FILE_NAME));
                 continue;
             }
 
-            try {
-                Metadata metadata = manifestParser.fromJarFile(pluginFile.toPath(), config.metadataFileName());
-
-                if (isPluginDisabled(disabledPlugins, metadata, pluginFile)) {
-                    LOGGER.debug("Skipping plugin [{}] because it is listed in {}", metadata.name(), Constants.DISABLED_PLUGINS_FILE_NAME);
-                    loadResults.add(PluginLoadResult.skipped(metadata.id(), "Disabled by " + Constants.DISABLED_PLUGINS_FILE_NAME));
-                    continue;
-                }
-
-                if (!metadata.environment().isCompatibleWith(activeEnvironment)) {
-                    LOGGER.debug("Skipping plugin [{}] due to environment mismatch (expected: {}, target: {})",
-                            metadata.name(), activeEnvironment, metadata.environment());
-                    loadResults.add(PluginLoadResult.skipped(metadata.id(), "Environment mismatch"));
-                    continue;
-                }
-
-                candidates.add(metadata);
-                candidatesFiles.put(metadata.id(), pluginFile);
-                LOGGER.debug("Candidate plugin discovered: [{}] ({}@{})", metadata.name(), metadata.id(), metadata.version());
-            } catch (Throwable throwable) {
+            if (parsedPlugin.failure() != null) {
+                Throwable throwable = parsedPlugin.failure();
                 LOGGER.warn("Failed to parse metadata from plugin archive [{}]. Skipping. Reason: {}",
-                        pluginFile.getName(), throwable.getMessage());
-                loadResults.add(PluginLoadResult.failed(pluginFile.getName(), throwable));
+                        pluginFileName, throwable.getMessage());
+                loadResults.add(PluginLoadResult.failed(pluginFileName, throwable));
 
                 if (config.strict()) {
-                    throw new IllegalStateException("Failed to parse plugin metadata: " + pluginFile.getName(), throwable);
+                    throw new IllegalStateException("Failed to parse plugin metadata: " + pluginFileName, throwable);
                 }
+                continue;
             }
+
+            Metadata metadata = parsedPlugin.metadata();
+
+            if (isPluginDisabled(disabledPlugins, metadata, pluginFile)) {
+                LOGGER.debug("Skipping plugin [{}] because it is listed in {}", metadata.name(), Constants.DISABLED_PLUGINS_FILE_NAME);
+                loadResults.add(PluginLoadResult.skipped(metadata.id(), "Disabled by " + Constants.DISABLED_PLUGINS_FILE_NAME));
+                continue;
+            }
+
+            if (!metadata.environment().isCompatibleWith(activeEnvironment)) {
+                LOGGER.debug("Skipping plugin [{}] due to environment mismatch (expected: {}, target: {})",
+                        metadata.name(), activeEnvironment, metadata.environment());
+                loadResults.add(PluginLoadResult.skipped(metadata.id(), "Environment mismatch"));
+                continue;
+            }
+
+            candidates.add(metadata);
+            candidatesFiles.put(metadata.id(), pluginFile);
+            candidatesClassEntries.put(metadata.id(), parsedPlugin.classEntries());
+            LOGGER.debug("Candidate plugin discovered: [{}] ({}@{})", metadata.name(), metadata.id(), metadata.version());
         }
 
         candidates.addAll(corePlugins);
@@ -215,7 +225,7 @@ public class DefaultPluginManager implements PluginManager {
             PluginData container = new PluginData(pluginFile, buildIconUri(pluginFile), null, meta);
 
             try {
-                if (preparePlugin(container)) {
+                if (preparePlugin(container, candidatesClassEntries.get(meta.id()))) {
                     preparedPlugins.add(container);
                 }
             } catch (Throwable throwable) {
@@ -246,6 +256,93 @@ public class DefaultPluginManager implements PluginManager {
         logLoadSummary();
         LOGGER.info("Plugin manager active with {} user plugin(s) and {} core component(s).",
                 plugins.size(), corePlugins.size());
+    }
+
+    /**
+     * Parses plugin manifests in parallel while preserving the original archive order.
+     *
+     * @param pluginFiles     discovered plugin archives
+     * @param disabledPlugins normalized disabled plugin entries
+     * @return parse results aligned with {@code pluginFiles}
+     */
+    private List<ParsedPlugin> parsePluginMetadata(List<File> pluginFiles, Set<String> disabledPlugins) {
+        int threadCount = Math.min(16, Math.max(2, Runtime.getRuntime().availableProcessors()));
+        List<ParsedPlugin> results = new ArrayList<>(pluginFiles.size());
+
+        try (ExecutorService executor = Executors.newFixedThreadPool(threadCount)) {
+            List<Future<ParsedPlugin>> futures = new ArrayList<>(pluginFiles.size());
+            for (File pluginFile : pluginFiles) {
+                futures.add(executor.submit(() -> parsePlugin(pluginFile, disabledPlugins)));
+            }
+
+            for (int i = 0; i < futures.size(); i++) {
+                try {
+                    results.add(futures.get(i).get());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new IllegalStateException("Interrupted while parsing plugin metadata", e);
+                } catch (ExecutionException e) {
+                    Throwable cause = (e.getCause() != null) ? e.getCause() : e;
+                    results.add(ParsedPlugin.failed(pluginFiles.get(i), cause));
+                }
+            }
+        }
+
+        return results;
+    }
+
+    /**
+     * Parses a single plugin manifest or returns a skipped/failed result.
+     *
+     * @param pluginFile      plugin archive
+     * @param disabledPlugins normalized disabled plugin entries
+     * @return parsed plugin result
+     */
+    private ParsedPlugin parsePlugin(File pluginFile, Set<String> disabledPlugins) {
+        String pluginFileName = pluginFile.getName();
+        if (disabledPlugins.contains(pluginFileName.toLowerCase(Locale.ROOT))) {
+            return ParsedPlugin.disabled(pluginFile);
+        }
+
+        try {
+            PluginManifestParser.ParsedJarManifest manifest = manifestParser.fromJarFileWithClassEntries(
+                    pluginFile.toPath(),
+                    config.metadataFileName()
+            );
+            return ParsedPlugin.parsed(pluginFile, manifest.metadata(), manifest.classEntries());
+        } catch (Throwable throwable) {
+            return ParsedPlugin.failed(pluginFile, throwable);
+        }
+    }
+
+    /**
+     * Result of parsing one plugin manifest before environment and duplicate checks.
+     *
+     * @param file               plugin archive
+     * @param metadata           parsed metadata, or {@code null} for skipped/failed entries
+     * @param classEntries       class resource paths from the same archive
+     * @param failure            parsing failure, or {@code null}
+     * @param disabledByFileName whether the archive name is listed in the disabled plugin file
+     */
+    private record ParsedPlugin(
+            File file,
+            Metadata metadata,
+            List<String> classEntries,
+            Throwable failure,
+            boolean disabledByFileName
+    ) {
+
+        private static ParsedPlugin disabled(File file) {
+            return new ParsedPlugin(file, null, List.of(), null, true);
+        }
+
+        private static ParsedPlugin parsed(File file, Metadata metadata, List<String> classEntries) {
+            return new ParsedPlugin(file, metadata, classEntries, null, false);
+        }
+
+        private static ParsedPlugin failed(File file, Throwable failure) {
+            return new ParsedPlugin(file, null, List.of(), failure, false);
+        }
     }
 
     /**
@@ -292,10 +389,22 @@ public class DefaultPluginManager implements PluginManager {
      *
      * @param container plugin metadata and file container
      * @return {@code true} if the plugin is ready for startup, {@code false} if it is already loaded
-     * @throws IllegalStateException if the plugin has no physical JAR file
      * @throws MalformedURLException if the plugin archive cannot be converted to a URL
      */
     private boolean preparePlugin(PluginData container) throws MalformedURLException {
+        return preparePlugin(container, null);
+    }
+
+    /**
+     * Attaches a plugin archive and registers its mixins without starting the entrypoint.
+     *
+     * @param container    plugin metadata and file container
+     * @param classEntries class entries collected while parsing the manifest, or {@code null} when unavailable
+     * @return {@code true} if the plugin is ready for startup, {@code false} if it is already loaded
+     * @throws IllegalStateException if the plugin has no physical JAR file
+     * @throws MalformedURLException if the plugin archive cannot be converted to a URL
+     */
+    private boolean preparePlugin(PluginData container, List<String> classEntries) throws MalformedURLException {
         Metadata meta = container.metadata();
         String id = meta.id();
 
@@ -310,7 +419,11 @@ public class DefaultPluginManager implements PluginManager {
                 .orElseThrow(() -> new IllegalStateException("Cannot load user plugin '" + id + "' without a physical JAR file"));
 
         URL jarUrl = jarFile.toURI().toURL();
-        classLoader.addURL(jarUrl);
+        if (classEntries != null) {
+            classLoader.addURL(jarUrl, true, classEntries);
+        } else {
+            classLoader.addURL(jarUrl, !meta.mixins().isEmpty());
+        }
 
         if (!meta.mixins().isEmpty()) {
             for (String mixin : meta.mixins()) {

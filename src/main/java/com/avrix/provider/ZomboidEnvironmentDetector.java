@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
  * <p>
  * Detection prefers explicit configuration and launch metadata over file- and directory-name heuristics.
  */
-final class ZomboidEnvironmentDetector {
+public final class ZomboidEnvironmentDetector {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZomboidEnvironmentDetector.class);
 
@@ -79,12 +79,18 @@ final class ZomboidEnvironmentDetector {
     );
 
     /**
+     * Creates a new environment detector.
+     */
+    public ZomboidEnvironmentDetector() {
+    }
+
+    /**
      * Detects the environment of the provided Project Zomboid installation.
      *
      * @param launchDirectory game installation root
      * @return detected environment, never {@code null}
      */
-    Environment detect(Path launchDirectory) {
+    public Environment detect(Path launchDirectory) {
         Environment explicitEnvironment = detectExplicitOverride();
         if (explicitEnvironment != null) {
             LOGGER.info("Using explicitly configured game environment [{}]", explicitEnvironment);
@@ -148,7 +154,7 @@ final class ZomboidEnvironmentDetector {
      * @param candidate candidate game root or path inside an application bundle
      * @return normalized directory containing the game files, or the normalized input when no bundle is found
      */
-    static Path resolveMacBundleGameRoot(Path candidate) {
+    public static Path resolveMacBundleGameRoot(Path candidate) {
         Path normalized = candidate.toAbsolutePath().normalize();
         Path bundle = findAppBundle(normalized);
         if (bundle == null) {
@@ -401,11 +407,23 @@ final class ZomboidEnvironmentDetector {
         return null;
     }
 
-    boolean hasServerMarker(Path launchDirectory) {
+    /**
+     * Checks whether the installation contains a dedicated-server marker file.
+     *
+     * @param launchDirectory candidate installation root
+     * @return {@code true} when a server marker is present
+     */
+    public boolean hasServerMarker(Path launchDirectory) {
         return containsAnyFileName(launchDirectory, serverMarkers());
     }
 
-    boolean hasClientMarker(Path launchDirectory) {
+    /**
+     * Checks whether the installation contains a client marker file.
+     *
+     * @param launchDirectory candidate installation root
+     * @return {@code true} when a client marker is present
+     */
+    public boolean hasClientMarker(Path launchDirectory) {
         return containsAnyFileName(launchDirectory, clientMarkers());
     }
 
@@ -468,7 +486,7 @@ final class ZomboidEnvironmentDetector {
      * @param launchDirectory candidate installation root
      * @return {@code true} when the directory looks like a dedicated-server installation
      */
-    static boolean looksLikeServerLayout(Path launchDirectory) {
+    public static boolean looksLikeServerLayout(Path launchDirectory) {
         if (!Files.isRegularFile(launchDirectory.resolve("java").resolve("projectzomboid.jar"))) {
             return false;
         }
@@ -481,7 +499,7 @@ final class ZomboidEnvironmentDetector {
      * @param launchDirectory candidate installation root
      * @return {@code true} when the directory looks like a client installation
      */
-    static boolean looksLikeClientLayout(Path launchDirectory) {
+    public static boolean looksLikeClientLayout(Path launchDirectory) {
         if (looksLikeMacBundle(launchDirectory)) {
             return true;
         }
@@ -505,7 +523,7 @@ final class ZomboidEnvironmentDetector {
      * @param launchDirectory candidate installation root
      * @return {@code true} when the path is or contains an application bundle
      */
-    static boolean looksLikeMacBundle(Path launchDirectory) {
+    public static boolean looksLikeMacBundle(Path launchDirectory) {
         if (launchDirectory == null) {
             return false;
         }

@@ -74,7 +74,7 @@ public final class ZomboidVersionResolver {
      * @param gameArchive path to {@code projectzomboid.jar}
      * @return resolved version information, never {@code null}
      */
-    GameVersionInfo resolve(Path gameArchive) {
+    public GameVersionInfo resolve(Path gameArchive) {
         if (gameArchive == null || !Files.isRegularFile(gameArchive)) {
             LOGGER.warn("Project Zomboid game archive not found: [{}]", gameArchive);
             return GameVersionInfo.fallback();
@@ -96,7 +96,7 @@ public final class ZomboidVersionResolver {
      * @param targetLoader classloader containing the game classes
      * @return resolved version information, never {@code null}
      */
-    GameVersionInfo resolve(ClassLoader targetLoader) {
+    public GameVersionInfo resolve(ClassLoader targetLoader) {
         if (targetLoader == null) {
             return GameVersionInfo.fallback();
         }

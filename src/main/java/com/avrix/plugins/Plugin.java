@@ -12,13 +12,13 @@ public interface Plugin {
      *
      * @param pluginData plugin information
      */
-    void onInitialize(PluginData pluginData);
+    public void onInitialize(PluginData pluginData);
 
     /**
      * Called when the loader is shutting down.
      * <p>
      * Implementations should release plugin-owned resources here. The default implementation does nothing.
      */
-    default void onShutdown() {
+    public default void onShutdown() {
     }
 }

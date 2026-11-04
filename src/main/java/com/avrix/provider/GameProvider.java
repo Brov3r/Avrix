@@ -19,14 +19,14 @@ public interface GameProvider {
     /**
      * Initializes the game environment, class loaders, and required paths.
      */
-    void init();
+    public void init();
 
     /**
      * Initializes the game environment with the loader classloader.
      *
      * @param classLoader flat classloader used to resolve game classes and attach libraries
      */
-    default void init(KnotClassLoader classLoader) {
+    public default void init(KnotClassLoader classLoader) {
         init();
     }
 
@@ -35,84 +35,84 @@ public interface GameProvider {
      *
      * @param args command-line arguments to pass to the game
      */
-    void launch(String[] args);
+    public void launch(String[] args);
 
     /**
      * Returns the arguments used to launch the game.
      *
      * @return an array of launch arguments
      */
-    String[] getLaunchArgs();
+    public String[] getLaunchArgs();
 
     /**
      * Returns the display name of the game.
      *
      * @return the game name
      */
-    String getName();
+    public String getName();
 
     /**
      * Returns the unique identifier of the provider.
      *
      * @return the provider ID
      */
-    String getId();
+    public String getId();
 
     /**
      * Returns a list of the game's authors.
      *
      * @return a list of authors
      */
-    List<String> getAuthors();
+    public List<String> getAuthors();
 
     /**
      * Returns the game's license.
      *
      * @return the license string
      */
-    String getLicense();
+    public String getLicense();
 
     /**
      * Returns a list of contact URLs or information for the game.
      *
      * @return a list of contacts
      */
-    List<String> getContacts();
+    public List<String> getContacts();
 
     /**
      * Returns a normalized semantic version string of the game.
      *
      * @return the normalized version
      */
-    String getNormalizedVersion();
+    public String getNormalizedVersion();
 
     /**
      * Returns the raw version string of the game.
      *
      * @return the raw version
      */
-    String getRawVersion();
+    public String getRawVersion();
 
     /**
      * Returns the base launch directory of the game.
      *
      * @return the path to the launch directory
      */
-    Path getLaunchDirectory();
+    public Path getLaunchDirectory();
 
     /**
      * Returns the fully qualified name of the game's main class.
      *
      * @return the entrypoint class name
      */
-    String getEntrypoint();
+    public String getEntrypoint();
 
     /**
      * Returns the current execution environment (e.g., CLIENT or SERVER).
      *
      * @return the environment
      */
-    Environment getEnvironment();
+    public Environment getEnvironment();
 
     /**
      * Synthesizes metadata describing this game provider.
@@ -122,7 +122,7 @@ public interface GameProvider {
      *
      * @return immutable metadata descriptor for the active game
      */
-    default Metadata getMetadata() {
+    public default Metadata getMetadata() {
         return new Metadata.Builder()
                 .id(getId())
                 .name(getName())
@@ -140,7 +140,7 @@ public interface GameProvider {
      *
      * @return a list of library paths
      */
-    default List<Path> getJavaLibsPath() {
+    public default List<Path> getJavaLibsPath() {
         return List.of();
     }
 
@@ -149,7 +149,7 @@ public interface GameProvider {
      *
      * @return a list of native library paths
      */
-    default List<Path> getNativeLibsPath() {
+    public default List<Path> getNativeLibsPath() {
         return List.of();
     }
 
@@ -158,19 +158,19 @@ public interface GameProvider {
      *
      * @return a map of system properties
      */
-    default Map<String, String> getProviderArgs() {
+    public default Map<String, String> getProviderArgs() {
         return Map.of();
     }
 
     /**
      * Redirects default output and error streams to the logger.
      */
-    default void redirectSystemStreamsToLogger() {
+    public default void redirectSystemStreamsToLogger() {
     }
 
     /**
      * Releases provider resources and restores any process-wide state it changed.
      */
-    default void close() {
+    public default void close() {
     }
 }

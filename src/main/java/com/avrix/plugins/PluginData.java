@@ -138,7 +138,7 @@ public record PluginData(
             return false;
         }
 
-        try (JarFile jar = new JarFile(pluginPath.toFile())) {
+        try (JarFile jar = new JarFile(pluginPath.toFile(), false)) {
             JarEntry entry = jar.getJarEntry(normalizedPath);
             return entry != null && !entry.isDirectory();
         } catch (IOException e) {
@@ -175,7 +175,7 @@ public record PluginData(
             return Optional.empty();
         }
 
-        try (JarFile jar = new JarFile(pluginPath.toFile())) {
+        try (JarFile jar = new JarFile(pluginPath.toFile(), false)) {
             JarEntry entry = jar.getJarEntry(normalizedPath);
             if (entry == null || entry.isDirectory()) {
                 return Optional.empty();
@@ -252,7 +252,7 @@ public record PluginData(
             return false;
         }
 
-        try (JarFile jar = new JarFile(pluginPath.toFile())) {
+        try (JarFile jar = new JarFile(pluginPath.toFile(), false)) {
             JarEntry entry = jar.getJarEntry(normalizedPath);
             if (entry == null || entry.isDirectory()) {
                 return false;
@@ -298,7 +298,7 @@ public record PluginData(
         Path normalizedTarget = targetDir.toAbsolutePath().normalize();
         int extractedCount = 0;
 
-        try (JarFile jar = new JarFile(pluginPath.toFile())) {
+        try (JarFile jar = new JarFile(pluginPath.toFile(), false)) {
             var entries = jar.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
@@ -386,7 +386,7 @@ public record PluginData(
         }
 
         List<String> results = new ArrayList<>();
-        try (JarFile jar = new JarFile(pluginPath.toFile())) {
+        try (JarFile jar = new JarFile(pluginPath.toFile(), false)) {
             var entries = jar.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
@@ -424,7 +424,7 @@ public record PluginData(
         }
 
         List<String> results = new ArrayList<>();
-        try (JarFile jar = new JarFile(pluginPath.toFile())) {
+        try (JarFile jar = new JarFile(pluginPath.toFile(), false)) {
             var entries = jar.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();

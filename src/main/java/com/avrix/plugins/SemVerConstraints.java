@@ -5,7 +5,7 @@ import com.github.zafarkhaja.semver.Version;
 /**
  * Validates semantic version constraint expressions used by plugin dependencies.
  */
-final class SemVerConstraints {
+public final class SemVerConstraints {
 
     private static final Version PROBE_VERSION = Version.parse("0.0.0");
 
@@ -24,7 +24,7 @@ final class SemVerConstraints {
      * @param constraint constraint expression to validate
      * @throws IllegalArgumentException if the constraint syntax is invalid
      */
-    static void validate(String constraint) {
+    public static void validate(String constraint) {
         try {
             PROBE_VERSION.satisfies(constraint);
         } catch (RuntimeException e) {

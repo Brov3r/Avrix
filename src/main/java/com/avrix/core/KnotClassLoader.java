@@ -17,9 +17,12 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * Unified Flat ClassLoader for the Avrix environment, implementing the Knot architecture.
@@ -35,10 +38,17 @@ public class KnotClassLoader extends URLClassLoader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KnotClassLoader.class);
 
+    // Collision diagnostics scan every classpath entry per resource and are only useful while debugging.
+    private static final boolean DIAGNOSE_RESOURCE_COLLISIONS =
+            Boolean.getBoolean("avrix.debug.resourceCollisions");
+
     private final Set<Path> nativePaths = ConcurrentHashMap.newKeySet();
     private final Set<String> registeredUrls = ConcurrentHashMap.newKeySet();
     private final Set<String> diagnosedResources = ConcurrentHashMap.newKeySet();
+    private final Map<String, IndexedClassResource> classResourceIndex = new ConcurrentHashMap<>();
     private final ClassLoadingPolicy loadingPolicy;
+    private int nextUrlPosition;
+    private volatile int firstNonIndexedUrlPosition = Integer.MAX_VALUE;
     private volatile ClassTransformer classTransformer;
 
     static {
@@ -70,7 +80,7 @@ public class KnotClassLoader extends URLClassLoader {
         this.loadingPolicy = Objects.requireNonNull(loadingPolicy, "ClassLoadingPolicy must not be null");
 
         for (URL url : urls) {
-            addURL(url);
+            addURL(url, false);
         }
     }
 
@@ -168,6 +178,37 @@ public class KnotClassLoader extends URLClassLoader {
      */
     @Override
     public void addURL(URL url) {
+        addURL(url, true);
+    }
+
+    /**
+     * Adds a URL to the local classpath and optionally indexes its class entries.
+     * <p>
+     * Indexing trades one JAR scan for constant-time class resource lookup. It is intended for archives whose classes
+     * are resolved frequently, especially plugin archives that register mixins.
+     *
+     * @param url                 classpath URL to add
+     * @param indexClassResources whether class entries of a file-based JAR should be indexed
+     * @throws NullPointerException     if {@code url} is null
+     * @throws IllegalArgumentException if the URL cannot be converted to a valid URI
+     */
+    public synchronized void addURL(URL url, boolean indexClassResources) {
+        addURL(url, indexClassResources, null);
+    }
+
+    /**
+     * Adds a URL to the local classpath and optionally indexes the provided class entries.
+     * <p>
+     * Passing pre-collected class entries avoids reopening the JAR when the archive was already read while parsing
+     * plugin metadata.
+     *
+     * @param url                 classpath URL to add
+     * @param indexClassResources whether class entries of a file-based JAR should be indexed
+     * @param classEntries        class resource paths, or {@code null} to scan the JAR
+     * @throws NullPointerException     if {@code url} is null
+     * @throws IllegalArgumentException if the URL cannot be converted to a valid URI
+     */
+    public synchronized void addURL(URL url, boolean indexClassResources, Collection<String> classEntries) {
         Objects.requireNonNull(url, "URL cannot be null");
         final String key;
         try {
@@ -182,8 +223,106 @@ public class KnotClassLoader extends URLClassLoader {
             return;
         }
 
+        int urlPosition = nextUrlPosition++;
         super.addURL(url);
+
+        boolean indexed = false;
+        if (indexClassResources) {
+            indexed = (classEntries != null)
+                    ? indexClassResources(url, urlPosition, classEntries)
+                    : indexClassResources(url, urlPosition);
+        }
+        if (!indexed) {
+            firstNonIndexedUrlPosition = Math.min(firstNonIndexedUrlPosition, urlPosition);
+        }
         LOGGER.trace("Added URL to classpath: [{}]", formatDisplayName(url));
+    }
+
+    /**
+     * Indexes class entries of a file-based JAR for fast resource lookup.
+     *
+     * @param url         JAR URL to index
+     * @param urlPosition zero-based position of the URL in the classpath
+     * @return {@code true} if the URL was indexed, {@code false} if it is not a regular file-based JAR
+     */
+    private boolean indexClassResources(URL url, int urlPosition) {
+        if (!"file".equalsIgnoreCase(url.getProtocol())) {
+            return false;
+        }
+
+        try {
+            Path path = Paths.get(url.toURI());
+            if (!Files.isRegularFile(path)) {
+                return false;
+            }
+
+            String jarBase = "jar:" + path.toUri().toASCIIString() + "!/";
+            try (JarFile jar = new JarFile(path.toFile(), false)) {
+                Enumeration<JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    if (entry.isDirectory()) {
+                        continue;
+                    }
+
+                    String entryName = entry.getName();
+                    if (!entryName.endsWith(".class")
+                            || entryName.startsWith("META-INF/")
+                            || "module-info.class".equals(entryName)) {
+                        continue;
+                    }
+
+                    classResourceIndex.putIfAbsent(
+                            entryName,
+                            new IndexedClassResource(URI.create(jarBase + entryName).toURL(), urlPosition)
+                    );
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            LOGGER.debug("Failed to index class resources for [{}]", formatDisplayName(url), e);
+            return false;
+        }
+    }
+
+    /**
+     * Indexes pre-collected class entries of a file-based JAR without reopening the archive.
+     *
+     * @param url          JAR URL to index
+     * @param urlPosition  zero-based position of the URL in the classpath
+     * @param classEntries class resource paths collected from the archive
+     * @return {@code true} if the URL was indexed, {@code false} if it is not a regular file-based JAR
+     */
+    private boolean indexClassResources(URL url, int urlPosition, Collection<String> classEntries) {
+        if (!"file".equalsIgnoreCase(url.getProtocol())) {
+            return false;
+        }
+
+        try {
+            Path path = Paths.get(url.toURI());
+            if (!Files.isRegularFile(path)) {
+                return false;
+            }
+
+            String jarBase = "jar:" + path.toUri().toASCIIString() + "!/";
+            for (String entryName : classEntries) {
+                if (entryName == null
+                        || !entryName.endsWith(".class")
+                        || entryName.startsWith("META-INF/")
+                        || "module-info.class".equals(entryName)) {
+                    continue;
+                }
+
+                classResourceIndex.putIfAbsent(
+                        entryName,
+                        new IndexedClassResource(URI.create(jarBase + entryName).toURL(), urlPosition)
+                );
+            }
+            return true;
+        } catch (Exception e) {
+            LOGGER.debug("Failed to index class resources for [{}]", formatDisplayName(url), e);
+            return false;
+        }
     }
 
     /**
@@ -271,7 +410,14 @@ public class KnotClassLoader extends URLClassLoader {
      */
     @Override
     public URL findResource(String name) {
-        URL resource = super.findResource(name);
+        IndexedClassResource indexedResource = classResourceIndex.get(name);
+        URL resource;
+        if (indexedResource != null && indexedResource.urlPosition() < firstNonIndexedUrlPosition) {
+            resource = indexedResource.url();
+        } else {
+            resource = super.findResource(name);
+        }
+
         if (resource != null) {
             diagnoseResourceCollisions(name);
         }
@@ -284,6 +430,9 @@ public class KnotClassLoader extends URLClassLoader {
      * @param resourcePath resource path to inspect
      */
     private void diagnoseResourceCollisions(String resourcePath) {
+        if (!DIAGNOSE_RESOURCE_COLLISIONS) {
+            return;
+        }
         if (!diagnosedResources.add(resourcePath)) {
             return;
         }
@@ -408,5 +557,14 @@ public class KnotClassLoader extends URLClassLoader {
         } catch (URISyntaxException | IllegalArgumentException _) {
         }
         return url.toExternalForm();
+    }
+
+    /**
+     * Indexed class resource together with the classpath position of its owning URL.
+     *
+     * @param url         resource URL
+     * @param urlPosition zero-based classpath position of the owning URL
+     */
+    private record IndexedClassResource(URL url, int urlPosition) {
     }
 }

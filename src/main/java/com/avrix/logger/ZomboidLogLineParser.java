@@ -128,7 +128,7 @@ public final class ZomboidLogLineParser implements Consumer<String> {
          * @param token the header token
          * @return the corresponding log level
          */
-        static Level fromHeader(String token) {
+        private static Level fromHeader(String token) {
             return switch (token.toUpperCase(Locale.ROOT)) {
                 case "ERROR" -> ERROR;
                 case "WARN" -> WARN;
@@ -144,7 +144,7 @@ public final class ZomboidLogLineParser implements Consumer<String> {
          * @param prefix the prefix character
          * @return the corresponding log level, or {@code null} if unrecognized
          */
-        static Level fromPrefix(char prefix) {
+        private static Level fromPrefix(char prefix) {
             return switch (prefix) {
                 case '!' -> ERROR;
                 case '?' -> WARN;
