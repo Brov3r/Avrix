@@ -115,34 +115,9 @@ tasks.named('shadowJar', ShadowJar) {
     }
 }
 
-tasks.register('buildJar') {
-    group = 'build'
-    description = 'Builds the executable shaded Avrix loader JAR.'
-    dependsOn tasks.named('shadowJar')
-}
-
-tasks.register('sourceJar', Jar) {
-    group = 'build'
-    description = 'Builds the Avrix loader sources JAR.'
-
-    archiveBaseName.set(baseArchiveName)
-    archiveClassifier.set('sources')
-    destinationDirectory.set(file(customBuildPath))
-
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    from(sourceSets.main.allSource)
-}
-
-tasks.register('releaseBuildJar') {
-    group = 'build'
-    description = 'Builds the executable and sources JARs for release.'
-
-    dependsOn tasks.named('shadowJar')
-    dependsOn tasks.named('sourceJar')
-}
-
 def workshopModInfo = layout.projectDirectory.file('workshop-mod/Contents/mods/Avrix/42/mod.info')
 def workshopModVersion = project.version.toString()
+def workshopLibsDir = layout.projectDirectory.dir('workshop-mod/Contents/mods/Avrix/libs')
 
 tasks.register('updateWorkshopModInfo') {
     group = 'build'
@@ -165,20 +140,46 @@ tasks.register('updateWorkshopModInfo') {
     }
 }
 
-tasks.named('build') {
-    dependsOn tasks.named('updateWorkshopModInfo')
-}
-
-tasks.register('buildWorkshopJar', Copy) {
+tasks.register('syncWorkshopJar', Copy) {
     group = 'build'
-    description = 'Builds the shaded loader JAR and copies it into the Project Zomboid Workshop mod libs directory.'
+    description = 'Copies the shaded loader JAR and synchronized version into the Workshop mod.'
 
     dependsOn tasks.named('shadowJar')
     dependsOn tasks.named('updateWorkshopModInfo')
 
     from(tasks.named('shadowJar', ShadowJar).flatMap { it.archiveFile })
-    into(layout.projectDirectory.dir('workshop-mod/Contents/mods/Avrix/libs'))
+    into(workshopLibsDir)
     rename { 'Avrix-Loader.jar' }
+}
+
+tasks.register('buildJar') {
+    group = 'build'
+    description = 'Builds the shaded loader JAR and syncs it into the Workshop mod.'
+
+    dependsOn tasks.named('syncWorkshopJar')
+}
+
+tasks.named('sourcesJar', Jar) {
+    archiveBaseName.set(baseArchiveName)
+    archiveClassifier.set('sources')
+    destinationDirectory.set(file(customBuildPath))
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+tasks.named('jar') {
+    enabled = false
+}
+
+tasks.register('releaseBuildJar') {
+    group = 'build'
+    description = 'Builds release JARs and syncs the executable JAR and version into the Workshop mod.'
+
+    dependsOn tasks.named('buildJar')
+    dependsOn tasks.named('sourcesJar')
+}
+
+tasks.named('assemble') {
+    dependsOn tasks.named('buildJar')
 }
 
 def pzClientDirProperty = providers.gradleProperty('pzClientDir')
@@ -215,8 +216,15 @@ def serverCandidates = steamCommonRoots.collect { new File(it, 'Project Zomboid 
 def defaultClientDir = clientCandidates.find { it.isDirectory() } ?: clientCandidates[0]
 def defaultServerDir = serverCandidates.find { it.isDirectory() } ?: serverCandidates[0]
 
+def projectDirectory = layout.projectDirectory.asFile
 def resolveGameDirectory = { String taskName, Provider<String> configured, File fallback ->
-    File directory = configured.isPresent() ? file(configured.get()) : fallback
+    File directory = fallback
+    if (configured.isPresent()) {
+        File configuredDirectory = new File(configured.get())
+        directory = configuredDirectory.isAbsolute()
+                ? configuredDirectory
+                : new File(projectDirectory, configured.get())
+    }
     if (!directory.isDirectory()) {
         throw new GradleException(
                 "${taskName}: game directory not found: ${directory}. " +
@@ -226,18 +234,49 @@ def resolveGameDirectory = { String taskName, Provider<String> configured, File 
     return directory
 }
 
+def pzClientMaxHeap = providers.gradleProperty('pzClientMaxHeap').orElse('3g')
+def pzServerMinHeap = providers.gradleProperty('pzServerMinHeap').orElse('1g')
+def pzServerMaxHeap = providers.gradleProperty('pzServerMaxHeap').orElse('4g')
+
+def clientNativePath = osName.contains('win')
+        ? 'win64;.'
+        : osName.contains('mac') ? 'mac64:.:natives/osx' : 'linux64:.:natives'
+
+def commonRunJvmArgs = [
+        '-Djava.awt.headless=true',
+        '--enable-native-access=ALL-UNNAMED',
+        '--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED',
+        '-Dzomboid.steam=1',
+        '-Dzomboid.znetlog=1',
+        '-XX:+UseZGC',
+        '-XX:-CreateCoredumpOnCrash',
+        '-XX:-OmitStackTraceInFastThrow'
+]
+
+def clientRunJvmArgs = commonRunJvmArgs + [
+        "-Djava.library.path=${clientNativePath}",
+        "-Xmx${pzClientMaxHeap.get()}"
+]
+if (osName.contains('mac')) {
+    clientRunJvmArgs += '-XstartOnFirstThread'
+}
+
+def serverRunJvmArgs = commonRunJvmArgs + [
+        '-Djava.library.path=natives',
+        "-Xms${pzServerMinHeap.get()}",
+        "-Xmx${pzServerMaxHeap.get()}"
+]
+
 tasks.register('runClient', JavaExec) {
     group = 'run'
     description = 'Runs the Project Zomboid client with Avrix from the current IDE.'
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'com.avrix.Main'
+    jvmArgs clientRunJvmArgs
     doFirst {
         File gameDirectory = resolveGameDirectory('runClient', pzClientDirProperty, defaultClientDir)
         workingDir = gameDirectory
         jvmArgs "-Davrix.game.dir=${gameDirectory.absolutePath}"
-        if (osName.contains('mac')) {
-            jvmArgs '-XstartOnFirstThread'
-        }
     }
 }
 
@@ -247,6 +286,7 @@ tasks.register('runServer', JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     mainClass = 'com.avrix.Main'
     standardInput = System.in
+    jvmArgs serverRunJvmArgs
     doFirst {
         File gameDirectory = resolveGameDirectory('runServer', pzServerDirProperty, defaultServerDir)
         workingDir = gameDirectory
