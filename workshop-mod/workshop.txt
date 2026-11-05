@@ -1,34 +1,73 @@
 version=1
 id=3833849848
 title=Avrix
-description=WARNING: Java mods can execute arbitrary code. Only download Avrix from this official Steam Workshop page or the official GitHub repository (https://github.com/Brov3r/Avrix). Never install Java mods from unknown or untrusted sources.
+description=⚠️ [b]WARNING:[/b] Java mods can execute arbitrary code. Only download Avrix from this official Steam Workshop page or the official GitHub repository ([url=https://github.com/Brov3r/Avrix]github.com/Brov3r/Avrix[/url]). Never install Java mods from unknown or untrusted sources.
 description=
-description=INSTALLATION
+description=[b]Avrix is a loader, not a content mod:[/b] it adds no gameplay content by itself — it only runs Java plugins provided by other mods.
+description=
+description=[h2] 📥 Installation [/h2]
 description=1. Subscribe to this Workshop item.
 description=2. Add the launch option for your platform:
-description=   Windows: -pzexeconfig ..\..\workshop\content\108600\3833849848\mods\Avrix\libs\Avrix-windows.json
-description=   Linux: -pzexeconfig ../../../workshop/content/108600/3833849848/mods/Avrix/libs/Avrix-linux.json
+description=   [b]🖥️ Windows:[/b] -pzexeconfig ..\..\workshop\content\108600\3833849848\mods\Avrix\libs\Avrix-windows.json
+description=   [b]🐧 Linux:[/b] -pzexeconfig ../../../workshop/content/108600/3833849848/mods/Avrix/libs/Avrix-linux.json
 description=3. Launch Project Zomboid normally and enable the Avrix mod.
 description=
-description=ABOUT
-description=Avrix is a modern Java mod loader and mixin framework for Project Zomboid. It runs Java plugins from mods without repacking the game: it swaps the game classloader, applies ASM mixins, reads metadata.yml, and invokes plugin entrypoints. Requires Java 25, which is bundled with Project Zomboid Build 42.
+description=[b]Important:[/b] use [b]Normal Launch[/b]. Alternate Launch (ProjectZomboid64.bat / start-server.sh) is not supported. macOS is not verified yet — use the manual java -jar method.
 description=
-description=FAQ
+description=[hr][/hr]
 description=
-description=Q: Where can I find the source code and documentation?
-description=A: GitHub: https://github.com/Brov3r/Avrix
-description=A: Documentation: https://github.com/Brov3r/Avrix/blob/main/wiki/wiki-language.md
+description=[h2] 🔐 Plugin Approval [/h2]
+description=Java plugins from Workshop mods require approval. On first launch Avrix shows a dialog: choose Skip / Allow / Deny for each plugin, press Apply, then restart the game. Rows left on Skip are asked again next launch.
 description=
-description=Q: Does Avrix work on dedicated servers?
-description=A: Yes. Use the manual Avrix-Loader JAR for dedicated servers; Steam clients can use this Workshop item.
+description=[hr][/hr]
 description=
-description=Q: How do I load Java plugins?
-description=A: Put plugin JARs into the plugins folder, or distribute them through a Workshop mod using the jarPlugins key in mod.info.
+description=[h2] 🖥️ Dedicated Server [/h2]
+description=Download [url=https://github.com/Brov3r/Avrix/releases]Avrix-Loader-x.x.x.jar[/url] from the Releases page, place it in the server root folder and run:
+description=   java -jar Avrix-Loader-x.x.x.jar
+description=Without Steam integration, add [b]-nosteam[/b]:
+description=   java -jar Avrix-Loader-x.x.x.jar -nosteam
 description=
-description=Q: Is Avrix open source?
+description=[hr][/hr]
+description=
+description=[h2] ℹ️ About [/h2]
+description=Avrix is a modern Java mod loader and mixin framework for Project Zomboid. It runs Java plugins from mods without repacking the game: it swaps the game classloader, applies ASM mixins, reads [i]metadata.yml[/i], and invokes plugin entrypoints. Requires [b]Java 25[/b], which is bundled with Project Zomboid Build 42.
+description=
+description=[hr][/hr]
+description=
+description=[h2] ❓ FAQ [/h2]
+description=
+description=[b]Q: How do I load Java plugins?[/b]
+description=A: Put plugin JARs into the plugins folder, or distribute them through a Workshop mod using the [i]jarPlugins[/i] key in mod.info. Avrix loads jarPlugins only from active mods.
+description=
+description=[b]Q: Does Avrix work in multiplayer?[/b]
+description=A: Yes. Avrix supports both the graphical client and the dedicated server, so it works in multiplayer. Install and configure it on the server, and on clients too if the plugin has a client-side part.
+description=
+description=[b]Q: Does Avrix work with ZombieBuddy?[/b]
+description=A: Not recommended. Do not run Avrix and ZombieBuddy on the same game launch — both frameworks transform game classes, and combining them can cause hard-to-diagnose conflicts.
+description=
+description=[b]Q: Why use Avrix if ZombieBuddy already exists?[/b]
+description=A: Avrix is a full plugin loader with Workshop distribution, plugin metadata, dependency resolution, load order, lifecycle/services and Sponge-style mixins. ZombieBuddy is a ByteBuddy patch framework; its patches need porting to Avrix. Pick one — do not run both at once.
+description=
+description=[b]Q: How do I disable a plugin without deleting it?[/b]
+description=A: Create [i]plugins/disabled.txt[/i] and list one plugin ID or JAR name per line. Lines starting with # are ignored.
+description=
+description=[b]Q: Is Avrix open source?[/b]
 description=A: Yes. Avrix is licensed under the MIT License.
 description=
-description=Q: Where can I report a bug or get help?
-description=A: Open an issue on GitHub: https://github.com/Brov3r/Avrix/issues
+description=[hr][/hr]
+description=
+description=[h2] 🛠 Troubleshooting [/h2]
+description=[b]Logs:[/b] files in the logs folder of the game directory. For verbose output, add [b]-Dconsole.level=DEBUG[/b].
+description=[b]Launch option not applied:[/b] make sure you use Normal Launch and the correct Windows/Linux path.
+description=[b]Plugins not loading:[/b] enable the Workshop mod in the in-game Mods menu.
+description=
+description=[hr][/hr]
+description=
+description=[h2] 💬 Community & Links [/h2]
+description=GitHub: [url=https://github.com/Brov3r/Avrix]https://github.com/Brov3r/Avrix[/url]
+description=Documentation: [url=https://github.com/Brov3r/Avrix/blob/main/wiki/wiki-language.md]https://github.com/Brov3r/Avrix/blob/main/wiki/wiki-language.md[/url]
+description=Releases: [url=https://github.com/Brov3r/Avrix/releases]https://github.com/Brov3r/Avrix/releases[/url]
+description=Issues: [url=https://github.com/Brov3r/Avrix/issues]https://github.com/Brov3r/Avrix/issues[/url]
+description=Discord: [url=https://discord.gg/PdYtyJMTZN]https://discord.gg/PdYtyJMTZN[/url]
 tags=Build 42;Framework;Misc;Multiplayer
 visibility=public
