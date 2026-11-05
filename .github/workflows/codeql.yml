@@ -3,16 +3,26 @@ name: "CodeQL"
 on:
   push:
     branches: [ "main" ]
-    paths-ignore:
-      - '**.md'
-      - 'wiki/**'
-      - 'assets/**'
+    paths:
+      - 'src/**'
+      - 'gradle/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - '.github/workflows/**'
   pull_request:
     branches: [ "main" ]
-    paths-ignore:
-      - '**.md'
-      - 'wiki/**'
-      - 'assets/**'
+    paths:
+      - 'src/**'
+      - 'gradle/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - '.github/workflows/**'
   schedule:
     - cron: '0 3 * * 1'
   workflow_dispatch:
