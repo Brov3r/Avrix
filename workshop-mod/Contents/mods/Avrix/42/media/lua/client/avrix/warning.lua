@@ -32,8 +32,6 @@ local shown = false
 local scheduled = false
 --- Frames remaining before the deferred show runs.
 local delayFrames = 0
---- Panel kept alive while it is attached to the UI manager.
-local warningPanel = nil
 
 --- Writes a warning Avrix line.
 ---@param message string Message to write.
@@ -44,8 +42,6 @@ end
 --- Panel that explains why Avrix plugins are not loading.
 ---@class AvrixWarningPanel
 ---@field message string Warning text shown in the scrolling area.
----@field richText ISRichTextPanel|nil Scrollable warning text.
----@field okButton ISButton|nil Button that closes the panel.
 local AvrixWarningPanel = ISPanel:derive("AvrixWarningPanel")
 
 --- Creates a new warning panel.
@@ -90,16 +86,15 @@ function AvrixWarningPanel:initialise()
         richText.orient[index] = "centre"
     end
     self:addChild(richText)
-    self.richText = richText
 
-    self.okButton = ISButton:new((self.width - BUTTON_WIDTH) / 2, self.height - 50,
+    local okButton = ISButton:new((self.width - BUTTON_WIDTH) / 2, self.height - 50,
         BUTTON_WIDTH, BUTTON_HEIGHT, getText("UI_Ok"), self, AvrixWarningPanel.onOK)
-    UI.styleButton(self.okButton,
+    UI.styleButton(okButton,
         {r = 0.17, g = 0.17, b = 0.19, a = 1},
         {r = 0.26, g = 0.26, b = 0.29, a = 1},
         {r = 0.85, g = 0.55, b = 0.2, a = 1})
-    self.okButton:initialise()
-    self:addChild(self.okButton)
+    okButton:initialise()
+    self:addChild(okButton)
 end
 
 --- Draws the panel title.
@@ -124,7 +119,6 @@ end
 --- Closes the warning panel.
 function AvrixWarningPanel:onOK()
     self:removeFromUIManager()
-    warningPanel = nil
 end
 
 --- Shows a warning when the mod is enabled without an active Avrix loader.
@@ -159,7 +153,6 @@ local function showWarning()
     panel:addToUIManager()
     panel:setAlwaysOnTop(true)
     panel:bringToTop()
-    warningPanel = panel
     logWarn("loader warning shown")
 end
 

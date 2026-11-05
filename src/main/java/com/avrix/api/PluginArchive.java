@@ -47,6 +47,11 @@ public record PluginArchive(
     public static final String ATTRIBUTE_WORKSHOP_ID = "workshopId";
 
     /**
+     * Attribute key carrying the source mod author, when declared by the game mod.
+     */
+    public static final String ATTRIBUTE_AUTHOR = "author";
+
+    /**
      * Creates a validated plugin archive descriptor.
      *
      * @throws NullPointerException if {@code file} is null

@@ -5,7 +5,6 @@
 
 local Runtime = require "avrix/runtime"
 
-require "ISUI/ISPanel"
 require "ISUI/ISVersionWaterMark"
 require "OptionScreens/MainScreen"
 

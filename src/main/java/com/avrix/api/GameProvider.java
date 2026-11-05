@@ -140,6 +140,18 @@ public interface GameProvider {
     }
 
     /**
+     * Returns the per-user directory used for loader configuration and persistent decisions.
+     * <p>
+     * The default is {@code ~/.avrix}. Providers should keep this outside the game directory so decisions survive
+     * game updates and are not shared between operating-system users.
+     *
+     * @return configuration directory path
+     */
+    public default Path getConfigRoot() {
+        return Path.of(System.getProperty("user.home", ".")).resolve(".avrix");
+    }
+
+    /**
      * Returns the fully qualified name of the game's main class.
      *
      * @return the entrypoint class name

@@ -31,10 +31,10 @@ The recommended installation for Steam users is the Avrix Workshop item.
 4. Enable any Workshop mods that contain Avrix plugins in the in-game **Mods** menu. Avrix loads `jarPlugins` only
    from active mods. The classic `plugins/` directory still works independently.
 
-Java plugins from Workshop mods require approval. With the default `prompt` policy, Avrix shows a single Lua batch
-dialog on the main menu. Choose skip/allow/deny for each plugin, press `Apply`, and restart; rows left on skip are
-asked again next launch. See
-[Workshop Mods & Java Plugins](./loader/wiki-workshop.md) for approval files and `avrix.plugin.policy` values.
+Java plugins from Workshop mods require approval. With the default `prompt` policy, Avrix shows one Java approval
+window before plugins load. Unchecked rows are denied; press `Apply` to load approved plugins in the same launch.
+Enable `Remember for future launches` to keep the choices for future launches. See
+[Workshop Mods & Java Plugins](./loader/wiki-workshop.md) for the approval store and `avrix.plugin.policy` values.
 
 > [!IMPORTANT]
 > The Workshop profile works with the normal native launcher. It does not work with Alternate Launch

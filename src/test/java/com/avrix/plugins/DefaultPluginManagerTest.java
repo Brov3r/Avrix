@@ -8,7 +8,11 @@ import com.avrix.core.MixinRegistrar;
 import com.avrix.provider.DefaultLoaderProvider;
 import com.avrix.provider.ZomboidModPluginSource;
 import com.avrix.provider.ZomboidPluginApprovalGate;
+import com.avrix.provider.approval.ZomboidApprovalDecision;
+import com.avrix.provider.approval.ZomboidApprovalFrontend;
+import com.avrix.provider.approval.ZomboidApprovalResponse;
 import com.avrix.api.GameProvider;
+import com.avrix.api.PluginApprovalGate;
 import com.avrix.api.LoaderProvider;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.*;
@@ -1037,7 +1041,8 @@ class DefaultPluginManagerTest {
                         config,
                         List.of(new ZomboidModPluginSource(gameRoot, userHome, Environment.BOTH, null))
                 ),
-                new PluginManifestParser()
+                new PluginManifestParser(),
+                PluginApprovalGate.allowAll()
         );
         priorityManager.init();
         priorityManager.loadPlugins();
@@ -1076,7 +1081,10 @@ class DefaultPluginManagerTest {
 
         LoaderConfig config = configWithEnvironment(Environment.BOTH);
         ZomboidPluginApprovalGate approvalService = new ZomboidPluginApprovalGate(
-                gameRoot, userHome.resolve("Zomboid"), Environment.BOTH, "prompt"
+                tempRoot.resolve("config"),
+                Environment.BOTH,
+                "prompt",
+                ZomboidApprovalFrontend.denyAll()
         );
         DefaultPluginManager approvalManager = new DefaultPluginManager(
                 config,
@@ -1094,10 +1102,65 @@ class DefaultPluginManagerTest {
         approvalManager.init();
         approvalManager.loadPlugins();
 
-        Path pendingFile = gameRoot.resolve("avrix/plugin-pending.txt");
         assertThat(approvalManager.getPlugins()).doesNotContainKey("approval-plugin");
-        assertThat(pendingFile).isRegularFile();
-        assertThat(Files.readString(pendingFile)).contains("ENTRY", "approval-mod", "approval-plugin");
+        assertThat(tempRoot.resolve("config/plugin-approvals.txt")).doesNotExist();
+    }
+
+    @Test
+    @DisplayName("Should load a mod plugin in the same run after the user approves it")
+    void shouldLoadApprovedModPluginInSameRun() throws Exception {
+        Path gameRoot = tempRoot.resolve("steamapps/common/ProjectZomboid");
+        Files.createDirectories(gameRoot);
+
+        Path userHome = tempRoot.resolve("home");
+        Path versionDirectory = userHome.resolve("Zomboid/mods/ApprovalMod/42");
+        Files.createDirectories(versionDirectory.resolve("media/java"));
+        Files.writeString(userHome.resolve("Zomboid/mods/default.txt"), """
+                mods
+                {
+                    mod = approval-mod,
+                }
+                """);
+        Files.writeString(versionDirectory.resolve("mod.info"), """
+                id=approval-mod
+                jarPlugins=media/java/approval-plugin.jar
+                """);
+
+        Metadata metadata = createMeta("approval-plugin", "1.0.0");
+        createPluginJarOnDisk(versionDirectory.resolve("media/java/approval-plugin.jar"), metadata);
+
+        LoaderConfig config = configWithEnvironment(Environment.BOTH);
+        ZomboidApprovalFrontend approvingFrontend = pending -> new ZomboidApprovalResponse(
+                false,
+                pending.stream()
+                        .map(entry -> new ZomboidApprovalDecision(entry.sha256(), true))
+                        .toList()
+        );
+        ZomboidPluginApprovalGate approvalService = new ZomboidPluginApprovalGate(
+                tempRoot.resolve("config"),
+                Environment.BOTH,
+                "prompt",
+                approvingFrontend
+        );
+        DefaultPluginManager approvalManager = new DefaultPluginManager(
+                config,
+                classLoader,
+                gameProvider,
+                loaderProvider,
+                mixinRegistrar,
+                new PluginScanner(
+                        config,
+                        List.of(new ZomboidModPluginSource(gameRoot, userHome, Environment.BOTH, null))
+                ),
+                new PluginManifestParser(),
+                approvalService
+        );
+
+        approvalManager.init();
+        approvalManager.loadPlugins();
+
+        assertThat(approvalManager.getPlugins()).containsKey("approval-plugin");
+        assertThat(tempRoot.resolve("config/plugin-approvals.txt")).doesNotExist();
     }
 
     @Nested

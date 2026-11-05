@@ -65,6 +65,7 @@ class GameProviderDefaultsTest {
         DefaultsProvider provider = new DefaultsProvider();
 
         assertThat(provider.getCacheRoot().getFileName().toString()).isEqualTo(".avrix");
+        assertThat(provider.getConfigRoot().getFileName().toString()).isEqualTo(".avrix");
         assertThat(provider.getPluginSources(true)).isEmpty();
 
         PluginApprovalGate gate = provider.createApprovalGate(Path.of("cache"), Environment.SERVER);

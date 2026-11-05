@@ -6,6 +6,8 @@ import com.avrix.api.PluginSource;
 import com.avrix.core.Environment;
 import com.avrix.core.KnotClassLoader;
 import com.avrix.logger.LineReadingOutputStream;
+import com.avrix.provider.approval.ZomboidApprovalFrontend;
+import com.avrix.provider.approval.ZomboidSwingApprovalFrontend;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -594,12 +596,50 @@ public class ZomboidGameProvider implements GameProvider {
      */
     @Override
     public PluginApprovalGate createApprovalGate(Path cacheRoot, Environment environment) {
+        Environment resolvedEnvironment = environment == null ? getEnvironment() : environment;
         return new ZomboidPluginApprovalGate(
-                getLaunchDirectory(),
-                cacheRoot,
-                environment,
-                System.getProperty(ZomboidConstants.PLUGIN_POLICY_PROPERTY)
+                getConfigRoot(),
+                resolvedEnvironment,
+                System.getProperty(ZomboidConstants.PLUGIN_POLICY_PROPERTY),
+                createApprovalFrontend(resolvedEnvironment)
         );
+    }
+
+    /**
+     * Selects the approval frontend from {@code avrix.approval.frontend}.
+     * <p>
+     * {@code auto} uses the Swing window on a client and denies unknown archives on a dedicated server. An explicit
+     * {@code swing} value is honored on any environment; {@code none} always denies.
+     *
+     * @param environment active runtime environment
+     * @return approval frontend
+     */
+    private static ZomboidApprovalFrontend createApprovalFrontend(Environment environment) {
+        String configured = System.getProperty(ZomboidConstants.APPROVAL_FRONTEND_PROPERTY, "auto");
+        String mode = configured == null ? "auto" : configured.trim().toLowerCase(Locale.ROOT);
+        if (mode.isEmpty()) {
+            mode = "auto";
+        }
+
+        if ("none".equals(mode)) {
+            LOGGER.info("Plugin approval frontend: none");
+            return ZomboidApprovalFrontend.denyAll();
+        }
+        if ("swing".equals(mode)) {
+            LOGGER.info("Plugin approval frontend: swing");
+            return new ZomboidSwingApprovalFrontend();
+        }
+        if ("auto".equals(mode)) {
+            if (environment == Environment.SERVER) {
+                LOGGER.info("Plugin approval frontend: none (dedicated server)");
+                return ZomboidApprovalFrontend.denyAll();
+            }
+            LOGGER.info("Plugin approval frontend: swing");
+            return new ZomboidSwingApprovalFrontend();
+        }
+
+        LOGGER.warn("Unknown approval frontend [{}]; pending plugins will be skipped", configured);
+        return ZomboidApprovalFrontend.denyAll();
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.avrix.provider;
 
 import com.avrix.core.Environment;
+import com.avrix.api.PluginArchive;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -58,6 +59,30 @@ class ZomboidModPluginSourceTest {
                 "media/java/inactive.jar");
 
         assertThat(new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should expose the mod author in archive attributes")
+    void shouldExposeModAuthor() throws Exception {
+        Path home = createUserHome();
+        Path gameRoot = createGameRoot();
+        writeClientActiveMods(home, "author-mod");
+
+        Path mods = home.resolve("Zomboid/mods");
+        writeMod(mods, "AuthorMod", "author-mod",
+                "media/java/author.jar",
+                "media/java/author.jar");
+
+        List<PluginArchive> archives = new ZomboidModPluginSource(
+                gameRoot,
+                home,
+                Environment.CLIENT,
+                null
+        ).scanArchives();
+
+        assertThat(archives).hasSize(1);
+        assertThat(archives.get(0).attributes())
+                .containsEntry(PluginArchive.ATTRIBUTE_AUTHOR, "Test Author");
     }
 
     @Test
@@ -392,6 +417,7 @@ class ZomboidModPluginSourceTest {
         Files.createDirectories(version);
         Files.writeString(version.resolve("mod.info"), """
                 id=%s
+                author=Test Author
                 jarPlugins=%s
                 """.formatted(id, jarPlugins));
 
@@ -415,6 +441,7 @@ class ZomboidModPluginSourceTest {
         Files.createDirectories(version);
         Files.writeString(version.resolve("mod.info"), """
                 id=%s
+                author=Test Author
                 jarPlugins=%s
                 """.formatted(id, jarPlugins));
 

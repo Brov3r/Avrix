@@ -393,6 +393,11 @@ public final class ZomboidModPluginSource implements PluginSource {
                 commonInfo != null ? commonInfo.name() : null,
                 modId
         );
+        String modAuthor = firstNonBlank(
+                selectedInfo != null ? selectedInfo.author() : null,
+                commonInfo != null ? commonInfo.author() : null,
+                ""
+        );
         String workshopId = workshopItemId(modDirectory);
 
         if (!activeMods.contains(modId.toLowerCase(Locale.ROOT))) {
@@ -415,7 +420,7 @@ public final class ZomboidModPluginSource implements PluginSource {
                     ? versionFallback
                     : commonDirectory;
             discovered += addJarCandidates(
-                    selectedInfo, selectedFallback, realModRoot, modId, modName, workshopId, archives, errors
+                    selectedInfo, selectedFallback, realModRoot, modId, modName, modAuthor, workshopId, archives, errors
             );
         }
 
@@ -424,7 +429,7 @@ public final class ZomboidModPluginSource implements PluginSource {
         if (!selectedDeclaresJars && commonInfo != null && !commonDirectory.equals(selectedDirectory)) {
             Path commonFallback = selectedDirectory != null ? selectedDirectory : versionFallback;
             discovered += addJarCandidates(
-                    commonInfo, commonFallback, realModRoot, modId, modName, workshopId, archives, errors
+                    commonInfo, commonFallback, realModRoot, modId, modName, modAuthor, workshopId, archives, errors
             );
         }
 
@@ -504,6 +509,7 @@ public final class ZomboidModPluginSource implements PluginSource {
 
         String id = null;
         String name = null;
+        String author = null;
         List<JarEntry> jarEntries = new ArrayList<>();
 
         try (BufferedReader reader = Files.newBufferedReader(modInfo, StandardCharsets.UTF_8)) {
@@ -532,6 +538,10 @@ public final class ZomboidModPluginSource implements PluginSource {
                     if (name == null || name.isBlank()) {
                         name = value;
                     }
+                } else if (key.equalsIgnoreCase("author") || key.equalsIgnoreCase("authors")) {
+                    if (author == null || author.isBlank()) {
+                        author = value;
+                    }
                 } else if (key.equalsIgnoreCase(ZomboidConstants.JAR_PLUGINS_KEY)) {
                     for (String entry : value.split(JAR_SEPARATOR_PATTERN)) {
                         String jarPath = entry.trim();
@@ -546,7 +556,7 @@ public final class ZomboidModPluginSource implements PluginSource {
             return null;
         }
 
-        return new ModInfo(id, name, List.copyOf(jarEntries));
+        return new ModInfo(id, name, author, List.copyOf(jarEntries));
     }
 
     private static int addJarCandidates(
@@ -555,6 +565,7 @@ public final class ZomboidModPluginSource implements PluginSource {
             Path realModRoot,
             String modId,
             String modName,
+            String modAuthor,
             String workshopId,
             Map<Path, PluginArchive> archives,
             Set<String> errors
@@ -564,6 +575,13 @@ public final class ZomboidModPluginSource implements PluginSource {
         for (JarEntry entry : info.jarEntries()) {
             Path resolved = resolveJar(entry, fallbackDirectory, realModRoot, modId, errors);
             if (resolved != null) {
+                Map<String, String> attributes = new LinkedHashMap<>();
+                if (workshopId != null) {
+                    attributes.put(PluginArchive.ATTRIBUTE_WORKSHOP_ID, workshopId);
+                }
+                if (!modAuthor.isBlank()) {
+                    attributes.put(PluginArchive.ATTRIBUTE_AUTHOR, modAuthor);
+                }
                 archives.putIfAbsent(
                         resolved,
                         new PluginArchive(
@@ -571,7 +589,7 @@ public final class ZomboidModPluginSource implements PluginSource {
                                 modId,
                                 modName,
                                 workshopId != null ? PluginArchive.SOURCE_WORKSHOP : PluginArchive.SOURCE_MOD,
-                                workshopId != null ? Map.of(PluginArchive.ATTRIBUTE_WORKSHOP_ID, workshopId) : Map.of(),
+                                attributes,
                                 false
                         )
                 );
@@ -740,7 +758,7 @@ public final class ZomboidModPluginSource implements PluginSource {
     private record VersionedDirectory(Path directory, Version version) {
     }
 
-    private record ModInfo(String id, String name, List<JarEntry> jarEntries) {
+    private record ModInfo(String id, String name, String author, List<JarEntry> jarEntries) {
     }
 
     private record JarEntry(String value, Path baseDirectory) {

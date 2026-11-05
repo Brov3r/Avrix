@@ -22,6 +22,8 @@ public interface PluginManager {
 
     /**
      * Loads and initializes a specific plugin.
+     * <p>
+     * This method bypasses discovery-time approval. Callers are responsible for passing only trusted containers.
      *
      * @param container the plugin data container
      */

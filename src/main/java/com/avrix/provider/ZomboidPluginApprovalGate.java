@@ -5,12 +5,15 @@ import com.avrix.api.PluginApprovalGate.Status;
 import com.avrix.api.PluginArchive;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;
+import com.avrix.provider.approval.ZomboidApprovalDecision;
+import com.avrix.provider.approval.ZomboidApprovalEntry;
+import com.avrix.provider.approval.ZomboidApprovalFrontend;
+import com.avrix.provider.approval.ZomboidApprovalResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
@@ -19,69 +22,72 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
 
 /**
  * Applies the {@code avrix.plugin.policy} policy to plugin archives discovered from active Project Zomboid mods.
  * <p>
- * Approval files are stored in the game directory under {@code avrix/}. A Lua-readable mirror of the pending list
- * and a decision hand-off file are kept in the Project Zomboid cache directory under {@code Lua/avrix/} because the
- * Project Zomboid Lua sandbox cannot access arbitrary paths outside that directory. The cache directory follows the
- * game {@code -cachedir=} override when present.
+ * Decisions are bound to the SHA-256 of the archive and stored in one per-user file under
+ * {@link com.avrix.api.GameProvider#getConfigRoot()}. Pending archives are collected in memory and resolved through a
+ * {@link ZomboidApprovalFrontend} before the loader retries them in the same process launch.
  */
 public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZomboidPluginApprovalGate.class);
 
-    private static final String VERSION_LINE = "VERSION\t1";
+    private static final String VERSION_LINE = "VERSION\t2";
     private static final String APPROVALS_FILE_NAME = "plugin-approvals.txt";
-    private static final String PENDING_FILE_NAME = "plugin-pending.txt";
-    private static final String DECISIONS_FILE_NAME = "plugin-decisions.txt";
 
     private static final String POLICY_PROMPT = "prompt";
     private static final String POLICY_DENY_NEW = "deny-new";
     private static final String POLICY_ALLOW_ALL = "allow-all";
 
-    private final Path gameDataDirectory;
-    private final Path luaDirectory;
+    private final Path approvalsFile;
     private final Policy policy;
-    private final Map<String, Map<String, Boolean>> approvals = new TreeMap<>();
-    private final List<PendingEntry> pending = new ArrayList<>();
-    private final Set<String> pendingKeys = new HashSet<>();
+    private final ZomboidApprovalFrontend frontend;
+
+    private final Map<String, StoredDecision> approvals = new HashMap<>();
+    private final Map<String, Boolean> sessionDecisions = new HashMap<>();
+    private final Set<String> resolvedThisSession = new HashSet<>();
+    private final List<ZomboidApprovalEntry> pending = new ArrayList<>();
+    private final Set<String> pendingHashes = new HashSet<>();
 
     private boolean storageAvailable = true;
-    private boolean luaStorageAvailable = true;
+    private boolean storeDirty;
 
     /**
-     * Creates an approval service and loads persisted decisions.
+     * Creates an approval gate.
      *
-     * @param gameRoot    Project Zomboid installation root
-     * @param cacheRoot   Project Zomboid user cache directory that contains the {@code Lua} folder
+     * @param configRoot  per-user directory for the persistent approval store
      * @param environment active runtime environment
      * @param policyValue configured policy value, or {@code null} for the environment default
-     * @throws NullPointerException if {@code gameRoot} or {@code cacheRoot} is null
+     * @param frontend    frontend used to resolve pending archives
+     * @throws NullPointerException if {@code configRoot} is null
      */
-    public ZomboidPluginApprovalGate(Path gameRoot, Path cacheRoot, Environment environment, String policyValue) {
-        Path normalizedGameRoot = java.util.Objects.requireNonNull(gameRoot, "Game root cannot be null")
-                .toAbsolutePath()
-                .normalize();
-        Path normalizedCacheRoot = java.util.Objects.requireNonNull(cacheRoot, "Cache root cannot be null")
+    public ZomboidPluginApprovalGate(
+            Path configRoot,
+            Environment environment,
+            String policyValue,
+            ZomboidApprovalFrontend frontend
+    ) {
+        Path normalizedConfigRoot = Objects.requireNonNull(configRoot, "Config root cannot be null")
                 .toAbsolutePath()
                 .normalize();
 
-        this.gameDataDirectory = normalizedGameRoot.resolve("avrix");
-        this.luaDirectory = normalizedCacheRoot.resolve("Lua").resolve("avrix");
+        this.approvalsFile = normalizedConfigRoot.resolve(APPROVALS_FILE_NAME);
         this.policy = resolvePolicy(environment == null ? Environment.CLIENT : environment, policyValue);
+        this.frontend = frontend != null ? frontend : ZomboidApprovalFrontend.denyAll();
 
         prepareStorage();
         loadApprovals();
-        processDecisions();
-
         LOGGER.info("Workshop plugin approval policy: [{}]", policy.displayName);
     }
 
@@ -94,21 +100,59 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
      */
     @Override
     public Status evaluate(PluginArchive archive, Metadata metadata) {
+        return evaluateInternal(archive, metadata, null);
+    }
+
+    /**
+     * Evaluates one archive against the configured policy using a pre-computed content hash.
+     *
+     * @param archive     discovered plugin archive
+     * @param metadata    parsed plugin metadata
+     * @param contentHash lowercase SHA-256 of the archive, or {@code null} to compute it
+     * @return approval status
+     */
+    @Override
+    public Status evaluate(PluginArchive archive, Metadata metadata, String contentHash) {
+        return evaluateInternal(archive, metadata, contentHash);
+    }
+
+    /**
+     * Resolves all pending archives through the configured frontend and persists decisions when requested.
+     */
+    @Override
+    public void flushPending() {
+        if (pending.isEmpty()) {
+            return;
+        }
+
+        List<ZomboidApprovalEntry> batch = List.copyOf(pending);
+        LOGGER.info("Waiting for user approval of {} plugin archive(s)", batch.size());
+        ZomboidApprovalResponse response = null;
+        try {
+            response = frontend.request(batch);
+        } catch (Throwable throwable) {
+            LOGGER.error("Approval frontend failed; pending plugins will be skipped", throwable);
+        }
+
+        applyResponse(batch, response);
+        pending.clear();
+        pendingHashes.clear();
+        for (ZomboidApprovalEntry entry : batch) {
+            resolvedThisSession.add(entry.sha256());
+        }
+
+        if (storeDirty && saveApprovals()) {
+            storeDirty = false;
+        }
+    }
+
+    private Status evaluateInternal(PluginArchive archive, Metadata metadata, String contentHash) {
         if (archive.trusted()) {
             return Status.APPROVED;
         }
 
         if (policy == Policy.ALLOW_ALL) {
             return Status.APPROVED;
-        }
-
-        if (!storageAvailable) {
-            LOGGER.warn(
-                    "Plugin approval storage is unavailable; skipping unapproved plugin [{}] from mod [{}]",
-                    pluginId(metadata),
-                    archive.sourceId()
-            );
-            return Status.DENIED;
         }
 
         String modId = archive.sourceId();
@@ -118,32 +162,25 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
         }
 
         String sha256;
-        try {
-            sha256 = sha256(archive.file().toPath());
-        } catch (IOException e) {
-            LOGGER.warn("Failed to hash plugin archive [{}]; denying", archive.file(), e);
-            return Status.DENIED;
+        if (contentHash != null && !contentHash.isBlank()) {
+            sha256 = contentHash;
+        } else {
+            try {
+                sha256 = sha256(archive.file().toPath());
+            } catch (IOException e) {
+                LOGGER.warn("Failed to hash plugin archive [{}]; denying", archive.file(), e);
+                return Status.DENIED;
+            }
         }
 
-        Boolean allowed = approvals.getOrDefault(modId, Map.of()).get(sha256);
-        if (allowed != null) {
-            if (allowed) {
-                LOGGER.info(
-                        "Approved plugin [{}] from mod [{}] sha256={}",
-                        pluginId(metadata),
-                        modId,
-                        sha256
-                );
-                return Status.APPROVED;
-            }
+        Boolean sessionDecision = sessionDecisions.get(sha256);
+        if (sessionDecision != null) {
+            return sessionDecision ? Status.APPROVED : Status.DENIED;
+        }
 
-            LOGGER.info(
-                    "Denied plugin [{}] from mod [{}] by stored decision sha256={}",
-                    pluginId(metadata),
-                    modId,
-                    sha256
-            );
-            return Status.DENIED;
+        StoredDecision stored = approvals.get(sha256);
+        if (stored != null) {
+            return stored.allow() ? Status.APPROVED : Status.DENIED;
         }
 
         if (policy == Policy.DENY_NEW) {
@@ -156,17 +193,12 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
             return Status.DENIED;
         }
 
-        String key = modId + "\t" + sha256;
-        if (pendingKeys.add(key)) {
-            boolean changed = approvals.containsKey(modId) && !approvals.get(modId).isEmpty();
-            pending.add(new PendingEntry(
-                    modId,
-                    pluginId(metadata),
-                    pluginName(metadata),
-                    archive.file().getPath(),
-                    sha256,
-                    changed ? "CHANGED" : "NEW"
-            ));
+        if (resolvedThisSession.contains(sha256)) {
+            return Status.PENDING;
+        }
+
+        if (pendingHashes.add(sha256)) {
+            pending.add(createEntry(archive, metadata, modId, sha256));
             LOGGER.info(
                     "Plugin [{}] from mod [{}] is pending approval sha256={}",
                     pluginId(metadata),
@@ -178,161 +210,179 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
         return Status.PENDING;
     }
 
-    /**
-     * Writes the pending list for the Lua approval UI.
-     */
-    @Override
-    public void flushPending() {
-        if (!storageAvailable) {
-            return;
-        }
-
-        StringBuilder content = new StringBuilder(VERSION_LINE).append('\n');
-        for (PendingEntry entry : pending) {
-            content.append("ENTRY")
-                    .append('\t').append(sanitize(entry.modId()))
-                    .append('\t').append(sanitize(entry.pluginId()))
-                    .append('\t').append(sanitize(entry.state()))
-                    .append('\t').append(sanitize(entry.sha256()))
-                    .append('\t').append(sanitize(entry.jarPath()))
-                    .append('\t').append(sanitize(entry.pluginName()))
-                    .append('\n');
-        }
-
+    private ZomboidApprovalEntry createEntry(
+            PluginArchive archive,
+            Metadata metadata,
+            String modId,
+            String sha256
+    ) {
+        Path jarPath = archive.file().toPath().toAbsolutePath().normalize();
+        long size = 0L;
+        long modified = 0L;
         try {
-            writeAtomically(gameDataDirectory.resolve(PENDING_FILE_NAME), content.toString());
-        } catch (UncheckedIOException e) {
-            storageAvailable = false;
-            LOGGER.warn("Failed to write plugin pending list; unapproved plugins will be skipped", e);
+            size = Files.size(jarPath);
+            modified = Files.getLastModifiedTime(jarPath).toMillis();
+        } catch (IOException e) {
+            LOGGER.debug("Failed to read plugin archive attributes [{}]", jarPath, e);
+        }
+
+        String displayName = metadata != null && metadata.name() != null && !metadata.name().isBlank()
+                ? metadata.name()
+                : archive.file().getName();
+        String modAuthor = archive.attributes().getOrDefault(PluginArchive.ATTRIBUTE_AUTHOR, "");
+        if (modAuthor.isBlank() && metadata != null && !metadata.authors().isEmpty()) {
+            modAuthor = String.join(", ", metadata.authors());
+        }
+        String workshopId = archive.attributes().getOrDefault(PluginArchive.ATTRIBUTE_WORKSHOP_ID, "");
+
+        return new ZomboidApprovalEntry(
+                modId,
+                pluginId(metadata),
+                modAuthor,
+                displayName,
+                archive.sourceType(),
+                archive.sourceName(),
+                workshopId,
+                jarPath,
+                sha256,
+                size,
+                modified,
+                previousHash(modId, sha256)
+        );
+    }
+
+    private String previousHash(String modId, String currentHash) {
+        return approvals.values().stream()
+                .filter(StoredDecision::allow)
+                .filter(decision -> decision.modId().equals(modId))
+                .filter(decision -> !decision.sha256().equals(currentHash))
+                .max(Comparator.comparingLong(StoredDecision::time))
+                .map(StoredDecision::sha256)
+                .orElse("");
+    }
+
+    private void applyResponse(List<ZomboidApprovalEntry> batch, ZomboidApprovalResponse response) {
+        if (response == null || response.decisions().isEmpty()) {
+            LOGGER.info("No plugin approval decisions were returned; pending archives will be skipped");
             return;
         }
 
-        if (luaStorageAvailable) {
-            try {
-                writeAtomically(luaDirectory.resolve(PENDING_FILE_NAME), content.toString());
-            } catch (UncheckedIOException e) {
-                luaStorageAvailable = false;
-                LOGGER.warn("Failed to write Lua plugin pending list [{}]", luaDirectory, e);
+        Map<String, ZomboidApprovalEntry> batchByHash = new HashMap<>();
+        for (ZomboidApprovalEntry entry : batch) {
+            batchByHash.put(entry.sha256(), entry);
+        }
+
+        Set<String> seen = new HashSet<>();
+        for (ZomboidApprovalDecision decision : response.decisions()) {
+            if (decision == null || decision.sha256().isBlank() || !batchByHash.containsKey(decision.sha256())
+                    || !seen.add(decision.sha256())) {
+                LOGGER.error("Rejecting invalid plugin approval response for batch of {} archive(s)", batch.size());
+                return;
             }
+        }
+
+        for (ZomboidApprovalDecision decision : response.decisions()) {
+            sessionDecisions.put(decision.sha256(), decision.allow());
+            if (!response.persist()) {
+                continue;
+            }
+            if (!storageAvailable) {
+                LOGGER.warn("Approval store is unavailable; decision for {} is session-only", decision.sha256());
+                continue;
+            }
+
+            ZomboidApprovalEntry entry = batchByHash.get(decision.sha256());
+            approvals.put(decision.sha256(), new StoredDecision(
+                    decision.sha256(),
+                    decision.allow(),
+                    System.currentTimeMillis(),
+                    entry.modId(),
+                    entry.sourceType(),
+                    entry.sourceName(),
+                    entry.workshopId()
+            ));
+            storeDirty = true;
         }
     }
 
     private void prepareStorage() {
         try {
-            Files.createDirectories(gameDataDirectory);
+            Files.createDirectories(approvalsFile.getParent());
         } catch (IOException e) {
             storageAvailable = false;
-            LOGGER.warn("Failed to create plugin approval directory [{}]", gameDataDirectory, e);
-        }
-
-        try {
-            Files.createDirectories(luaDirectory);
-        } catch (IOException e) {
-            luaStorageAvailable = false;
-            LOGGER.warn("Failed to create Lua approval directory [{}]", luaDirectory, e);
+            LOGGER.warn("Failed to create plugin approval directory [{}]", approvalsFile.getParent(), e);
         }
     }
 
     private void loadApprovals() {
-        Path file = gameDataDirectory.resolve(APPROVALS_FILE_NAME);
-        if (!Files.isRegularFile(file)) {
+        if (!Files.isRegularFile(approvalsFile)) {
             return;
         }
 
         try {
-            for (String line : Files.readAllLines(file, StandardCharsets.UTF_8)) {
-                String[] parts = line.split("\t", -1);
-                if (parts.length < 4 || !"APPROVAL".equals(parts[0])) {
-                    continue;
-                }
-
-                String modId = parts[1];
-                String sha256 = parts[2];
-                Boolean allow = parseBoolean(parts[3]);
-                if (modId.isBlank() || sha256.isBlank() || allow == null) {
-                    continue;
-                }
-
-                approvals.computeIfAbsent(modId, ignored -> new TreeMap<>()).put(sha256, allow);
+            for (String line : Files.readAllLines(approvalsFile, StandardCharsets.UTF_8)) {
+                parseLine(line.split("\t", -1));
             }
+            LOGGER.info("Loaded {} plugin approval decision(s) from [{}]", approvals.size(), approvalsFile);
         } catch (IOException e) {
-            LOGGER.warn("Failed to read plugin approvals [{}]; starting with an empty store", file, e);
+            LOGGER.warn("Failed to read plugin approvals [{}]; starting with an empty store", approvalsFile, e);
             approvals.clear();
         }
     }
 
-    private void saveApprovals() {
-        if (!storageAvailable) {
+    private void parseLine(String[] parts) {
+        if (parts.length < 8 || !"APPROVAL".equals(parts[0])) {
             return;
         }
 
+        String sha256 = parts[1];
+        Boolean allow = parseBoolean(parts[2]);
+        long time = parseLong(parts[3]);
+        String modId = decode(parts[4]);
+        String sourceType = decode(parts[5]);
+        String sourceName = decode(parts[6]);
+        String workshopId = decode(parts[7]);
+        if (sha256.isBlank() || allow == null) {
+            return;
+        }
+
+        approvals.put(sha256, new StoredDecision(
+                sha256,
+                allow,
+                time,
+                modId,
+                sourceType,
+                sourceName,
+                workshopId
+        ));
+    }
+
+    private boolean saveApprovals() {
+        if (!storageAvailable) {
+            return false;
+        }
+
         StringBuilder content = new StringBuilder(VERSION_LINE).append('\n');
-        for (Map.Entry<String, Map<String, Boolean>> modEntry : approvals.entrySet()) {
-            for (Map.Entry<String, Boolean> hashEntry : modEntry.getValue().entrySet()) {
-                content.append("APPROVAL")
-                        .append('\t').append(sanitize(modEntry.getKey()))
-                        .append('\t').append(sanitize(hashEntry.getKey()))
-                        .append('\t').append(hashEntry.getValue())
-                        .append('\n');
-            }
-        }
+        approvals.values().stream()
+                .sorted(Comparator.comparing(StoredDecision::sha256))
+                .forEach(decision -> content.append("APPROVAL")
+                        .append('\t').append(decision.sha256())
+                        .append('\t').append(decision.allow())
+                        .append('\t').append(decision.time())
+                        .append('\t').append(encode(decision.modId()))
+                        .append('\t').append(encode(decision.sourceType()))
+                        .append('\t').append(encode(decision.sourceName()))
+                        .append('\t').append(encode(decision.workshopId()))
+                        .append('\n'));
 
         try {
-            writeAtomically(gameDataDirectory.resolve(APPROVALS_FILE_NAME), content.toString());
-        } catch (UncheckedIOException e) {
-            LOGGER.warn("Failed to write plugin approval store [{}]", gameDataDirectory, e);
-        }
-    }
-
-    private void processDecisions() {
-        boolean changed = processDecisionsFile(gameDataDirectory.resolve(DECISIONS_FILE_NAME));
-        changed |= processDecisionsFile(luaDirectory.resolve(DECISIONS_FILE_NAME));
-        if (changed) {
-            saveApprovals();
-        }
-    }
-
-    private boolean processDecisionsFile(Path file) {
-        if (!Files.isRegularFile(file)) {
-            return false;
-        }
-
-        boolean changed = false;
-        try {
-            for (String line : Files.readAllLines(file, StandardCharsets.UTF_8)) {
-                String[] parts = line.split("\t", -1);
-                if (parts.length < 4 || !"DECISION".equals(parts[0])) {
-                    continue;
-                }
-
-                String modId = parts[1];
-                String sha256 = parts[2];
-                Boolean allow = parseBoolean(parts[3]);
-                if (modId.isBlank() || sha256.isBlank() || allow == null) {
-                    continue;
-                }
-
-                approvals.computeIfAbsent(modId, ignored -> new TreeMap<>()).put(sha256, allow);
-                changed = true;
-                LOGGER.info(
-                        "Applied plugin approval decision: mod [{}] sha256={} allow={}",
-                        modId,
-                        sha256,
-                        allow
-                );
-            }
+            writeAtomically(approvalsFile, content.toString());
+            LOGGER.info("Saved {} plugin approval decision(s) to [{}]", approvals.size(), approvalsFile);
+            return true;
         } catch (IOException e) {
-            LOGGER.warn("Failed to read plugin decisions [{}]", file, e);
+            LOGGER.warn("Failed to save plugin approval store [{}]", approvalsFile, e);
             return false;
-        } finally {
-            try {
-                Files.deleteIfExists(file);
-            } catch (IOException e) {
-                LOGGER.debug("Failed to remove processed decisions file [{}]", file, e);
-            }
         }
-
-        return changed;
     }
 
     private static String sha256(Path file) throws IOException {
@@ -394,25 +444,40 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
         return null;
     }
 
+    private static long parseLong(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
+    }
+
+    private static String encode(String value) {
+        if (value == null || value.isEmpty()) {
+            return "";
+        }
+        return Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static String decode(String value) {
+        if (value == null || value.isEmpty()) {
+            return "";
+        }
+        try {
+            return new String(Base64.getDecoder().decode(value), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            return "";
+        }
+    }
+
     private static String pluginId(Metadata metadata) {
         return metadata == null ? "unknown" : metadata.id();
     }
 
-    private static String pluginName(Metadata metadata) {
-        return metadata == null ? "unknown" : metadata.name();
-    }
-
-    private static String sanitize(String value) {
-        if (value == null) {
-            return "";
-        }
-        return value.replace('\t', ' ').replace('\r', ' ').replace('\n', ' ');
-    }
-
-    private static void writeAtomically(Path file, String content) {
+    private static void writeAtomically(Path file, String content) throws IOException {
+        Files.createDirectories(file.getParent());
+        Path temporary = file.resolveSibling(file.getFileName() + ".tmp");
         try {
-            Files.createDirectories(file.getParent());
-            Path temporary = file.resolveSibling(file.getFileName() + ".tmp");
             Files.writeString(temporary, content, StandardCharsets.UTF_8);
             try {
                 Files.move(
@@ -424,8 +489,8 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
             } catch (AtomicMoveNotSupportedException e) {
                 Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING);
             }
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to write plugin approval file: " + file, e);
+        } finally {
+            Files.deleteIfExists(temporary);
         }
     }
 
@@ -441,13 +506,17 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
         }
     }
 
-    private record PendingEntry(
-            String modId,
-            String pluginId,
-            String pluginName,
-            String jarPath,
+    /**
+     * Persistent allow or deny decision bound to one archive hash.
+     */
+    private record StoredDecision(
             String sha256,
-            String state
+            boolean allow,
+            long time,
+            String modId,
+            String sourceType,
+            String sourceName,
+            String workshopId
     ) {
     }
 }

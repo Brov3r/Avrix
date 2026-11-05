@@ -1,6 +1,6 @@
 -- Shared presentation helpers for Avrix client panels.
 
---- Shared visual helpers used by the Avrix approval and warning panels.
+--- Shared visual helpers used by the Avrix warning panel.
 ---@class AvrixUI
 local AvrixUI = {}
 
