@@ -24,6 +24,7 @@ jobs:
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       with:
         persist-credentials: false
+        fetch-depth: 0
 
     - name: Set up JDK 25
       uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6
@@ -70,6 +71,85 @@ jobs:
         sha256sum "Avrix-Loader-${version}.jar" "Avrix-Loader-${version}-sources.jar" > SHA256SUMS.txt
         cat SHA256SUMS.txt
 
+    - name: Generate release notes
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        notes_file="$RUNNER_TEMP/release-notes.md"
+        prev_tag="$(git describe --tags --abbrev=0 "${GITHUB_REF_NAME}^" 2>/dev/null || true)"
+        if [[ -n "$prev_tag" ]]; then
+          range="${prev_tag}..${GITHUB_REF_NAME}"
+        else
+          range="${GITHUB_REF_NAME}"
+        fi
+
+        declare -A titles=(
+          [feat]="🚀 What's New"
+          [fix]="🐛 Bug Fixes"
+          [perf]="⚡ Performance"
+          [refactor]="♻️ Refactoring"
+          [test]="✅ Tests"
+          [ci]="🤖 CI"
+          [docs]="📝 Documentation"
+          [build]="📦 Build"
+          [chore]="🔧 Chores"
+        )
+        order=(feat fix perf refactor test ci docs build chore)
+        declare -A body=()
+
+        while IFS= read -r subject; do
+          [[ -z "$subject" ]] && continue
+
+          subject_lc="${subject,,}"
+          [[ "$subject_lc" == merge\ * ]] && continue
+          [[ "$subject_lc" == bump\ * ]] && continue
+
+          type="other"
+          scope=""
+          text="$subject"
+          commit_re='^([A-Za-z]+)(\(([^)]+)\))?!?:[[:space:]]+(.*)$'
+          if [[ "$subject" =~ $commit_re ]]; then
+            type="${BASH_REMATCH[1],,}"
+            scope="${BASH_REMATCH[3]}"
+            text="${BASH_REMATCH[4]}"
+          fi
+
+          [[ "$type" == "chore" && "$scope" == "deps" ]] && continue
+
+          text="${text%.}"
+          first="${text:0:1}"
+          rest="${text:1}"
+          first="$(printf '%s' "$first" | tr '[:lower:]' '[:upper:]')"
+          text="${first}${rest}"
+
+          prefix=""
+          [[ -n "$scope" ]] && prefix="**${scope}:** "
+
+          body[$type]+="- ${prefix}${text}"$'\n'
+        done < <(git log --no-merges --pretty=format:'%s' "$range")
+
+        {
+          for key in "${order[@]}"; do
+            [[ -n "${body[$key]:-}" ]] || continue
+            printf '## %s\n\n%s\n' "${titles[$key]}" "${body[$key]}"
+          done
+          if [[ -n "${body[other]:-}" ]]; then
+            printf '## 📦 Other Changes\n\n%s\n' "${body[other]}"
+          fi
+        } > "$notes_file"
+
+        if ! grep -q '^- ' "$notes_file"; then
+          printf '## 🔧 Maintenance\n\n- Internal maintenance and dependency updates.\n' > "$notes_file"
+        fi
+
+        if [[ -n "$prev_tag" ]]; then
+          printf -- '---\n\n**Full Changelog**: https://github.com/%s/compare/%s...%s\n' \
+            "$GITHUB_REPOSITORY" "$prev_tag" "$GITHUB_REF_NAME" >> "$notes_file"
+        fi
+
+        cat "$notes_file"
+
     - name: Attest build provenance
       uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
       with:
@@ -88,5 +168,5 @@ jobs:
           "build/Avrix-Loader-${version}-sources.jar" \
           build/SHA256SUMS.txt \
           --title "Avrix ${version}" \
-          --generate-notes \
+          --notes-file "$RUNNER_TEMP/release-notes.md" \
           --verify-tag
