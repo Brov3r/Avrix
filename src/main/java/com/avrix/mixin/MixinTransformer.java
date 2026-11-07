@@ -3,6 +3,7 @@ package com.avrix.mixin;
 import com.avrix.core.ClassTransformer;
 import com.avrix.core.KnotClassLoader;
 import com.avrix.core.MixinRegistrar;
+import com.avrix.utils.FatalErrors;
 import net.lenni0451.classtransform.TransformerManager;
 import net.lenni0451.classtransform.mixinstranslator.MixinsTranslator;
 import net.lenni0451.classtransform.utils.FailStrategy;
@@ -23,6 +24,7 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
     private static final Logger LOGGER = LoggerFactory.getLogger(MixinTransformer.class);
 
     private final TransformerManager manager;
+    private final CompositeClassProvider classProvider;
 
     /**
      * Creates a lenient mixin transformer for the provided {@link KnotClassLoader}.
@@ -48,7 +50,7 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
     public MixinTransformer(KnotClassLoader knotClassLoader, boolean strict) {
         Objects.requireNonNull(knotClassLoader, "KnotClassLoader cannot be null");
 
-        CompositeClassProvider classProvider = new CompositeClassProvider(knotClassLoader);
+        this.classProvider = new CompositeClassProvider(knotClassLoader);
         this.manager = new TransformerManager(classProvider);
         this.manager.setFailStrategy(strict ? FailStrategy.THROW : FailStrategy.CANCEL);
 
@@ -66,8 +68,22 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
      * @return transformed class bytes, or {@code null} if no transformation is applied
      */
     @Override
-    public byte[] transform(String className, byte[] originalBytes) {
-        return manager.transform(className, originalBytes);
+    public synchronized byte[] transform(String className, byte[] originalBytes) {
+        FailStrategy strategy = manager.getFailStrategy();
+        // ClassTransform's CANCEL strategy also swallows VirtualMachineError before our classloader can see it.
+        manager.setFailStrategy(FailStrategy.THROW);
+        try {
+            return manager.transform(className, originalBytes);
+        } catch (Throwable failure) {
+            FatalErrors.rethrowIfFatal(failure);
+            if (strategy != FailStrategy.CANCEL && strategy != FailStrategy.CONTINUE) {
+                throw failure;
+            }
+            LOGGER.error("Failed to transform class [{}]; using original bytecode", className, failure);
+            return null;
+        } finally {
+            manager.setFailStrategy(strategy);
+        }
     }
 
     /**
@@ -96,6 +112,29 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
 
         manager.addTransformer(mixinClass);
         LOGGER.debug("Registered mixin transformer: [{}]", mixinClass);
+    }
+
+    /**
+     * Checks all declarations using a disposable manager without registering active transformations.
+     * <p>
+     * This checks registration, not whether every injection will succeed when its target class is transformed.
+     *
+     * @param mixinClasses fully qualified mixin class names
+     * @throws NullPointerException if the collection or a class name is null
+     * @throws RuntimeException if a mixin cannot be read or registered
+     */
+    @Override
+    public synchronized void validateMixins(Collection<String> mixinClasses) {
+        Objects.requireNonNull(mixinClasses, "Mixins collection cannot be null");
+        if (mixinClasses.isEmpty()) {
+            return;
+        }
+        TransformerManager validation = new TransformerManager(classProvider);
+        validation.setFailStrategy(FailStrategy.THROW);
+        validation.addTransformerPreprocessor(new MixinsTranslator());
+        for (String mixin : mixinClasses) {
+            validation.addTransformer(Objects.requireNonNull(mixin, "Mixin class cannot be null"));
+        }
     }
 
     /**

@@ -49,6 +49,17 @@ public interface GameProvider {
     public void launch(String[] args);
 
     /**
+     * Validates launch prerequisites before any plugin entrypoints are executed.
+     * <p>
+     * This hook must not start the game or create runtime markers. Providers may repeat validation immediately
+     * before launch when process-wide prerequisites can change.
+     *
+     * @throws IllegalStateException if the process cannot safely launch the game
+     */
+    public default void validateLaunch() {
+    }
+
+    /**
      * Invoked immediately before {@link #launch(String[])}.
      * <p>
      * Providers can use this hook to create runtime artifacts such as marker files.

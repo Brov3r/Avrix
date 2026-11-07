@@ -59,10 +59,15 @@ tasks.withType(Javadoc).configureEach {
 
 tasks.named('check') {
     dependsOn tasks.named('javadoc')
+    dependsOn 'smokeTest'
 }
 
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
+}
+
+tasks.named('test', Test) {
+    exclude '**/PackagedRuntimeSmokeTest*'
 }
 
 tasks.named('processResources', ProcessResources) {
@@ -307,4 +312,18 @@ tasks.register('benchmark', JavaExec) {
     if (benchmarkPluginCount.isPresent()) {
         args benchmarkPluginCount.get()
     }
+}
+
+tasks.register('smokeTest', Test) {
+    group = 'verification'
+    description = 'Verifies the self-contained shaded JAR and approval subprocess without launching the game.'
+    dependsOn tasks.named('shadowJar')
+    dependsOn tasks.named('testClasses')
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    include '**/PackagedRuntimeSmokeTest.class'
+
+    def executableJar = tasks.named('shadowJar', ShadowJar).flatMap { it.archiveFile }
+    inputs.file(executableJar)
+    systemProperty 'avrix.test.loader.jar', executableJar.get().asFile.absolutePath
 }

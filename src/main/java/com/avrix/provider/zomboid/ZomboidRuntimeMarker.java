@@ -23,7 +23,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * Creates and removes Project Zomboid runtime marker files that let Lua code detect an active Avrix launch.
  * <p>
- * The marker is written to the current working directory and, when the loader runs from a Workshop mod
+ * The marker is written to the game cache directory when supplied, to the current working directory and,
+ * when the loader runs from a Workshop mod
  * {@code libs} directory, to the adjacent {@code 42} directory that Project Zomboid exposes to Lua. While the loader
  * is running the timestamp is refreshed periodically, so Lua code can distinguish a live session from a marker left
  * behind by a crash.
@@ -57,11 +58,24 @@ public final class ZomboidRuntimeMarker implements AutoCloseable {
      * @return marker paths that were successfully created
      */
     public synchronized List<Path> activate() {
+        return activate(null);
+    }
+
+    /**
+     * Creates runtime markers, including a cache marker accessible to Lua regardless of the loader JAR location.
+     *
+     * @param cacheRoot resolved game cache directory, or {@code null} to create only legacy markers
+     * @return marker paths that were successfully created
+     */
+    public synchronized List<Path> activate(Path cacheRoot) {
         if (!markers.isEmpty()) {
             return List.copyOf(markers);
         }
 
         try {
+            if (cacheRoot != null) {
+                addMarker(cacheRoot.toAbsolutePath().normalize().resolve(ZomboidConstants.RUNTIME_MARKER_NAME));
+            }
             Path workingDirectoryMarker = Path.of(System.getProperty("user.dir", "."))
                     .toAbsolutePath()
                     .normalize()
@@ -110,7 +124,7 @@ public final class ZomboidRuntimeMarker implements AutoCloseable {
     }
 
     private void addMarker(Path marker) {
-        if (writeMarker(marker)) {
+        if (!markers.contains(marker) && writeMarker(marker)) {
             markers.add(marker);
         }
     }

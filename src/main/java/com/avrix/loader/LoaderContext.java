@@ -5,6 +5,7 @@ import com.avrix.core.ServiceManager;
 import com.avrix.plugins.PluginManager;
 import com.avrix.api.GameProvider;
 import com.avrix.api.LoaderProvider;
+import com.avrix.utils.FatalErrors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +51,12 @@ public final class LoaderContext implements AutoCloseable {
     }
 
     /**
-     * Initializes the plugin manager and loads all discovered plugins.
+     * Validates game launch prerequisites, initializes the plugin manager, and loads all discovered plugins.
+     *
+     * @throws IllegalStateException if launch prerequisites are not satisfied
      */
     public void initialize() {
+        gameProvider.validateLaunch();
         pluginManager.init();
         pluginManager.loadPlugins();
     }
@@ -102,12 +106,14 @@ public final class LoaderContext implements AutoCloseable {
         try {
             pluginManager.close();
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             LOGGER.error("Failed to close plugin manager", throwable);
         }
 
         try {
             gameProvider.close();
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             LOGGER.error("Failed to close game provider", throwable);
         }
 

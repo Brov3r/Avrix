@@ -17,7 +17,8 @@ public interface Plugin {
     /**
      * Called when the loader is shutting down.
      * <p>
-     * Implementations should release plugin-owned resources here. The default implementation does nothing.
+     * Also called when {@link #onInitialize(PluginData)} fails after the instance was constructed. Implementations
+     * must tolerate partial initialization and release any resources acquired so far. The default does nothing.
      */
     public default void onShutdown() {
     }

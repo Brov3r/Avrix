@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'src/**'
+      - 'workshop-mod/**'
       - 'gradle/**'
       - 'build.gradle'
       - 'settings.gradle'
@@ -16,6 +17,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'src/**'
+      - 'workshop-mod/**'
       - 'gradle/**'
       - 'build.gradle'
       - 'settings.gradle'
@@ -57,7 +59,7 @@ jobs:
       with:
         validate-wrappers: true
 
-    - name: Build with Gradle Wrapper
+    - name: Build, test, and smoke-test packaged JAR
       shell: bash
       run: ./gradlew build
 

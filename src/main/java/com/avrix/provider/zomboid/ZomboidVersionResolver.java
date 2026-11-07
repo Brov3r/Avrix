@@ -1,6 +1,7 @@
 package com.avrix.provider.zomboid;
 
 import com.avrix.provider.GameVersionInfo;
+import com.avrix.utils.FatalErrors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,6 +169,7 @@ public final class ZomboidVersionResolver {
                     normalized
             );
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             LOGGER.warn("Failed to parse Project Zomboid version bytecode", throwable);
             return GameVersionInfo.fallback();
         }

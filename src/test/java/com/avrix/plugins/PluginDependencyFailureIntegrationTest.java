@@ -71,7 +71,7 @@ public class PluginDependencyFailureIntegrationTest {
     }
 
     /**
-     * Verifies that preparation failures prevent registration of dependent mixins.
+     * Verifies that unsafe registration failures stop startup before dependent mixins are registered.
      *
      * @throws IOException if a fixture archive cannot be written or closed
      */
@@ -88,12 +88,13 @@ public class PluginDependencyFailureIntegrationTest {
                  throw new IllegalStateException("Broken mixin");
             });
             manager.init();
-            manager.loadPlugins();
+            assertThatThrownBy(manager::loadPlugins).isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Plugin preparation failed: base");
 
             assertThat(registered).containsExactly("example.BrokenMixin");
-            assertThat(manager.getPlugins()).containsKey("independent").doesNotContainKeys("base", "dependent");
+            assertThat(manager.getPlugins()).doesNotContainKeys("base", "dependent", "independent");
             assertThat(manager.getLoadResults()).extracting(PluginLoadResult::pluginId, PluginLoadResult::status)
-                    .contains(tuple("dependent", PluginLoadStatus.SKIPPED));
+                    .contains(tuple("base", PluginLoadStatus.FAILED));
         }
     }
 

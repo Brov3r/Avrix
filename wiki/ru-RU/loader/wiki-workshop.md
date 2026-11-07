@@ -56,7 +56,7 @@ ID Workshop-мода Avrix — `3833849848`
 > (`ProjectZomboid64.bat` в Windows или `start-server.sh` в Linux). Для них используйте ручной `java -jar`.
 >
 > macOS пока не проверен. На macOS используется `JavaAppLauncher` внутри `Project Zomboid.app`; он может не
-> поддерживать `-pzexeconfig`.
+> поддерживать `-pzexeconfig`. Ручной запуск через `java -jar` на macOS тоже экспериментальный и не проверен.
 
 ---
 

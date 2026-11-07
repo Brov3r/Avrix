@@ -5,6 +5,7 @@ import com.avrix.api.PluginApprovalGate.Status;
 import com.avrix.api.PluginArchive;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;
+import com.avrix.utils.FatalErrors;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalDecision;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalEntry;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalFrontend;
@@ -138,6 +139,7 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
         try {
             response = frontend.request(batch);
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             LOGGER.error("Approval frontend failed; pending plugins will be skipped", throwable);
         }
 

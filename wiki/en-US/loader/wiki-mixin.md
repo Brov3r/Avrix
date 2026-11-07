@@ -54,6 +54,10 @@ plugin entrypoint runs. A plugin's `onInitialize` can therefore load target clas
 mixin registration. `loadBefore` / `loadAfter` still control preparation order and therefore the order in which
 multiple mixins are applied to the same target.
 
+Each plugin's declarations are checked before registration. If registration may have left partial state, startup
+aborts even in lenient mode. Entrypoint failures after any mixins are registered are also fatal to startup, because
+already registered or applied transformations cannot be safely rolled back.
+
 Multi-release JARs are supported for normal class loading, mixin targets, and wildcard class discovery. In strict mode
 a mixin transformation failure aborts startup; without `--strict` the affected class is loaded without the failed
 transformation and the error is logged.

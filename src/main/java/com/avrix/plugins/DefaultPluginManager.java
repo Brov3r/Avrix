@@ -10,6 +10,7 @@ import com.avrix.api.LoaderProvider;
 import com.avrix.api.PluginApprovalGate;
 import com.avrix.api.PluginArchive;
 import com.avrix.utils.Constants;
+import com.avrix.utils.FatalErrors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,8 +162,14 @@ public class DefaultPluginManager implements PluginManager {
 
         // Build descriptors before publishing them so a failure cannot leave a partial core list behind.
         List<Metadata> descriptors = List.of(gameProvider.getMetadata(), loaderProvider.getMetadata());
-        corePlugins.clear();
-        corePlugins.addAll(descriptors);
+        synchronized (stateLock) {
+            if (closed) {
+                throw new IllegalStateException("PluginManager is closed");
+            }
+            corePlugins.clear();
+            corePlugins.addAll(descriptors);
+            cachedPlugins = Map.of();
+        }
 
         this.initialized = true;
         LOGGER.info("Plugin manager initialized successfully with {} core descriptor(s).", corePlugins.size());
@@ -280,6 +287,7 @@ public class DefaultPluginManager implements PluginManager {
         try {
             approvalGate.flushPending();
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             LOGGER.error("Failed to resolve pending plugin approvals; unapproved archives will be skipped", throwable);
         }
 
@@ -335,6 +343,7 @@ public class DefaultPluginManager implements PluginManager {
                         .resolveAvailable(candidateSet.candidates, loadResults::add);
             }
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             LOGGER.error("Failed to resolve plugin load order", throwable);
             for (Metadata candidate : candidateSet.candidates) {
                 if (corePlugins.stream().noneMatch(core -> core.id().equals(candidate.id()))) {
@@ -385,6 +394,7 @@ public class DefaultPluginManager implements PluginManager {
                     }
                 }
             } catch (Throwable throwable) {
+                FatalErrors.rethrowIfFatal(throwable);
                 LOGGER.error("Failed to attach plugin [{}]. Skipping execution.", meta.name(), throwable);
                 loadResults.add(PluginLoadResult.failed(meta.id(), throwable));
 
@@ -413,10 +423,11 @@ public class DefaultPluginManager implements PluginManager {
                     preparedContainers.add(container);
                 }
             } catch (Throwable throwable) {
+                FatalErrors.rethrowIfFatal(throwable);
                 LOGGER.error("Failed to prepare plugin [{}]. Skipping execution.", container.metadata().name(), throwable);
                 loadResults.add(PluginLoadResult.failed(pluginId, throwable));
 
-                if (config.strict()) {
+                if (config.strict() || throwable instanceof UnsafeMixinStateException) {
                     throw new IllegalStateException("Plugin preparation failed: " + pluginId, throwable);
                 }
             }
@@ -437,10 +448,11 @@ public class DefaultPluginManager implements PluginManager {
                     }
                 }
             } catch (Throwable throwable) {
+                FatalErrors.rethrowIfFatal(throwable);
                 LOGGER.error("Failed to initialize plugin [{}]. Skipping execution.", container.metadata().name(), throwable);
                 loadResults.add(PluginLoadResult.failed(pluginId, throwable));
 
-                if (config.strict()) {
+                if (config.strict() || !mixinsRegisteredPlugins.isEmpty()) {
                     throw new IllegalStateException("Plugin load failed: " + pluginId, throwable);
                 }
             }
@@ -479,6 +491,7 @@ public class DefaultPluginManager implements PluginManager {
                     throw new IllegalStateException("Interrupted while parsing plugin metadata", e);
                 } catch (ExecutionException e) {
                     Throwable cause = (e.getCause() != null) ? e.getCause() : e;
+                    FatalErrors.rethrowIfFatal(cause);
                     results.add(ParsedPlugin.failed(pluginArchives.get(i), cause));
                 }
             }
@@ -515,6 +528,7 @@ public class DefaultPluginManager implements PluginManager {
                     manifest.iconPresent()
             );
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             return ParsedPlugin.failed(archive, throwable);
         }
     }
@@ -678,6 +692,7 @@ public class DefaultPluginManager implements PluginManager {
                 }
                 loadResults.add(PluginLoadResult.loaded(id));
             } catch (Throwable throwable) {
+                FatalErrors.rethrowIfFatal(throwable);
                 loadResults.add(PluginLoadResult.failed(id, throwable));
                 LOGGER.error("Failed to load plugin [{}]: {}", id, throwable.getMessage(), throwable);
                 throw new RuntimeException("Failed to load plugin: " + id, throwable);
@@ -772,13 +787,11 @@ public class DefaultPluginManager implements PluginManager {
             try {
                 currentHash = sha256(jarPath);
             } catch (IOException e) {
-                LOGGER.error("SECURITY: Cannot re-hash approved JAR [{}]; skipping load", jarFile, e);
-                return false;
+                throw new UncheckedIOException("Cannot re-hash approved JAR: " + jarFile, e);
             }
             if (!expectedHash.equals(currentHash)) {
-                LOGGER.error("SECURITY: JAR changed between approval and load for [{}] — expected {}, got {}. Aborting load.",
-                        jarFile, expectedHash, currentHash);
-                return false;
+                throw new IllegalStateException("JAR changed between approval and load for [" + jarFile
+                        + "] — expected " + expectedHash + ", got " + currentHash);
             }
         }
 
@@ -820,12 +833,19 @@ public class DefaultPluginManager implements PluginManager {
         }
 
         if (!meta.mixins().isEmpty()) {
-            for (String mixin : meta.mixins()) {
-                mixinRegistrar.addMixin(mixin);
+            mixinRegistrar.validateMixins(meta.mixins());
+            try {
+                for (String mixin : meta.mixins()) {
+                    mixinRegistrar.addMixin(mixin);
+                }
+            } catch (Throwable failure) {
+                FatalErrors.rethrowIfFatal(failure);
+                throw new UnsafeMixinStateException("Mixin registration may have left partial state for plugin " + id,
+                        failure);
             }
+            mixinsRegisteredPlugins.add(id);
             LOGGER.debug("Registered {} mixin configuration(s) for plugin [{}]", meta.mixins().size(), id);
         }
-        mixinsRegisteredPlugins.add(id);
     }
 
     /**
@@ -879,7 +899,13 @@ public class DefaultPluginManager implements PluginManager {
 
         PluginData finalizedContainer = new PluginData(jarFile, iconUri, instance, meta);
         if (instance != null) {
-            instance.onInitialize(finalizedContainer);
+            try {
+                instance.onInitialize(finalizedContainer);
+            } catch (Throwable failure) {
+                FatalErrors.rethrowIfFatal(failure);
+                shutdownQuietly(id, instance);
+                throw failure;
+            }
             LOGGER.debug("Initialized entrypoint [{}] for plugin [{}]", entrypoint, id);
         }
 
@@ -936,6 +962,7 @@ public class DefaultPluginManager implements PluginManager {
         try {
             instance.onShutdown();
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             LOGGER.error("Failed to shut down plugin [{}]", pluginId, throwable);
         }
     }
@@ -986,16 +1013,25 @@ public class DefaultPluginManager implements PluginManager {
      */
     @Override
     public Map<String, PluginData> getPlugins() {
-        Map<String, PluginData> cache = cachedPlugins;
-        if (cache.isEmpty()) {
-            Map<String, PluginData> merged = new ConcurrentHashMap<>(plugins);
-            for (Metadata coreMeta : corePlugins) {
-                merged.putIfAbsent(coreMeta.id(), new PluginData(coreMeta));
+        synchronized (stateLock) {
+            Map<String, PluginData> cache = cachedPlugins;
+            if (cache.isEmpty()) {
+                Map<String, PluginData> merged = new HashMap<>(plugins);
+                for (Metadata coreMeta : corePlugins) {
+                    merged.putIfAbsent(coreMeta.id(), new PluginData(coreMeta));
+                }
+                cache = Collections.unmodifiableMap(merged);
+                cachedPlugins = cache;
             }
-            cache = Collections.unmodifiableMap(merged);
-            cachedPlugins = cache;
+            return cache;
         }
-        return cache;
+    }
+
+    private static final class UnsafeMixinStateException extends IllegalStateException {
+
+        private UnsafeMixinStateException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 
     /**

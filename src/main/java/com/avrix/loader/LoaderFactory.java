@@ -13,6 +13,7 @@ import com.avrix.plugins.PluginManager;
 import com.avrix.plugins.PluginManifestParser;
 import com.avrix.plugins.PluginScanner;
 import com.avrix.provider.DefaultLoaderProvider;
+import com.avrix.utils.FatalErrors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,7 +118,7 @@ public final class LoaderFactory {
                     loaderProvider,
                     mixinTransformer,
                     new PluginScanner(runtimeConfig, gameProvider.getPluginSources(config.strict())),
-                    new PluginManifestParser(),
+                    new PluginManifestParser(config.strict()),
                     approvalGate
             );
             ServiceManager.register(PluginManager.class, pluginManager);
@@ -159,6 +160,7 @@ public final class LoaderFactory {
         try {
             pluginManager.close();
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             LOGGER.debug("Failed to close plugin manager after loader factory failure", throwable);
         }
     }
@@ -170,6 +172,7 @@ public final class LoaderFactory {
         try {
             gameProvider.close();
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             LOGGER.debug("Failed to close game provider after loader factory failure", throwable);
         }
     }

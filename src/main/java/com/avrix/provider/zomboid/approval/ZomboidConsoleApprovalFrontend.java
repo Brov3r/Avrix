@@ -12,27 +12,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Console approval frontend for headless and dedicated-server launches.
  */
 public final class ZomboidConsoleApprovalFrontend implements ZomboidApprovalFrontend {
 
-    private static final ExecutorService INPUT_EXECUTOR = Executors.newCachedThreadPool(runnable -> {
-        Thread thread = new Thread(runnable, "avrix-console-approval-input");
-        thread.setDaemon(true);
-        return thread;
-    });
+    private static final long INPUT_POLL_MILLIS = 20L;
 
     private final BufferedReader reader;
     private final PrintWriter out;
     private final int timeoutSeconds;
+    private boolean skipLineFeed;
 
     /**
      * Creates a console frontend using the process console or standard input.
@@ -51,7 +43,7 @@ public final class ZomboidConsoleApprovalFrontend implements ZomboidApprovalFron
     public ZomboidConsoleApprovalFrontend(BufferedReader reader, PrintWriter out, int timeoutSeconds) {
         this.reader = Objects.requireNonNull(reader, "Reader cannot be null");
         this.out = Objects.requireNonNull(out, "Writer cannot be null");
-        this.timeoutSeconds = Math.max(1, timeoutSeconds);
+        this.timeoutSeconds = Math.max(1, Math.min(ApprovalTimeouts.MAX_SECONDS, timeoutSeconds));
     }
 
     /**
@@ -160,22 +152,36 @@ public final class ZomboidConsoleApprovalFrontend implements ZomboidApprovalFron
     }
 
     private String readLine() throws IOException {
-        Future<String> future = INPUT_EXECUTOR.submit(reader::readLine);
-        try {
-            return future.get(timeoutSeconds, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            future.cancel(true);
-            return null;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return null;
-        } catch (ExecutionException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof IOException ioException) {
-                throw ioException;
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSeconds);
+        StringBuilder line = new StringBuilder();
+        while (!Thread.currentThread().isInterrupted() && System.nanoTime() < deadline) {
+            // A cancelled blocking read can steal server commands after approval has already timed out.
+            if (!reader.ready()) {
+                try {
+                    Thread.sleep(INPUT_POLL_MILLIS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return null;
+                }
+                continue;
             }
-            throw new IOException("Failed to read approval input", cause);
+            int character = reader.read();
+            if (character < 0) {
+                return line.isEmpty() ? null : line.toString();
+            }
+            if (skipLineFeed) {
+                skipLineFeed = false;
+                if (character == '\n') {
+                    continue;
+                }
+            }
+            if (character == '\r' || character == '\n') {
+                skipLineFeed = character == '\r';
+                return line.toString();
+            }
+            line.append((char) character);
         }
+        return null;
     }
 
     private static boolean isYes(String value) {
@@ -185,10 +191,9 @@ public final class ZomboidConsoleApprovalFrontend implements ZomboidApprovalFron
 
     private static BufferedReader createReader() {
         Console console = System.console();
-        if (console != null) {
-            return new BufferedReader(console.reader());
-        }
-        return new BufferedReader(new InputStreamReader(System.in, StandardCharsets.UTF_8));
+        // Console.reader() does not promise readiness polling; stdin keeps timeout ownership on this thread.
+        return new BufferedReader(new InputStreamReader(System.in,
+                console == null ? StandardCharsets.UTF_8 : console.charset()));
     }
 
     private static PrintWriter createWriter() {

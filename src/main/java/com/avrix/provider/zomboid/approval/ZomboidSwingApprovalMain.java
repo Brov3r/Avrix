@@ -2,6 +2,7 @@ package com.avrix.provider.zomboid.approval;
 
 import com.avrix.provider.zomboid.approval.ui.ApprovalDialog;
 import com.avrix.provider.zomboid.approval.ui.ZomboidApprovalTheme;
+import com.avrix.utils.FatalErrors;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -71,6 +72,7 @@ public final class ZomboidSwingApprovalMain {
             );
             System.exit(0);
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             throwable.printStackTrace(System.err);
             System.exit(3);
         }

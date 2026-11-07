@@ -1,5 +1,6 @@
 package com.avrix.core;
 
+import com.avrix.utils.FatalErrors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -220,8 +222,8 @@ public class KnotClassLoader extends URLClassLoader {
     /**
      * Adds a URL to the local classpath and optionally indexes the provided class entries.
      * <p>
-     * Passing pre-collected class entries avoids reopening the JAR when the archive was already read while parsing
-     * plugin metadata.
+     * Passing pre-collected class entries avoids rescanning the JAR. Its manifest is still checked to preserve
+     * standard classpath ordering.
      *
      * @param url                 classpath URL to add
      * @param indexClassResources whether class entries of a file-based JAR should be indexed
@@ -236,7 +238,7 @@ public class KnotClassLoader extends URLClassLoader {
     /**
      * Adds a URL to the local classpath and indexes the provided class entries with a known multi-release flag.
      *
-     * <p>This overload avoids reopening the archive to inspect its manifest when the caller already parsed the JAR.
+     * <p>The manifest is still checked for additional classpath entries that must retain standard lookup ordering.
      *
      * @param url                 classpath URL to add
      * @param indexClassResources whether class entries of a file-based JAR should be indexed
@@ -346,8 +348,8 @@ public class KnotClassLoader extends URLClassLoader {
 
             String jarBase = "jar:" + path.toUri().toASCIIString() + "!/";
             try (JarFile jar = new JarFile(path.toFile(), false)) {
-                if (jar.isMultiRelease()) {
-                    LOGGER.debug("Skipping class index for multi-release JAR [{}]", formatDisplayName(url));
+                if (requiresStandardLookup(jar)) {
+                    LOGGER.debug("Skipping class index for JAR requiring standard lookup [{}]", formatDisplayName(url));
                     return false;
                 }
 
@@ -379,7 +381,7 @@ public class KnotClassLoader extends URLClassLoader {
     }
 
     /**
-     * Indexes pre-collected class entries of a file-based JAR without reopening the archive.
+     * Indexes pre-collected class entries after checking the archive manifest.
      *
      * @param url          JAR URL to index
      * @param urlPosition  zero-based position of the URL in the classpath
@@ -396,10 +398,6 @@ public class KnotClassLoader extends URLClassLoader {
             return false;
         }
 
-        if (classEntries.isEmpty()) {
-            return true;
-        }
-
         try {
             Path path = Paths.get(url.toURI());
             if (!Files.isRegularFile(path)) {
@@ -410,12 +408,10 @@ public class KnotClassLoader extends URLClassLoader {
                 LOGGER.debug("Skipping class index for multi-release JAR [{}]", formatDisplayName(url));
                 return false;
             }
-            if (multiRelease == null) {
-                try (JarFile jar = new JarFile(path.toFile(), false)) {
-                    if (jar.isMultiRelease()) {
-                        LOGGER.debug("Skipping class index for multi-release JAR [{}]", formatDisplayName(url));
-                        return false;
-                    }
+            try (JarFile jar = new JarFile(path.toFile(), false)) {
+                if (requiresStandardLookup(jar)) {
+                    LOGGER.debug("Skipping class index for JAR requiring standard lookup [{}]", formatDisplayName(url));
+                    return false;
                 }
             }
 
@@ -438,6 +434,16 @@ public class KnotClassLoader extends URLClassLoader {
             LOGGER.debug("Failed to index class resources for [{}]", formatDisplayName(url), e);
             return false;
         }
+    }
+
+    private static boolean requiresStandardLookup(JarFile jar) throws IOException {
+        if (jar.isMultiRelease()) {
+            return true;
+        }
+        var manifest = jar.getManifest();
+        String classPath = manifest == null ? null : manifest.getMainAttributes().getValue(Attributes.Name.CLASS_PATH);
+        // Manifest dependencies are searched before later URLs, including URLs with indexed classes.
+        return classPath != null && !classPath.isBlank();
     }
 
     /**
@@ -611,6 +617,7 @@ public class KnotClassLoader extends URLClassLoader {
             }
             return result;
         } catch (Throwable t) {
+            FatalErrors.rethrowIfFatal(t);
             if (strictTransformationFailures) {
                 throw new IllegalStateException("Failed to transform class: " + className, t);
             }

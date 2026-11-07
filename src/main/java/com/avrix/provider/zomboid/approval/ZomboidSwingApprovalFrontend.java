@@ -1,5 +1,7 @@
 package com.avrix.provider.zomboid.approval;
 
+import com.avrix.utils.FatalErrors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,6 +181,7 @@ public final class ZomboidSwingApprovalFrontend implements ZomboidApprovalFronte
 
             Throwable readFailure = responseError.get();
             if (readFailure != null) {
+                FatalErrors.rethrowIfFatal(readFailure);
                 LOGGER.warn("Approval window returned a malformed response; pending plugins will be skipped{}",
                         stderrSummary(stderrLines), readFailure);
                 return new ZomboidApprovalResponse(false, List.of());

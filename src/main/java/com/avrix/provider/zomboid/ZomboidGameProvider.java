@@ -8,6 +8,7 @@ import com.avrix.core.KnotClassLoader;
 import com.avrix.logger.LineReadingOutputStream;
 import com.avrix.provider.GameVersionInfo;
 import com.avrix.provider.NativeLibraryLocator;
+import com.avrix.utils.FatalErrors;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalFrontend;
 import com.avrix.provider.zomboid.approval.ZomboidConsoleApprovalFrontend;
 import com.avrix.provider.zomboid.approval.ZomboidSwingApprovalFrontend;
@@ -239,6 +240,7 @@ public class ZomboidGameProvider implements GameProvider {
                 LOGGER.error("Entrypoint [{}] does not declare public static void main(String[])", entrypointClassName, e);
                 throw new IllegalStateException("Entrypoint missing main method: " + entrypointClassName, e);
             } catch (Throwable throwable) {
+                FatalErrors.rethrowIfFatal(throwable);
                 LOGGER.error("Failed to resolve entrypoint [{}] for provider [{}]", entrypointClassName, getId(), throwable);
                 throw new IllegalStateException("Game entrypoint resolution failed: " + getId(), throwable);
             }
@@ -256,6 +258,7 @@ public class ZomboidGameProvider implements GameProvider {
             mainMethodHandle.invokeExact(gameArgs);
 
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             LOGGER.error("Project Zomboid execution terminated unexpectedly via provider [{}]", getId(), throwable);
             throw new IllegalStateException("Game execution failed: " + getId(), throwable);
         } finally {
@@ -677,8 +680,18 @@ public class ZomboidGameProvider implements GameProvider {
      */
     @Override
     public void beforeLaunch() {
+        validateLaunch();
+        runtimeMarker.activate(getCacheRoot());
+    }
+
+    /**
+     * Checks the actual process working directory before plugin initialization or game launch.
+     *
+     * @throws IllegalStateException if the JVM was not started in the selected installation directory
+     */
+    @Override
+    public void validateLaunch() {
         validateWorkingDirectory();
-        runtimeMarker.activate();
     }
 
     private void validateWorkingDirectory() {

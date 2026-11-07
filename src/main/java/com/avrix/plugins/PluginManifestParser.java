@@ -38,6 +38,7 @@ import java.util.jar.JarFile;
 public final class PluginManifestParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginManifestParser.class);
+    private final boolean strict;
 
     private static final Set<String> KNOWN_KEYS = Set.of(
             "schema",
@@ -61,6 +62,16 @@ public final class PluginManifestParser {
      * Constructs a lenient plugin manifest parser.
      */
     public PluginManifestParser() {
+        this(false);
+    }
+
+    /**
+     * Constructs a parser with an explicit environment validation policy.
+     *
+     * @param strict whether unknown environment values must be rejected instead of defaulting to both
+     */
+    public PluginManifestParser(boolean strict) {
+        this.strict = strict;
     }
 
     /**
@@ -174,7 +185,6 @@ public final class PluginManifestParser {
                         .source(() -> new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8)))
                         .build();
                 enableDuplicateKeyDetection(loader);
-
                 Metadata metadata = parseNode(loader.load(), source);
                 LOGGER.debug("Successfully loaded metadata for plugin [{}] (v{})", metadata.id(), metadata.version());
                 return metadata;
@@ -246,7 +256,6 @@ public final class PluginManifestParser {
         String source = "Invalid metadata in YAML [%s]".formatted(path);
         YamlConfigurationLoader loader = YamlConfigurationLoader.builder().path(path).build();
         enableDuplicateKeyDetection(loader);
-
         try {
             return parseNode(loader.load(), source);
         } catch (SerializationException e) {
@@ -345,7 +354,7 @@ public final class PluginManifestParser {
      * @param key    manifest key containing the list
      * @param source diagnostic source description
      * @return immutable normalized list
-     * @throws SerializationException if the value is not a string list or strict validation rejects a blank entry
+     * @throws SerializationException if the value is not a string list
      */
     private List<String> readStringList(ConfigurationNode node, String key, String source) throws SerializationException {
         ConfigurationNode listNode = node.node(key);
@@ -379,7 +388,7 @@ public final class PluginManifestParser {
      * @param source        diagnostic source description
      * @param allowWildcard whether the special {@code "*"} value is allowed
      * @return immutable normalized list without duplicates
-     * @throws SerializationException if an identifier is invalid, duplicated in strict mode, or the list is malformed
+     * @throws SerializationException if the list is malformed
      */
     private List<String> readIdentifierList(
             ConfigurationNode node,
@@ -470,8 +479,8 @@ public final class PluginManifestParser {
      *
      * @param node   manifest root node
      * @param source diagnostic source description
-     * @return declared schema version, or the current version when omitted in lenient mode
-     * @throws SerializationException if the schema value is malformed or strict validation rejects a missing value
+     * @return declared schema version
+     * @throws SerializationException if the schema value is missing or malformed
      */
     private int readSchema(ConfigurationNode node, String source) throws SerializationException {
         ConfigurationNode schemaNode = node.node("schema");
@@ -524,6 +533,9 @@ public final class PluginManifestParser {
             case "server" -> Environment.SERVER;
             case "both", "*" -> Environment.BOTH;
             default -> {
+                if (strict) {
+                    throw new SerializationException(source + ": Unknown metadata environment [" + rawValue + "]");
+                }
                 warn(source, "Unknown metadata environment [" + rawValue + "]; assuming [both]");
                 yield Environment.BOTH;
             }
@@ -535,7 +547,6 @@ public final class PluginManifestParser {
      *
      * @param node   manifest root node
      * @param source diagnostic source description
-     * @throws SerializationException if strict validation is enabled
      */
     private void validateTopLevelKeys(ConfigurationNode node, String source) throws SerializationException {
         for (Object key : node.childrenMap().keySet()) {
@@ -547,75 +558,45 @@ public final class PluginManifestParser {
     }
 
     /**
-     * Enables rejection of duplicate YAML keys on a Configurate loader.
+     * Requires duplicate-key rejection on Configurate's embedded YAML parser.
      * <p>
-     * Configurate does not expose the underlying SnakeYAML loader option, so the option is enabled through the
-     * loader's internal state. If the internal layout changes, parsing continues without duplicate-key checks.
+     * Configurate exposes no public loader option for this check. An incompatible internal layout is a parsing
+     * failure, never a reason to silently accept duplicate manifest keys.
      *
      * @param loader loader to configure
+     * @throws SerializationException if the required option cannot be enabled and verified
      */
-    private static void enableDuplicateKeyDetection(YamlConfigurationLoader loader) {
+    private static void enableDuplicateKeyDetection(YamlConfigurationLoader loader) throws SerializationException {
         try {
             Object yamlHolder = readField(loader, "yaml");
             if (!(yamlHolder instanceof ThreadLocal<?> threadLocal)) {
-                return;
+                throw new IllegalStateException("YAML parser holder is not a ThreadLocal");
             }
-
-            Object yaml = threadLocal.get();
-            if (yaml == null) {
-                return;
-            }
-
+            Object yaml = Objects.requireNonNull(threadLocal.get(), "YAML parser is unavailable");
             Object constructor = readField(yaml, "constructor");
-            setBooleanField(constructor, "allowDuplicateKeys", false);
+            Field option = findField(constructor.getClass(), "allowDuplicateKeys");
+            option.setAccessible(true);
+            option.setBoolean(constructor, false);
+            if (option.getBoolean(constructor)) {
+                throw new IllegalStateException("Duplicate YAML keys remain enabled");
+            }
         } catch (ReflectiveOperationException | RuntimeException e) {
-            LOGGER.warn("Unable to enable duplicate YAML key detection: {}", parseFailureMessage(e));
+            throw withCause("Required duplicate YAML key detection is unavailable", e);
         }
     }
 
-    /**
-     * Reads a field from an object or one of its superclasses.
-     *
-     * @param target target object
-     * @param name   field name
-     * @return field value
-     * @throws ReflectiveOperationException if the field cannot be read
-     */
     private static Object readField(Object target, String name) throws ReflectiveOperationException {
         Field field = findField(target.getClass(), name);
         field.setAccessible(true);
         return field.get(target);
     }
 
-    /**
-     * Sets a boolean field on an object or one of its superclasses.
-     *
-     * @param target target object
-     * @param name   field name
-     * @param value  value to assign
-     * @throws ReflectiveOperationException if the field cannot be written
-     */
-    private static void setBooleanField(Object target, String name, boolean value) throws ReflectiveOperationException {
-        Field field = findField(target.getClass(), name);
-        field.setAccessible(true);
-        field.setBoolean(target, value);
-    }
-
-    /**
-     * Finds a declared field in a class hierarchy.
-     *
-     * @param type class to inspect
-     * @param name field name
-     * @return declared field
-     * @throws NoSuchFieldException if no matching field exists
-     */
     private static Field findField(Class<?> type, String name) throws NoSuchFieldException {
-        Class<?> current = type;
-        while (current != null) {
+        for (Class<?> current = type; current != null; current = current.getSuperclass()) {
             try {
                 return current.getDeclaredField(name);
-            } catch (NoSuchFieldException _) {
-                current = current.getSuperclass();
+            } catch (NoSuchFieldException ignored) {
+                // The embedded YAML constructor may inherit its duplicate-key option.
             }
         }
         throw new NoSuchFieldException(name);

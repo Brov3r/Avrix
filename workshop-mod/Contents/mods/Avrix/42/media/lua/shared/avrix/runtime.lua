@@ -12,10 +12,10 @@ local MAX_MARKER_AGE_MS = 5 * 60 * 1000
 ---@class AvrixRuntime
 local AvrixRuntime = {}
 
---- Reads the timestamp stored in the Avrix marker file.
+--- Reads the timestamp from a marker reader and closes it.
+---@param reader any|nil Open marker reader.
 ---@return number|nil timestamp Marker timestamp in milliseconds, or nil when unavailable.
-local function readMarkerTimestamp()
-    local reader = getModFileReader("Avrix", "avrix-active.marker", false)
+local function readTimestamp(reader)
     if not reader then
         return nil
     end
@@ -34,6 +34,17 @@ local function readMarkerTimestamp()
     return tonumber(line)
 end
 
+--- Reads the shared cache marker, falling back to older Workshop-only loaders.
+---@return number|nil timestamp Marker timestamp in milliseconds, or nil when unavailable.
+local function readMarkerTimestamp()
+    -- The cache is shared with Java even when the loader JAR lives outside the Workshop mod.
+    local timestamp = readTimestamp(getFileReader("avrix-active.marker", false))
+    if timestamp then
+        return timestamp
+    end
+    return readTimestamp(getModFileReader("Avrix", "avrix-active.marker", false))
+end
+
 --- Checks whether the Avrix loader marked the current session as active.
 ---
 --- The marker is active while it is younger than the heartbeat timeout. A missing
@@ -46,7 +57,8 @@ function AvrixRuntime.isActive()
     end
 
     local now = getTimestampMs and getTimestampMs() or (os.time() * 1000)
-    return (now - markerTime) <= MAX_MARKER_AGE_MS
+    local age = now - markerTime
+    return age >= 0 and age <= MAX_MARKER_AGE_MS
 end
 
 return AvrixRuntime

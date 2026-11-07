@@ -56,7 +56,7 @@ Zomboid.
 > (`ProjectZomboid64.bat` on Windows or `start-server.sh` on Linux). Use the manual `java -jar` model there.
 >
 > macOS is not verified yet. The macOS launcher is `JavaAppLauncher` inside `Project Zomboid.app`; it may not support
-> `-pzexeconfig`.
+> `-pzexeconfig`. Manual `java -jar` launches on macOS are also experimental and unverified.
 
 ---
 

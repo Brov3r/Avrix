@@ -6,6 +6,7 @@ import com.avrix.loader.LoaderContext;
 import com.avrix.loader.LoaderFactory;
 import com.avrix.logger.LogRetention;
 import com.avrix.utils.Constants;
+import com.avrix.utils.FatalErrors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,6 +84,7 @@ public final class Main {
             }
 
         } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
             LOGGER.error("A fatal error occurred during the application launch phase!", throwable);
             System.exit(1);
         }

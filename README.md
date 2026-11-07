@@ -23,8 +23,8 @@ on-the-fly mixin bytecode transformation.
   by [ClassTransform](https://github.com/Lenni0451/ClassTransform) and ASM bytecode manipulation.
 * **Unified Classloading:** Flat knot-classloader architecture ensuring zero classloader visibility barriers and fast
   class resolution.
-* **Universal Environment:** Works out of the box on both graphical clients and headless dedicated servers (Windows,
-  Linux, macOS).
+* **Client and Server:** Supports graphical clients and headless dedicated servers on Windows and Linux. macOS code
+  paths are experimental; running Project Zomboid with Avrix on macOS has not been verified.
 * **Automated Dependency Resolution:** Strict semantic versioning (SemVer) validation and DAG topological sort for
   plugin load order.
 * **Zero-Friction Modding:** Drop plugin `.jar` files into the `plugins/` directory to load them.
@@ -76,7 +76,8 @@ For local development, Gradle provides two run configurations:
 ./gradlew runServer
 ```
 
-The tasks auto-detect common Steam installation paths on Windows, Linux, and macOS. Override them with Gradle
+The tasks look for common Steam installation paths on Windows and Linux, with experimental macOS path detection.
+macOS game launches remain unverified. Override the paths with Gradle
 properties or environment variables when the game is installed elsewhere:
 
 ```bash
@@ -87,11 +88,15 @@ properties or environment variables when the game is installed elsewhere:
 # Linux
 ./gradlew runClient -PpzClientDir="$HOME/.steam/steam/steamapps/common/ProjectZomboid"
 
-# macOS
+# macOS (experimental, game launch unverified)
 ./gradlew runClient -PpzClientDir="$HOME/Library/Application Support/Steam/steamapps/common/ProjectZomboid"
 ```
 
 Supported environment variables: `PZ_CLIENT_DIR` and `PZ_SERVER_DIR`.
+
+`./gradlew check` runs unit/integration tests, Javadoc validation, and `smokeTest` against the shaded JAR, including
+the approval subprocess in headless mode. CI runs on Windows and Linux; these checks do not validate an actual game
+launch or macOS compatibility. Run `./gradlew smokeTest` to check the packaged runtime separately.
 
 The client/server environment itself is detected from installation files only. The loader does not require an
 environment flag.

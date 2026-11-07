@@ -66,7 +66,8 @@ public class ZomboidWorkingDirectoryIntegrationTest {
         Process process = new ProcessBuilder(
                 Path.of(System.getProperty("java.home"), "bin", executable).toString(),
                 "-Davrix.game.dir=" + gameRoot,
-                "-Davrix.log.dir=" + tempDir.resolve("logs"),
+                 "-Davrix.log.dir=" + tempDir.resolve("logs"),
+                 "-D" + ZomboidConstants.CACHE_DIR_PROPERTY + "=" + tempDir.resolve("cache"),
                 "-cp", childClasspath(), ChildMain.class.getName()
         ).directory(workingDirectory.toFile()).redirectErrorStream(true).redirectOutput(output.toFile()).start();
         try {

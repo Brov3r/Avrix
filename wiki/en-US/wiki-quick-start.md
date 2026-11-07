@@ -40,8 +40,8 @@ Enable `Remember for future launches` to keep the choices for future launches. S
 
 > [!IMPORTANT]
 > The Workshop profile works with the normal native launcher. It does not work with Alternate Launch
-> (`ProjectZomboid64.bat` / `start-server.sh`). macOS support is not verified yet; use the manual `java -jar` model
-> until the macOS agent path is available.
+> (`ProjectZomboid64.bat` / `start-server.sh`). macOS support is experimental and unverified, including manual
+> `java -jar` launches. The examples do not guarantee that the game will run on macOS.
 
 See [Workshop Mods & Java Plugins](./loader/wiki-workshop.md) for the `jarPlugins` format, active-mod rules, and
 troubleshooting.
@@ -93,8 +93,12 @@ Neither `avrix.game.dir` nor `user.dir` changes the process working directory. S
 Relative plugin directories are resolved against the selected game root.
 
 `--strict` aborts startup on plugin load failures, dependency/conflict resolution errors, and mixin transformation
-failures. Non-fatal metadata warnings (unknown keys, duplicate load-order entries, blank list entries, unknown
-environment values) remain warnings even in strict mode.
+failures and unknown metadata `environment` values. Unknown keys, duplicate load-order entries, and blank list entries
+remain warnings. Duplicate YAML keys are always rejected; if the duplicate-key check cannot be enabled, parsing fails.
+
+Mixin declarations are checked before registration. A registration failure that may leave partial transformer state,
+or an entrypoint failure after any mixins were registered, aborts startup even without `--strict`: such changes cannot
+be safely rolled back. JVM failures such as `VirtualMachineError` are never treated as recoverable plugin errors.
 
 The game directory can also be provided through the `AVRIX_GAME_DIR` environment variable (or `ZOMBOID_DIR`), or
 through the `-Dzomboid.dir` JVM property. Avrix detects the client or dedicated server from installation metadata and
@@ -138,8 +142,8 @@ The Gradle build provides two development run tasks:
 ./gradlew runServer
 ```
 
-The tasks auto-detect common Steam installation paths on Windows, Linux, and macOS. Override the location when the game
-is installed elsewhere:
+The tasks look for common Steam installation paths on Windows and Linux, with experimental macOS path detection.
+Game launches on macOS remain unverified. Override the location when the game is installed elsewhere:
 
 ```bash
 # Gradle properties
@@ -153,6 +157,9 @@ PZ_SERVER_DIR=/path/to/ProjectZomboidDedicatedServer ./gradlew runServer
 
 `runServer` keeps standard input attached so server commands can be entered from the terminal. On macOS, `runClient`
 also applies `-XstartOnFirstThread`, which is required by the client windowing stack.
+
+`./gradlew check` includes tests, Javadoc validation, and `smokeTest` for the shaded JAR and the headless approval
+subprocess. CI runs on Windows and Linux. These checks do not verify an actual game launch or macOS support.
 
 ---
 
@@ -354,7 +361,8 @@ public class ExamplePlugin implements Plugin {
   registered, but before the game starts. The passed `PluginData` already contains the initialized plugin instance.
   Acquire resources and register services here.
 - `onShutdown()` is invoked when the loader shuts down. Loaded plugins are shut down in reverse load order, and the
-  default implementation does nothing.
+  default implementation does nothing. It is also called if `onInitialize()` fails after construction; cleanup must
+  tolerate partially initialized fields and release any resources already acquired.
 
 ```java
 @Override
