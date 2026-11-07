@@ -191,8 +191,6 @@ ExamplePlugin/
             └── ...
 ```
 
-The loader JAR also contains the public plugin API, so a separate `avrix-api` dependency is not required.
-
 To distribute the finished plugin through Steam Workshop, see
 [Workshop Mods & Java Plugins](./loader/wiki-workshop.md).
 
