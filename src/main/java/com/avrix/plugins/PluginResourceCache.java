@@ -25,7 +25,7 @@ import java.util.jar.JarFile;
  * <p>The cache is keyed by archive path and invalidated when the archive size or modification time changes.
  * Large resources are read directly and are not retained.
  */
-final class PluginResourceCache {
+public final class PluginResourceCache {
 
     private static final long MAX_CACHED_RESOURCE_BYTES = 512L * 1024L;
     private static final int MAX_CACHED_RESOURCES = 128;
@@ -56,7 +56,7 @@ final class PluginResourceCache {
      * @return {@code true} when the entry exists and is not a directory
      * @throws IOException if the archive cannot be read
      */
-    static boolean containsEntry(Path jarPath, String entryName) throws IOException {
+    public static boolean containsEntry(Path jarPath, String entryName) throws IOException {
         return index(jarPath).entries().contains(entryName);
     }
 
@@ -67,7 +67,7 @@ final class PluginResourceCache {
      * @return immutable list of entry names
      * @throws IOException if the archive cannot be read
      */
-    static List<String> entryNames(Path jarPath) throws IOException {
+    public static List<String> entryNames(Path jarPath) throws IOException {
         return index(jarPath).entries();
     }
 
@@ -79,7 +79,7 @@ final class PluginResourceCache {
      * @return resource bytes, or empty when the entry is absent
      * @throws IOException if the archive cannot be read
      */
-    static Optional<byte[]> read(Path jarPath, String entryName) throws IOException {
+    public static Optional<byte[]> read(Path jarPath, String entryName) throws IOException {
         final long size;
         final FileTime modified;
         try {

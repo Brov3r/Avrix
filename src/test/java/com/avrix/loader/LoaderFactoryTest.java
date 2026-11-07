@@ -6,7 +6,7 @@ import com.avrix.core.LoaderConfig;
 import com.avrix.core.ServiceManager;
 import com.avrix.plugins.PluginManager;
 import com.avrix.provider.DefaultLoaderProvider;
-import com.avrix.provider.ZomboidConstants;
+import com.avrix.provider.zomboid.ZomboidConstants;
 import com.avrix.api.GameProvider;
 import com.avrix.api.LoaderProvider;
 import com.avrix.utils.Constants;

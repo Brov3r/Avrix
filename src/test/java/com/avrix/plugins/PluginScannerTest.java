@@ -4,7 +4,7 @@ import com.avrix.api.PluginArchive;
 import com.avrix.api.PluginSource;
 import com.avrix.core.Environment;
 import com.avrix.core.LoaderConfig;
-import com.avrix.provider.ZomboidModPluginSource;
+import com.avrix.provider.zomboid.ZomboidModPluginSource;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

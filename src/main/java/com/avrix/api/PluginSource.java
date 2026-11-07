@@ -15,5 +15,5 @@ public interface PluginSource {
      *
      * @return discovered plugin archives, or an empty list when none are found
      */
-    List<PluginArchive> scanArchives();
+    public List<PluginArchive> scanArchives();
 }

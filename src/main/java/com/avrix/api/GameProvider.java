@@ -142,8 +142,8 @@ public interface GameProvider {
     /**
      * Returns the per-user directory used for loader configuration and persistent decisions.
      * <p>
-     * The default is {@code ~/.avrix}. Providers should keep this outside the game directory so decisions survive
-     * game updates and are not shared between operating-system users.
+     * The default is {@code ~/.avrix}. Game providers may override this to keep configuration alongside the game or
+     * server installation.
      *
      * @return configuration directory path
      */

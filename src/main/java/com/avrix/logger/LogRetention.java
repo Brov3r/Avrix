@@ -57,7 +57,7 @@ public final class LogRetention {
      * @param maxHistoryDays    maximum file age in days; non-positive disables age-based deletion
      * @param totalSizeCapBytes maximum combined size of all log files; non-positive disables size-based deletion
      */
-    static void cleanup(Path logDirectory, int maxHistoryDays, long totalSizeCapBytes) {
+    public static void cleanup(Path logDirectory, int maxHistoryDays, long totalSizeCapBytes) {
         if (logDirectory == null || !Files.isDirectory(logDirectory)) {
             return;
         }

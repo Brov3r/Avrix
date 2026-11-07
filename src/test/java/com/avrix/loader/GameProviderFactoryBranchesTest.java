@@ -1,7 +1,7 @@
 package com.avrix.loader;
 
 import com.avrix.api.GameProvider;
-import com.avrix.provider.ZomboidConstants;
+import com.avrix.provider.zomboid.ZomboidConstants;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
