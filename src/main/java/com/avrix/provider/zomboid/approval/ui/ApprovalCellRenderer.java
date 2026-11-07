@@ -12,9 +12,10 @@ import java.awt.Component;
 public final class ApprovalCellRenderer extends DefaultTableCellRenderer {
 
     /**
-     * Creates the default cell renderer.
+     * Creates a plain-text renderer that never interprets metadata as HTML.
      */
     public ApprovalCellRenderer() {
+        putClientProperty("html.disable", Boolean.TRUE);
         setOpaque(true);
         setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
     }

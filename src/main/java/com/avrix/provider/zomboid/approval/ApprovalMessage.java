@@ -231,7 +231,10 @@ public enum ApprovalMessage {
     /**
      * Inspection notes section title.
      */
-    DETAIL_SECTION_NOTES("detail.section.notes");
+    DETAIL_SECTION_NOTES("detail.section.notes"),
+
+    /** Background archive inspection is still running. */
+    DETAIL_INSPECTION_LOADING("detail.inspection.loading");
 
     private final String key;
 

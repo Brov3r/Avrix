@@ -171,22 +171,19 @@ public final class ZomboidModPluginSource implements PluginSource {
      */
     @Override
     public List<PluginArchive> scanArchives() {
-        Set<String> activeMods = readActiveMods();
+        Set<String> errors = new LinkedHashSet<>();
+        Set<String> activeMods = readActiveMods(errors);
+        checkDiscoveryErrors(errors);
         if (activeMods.isEmpty()) {
             LOGGER.debug("No active Project Zomboid mods found. Skipping mod.info plugin discovery.");
             return List.of();
         }
 
         Map<Path, PluginArchive> archives = new LinkedHashMap<>();
-        Set<String> errors = new LinkedHashSet<>();
         scanSteamWorkshop(activeMods, archives, errors);
         scanLocalMods(activeMods, archives, errors);
 
-        if (strict && !errors.isEmpty()) {
-            throw new IllegalStateException(
-                    "Failed to discover Avrix plugins:\n - " + String.join("\n - ", errors)
-            );
-        }
+        checkDiscoveryErrors(errors);
 
         if (!archives.isEmpty()) {
             LOGGER.debug("Discovered {} plugin archive(s) from {} active mod(s).", archives.size(), activeMods.size());
@@ -194,22 +191,28 @@ public final class ZomboidModPluginSource implements PluginSource {
         return List.copyOf(archives.values());
     }
 
-    private Set<String> readActiveMods() {
+    private void checkDiscoveryErrors(Set<String> errors) {
+        if (strict && !errors.isEmpty()) {
+            throw new IllegalStateException("Failed to discover Avrix plugins:\n - " + String.join("\n - ", errors));
+        }
+    }
+
+    private Set<String> readActiveMods(Set<String> errors) {
         if (environment == Environment.SERVER) {
             Path serverConfig = cacheRoot
                     .resolve(SERVER_FOLDER)
                     .resolve(serverName + ".ini");
-            return readServerActiveMods(serverConfig);
+            return readServerActiveMods(serverConfig, errors);
         }
 
         Path clientConfig = cacheRoot
                 .resolve(MODS_FOLDER)
                 .resolve(ZomboidConstants.ACTIVE_MODS_FILE_NAME);
-        return readClientActiveMods(clientConfig);
+        return readClientActiveMods(clientConfig, errors);
     }
 
-    private static Set<String> readClientActiveMods(Path file) {
-        if (!Files.isRegularFile(file)) {
+    private static Set<String> readClientActiveMods(Path file, Set<String> errors) {
+        if (Files.notExists(file)) {
             LOGGER.debug("Active client mod list not found: [{}]", file);
             return Set.of();
         }
@@ -263,15 +266,16 @@ public final class ZomboidModPluginSource implements PluginSource {
                 }
             }
         } catch (IOException e) {
-            LOGGER.debug("Failed to read active client mod list [{}]", file, e);
+            errors.add("Failed to read active client mod list [" + file + "]: " + e.getMessage());
+            LOGGER.warn("Failed to read active client mod list [{}]", file, e);
             return Set.of();
         }
 
         return activeMods;
     }
 
-    private static Set<String> readServerActiveMods(Path file) {
-        if (!Files.isRegularFile(file)) {
+    private static Set<String> readServerActiveMods(Path file, Set<String> errors) {
+        if (Files.notExists(file)) {
             LOGGER.debug("Dedicated-server configuration not found: [{}]", file);
             return Set.of();
         }
@@ -312,7 +316,8 @@ public final class ZomboidModPluginSource implements PluginSource {
                 break;
             }
         } catch (IOException e) {
-            LOGGER.debug("Failed to read dedicated-server configuration [{}]", file, e);
+            errors.add("Failed to read dedicated-server configuration [" + file + "]: " + e.getMessage());
+            LOGGER.warn("Failed to read dedicated-server configuration [{}]", file, e);
             return Set.of();
         }
 
@@ -324,32 +329,36 @@ public final class ZomboidModPluginSource implements PluginSource {
             Map<Path, PluginArchive> archives,
             Set<String> errors
     ) {
-        Path steamApps = findSteamApps();
-        if (steamApps == null) {
-            return;
+        Set<Path> steamAppsRoots = new LinkedHashSet<>();
+        // SteamCMD servers also keep Workshop content below the installation, not just in an ancestor library.
+        steamAppsRoots.add(gameRoot.resolve("steamapps"));
+        Path ancestor = findSteamApps();
+        if (ancestor != null) {
+            steamAppsRoots.add(ancestor);
         }
 
-        Path workshopContent = steamApps
-                .resolve("workshop")
-                .resolve("content")
-                .resolve(ZomboidConstants.WORKSHOP_APP_ID);
-        if (!Files.isDirectory(workshopContent)) {
-            return;
-        }
-
-        try (DirectoryStream<Path> items = Files.newDirectoryStream(workshopContent)) {
-            for (Path item : items) {
-                if (!Files.isDirectory(item)) {
-                    continue;
-                }
-
-                Path modsRoot = item.resolve(MODS_FOLDER);
-                if (Files.isDirectory(modsRoot)) {
-                    scanModDirectories(modsRoot, activeMods, archives, errors);
-                }
+        for (Path steamApps : steamAppsRoots) {
+            Path workshopContent = steamApps.resolve("workshop").resolve("content")
+                    .resolve(ZomboidConstants.WORKSHOP_APP_ID);
+            if (!Files.isDirectory(workshopContent)) {
+                continue;
             }
-        } catch (IOException e) {
-            LOGGER.debug("Failed to scan Workshop content [{}]", workshopContent, e);
+
+            try (DirectoryStream<Path> items = Files.newDirectoryStream(workshopContent)) {
+                for (Path item : items) {
+                    if (!Files.isDirectory(item)) {
+                        continue;
+                    }
+
+                    Path modsRoot = item.resolve(MODS_FOLDER);
+                    if (Files.isDirectory(modsRoot)) {
+                        scanModDirectories(modsRoot, activeMods, archives, errors);
+                    }
+                }
+            } catch (IOException e) {
+                errors.add("Failed to scan Workshop content [" + workshopContent + "]: " + e.getMessage());
+                LOGGER.warn("Failed to scan Workshop content [{}]", workshopContent, e);
+            }
         }
     }
 

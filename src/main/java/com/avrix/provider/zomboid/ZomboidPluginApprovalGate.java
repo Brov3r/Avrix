@@ -15,11 +15,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -46,6 +49,7 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
 
     private static final String VERSION_LINE = "VERSION\t2";
     private static final String APPROVALS_FILE_NAME = "plugin-approvals.txt";
+    private static final Object STORE_WRITE_LOCK = new Object();
 
     private static final String POLICY_PROMPT = "prompt";
     private static final String POLICY_DENY_NEW = "deny-new";
@@ -56,13 +60,13 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
     private final ZomboidApprovalFrontend frontend;
 
     private final Map<String, StoredDecision> approvals = new HashMap<>();
+    private final Map<String, StoredDecision> unsavedDecisions = new HashMap<>();
     private final Map<String, Boolean> sessionDecisions = new HashMap<>();
     private final Set<String> resolvedThisSession = new HashSet<>();
     private final List<ZomboidApprovalEntry> pending = new ArrayList<>();
     private final Set<String> pendingHashes = new HashSet<>();
 
     private boolean storageAvailable = true;
-    private boolean storeDirty;
 
     /**
      * Creates an approval gate.
@@ -150,8 +154,8 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
             resolvedThisSession.add(entry.sha256());
         }
 
-        if (storeDirty && saveApprovals()) {
-            storeDirty = false;
+        if (!unsavedDecisions.isEmpty()) {
+            saveApprovals();
         }
     }
 
@@ -206,8 +210,14 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
             return Status.PENDING;
         }
 
-        if (pendingHashes.add(sha256)) {
-            pending.add(createEntry(archive, metadata, modId, sha256));
+        if (!pendingHashes.contains(sha256)) {
+            try {
+                pending.add(createEntry(archive, metadata, modId, sha256));
+            } catch (IllegalArgumentException e) {
+                LOGGER.warn("Plugin [{}] exceeds approval metadata limits; denying: {}", pluginId(metadata), e.getMessage());
+                return Status.DENIED;
+            }
+            pendingHashes.add(sha256);
             LOGGER.info(
                     "Plugin [{}] from mod [{}] is pending approval sha256={}",
                     pluginId(metadata),
@@ -302,7 +312,7 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
             }
 
             ZomboidApprovalEntry entry = batchByHash.get(decision.sha256());
-            approvals.put(decision.sha256(), new StoredDecision(
+            StoredDecision stored = new StoredDecision(
                     decision.sha256(),
                     decision.allow(),
                     System.currentTimeMillis(),
@@ -310,8 +320,9 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
                     entry.sourceType(),
                     entry.sourceName(),
                     entry.workshopId()
-            ));
-            storeDirty = true;
+            );
+            approvals.put(decision.sha256(), stored);
+            unsavedDecisions.put(decision.sha256(), stored);
         }
     }
 
@@ -325,14 +336,8 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
     }
 
     private void loadApprovals() {
-        if (!Files.isRegularFile(approvalsFile)) {
-            return;
-        }
-
         try {
-            for (String line : Files.readAllLines(approvalsFile, StandardCharsets.UTF_8)) {
-                parseLine(line.split("\t", -1));
-            }
+            approvals.putAll(readApprovals());
             LOGGER.info("Loaded {} plugin approval decision(s) from [{}]", approvals.size(), approvalsFile);
         } catch (IOException e) {
             LOGGER.warn("Failed to read plugin approvals [{}]; starting with an empty store", approvalsFile, e);
@@ -340,7 +345,17 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
         }
     }
 
-    private void parseLine(String[] parts) {
+    private Map<String, StoredDecision> readApprovals() throws IOException {
+        Map<String, StoredDecision> result = new HashMap<>();
+        if (!Files.notExists(approvalsFile)) {
+            for (String line : Files.readAllLines(approvalsFile, StandardCharsets.UTF_8)) {
+                parseLine(line.split("\t", -1), result);
+            }
+        }
+        return result;
+    }
+
+    private static void parseLine(String[] parts, Map<String, StoredDecision> target) {
         if (parts.length < 8 || !"APPROVAL".equals(parts[0])) {
             return;
         }
@@ -356,7 +371,7 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
             return;
         }
 
-        approvals.put(sha256, new StoredDecision(
+        target.put(sha256, new StoredDecision(
                 sha256,
                 allow,
                 time,
@@ -372,26 +387,35 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
             return false;
         }
 
-        StringBuilder content = new StringBuilder(VERSION_LINE).append('\n');
-        approvals.values().stream()
-                .sorted(Comparator.comparing(StoredDecision::sha256))
-                .forEach(decision -> content.append("APPROVAL")
-                        .append('\t').append(decision.sha256())
-                        .append('\t').append(decision.allow())
-                        .append('\t').append(decision.time())
-                        .append('\t').append(encode(decision.modId()))
-                        .append('\t').append(encode(decision.sourceType()))
-                        .append('\t').append(encode(decision.sourceName()))
-                        .append('\t').append(encode(decision.workshopId()))
-                        .append('\n'));
-
-        try {
-            writeAtomically(approvalsFile, content.toString());
-            LOGGER.info("Saved {} plugin approval decision(s) to [{}]", approvals.size(), approvalsFile);
-            return true;
-        } catch (IOException e) {
-            LOGGER.warn("Failed to save plugin approval store [{}]", approvalsFile, e);
-            return false;
+        // File locks overlap rather than wait inside one JVM, so serialize local writers before locking on disk.
+        synchronized (STORE_WRITE_LOCK) {
+            Path lockFile = approvalsFile.resolveSibling("plugin-approvals.lock");
+            try (FileChannel channel = FileChannel.open(lockFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+                 FileLock ignored = channel.lock()) {
+                Map<String, StoredDecision> merged = readApprovals();
+                merged.putAll(unsavedDecisions);
+                StringBuilder content = new StringBuilder(VERSION_LINE).append('\n');
+                merged.values().stream()
+                        .sorted(Comparator.comparing(StoredDecision::sha256))
+                        .forEach(decision -> content.append("APPROVAL")
+                                .append('\t').append(decision.sha256())
+                                .append('\t').append(decision.allow())
+                                .append('\t').append(decision.time())
+                                .append('\t').append(encode(decision.modId()))
+                                .append('\t').append(encode(decision.sourceType()))
+                                .append('\t').append(encode(decision.sourceName()))
+                                .append('\t').append(encode(decision.workshopId()))
+                                .append('\n'));
+                writeAtomically(approvalsFile, content.toString());
+                approvals.clear();
+                approvals.putAll(merged);
+                unsavedDecisions.clear();
+                LOGGER.info("Saved {} plugin approval decision(s) to [{}]", approvals.size(), approvalsFile);
+                return true;
+            } catch (IOException e) {
+                LOGGER.warn("Failed to save plugin approval store [{}]; decisions remain session-only", approvalsFile, e);
+                return false;
+            }
         }
     }
 
@@ -492,7 +516,7 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
 
     private static void writeAtomically(Path file, String content) throws IOException {
         Files.createDirectories(file.getParent());
-        Path temporary = file.resolveSibling(file.getFileName() + ".tmp");
+        Path temporary = Files.createTempFile(file.getParent(), file.getFileName() + "-", ".tmp");
         try {
             Files.writeString(temporary, content, StandardCharsets.UTF_8);
             try {

@@ -2,8 +2,13 @@ package com.avrix.provider.zomboid.approval;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,6 +66,24 @@ class ApprovalLocalizationTest {
             assertThat(messages.format(ApprovalMessage.LABEL_SHA256, "abc"))
                     .as(language.code())
                     .contains("abc");
+        }
+    }
+
+    @Test
+    void shouldProvideBackgroundInspectionPlaceholderInEveryLanguage() throws IOException {
+        String key = ApprovalMessage.DETAIL_INSPECTION_LOADING.key();
+        for (ApprovalLanguage language : ApprovalLanguages.available()) {
+            String suffix = "en".equals(language.code()) ? "" : "_" + language.code();
+            String resource = "com/avrix/provider/zomboid/approval/translations/messages"
+                    + suffix + ".properties";
+            Properties properties = new Properties();
+            try (InputStream input = ApprovalLocalizationTest.class.getClassLoader().getResourceAsStream(resource)) {
+                assertThat(input).as(resource).isNotNull();
+                properties.load(new InputStreamReader(input, StandardCharsets.UTF_8));
+            }
+            assertThat(properties.getProperty(key))
+                    .as("%s / %s", language.code(), key)
+                    .isNotBlank();
         }
     }
 

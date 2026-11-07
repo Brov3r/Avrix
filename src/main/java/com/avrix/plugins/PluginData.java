@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
@@ -251,25 +252,24 @@ public record PluginData(
                 Files.createDirectories(parent);
             }
 
-            if (!overwrite && Files.exists(destination)) {
-                return false;
-            }
-
             try (InputStream in = jar.getInputStream(entry)) {
-                Files.copy(in, destination, StandardCopyOption.REPLACE_EXISTING);
+                return copyResource(in, destination, overwrite);
             }
-            return true;
         }
     }
 
     /**
      * Extracts an entire directory of resources from the JAR archive to a local filesystem directory.
+     * <p>
+     * The caller-selected root is resolved to its real directory. Nested directory links are allowed only when
+     * their resolved destinations remain inside that root. Callers must not concurrently replace destination
+     * directories during extraction; this utility is not a filesystem sandbox.
      *
      * @param directoryPath relative path of the source directory inside the JAR (e.g., {@code "media/lua/"})
      * @param targetDir     target directory on the local filesystem
      * @param overwrite     whether to overwrite existing files
      * @return number of files successfully extracted
-     * @throws IOException          if directory creation or file copying fails
+     * @throws IOException          if directory creation or file copying fails, or a directory link escapes the root
      * @throws NullPointerException if {@code targetDir} is {@code null}
      */
     public int extractDirectory(String directoryPath, Path targetDir, boolean overwrite) throws IOException {
@@ -287,6 +287,7 @@ public record PluginData(
         int extractedCount = 0;
 
         try (JarFile jar = new JarFile(pluginPath.toFile(), false)) {
+            Path realTarget = null;
             var entries = jar.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
@@ -307,27 +308,64 @@ public record PluginData(
                     continue;
                 }
 
+                if (realTarget == null) {
+                    Files.createDirectories(normalizedTarget);
+                    realTarget = normalizedTarget.toRealPath();
+                }
+                Path relativeDestination = normalizedTarget.relativize(destination);
+
                 if (entry.isDirectory()) {
-                    Files.createDirectories(destination);
+                    extractionDirectory(realTarget, relativeDestination);
                     continue;
                 }
 
-                Path parent = destination.getParent();
-                if (parent != null) {
-                    Files.createDirectories(parent);
-                }
-
-                if (!overwrite && Files.exists(destination)) {
-                    continue;
-                }
+                Path parent = extractionDirectory(realTarget, relativeDestination.getParent());
+                destination = parent.resolve(relativeDestination.getFileName());
 
                 try (InputStream in = jar.getInputStream(entry)) {
-                    Files.copy(in, destination, StandardCopyOption.REPLACE_EXISTING);
-                    extractedCount++;
+                    if (copyResource(in, destination, overwrite)) {
+                        extractedCount++;
+                    }
                 }
             }
         }
         return extractedCount;
+    }
+
+    private static Path extractionDirectory(Path realRoot, Path relativeDirectory) throws IOException {
+        Path current = realRoot;
+        if (relativeDirectory == null) {
+            return current;
+        }
+        for (Path part : relativeDirectory) {
+            Path candidate = current.resolve(part);
+            try {
+                Files.createDirectory(candidate);
+            } catch (FileAlreadyExistsException ignored) {
+                // Resolve existing directories before descending so a junction cannot redirect directory creation.
+            }
+            current = candidate.toRealPath();
+            if (!current.startsWith(realRoot) || !Files.isDirectory(current)) {
+                throw new IOException("Extraction directory escapes the target root or is not a directory: " + candidate);
+            }
+        }
+        return current;
+    }
+
+    private static boolean copyResource(InputStream input, Path destination, boolean overwrite) throws IOException {
+        try {
+            if (overwrite) {
+                Files.copy(input, destination, StandardCopyOption.REPLACE_EXISTING);
+            } else {
+                Files.copy(input, destination);
+            }
+            return true;
+        } catch (FileAlreadyExistsException e) {
+            if (overwrite) {
+                throw e;
+            }
+            return false;
+        }
     }
 
     /**

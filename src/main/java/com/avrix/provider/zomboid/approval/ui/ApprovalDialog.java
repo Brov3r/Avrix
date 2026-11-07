@@ -82,6 +82,17 @@ public final class ApprovalDialog {
         });
 
         ApprovalTable table = new ApprovalTable(model, messages);
+        dialog.addWindowListener(new WindowAdapter() {
+            /**
+             * Cancels outstanding table inspections after the dialog has been closed.
+             *
+             * @param event window event
+             */
+            @Override
+            public void windowClosed(WindowEvent event) {
+                table.cancelInspections();
+            }
+        });
         table.setUI(new ApprovalTableUI());
         table.setTableHeader(new ApprovalTableHeader(table.getColumnModel()));
         table.setFillsViewportHeight(true);

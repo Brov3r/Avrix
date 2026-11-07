@@ -5,12 +5,18 @@ import com.avrix.provider.zomboid.approval.ApprovalMessages;
 import com.avrix.provider.zomboid.approval.MixinTargetInspector;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalDecision;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalEntry;
+import com.avrix.provider.zomboid.approval.ApprovalLimits;
+import com.avrix.utils.FatalErrors;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
 
 /**
  * Table model backed by the pending approval entries.
@@ -47,7 +53,12 @@ public final class ApprovalTableModel extends AbstractTableModel {
     /**
      * Cached mixin inspection results keyed by entry index.
      */
-    private final Map<Integer, MixinTargetInspector.Result> inspections = new HashMap<>();
+    private final Map<Integer, MixinTargetInspector.Result> inspections = new ConcurrentHashMap<>();
+
+    /**
+     * Archive inspection function invoked by background workers.
+     */
+    private final BiFunction<Path, List<String>, MixinTargetInspector.Result> inspector;
 
     /**
      * Current display rows.
@@ -61,8 +72,22 @@ public final class ApprovalTableModel extends AbstractTableModel {
      * @param messages localized messages
      */
     public ApprovalTableModel(List<ZomboidApprovalEntry> entries, ApprovalMessages messages) {
+        this(entries, messages, MixinTargetInspector::inspect);
+    }
+
+    /**
+     * Creates a model with an explicit archive inspector.
+     *
+     * @param entries pending approval entries
+     * @param messages localized messages
+     * @param inspector archive inspection function, invoked by background inspection workers
+     * @throws NullPointerException if any dependency or entry is null
+     */
+    public ApprovalTableModel(List<ZomboidApprovalEntry> entries, ApprovalMessages messages,
+            BiFunction<Path, List<String>, MixinTargetInspector.Result> inspector) {
         this.entries = List.copyOf(entries);
-        this.messages = messages;
+        this.messages = Objects.requireNonNull(messages, "Messages cannot be null");
+        this.inspector = Objects.requireNonNull(inspector, "Inspector cannot be null");
         this.allow = new boolean[entries.size()];
         this.expanded = new boolean[entries.size()];
         this.rows = buildRows();
@@ -238,16 +263,34 @@ public final class ApprovalTableModel extends AbstractTableModel {
     }
 
     /**
-     * Returns the inspected mixin data for an entry.
+     * Returns the inspected mixin data for an entry, reading the archive on the calling thread when not cached.
+     * <p>
+     * UI callers should use {@link #cachedInspection(int)} and arrange inspection on a background worker.
      *
      * @param entryIndex entry index
      * @return inspection result
      */
     public MixinTargetInspector.Result inspection(int entryIndex) {
-        return inspections.computeIfAbsent(entryIndex, index -> MixinTargetInspector.inspect(
-                entries.get(index).jarPath(),
-                entries.get(index).mixinClasses()
-        ));
+        return inspections.computeIfAbsent(entryIndex, index -> {
+            ZomboidApprovalEntry entry = entries.get(index);
+            try {
+                return Objects.requireNonNull(inspector.apply(entry.jarPath(), entry.mixinClasses()), "Inspection result");
+            } catch (Throwable failure) {
+                FatalErrors.rethrowIfFatal(failure);
+                return new MixinTargetInspector.Result(entry.mixinClasses(), List.of(),
+                        List.of("Cannot inspect archive: " + ApprovalLimits.displayText(failure.toString())));
+            }
+        });
+    }
+
+    /**
+     * Returns an already completed inspection without opening the archive or waiting for a worker.
+     *
+     * @param entryIndex entry index
+     * @return completed inspection, or empty while no result is available
+     */
+    public Optional<MixinTargetInspector.Result> cachedInspection(int entryIndex) {
+        return Optional.ofNullable(inspections.get(entryIndex));
     }
 
     /**

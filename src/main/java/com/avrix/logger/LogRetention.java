@@ -70,11 +70,7 @@ public final class LogRetention {
         if (maxHistoryDays > 0) {
             Instant cutoff = Instant.now().minus(maxHistoryDays, ChronoUnit.DAYS);
             logFiles.removeIf(file -> {
-                if (file.lastModified().isBefore(cutoff)) {
-                    deleteQuietly(file.path());
-                    return true;
-                }
-                return false;
+                return file.lastModified().isBefore(cutoff) && deleteQuietly(file.path());
             });
         }
 

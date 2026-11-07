@@ -3,10 +3,13 @@ package com.avrix.provider.zomboid.approval.ui;
 import com.avrix.provider.zomboid.approval.ApprovalMessage;
 import com.avrix.provider.zomboid.approval.ApprovalMessages;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalEntry;
+import com.avrix.provider.zomboid.approval.MixinTargetInspector;
+import com.avrix.utils.FatalErrors;
 
 import javax.swing.JTable;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -20,6 +23,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Table with expandable detail rows and full-value tooltips.
@@ -39,6 +44,15 @@ public final class ApprovalTable extends JTable {
      * Cached detail heights keyed by entry index.
      */
     private final Map<Integer, Integer> detailHeights = new HashMap<>();
+    /**
+     * Active background inspections keyed by entry index.
+     */
+    private final Map<Integer, SwingWorker<MixinTargetInspector.Result, Void>> inspectionWorkers = new HashMap<>();
+
+    /**
+     * Whether the dialog has been closed and new inspections must not start.
+     */
+    private boolean inspectionsCancelled;
 
     /**
      * Row header attached to the table.
@@ -332,7 +346,71 @@ public final class ApprovalTable extends JTable {
     public ApprovalDetailPanel detailPanel(int entryIndex) {
         return detailPanels.computeIfAbsent(entryIndex, ignored -> {
             ApprovalTableModel model = approvalModel();
-            return new ApprovalDetailPanel(model.entryAt(entryIndex), model.inspection(entryIndex), messages);
+            ZomboidApprovalEntry entry = model.entryAt(entryIndex);
+            var result = model.cachedInspection(entryIndex).orElseGet(() -> {
+                startInspection(entryIndex, model);
+                return new MixinTargetInspector.Result(entry.mixinClasses(), List.of(),
+                        List.of(messages.get(ApprovalMessage.DETAIL_INSPECTION_LOADING)));
+            });
+            return new ApprovalDetailPanel(entry, result, messages);
         });
+    }
+
+    /**
+     * Cancels outstanding inspections and prevents new work after the dialog closes.
+     * <p>
+     * This method must be called on the EDT. Cancellation is best-effort for filesystem operations already in progress.
+     */
+    public void cancelInspections() {
+        inspectionsCancelled = true;
+        for (var worker : inspectionWorkers.values()) {
+            worker.cancel(true);
+        }
+        inspectionWorkers.clear();
+    }
+
+    private void startInspection(int entryIndex, ApprovalTableModel model) {
+        if (inspectionsCancelled || inspectionWorkers.containsKey(entryIndex)) {
+            return;
+        }
+        var worker = new SwingWorker<MixinTargetInspector.Result, Void>() {
+            /**
+             * Inspects the mixin targets for the entry associated with this worker.
+             *
+             * @return inspection result for the entry
+             */
+            @Override
+            protected MixinTargetInspector.Result doInBackground() {
+                return model.inspection(entryIndex);
+            }
+
+            /**
+             * Finalizes the background inspection and refreshes the affected row.
+             * <p>
+             * Cancelled or failed inspections are ignored, and an interrupted wait restores the interrupt flag.
+             */
+            @Override
+            protected void done() {
+                if (isCancelled() || !inspectionWorkers.remove(entryIndex, this)) {
+                    return;
+                }
+                try {
+                    get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (ExecutionException e) {
+                    FatalErrors.rethrowIfFatal(e);
+                    return;
+                }
+                detailPanels.remove(entryIndex);
+                detailHeights.remove(entryIndex);
+                updateRowHeights();
+                revalidate();
+                repaint();
+            }
+        };
+        inspectionWorkers.put(entryIndex, worker);
+        worker.execute();
     }
 }

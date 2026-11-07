@@ -14,6 +14,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -78,7 +79,7 @@ public final class ZomboidSwingApprovalFrontend implements ZomboidApprovalFronte
     }
 
     /**
-     * Shows one approval window and waits for the decisions.
+     * Shows one approval window with a shared timeout for sending the request and receiving decisions.
      *
      * @param pending archives awaiting approval
      * @return user decisions, or an empty response when the window could not be shown
@@ -108,6 +109,7 @@ public final class ZomboidSwingApprovalFrontend implements ZomboidApprovalFronte
         );
         builder.redirectErrorStream(false);
 
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSeconds);
         Process process;
         try {
             process = builder.start();
@@ -118,6 +120,8 @@ public final class ZomboidSwingApprovalFrontend implements ZomboidApprovalFronte
 
         AtomicReference<ZomboidApprovalResponse> responseRef = new AtomicReference<>();
         AtomicReference<Throwable> responseError = new AtomicReference<>();
+        AtomicReference<Throwable> requestError = new AtomicReference<>();
+        CountDownLatch requestLatch = new CountDownLatch(1);
         CountDownLatch responseLatch = new CountDownLatch(1);
         List<String> stderrLines = Collections.synchronizedList(new ArrayList<>());
 
@@ -149,26 +153,29 @@ public final class ZomboidSwingApprovalFrontend implements ZomboidApprovalFronte
             }
         });
 
-        try {
+        Thread requestWriter = Thread.ofVirtual().name("avrix-approval-stdin").start(() -> {
             try (BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8))) {
+                     new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8))) {
                 ZomboidApprovalBatch.writeRequest(writer, pending);
+            } catch (Throwable failure) {
+                requestError.set(failure);
+            } finally {
+                requestLatch.countDown();
             }
-        } catch (IOException e) {
-            LOGGER.warn("Approval window closed before receiving the request; pending plugins will be skipped", e);
-            process.destroyForcibly();
-            return new ZomboidApprovalResponse(false, List.of());
-        }
+        });
 
         try {
-            if (!process.waitFor(timeoutSeconds, TimeUnit.SECONDS)) {
+            if (!requestLatch.await(remainingNanos(deadline), TimeUnit.NANOSECONDS)
+                    || !process.waitFor(remainingNanos(deadline), TimeUnit.NANOSECONDS)
+                    || !responseLatch.await(remainingNanos(deadline), TimeUnit.NANOSECONDS)) {
                 LOGGER.warn("Approval window timed out after {} second(s); pending plugins will be skipped", timeoutSeconds);
-                process.destroyForcibly();
                 return new ZomboidApprovalResponse(false, List.of());
             }
 
-            if (!responseLatch.await(2, TimeUnit.SECONDS)) {
-                LOGGER.warn("Approval window closed without a response; pending plugins will be skipped");
+            Throwable writeFailure = requestError.get();
+            if (writeFailure != null) {
+                FatalErrors.rethrowIfFatal(writeFailure);
+                LOGGER.warn("Approval window closed before receiving the request; pending plugins will be skipped", writeFailure);
                 return new ZomboidApprovalResponse(false, List.of());
             }
 
@@ -206,12 +213,19 @@ public final class ZomboidSwingApprovalFrontend implements ZomboidApprovalFronte
                 process.destroyForcibly();
             }
             try {
-                stdoutReader.join(1000);
-                stderrReader.join(1000);
+                long cleanupDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);
+                process.waitFor(remainingNanos(cleanupDeadline), TimeUnit.NANOSECONDS);
+                requestWriter.join(Duration.ofNanos(remainingNanos(cleanupDeadline)));
+                stdoutReader.join(Duration.ofNanos(remainingNanos(cleanupDeadline)));
+                stderrReader.join(Duration.ofNanos(remainingNanos(cleanupDeadline)));
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
+    }
+
+    private static long remainingNanos(long deadline) {
+        return Math.max(0L, deadline - System.nanoTime());
     }
 
     private static boolean isValidResponse(

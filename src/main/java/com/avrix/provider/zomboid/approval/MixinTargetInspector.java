@@ -67,7 +67,12 @@ public final class MixinTargetInspector {
                 }
 
                 try (InputStream input = jar.getInputStream(entry)) {
-                    collectTargets(input.readAllBytes(), targets);
+                    byte[] bytes = input.readNBytes(ApprovalLimits.MAX_CLASS_BYTES + 1);
+                    if (bytes.length > ApprovalLimits.MAX_CLASS_BYTES) {
+                        issues.add("Mixin class exceeds inspection byte limit: " + mixin);
+                        continue;
+                    }
+                    collectTargets(bytes, targets);
                 } catch (IOException | RuntimeException e) {
                     issues.add("Cannot read mixin class " + mixin + ": " + message(e));
                 }
@@ -148,16 +153,20 @@ public final class MixinTargetInspector {
             String stringArrayName,
             Set<String> targets
     ) {
+        if (targets.size() >= ApprovalLimits.MAX_MIXINS) {
+            return;
+        }
         if (classArrayName.equals(name) && value instanceof Type type) {
-            targets.add(type.getClassName());
+            targets.add(ApprovalLimits.displayText(type.getClassName()));
         } else if (stringArrayName.equals(name) && value instanceof String text && !text.isBlank()) {
-            targets.add(text.strip());
+            targets.add(ApprovalLimits.displayText(text.strip()));
         }
     }
 
     private static String message(Throwable throwable) {
         String message = throwable.getMessage();
-        return message == null || message.isBlank() ? throwable.getClass().getSimpleName() : message;
+        return message == null || message.isBlank() ? throwable.getClass().getSimpleName()
+                : ApprovalLimits.displayText(message);
     }
 
     /**
@@ -173,9 +182,14 @@ public final class MixinTargetInspector {
          * Creates an immutable inspection result.
          */
         public Result {
-            mixinClasses = List.copyOf(mixinClasses == null ? List.of() : mixinClasses);
-            targetClasses = List.copyOf(targetClasses == null ? List.of() : targetClasses);
-            issues = List.copyOf(issues == null ? List.of() : issues);
+            mixinClasses = boundedDisplay(mixinClasses);
+            targetClasses = boundedDisplay(targetClasses);
+            issues = boundedDisplay(issues);
+        }
+
+        private static List<String> boundedDisplay(List<String> values) {
+            return values == null ? List.of() : values.stream().limit(ApprovalLimits.MAX_MIXINS)
+                    .map(ApprovalLimits::displayText).toList();
         }
     }
 }

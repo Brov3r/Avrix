@@ -127,7 +127,7 @@ jobs:
           [[ -n "$scope" ]] && prefix="**${scope}:** "
 
           body[$type]+="- ${prefix}${text}"$'\n'
-        done < <(git log --no-merges --pretty=format:'%s' "$range")
+        done < <(git log --no-merges --pretty=tformat:'%s' "$range")
 
         {
           for key in "${order[@]}"; do
