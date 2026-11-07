@@ -46,7 +46,7 @@ public final class ZomboidConstants {
     public static final String PLUGIN_POLICY_PROPERTY = "avrix.plugin.policy";
 
     /**
-     * System property selecting the approval frontend: {@code auto}, {@code swing}, or {@code none}.
+     * System property selecting the approval frontend: {@code auto}, {@code swing}, {@code console}, or {@code none}.
      */
     public static final String APPROVAL_FRONTEND_PROPERTY = "avrix.approval.frontend";
 

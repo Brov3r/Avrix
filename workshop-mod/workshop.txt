@@ -51,8 +51,14 @@ description=
 description=[b]Q: Where are my approval decisions stored?[/b]
 description=A: In [i].avrix/plugin-approvals.txt[/i] inside the game or server directory. Delete a line to ask again, or delete the file to reset all approvals.
 description=
+description=[b]Q: How do I approve plugins on a dedicated server?[/b]
+description=A: Avrix prompts in the interactive console; if no console is attached but a GUI is available, it opens the Swing window. For non-interactive setups use [i]-Davrix.approval.frontend=console[/i] with piped input, or pre-approve through [i].avrix/plugin-approvals.txt[/i].
+description=
 description=[b]Q: Does Avrix work in multiplayer?[/b]
-description=A: Yes. Avrix supports both the graphical client and the dedicated server, so it works in multiplayer. Install and configure it on the server, and on clients too if the plugin has a client-side part.
+description=A: Yes. Avrix supports both the graphical client and the dedicated server, so it works in multiplayer. Install and configure it on the server, and on clients too if the plugin has a client-side part. CO-OP hosting from the client is client-side only; see the next question.
+description=
+description=[b]Q: Does Avrix work in CO-OP (hosting a server from the client)?[/b]
+description=A: Only on the client side. CO-OP starts a separate server process directly as [i]zombie.network.GameServer[/i]; Avrix is not started in that process, so server-side plugins do not load there and the server never asks for approval. The approval window shown when the client starts applies to client-side plugins only, and its decisions are not transferred to the CO-OP server. For server-side plugins, run a dedicated server started through Avrix.
 description=
 description=[b]Q: Does Avrix work with ZombieBuddy?[/b]
 description=A: Not recommended. Do not run Avrix and ZombieBuddy on the same game launch — both frameworks transform game classes, and combining them can cause hard-to-diagnose conflicts.

@@ -169,7 +169,7 @@ a plugin by its `id` or by its archive name, regardless of whether the plugin ca
 
 If the same plugin ID exists in `plugins/` and in an active mod, the **mod archive wins** and the archive from
 `plugins/` is ignored with a warning. Duplicate IDs within the same source (two `plugins/` archives or two mod
-archives) remain a load-order error.
+archives) are reported as load-order failures; `--strict` turns them into a startup abort.
 
 ---
 
@@ -208,48 +208,55 @@ Defaults:
 
 - client: `prompt`;
 - dedicated server: `deny-new`;
-- `prompt` on a dedicated server is downgraded to `deny-new` because there is no approval window.
+- `prompt` on a dedicated server is downgraded to `deny-new` only when the selected frontend cannot ask interactively.
+  A console frontend counts as interactive, so `prompt` remains active when it is available.
 
 Policy behavior:
 
 | Policy | Behavior |
 |---|---|
-| `prompt` | Unknown/changed JARs are not loaded. One Java approval window appears before plugin loading. |
+| `prompt` | Unknown/changed JARs are not loaded. An interactive approval frontend runs before plugin loading. |
 | `deny-new` | Unknown/changed JARs are silently skipped. No UI. |
 | `allow-all` | Every active mod JAR loads without approval. Development only. |
 
-The approval window is owned by the Project Zomboid provider, not by the Lua mod. It runs in a separate JVM because the
-game process is headless. The window is shown once per launch when at least one archive needs a decision:
+The approval flow is owned by the Project Zomboid provider, not by the Lua mod. The Swing window runs in a separate JVM
+because the game process is headless; the console frontend prompts in the same process. The batch is shown once per
+launch when at least one archive needs a decision:
 
 1. Avrix scans active `jarPlugins`, hashes each JAR with SHA-256, and does not load unknown/changed archives.
-2. One Java window lists every pending archive with its source, size, modification time, and SHA-256.
-3. Unchecked rows are denied. Press **Apply** to apply all rows, or **Cancel** to skip everything.
+2. The approval frontend lists every pending archive with its source, size, and SHA-256; the Swing window also shows
+   the modification time.
+3. In the Swing window, unchecked rows are denied; press **Apply** to apply all rows or **Cancel** to skip everything.
+   The console frontend asks for each archive separately.
 4. Decisions are applied immediately; approved plugins load in the same launch.
 5. Enable **Remember for future launches** to keep the same decisions on later launches. Otherwise they apply to the
    current session only.
 6. Approved hashes load without another prompt. A changed JAR hash requires approval again.
 
-Only one approval file is created:
+One approval file is created per installation, inside the game or dedicated-server root:
 
 ```text
-~/.avrix/plugin-approvals.txt
+<game-root>/.avrix/plugin-approvals.txt
 ```
 
-It contains exact SHA-256 decisions and is not writable from the Project Zomboid Lua sandbox.
+It contains exact SHA-256 decisions and is not writable through the stock Project Zomboid Lua file APIs.
 
-To ask again, delete `~/.avrix/plugin-approvals.txt` (or the corresponding line) and restart.
+To ask again, delete `<game-root>/.avrix/plugin-approvals.txt` (or the corresponding line) and restart.
 
 Optional frontend settings:
 
 ```text
--Davrix.approval.frontend=auto|swing|none
+-Davrix.approval.frontend=auto|swing|console|none
 -Davrix.approval.timeout=600
 ```
 
-`auto` uses the Swing window on a client and denies unknown archives on a dedicated server. `none` always denies.
+`auto` uses the Swing window on a client. On a dedicated server it prefers the interactive console, falls back to the
+Swing window when AWT is available, and otherwise denies unknown archives. `console` prompts on standard input and
+supports piped input; `none` always denies. The timeout is in seconds, defaults to `600`, and is clamped to `30`–`3600`.
 
-`plugins/` remains trusted and is not part of this flow. `require=\Avrix` is no longer required for the approval
-window; keep it if you also want the inactive-loader warning from the Workshop mod.
+`plugins/` remains trusted and is not part of this flow. Plugin mods should declare `require=\Avrix` in `mod.info`:
+it keeps the Avrix Workshop item as a Project Zomboid dependency and enables the inactive-loader warning from the
+Workshop mod. The approval flow itself does not depend on this declaration.
 
 ### ⚠️ Security
 
@@ -258,7 +265,7 @@ you trust and review the source code when it is available.
 
 Treat every active mod that declares `jarPlugins` as executable code.
 
-The approval window is a consent and visibility step, not a sandbox. Decisions are collected outside the Lua sandbox,
+The approval flow is a consent and visibility step, not a sandbox. Decisions are collected outside the Lua sandbox,
 so an enabled Lua mod cannot silently approve its own Java plugin. There are no signatures: SHA-256 proves that the
 approved bytes are the loaded bytes, not who authored them. Mod names and source metadata are shown as unverified
 context. A malicious Java plugin has the same access as any other Java code once approved.

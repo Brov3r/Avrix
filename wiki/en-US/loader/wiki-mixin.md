@@ -12,7 +12,7 @@ transformation internals, refer to the [official ClassTransform Wiki](https://gi
 
 Avrix provides developers with full flexibility in choosing mixin syntax:
 
-1. **Native ClassTransform Annotations** (`@CTransformer`, `@CInject`, `@COverwrite`, `@CRedirect`):
+1. **Native ClassTransform Annotations** (`@CTransformer`, `@CInject`, `@COverride`, `@CRedirect`):
    Recommended for developers starting fresh without prior Minecraft modding experience.
 2. **Standard SpongePowered Mixin Annotations** (`@Mixin`, `@Inject`, `@Overwrite`, `@Redirect`):
    Supported via the built-in `MixinsTranslator` preprocessor inside the Avrix core. If you have previously built mods

@@ -18,6 +18,15 @@ public interface ZomboidApprovalFrontend {
     public ZomboidApprovalResponse request(List<ZomboidApprovalEntry> pending) throws Exception;
 
     /**
+     * Returns whether this frontend can ask the user interactively.
+     *
+     * @return {@code true} when interactive approval is supported
+     */
+    public default boolean supportsInteractivePrompt() {
+        return false;
+    }
+
+    /**
      * Creates a frontend that approves and denies nothing.
      *
      * @return deny-only frontend

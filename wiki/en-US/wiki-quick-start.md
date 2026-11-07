@@ -31,8 +31,10 @@ The recommended installation for Steam users is the Avrix Workshop item.
 4. Enable any Workshop mods that contain Avrix plugins in the in-game **Mods** menu. Avrix loads `jarPlugins` only
    from active mods. The classic `plugins/` directory still works independently.
 
-Java plugins from Workshop mods require approval. With the default `prompt` policy, Avrix shows one Java approval
-window before plugins load. Unchecked rows are denied; press `Apply` to load approved plugins in the same launch.
+Java plugins from Workshop mods require approval. On a client, the default `prompt` policy makes Avrix show one Java
+approval window before plugins load. On a dedicated server the default is `deny-new`; an attached interactive console
+can still use `prompt` when `-Davrix.plugin.policy=prompt` is set. Unchecked rows are denied; press `Apply` to load
+approved plugins in the same launch.
 Enable `Remember for future launches` to keep the choices for future launches. See
 [Workshop Mods & Java Plugins](./loader/wiki-workshop.md) for the approval store and `avrix.plugin.policy` values.
 

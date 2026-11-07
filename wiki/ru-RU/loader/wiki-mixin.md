@@ -13,7 +13,7 @@
 
 Avrix предоставляет разработчикам свободу выбора синтаксиса миксинов:
 
-1. **Нативные аннотации ClassTransform** (`@CTransformer`, `@CInject`, `@COverwrite`, `@CRedirect`):
+1. **Нативные аннотации ClassTransform** (`@CTransformer`, `@CInject`, `@COverride`, `@CRedirect`):
    Рекомендуются для новых разработчиков, не имеющих опыта работы с Minecraft.
 2. **Стандартные аннотации SpongePowered Mixin** (`@Mixin`, `@Inject`, `@Overwrite`, `@Redirect`):
    Поддерживаются благодаря встроенному в ядро Avrix препроцессору `MixinsTranslator`. Если вы ранее писали моды для

@@ -1,6 +1,5 @@
 package com.avrix.provider.zomboid.approval;
 
-import com.avrix.provider.zomboid.ZomboidConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +33,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public final class ZomboidSwingApprovalFrontend implements ZomboidApprovalFrontend {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZomboidSwingApprovalFrontend.class);
-    private static final int DEFAULT_TIMEOUT_SECONDS = 600;
-    private static final int MIN_TIMEOUT_SECONDS = 30;
-    private static final int MAX_TIMEOUT_SECONDS = 3600;
     private static final int MAX_STDERR_LINES = 40;
 
     private final int timeoutSeconds;
@@ -46,7 +42,7 @@ public final class ZomboidSwingApprovalFrontend implements ZomboidApprovalFronte
      * Creates a frontend using the configured approval timeout.
      */
     public ZomboidSwingApprovalFrontend() {
-        this(readTimeoutSeconds(), ZomboidSwingApprovalMain.class.getName());
+        this(ApprovalTimeouts.readSeconds(), ZomboidSwingApprovalMain.class.getName());
     }
 
     /**
@@ -65,8 +61,18 @@ public final class ZomboidSwingApprovalFrontend implements ZomboidApprovalFronte
      * @param mainClassName  child process entrypoint
      */
     public ZomboidSwingApprovalFrontend(int timeoutSeconds, String mainClassName) {
-        this.timeoutSeconds = Math.max(1, Math.min(MAX_TIMEOUT_SECONDS, timeoutSeconds));
+        this.timeoutSeconds = Math.max(1, Math.min(ApprovalTimeouts.MAX_SECONDS, timeoutSeconds));
         this.mainClassName = Objects.requireNonNull(mainClassName, "Main class cannot be null");
+    }
+
+    /**
+     * Returns whether this frontend can ask the user interactively.
+     *
+     * @return always {@code true}
+     */
+    @Override
+    public boolean supportsInteractivePrompt() {
+        return true;
     }
 
     /**
@@ -261,20 +267,5 @@ public final class ZomboidSwingApprovalFrontend implements ZomboidApprovalFronte
                 "bin",
                 windows ? "java.exe" : "java"
         ).toAbsolutePath().toString();
-    }
-
-    private static int readTimeoutSeconds() {
-        String value = System.getProperty(ZomboidConstants.APPROVAL_TIMEOUT_PROPERTY);
-        if (value == null || value.isBlank()) {
-            return DEFAULT_TIMEOUT_SECONDS;
-        }
-        try {
-            int parsed = Integer.parseInt(value.trim());
-            return Math.max(MIN_TIMEOUT_SECONDS, Math.min(MAX_TIMEOUT_SECONDS, parsed));
-        } catch (NumberFormatException e) {
-            LOGGER.warn("Invalid {} value [{}]; using {} seconds",
-                    ZomboidConstants.APPROVAL_TIMEOUT_PROPERTY, value, DEFAULT_TIMEOUT_SECONDS);
-            return DEFAULT_TIMEOUT_SECONDS;
-        }
     }
 }

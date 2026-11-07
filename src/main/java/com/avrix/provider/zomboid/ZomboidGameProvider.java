@@ -9,10 +9,12 @@ import com.avrix.logger.LineReadingOutputStream;
 import com.avrix.provider.GameVersionInfo;
 import com.avrix.provider.NativeLibraryLocator;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalFrontend;
+import com.avrix.provider.zomboid.approval.ZomboidConsoleApprovalFrontend;
 import com.avrix.provider.zomboid.approval.ZomboidSwingApprovalFrontend;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.GraphicsEnvironment;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -621,8 +623,9 @@ public class ZomboidGameProvider implements GameProvider {
     /**
      * Selects the approval frontend from {@code avrix.approval.frontend}.
      * <p>
-     * {@code auto} uses the Swing window on a client and denies unknown archives on a dedicated server. An explicit
-     * {@code swing} value is honored on any environment; {@code none} always denies.
+     * {@code auto} uses the Swing window on a client. On a dedicated server it prefers a console prompt, falls back
+     * to the Swing window when AWT is available, and otherwise denies unknown archives. Explicit {@code swing},
+     * {@code console}, and {@code none} values are honored on any environment.
      *
      * @param environment active runtime environment
      * @return approval frontend
@@ -642,9 +645,21 @@ public class ZomboidGameProvider implements GameProvider {
             LOGGER.info("Plugin approval frontend: swing");
             return new ZomboidSwingApprovalFrontend();
         }
+        if ("console".equals(mode)) {
+            LOGGER.info("Plugin approval frontend: console");
+            return new ZomboidConsoleApprovalFrontend();
+        }
         if ("auto".equals(mode)) {
             if (environment == Environment.SERVER) {
-                LOGGER.info("Plugin approval frontend: none (dedicated server)");
+                if (System.console() != null) {
+                    LOGGER.info("Plugin approval frontend: console (dedicated server)");
+                    return new ZomboidConsoleApprovalFrontend();
+                }
+                if (!GraphicsEnvironment.isHeadless()) {
+                    LOGGER.info("Plugin approval frontend: swing (dedicated server)");
+                    return new ZomboidSwingApprovalFrontend();
+                }
+                LOGGER.info("Plugin approval frontend: none (dedicated server without console or GUI)");
                 return ZomboidApprovalFrontend.denyAll();
             }
             LOGGER.info("Plugin approval frontend: swing");

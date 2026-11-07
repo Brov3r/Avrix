@@ -83,8 +83,15 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
                 .normalize();
 
         this.approvalsFile = normalizedConfigRoot.resolve(APPROVALS_FILE_NAME);
-        this.policy = resolvePolicy(environment == null ? Environment.CLIENT : environment, policyValue);
-        this.frontend = frontend != null ? frontend : ZomboidApprovalFrontend.denyAll();
+        ZomboidApprovalFrontend resolvedFrontend = frontend != null
+                ? frontend
+                : ZomboidApprovalFrontend.denyAll();
+        this.frontend = resolvedFrontend;
+        this.policy = resolvePolicy(
+                environment == null ? Environment.CLIENT : environment,
+                policyValue,
+                resolvedFrontend.supportsInteractivePrompt()
+        );
 
         prepareStorage();
         loadApprovals();
@@ -409,7 +416,11 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
         return hex.toString();
     }
 
-    private static Policy resolvePolicy(Environment environment, String policyValue) {
+    private static Policy resolvePolicy(
+            Environment environment,
+            String policyValue,
+            boolean interactiveApproval
+    ) {
         Policy fallback = environment == Environment.SERVER ? Policy.DENY_NEW : Policy.PROMPT;
         if (policyValue == null || policyValue.isBlank()) {
             return fallback;
@@ -425,8 +436,10 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
             }
         };
 
-        if (resolved == Policy.PROMPT && environment == Environment.SERVER) {
-            LOGGER.warn("Plugin policy [prompt] has no client UI on a dedicated server; using [deny-new]");
+        if (resolved == Policy.PROMPT && environment == Environment.SERVER && !interactiveApproval) {
+            LOGGER.warn(
+                    "Plugin policy [prompt] has no interactive approval frontend on a dedicated server; using [deny-new]"
+            );
             return Policy.DENY_NEW;
         }
         if (resolved == Policy.ALLOW_ALL) {

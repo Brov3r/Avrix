@@ -67,6 +67,33 @@ class ZomboidPluginApprovalGateTest {
     }
 
     @Test
+    @DisplayName("Should keep prompt policy on a server when the frontend is interactive")
+    void shouldKeepPromptOnServerForInteractiveFrontend() {
+        ZomboidPluginApprovalGate service = service(
+                Environment.SERVER,
+                "prompt",
+                new ZomboidApprovalFrontend() {
+                    /** {@inheritDoc} */
+                    @Override
+                    public ZomboidApprovalResponse request(List<ZomboidApprovalEntry> pending) {
+                        return new ZomboidApprovalResponse(false, decisions(pending, true));
+                    }
+
+                    /** {@inheritDoc} */
+                    @Override
+                    public boolean supportsInteractivePrompt() {
+                        return true;
+                    }
+                }
+        );
+
+        assertThat(service.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.PENDING);
+        service.flushPending();
+
+        assertThat(service.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.APPROVED);
+    }
+
+    @Test
     @DisplayName("Should create the store only inside the .avrix directory")
     void shouldUseOnlyTheConfiguredStoreFile() {
         ZomboidPluginApprovalGate service = service(
