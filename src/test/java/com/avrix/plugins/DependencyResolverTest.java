@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -308,6 +309,67 @@ class DependencyResolverTest {
 
     private static Metadata meta(String id, String version) {
         return builder(id, version).build();
+    }
+
+    @Test
+    void shouldExcludeMissingAndIncompatibleDependencyChains() {
+        var failures = new ArrayList<PluginLoadResult>();
+        var result = new DependencyResolver(List.of()).resolveAvailable(List.of(
+                withDependencies("missing-base", "1.0.0", Map.of("absent", "*")),
+                withDependencies("transitive", "1.0.0", Map.of("missing-base", "*")),
+                withDependencies("incompatible", "1.0.0", Map.of("library", ">=2.0.0")),
+                meta("library", "1.0.0"),
+                meta("independent", "1.0.0")
+        ), failures::add);
+
+        assertThat(result).extracting(Metadata::id).containsExactly("independent", "library");
+        assertThat(failures).extracting(PluginLoadResult::pluginId)
+                .containsExactlyInAnyOrder("missing-base", "transitive", "incompatible");
+    }
+
+    @Test
+    void shouldExcludeCycleMembersAndHardDependentsButKeepSoftSuccessors() {
+        var failures = new ArrayList<PluginLoadResult>();
+        var result = new DependencyResolver(List.of()).resolveAvailable(List.of(
+                builder("a", "1.0.0").loadAfter("b").build(),
+                builder("b", "1.0.0").loadAfter("a").build(),
+                withDependencies("hard-dependent", "1.0.0", Map.of("a", "*")),
+                builder("soft-successor", "1.0.0").loadAfter("a").build(),
+                meta("independent", "1.0.0")
+        ), failures::add);
+
+        assertThat(result).extracting(Metadata::id).containsExactly("independent", "soft-successor");
+        assertThat(failures).extracting(PluginLoadResult::pluginId)
+                .containsExactlyInAnyOrder("a", "b", "hard-dependent");
+    }
+
+    @Test
+    void shouldPreserveCoreDescriptorWhenUserReusesItsId() {
+        Metadata core = meta(Constants.LOADER_ID, "1.0.0");
+        var failures = new ArrayList<PluginLoadResult>();
+        var result = new DependencyResolver(List.of(core)).resolveAvailable(List.of(
+                meta(Constants.LOADER_ID, "2.0.0"),
+                withDependencies("consumer", "1.0.0", Map.of(Constants.LOADER_ID, "1.0.0")),
+                core
+        ), failures::add);
+
+        assertThat(result).extracting(Metadata::id).containsExactly("consumer");
+        assertThat(failures).extracting(PluginLoadResult::pluginId).containsExactly(Constants.LOADER_ID);
+    }
+
+    @Test
+    void shouldRejectEveryDuplicateAndItsDependentsWithoutChoosingAnArchive() {
+        var failures = new ArrayList<PluginLoadResult>();
+        var result = new DependencyResolver(List.of()).resolveAvailable(List.of(
+                meta("duplicate", "1.0.0"), meta("duplicate", "2.0.0"),
+                withDependencies("consumer", "1.0.0", Map.of("duplicate", "*")),
+                builder("invalid-order", "1.0.0").loadBefore("*").loadAfter("*").build(),
+                meta("independent", "1.0.0")
+        ), failures::add);
+
+        assertThat(result).extracting(Metadata::id).containsExactly("independent");
+        assertThat(failures).extracting(PluginLoadResult::pluginId)
+                .containsExactlyInAnyOrder("duplicate", "duplicate", "consumer", "invalid-order");
     }
 
     private static Metadata withDependencies(String id, String version, Map<String, String> dependencies) {

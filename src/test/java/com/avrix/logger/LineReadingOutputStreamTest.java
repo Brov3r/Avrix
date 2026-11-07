@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +25,34 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class LineReadingOutputStreamTest {
 
     private final List<String> lines = new ArrayList<>();
+
+    /** Verifies that automatic PrintStream flushes preserve a logical line and its final remainder. */
+    @Test
+    public void shouldPreserveLinesAcrossAutoFlushingPrintCalls() {
+        try (var stream = new PrintStream(new LineReadingOutputStream(lines::add, StandardCharsets.UTF_8, false),
+                true, StandardCharsets.UTF_8)) {
+            stream.print("hello ");
+            stream.flush();
+            assertThat(lines).isEmpty();
+            stream.println("world");
+            stream.print("tail");
+            assertThat(lines).containsExactly("hello world");
+        }
+        assertThat(lines).containsExactly("hello world", "tail");
+    }
+
+    /** Verifies split UTF-8 characters and CRLF delimiters through an auto-flushing PrintStream. */
+    @Test
+    public void shouldPreserveUtf8AndCrLfAcrossAutoFlushingWrites() {
+        try (var stream = new PrintStream(new LineReadingOutputStream(lines::add, StandardCharsets.UTF_8, false),
+                true, StandardCharsets.UTF_8)) {
+            byte[] bytes = "Привет 🌍\r\n".getBytes(StandardCharsets.UTF_8);
+            for (int i = 0; i < bytes.length; i++) {
+                stream.write(bytes, i, 1);
+            }
+        }
+        assertThat(lines).containsExactly("Привет 🌍");
+    }
 
     @Test
     @DisplayName("Should emit a line when a single LF byte is written")

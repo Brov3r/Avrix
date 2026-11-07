@@ -172,8 +172,8 @@ class DefaultPluginManagerEdgeTest {
         }
 
         @Test
-        @DisplayName("Should report every candidate as failed and load nothing on resolver failure in non-strict mode")
-        void shouldFailAllCandidatesOnResolverFailureInNonStrictMode() throws IOException {
+        @DisplayName("Should reject duplicate candidates and load independent plugins in non-strict mode")
+        void shouldLoadIndependentCandidatesOnResolverFailureInNonStrictMode() throws IOException {
             DefaultPluginManager manager = createManager(false);
             manager.init();
 
@@ -185,10 +185,14 @@ class DefaultPluginManagerEdgeTest {
 
             assertThat(manager.getLoadResults())
                     .hasSize(3)
-                    .extracting(PluginLoadResult::status)
-                    .containsOnly(PluginLoadStatus.FAILED);
+                    .extracting(PluginLoadResult::pluginId, PluginLoadResult::status)
+                    .containsExactly(
+                            tuple("duplicate-plugin", PluginLoadStatus.FAILED),
+                            tuple("duplicate-plugin", PluginLoadStatus.FAILED),
+                            tuple("independent-plugin", PluginLoadStatus.LOADED)
+                    );
             assertThat(manager.getPlugins())
-                    .containsOnlyKeys("dummy-game", Constants.LOADER_ID);
+                    .containsOnlyKeys("dummy-game", Constants.LOADER_ID, "independent-plugin");
         }
     }
 

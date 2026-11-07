@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.Objects;
 
 /**
@@ -97,18 +98,25 @@ public final class LoaderFactory {
                     ? gameProvider.getEnvironment()
                     : config.environment();
 
+            Path pluginsDirectory = config.pluginsDirectory();
+            if (!pluginsDirectory.isAbsolute()) {
+                pluginsDirectory = gameProvider.getLaunchDirectory().resolve(pluginsDirectory);
+            }
+            LoaderConfig runtimeConfig = config.withEnvironment(resolvedEnvironment)
+                    .withPluginsDirectory(pluginsDirectory.toAbsolutePath().normalize());
+
             PluginApprovalGate approvalGate = gameProvider.createApprovalGate(
                     gameProvider.getCacheRoot(),
                     resolvedEnvironment
             );
 
             pluginManager = new DefaultPluginManager(
-                    config.withEnvironment(resolvedEnvironment),
+                    runtimeConfig,
                     classLoader,
                     gameProvider,
                     loaderProvider,
                     mixinTransformer,
-                    new PluginScanner(config, gameProvider.getPluginSources(config.strict())),
+                    new PluginScanner(runtimeConfig, gameProvider.getPluginSources(config.strict())),
                     new PluginManifestParser(),
                     approvalGate
             );

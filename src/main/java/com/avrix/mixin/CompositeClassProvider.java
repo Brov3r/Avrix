@@ -52,7 +52,7 @@ public final class CompositeClassProvider implements IClassProvider {
     }
 
     /**
-     * Obtains the raw bytecode for the specified class by querying the flat classloader and platform runtime.
+     * Obtains raw bytecode using the flat classloader's parent-delegation policy.
      *
      * @param name the fully qualified binary name of the class (e.g., {@code zombie.characters.IsoPlayer})
      * @return the raw bytecode array
@@ -76,17 +76,19 @@ public final class CompositeClassProvider implements IClassProvider {
 
         String resourcePath = name.replace('.', '/').concat(".class");
 
-        // Local-first lookup mirrors KnotClassLoader.loadClass() for game and plugin classes. Parent-delegated
-        // classes (JDK, SLF4J, loader libraries) are resolved from the parent directly to avoid scanning every
-        // local classpath entry for each superclass lookup.
-        URL localResource = null;
-        if (!knotClassLoader.delegatesToParent(name)) {
-            localResource = knotClassLoader.findIndexedResource(resourcePath);
+        boolean parentFirst = knotClassLoader.delegatesToParent(name);
+        ClassLoader parent = knotClassLoader.getParent();
+        byte[] bytes = parentFirst ? readResourceBytes(parent, resourcePath) : null;
+        if (bytes == null) {
+            URL localResource = knotClassLoader.findIndexedResource(resourcePath);
             if (localResource == null) {
                 localResource = knotClassLoader.findResource(resourcePath);
             }
+            bytes = readResourceBytes(localResource);
         }
-        byte[] bytes = readResourceBytes(localResource);
+        if (bytes == null && !parentFirst) {
+            bytes = readResourceBytes(parent, resourcePath);
+        }
         if (bytes != null) {
             classCache.put(name, bytes);
             return bytes;
@@ -117,8 +119,8 @@ public final class CompositeClassProvider implements IClassProvider {
      * Scans and returns all discoverable classes mapped to their bytecode suppliers.
      *
      * <p>The returned map is mutable, as required by the ClassTransform class provider contract.
-     * Multi-release JARs are skipped because their versioned entries cannot be represented by a single
-     * class name without changing archive contents.
+     * Multi-release JARs expose the entries selected for the running JVM, including version-only classes.
+     * Suppliers follow the same delegation policy as {@link #getClass(String)}.
      *
      * @return a mutable map of class names to bytecode suppliers
      */
@@ -174,7 +176,7 @@ public final class CompositeClassProvider implements IClassProvider {
                         }
                         String className = resourcePath.substring(0, resourcePath.length() - 6).replace('/', '.');
 
-                        targetMap.putIfAbsent(className, () -> readResourceBytes(knotClassLoader.findResource(resourcePath)));
+                        targetMap.putIfAbsent(className, () -> findClassBytes(className));
                     });
         } catch (IOException e) {
             LOGGER.warn("Failed to traverse classpath directory: [{}]", rootDir, e);
@@ -188,7 +190,7 @@ public final class CompositeClassProvider implements IClassProvider {
      * @param targetMap the map collecting class suppliers
      */
     private void scanJarFile(File file, Map<String, Supplier<byte[]>> targetMap) {
-        try (JarFile jarFile = new JarFile(file, false)) {
+        try (JarFile jarFile = new JarFile(file, false, JarFile.OPEN_READ, Runtime.version())) {
             scanJarFileEntries(jarFile, targetMap);
         } catch (IOException e) {
             LOGGER.warn("Failed to open JAR file: [{}]", file.getAbsolutePath(), e);
@@ -229,7 +231,16 @@ public final class CompositeClassProvider implements IClassProvider {
         }
 
         String className = entryName.substring(0, entryName.length() - 6).replace('/', '.');
-        targetMap.putIfAbsent(className, () -> readResourceBytes(knotClassLoader.findResource(entryName)));
+        targetMap.putIfAbsent(className, () -> findClassBytes(className));
+    }
+
+    private byte[] findClassBytes(String className) {
+        try {
+            return getClass(className);
+        } catch (ClassNotFoundException e) {
+            LOGGER.trace("Unable to read discovered class [{}]", className, e);
+            return null;
+        }
     }
 
     /**
@@ -244,10 +255,8 @@ public final class CompositeClassProvider implements IClassProvider {
             return null;
         }
 
-        try (InputStream is = loader.getResourceAsStream(resourcePath)) {
-            if (is != null) {
-                return is.readAllBytes();
-            }
+        try {
+            return readResourceBytes(loader.getResource(resourcePath));
         } catch (Exception e) {
             LOGGER.trace("Unable to read resource [{}] from loader [{}]", resourcePath, loader, e);
         }

@@ -46,7 +46,7 @@ public final class ZomboidModPluginSource implements PluginSource {
             Pattern.compile("/content/" + ZomboidConstants.WORKSHOP_APP_ID + "/(\\d+)/");
 
     private final Path gameRoot;
-    private final Path userHome;
+    private final Path cacheRoot;
     private final Environment environment;
     private final String serverName;
     private final Version gameVersion;
@@ -112,10 +112,35 @@ public final class ZomboidModPluginSource implements PluginSource {
             String gameVersion,
             boolean strict
     ) {
+        this(gameRoot, environment, serverName, gameVersion, strict,
+                Objects.requireNonNull(userHome, "User home cannot be null").resolve(ZOMBOID_FOLDER));
+    }
+
+    /**
+     * Creates a scanner rooted in the game's resolved cache directory.
+     *
+     * @param gameRoot game installation root
+     * @param cacheRoot directory containing {@code mods} and {@code Server}, including any cache override
+     * @param environment active runtime environment
+     * @param serverName server profile name, or {@code null} for the default
+     * @param gameVersion normalized game version, or {@code null} when unknown
+     * @param strict whether discovery errors should abort startup
+     * @return scanner using the specified cache root without appending a folder name
+     * @throws NullPointerException if either root is null
+     */
+    public static ZomboidModPluginSource forCacheRoot(
+            Path gameRoot, Path cacheRoot, Environment environment, String serverName, String gameVersion, boolean strict
+    ) {
+        return new ZomboidModPluginSource(gameRoot, environment, serverName, gameVersion, strict, cacheRoot);
+    }
+
+    private ZomboidModPluginSource(
+            Path gameRoot, Environment environment, String serverName, String gameVersion, boolean strict, Path cacheRoot
+    ) {
         this.gameRoot = Objects.requireNonNull(gameRoot, "Game root cannot be null")
                 .toAbsolutePath()
                 .normalize();
-        this.userHome = Objects.requireNonNull(userHome, "User home cannot be null")
+        this.cacheRoot = Objects.requireNonNull(cacheRoot, "Cache root cannot be null")
                 .toAbsolutePath()
                 .normalize();
         this.environment = environment == null ? Environment.CLIENT : environment;
@@ -171,15 +196,13 @@ public final class ZomboidModPluginSource implements PluginSource {
 
     private Set<String> readActiveMods() {
         if (environment == Environment.SERVER) {
-            Path serverConfig = userHome
-                    .resolve(ZOMBOID_FOLDER)
+            Path serverConfig = cacheRoot
                     .resolve(SERVER_FOLDER)
                     .resolve(serverName + ".ini");
             return readServerActiveMods(serverConfig);
         }
 
-        Path clientConfig = userHome
-                .resolve(ZOMBOID_FOLDER)
+        Path clientConfig = cacheRoot
                 .resolve(MODS_FOLDER)
                 .resolve(ZomboidConstants.ACTIVE_MODS_FILE_NAME);
         return readClientActiveMods(clientConfig);
@@ -335,7 +358,7 @@ public final class ZomboidModPluginSource implements PluginSource {
             Map<Path, PluginArchive> archives,
             Set<String> errors
     ) {
-        Path localMods = userHome.resolve(ZOMBOID_FOLDER).resolve(MODS_FOLDER);
+        Path localMods = cacheRoot.resolve(MODS_FOLDER);
         scanModDirectories(localMods, activeMods, archives, errors);
     }
 

@@ -26,6 +26,7 @@ public final class LineReadingOutputStream extends OutputStream {
     private final ReentrantLock lock = new ReentrantLock();
     private final Consumer<String> lineConsumer;
     private final Charset charset;
+    private final boolean flushPartialLines;
 
     private byte[] buf = new byte[INITIAL_CAPACITY];
     private int count = 0;
@@ -39,8 +40,24 @@ public final class LineReadingOutputStream extends OutputStream {
      * @throws NullPointerException if {@code lineConsumer} or {@code charset} is null
      */
     public LineReadingOutputStream(Consumer<String> lineConsumer, Charset charset) {
+        this(lineConsumer, charset, true);
+    }
+
+    /**
+     * Constructs a stream with an explicit partial-line flush policy.
+     * <p>
+     * Disable partial-line flushing when wrapping this stream in an auto-flushing {@link java.io.PrintStream}.
+     * Automatic flushes then preserve incomplete lines and multibyte characters until a delimiter or close.
+     *
+     * @param lineConsumer consumer receiving decoded lines
+     * @param charset encoding used by the producer
+     * @param flushPartialLines whether {@link #flush()} emits a buffered partial line
+     * @throws NullPointerException if the consumer or charset is null
+     */
+    public LineReadingOutputStream(Consumer<String> lineConsumer, Charset charset, boolean flushPartialLines) {
         this.lineConsumer = Objects.requireNonNull(lineConsumer, "lineConsumer cannot be null");
         this.charset = Objects.requireNonNull(charset, "charset cannot be null");
+        this.flushPartialLines = flushPartialLines;
     }
 
     /**
@@ -133,10 +150,18 @@ public final class LineReadingOutputStream extends OutputStream {
     }
 
     /**
-     * Flushes any uncommitted characters remaining in the buffer as a complete line.
+     * Emits the buffered remainder when partial-line flushing is enabled.
+     * <p>
+     * In delimiter-only mode this method preserves the buffered bytes and CRLF state.
      */
     @Override
     public void flush() {
+        if (flushPartialLines) {
+            flushPartialLine();
+        }
+    }
+
+    private void flushPartialLine() {
         String lineToEmit;
 
         lock.lock();
@@ -157,7 +182,7 @@ public final class LineReadingOutputStream extends OutputStream {
      */
     @Override
     public void close() {
-        flush();
+        flushPartialLine();
     }
 
     /**

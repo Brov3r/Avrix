@@ -10,6 +10,9 @@ import test.plugin.BasePluginService;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLClassLoader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -180,6 +183,11 @@ class CompositeClassProviderTest {
             outputStream.putNextEntry(new JarEntry(versionedPath));
             outputStream.write(versionedBytes);
             outputStream.closeEntry();
+
+            outputStream.putNextEntry(new JarEntry("META-INF/versions/" + Runtime.version().feature()
+                    + "/versioned/Only.class"));
+            outputStream.write(versionedBytes);
+            outputStream.closeEntry();
         }
 
         try (KnotClassLoader loader = new KnotClassLoader(new URL[]{jarPath.toUri().toURL()}, PARENT)) {
@@ -187,7 +195,86 @@ class CompositeClassProviderTest {
 
             assertThat(classes).containsKey(TargetGameService.class.getName());
             assertThat(classes.get(TargetGameService.class.getName()).get()).isEqualTo(versionedBytes);
+            assertThat(classes).containsKey("versioned.Only");
+            assertThat(classes.get("versioned.Only").get()).isEqualTo(versionedBytes);
         }
+    }
+
+    /**
+     * Verifies local fallback for delegated packages whose classes are absent from the parent.
+     *
+     * @throws Exception if fixture creation or class loading fails
+     */
+    @Test
+    public void shouldResolveLocalClassInParentDelegatedPackage() throws Exception {
+        String name = "com.avrix.fixture.LocalOnly";
+        byte[] bytes = fixtureClass(name);
+        Path jar = tempDir.resolve("local.jar");
+        createJar(jar, Map.of(name.replace('.', '/') + ".class", bytes));
+        try (var loader = new KnotClassLoader(new URL[]{jar.toUri().toURL()}, PARENT)) {
+            var provider = new CompositeClassProvider(loader);
+            assertThat(loader.loadClass(name).getClassLoader()).isSameAs(loader);
+            assertThat(provider.getClass(name)).isEqualTo(bytes);
+            assertThat(provider.getAllClasses().get(name).get()).isEqualTo(bytes);
+        }
+    }
+
+    /**
+     * Verifies that the actual parent supplies delegated bytecode ahead of colliding local classes.
+     *
+     * @throws Exception if fixture creation or class loading fails
+     */
+    @Test
+    public void shouldUseActualParentBeforeLocalForDelegatedClasses() throws Exception {
+        String name = "com.avrix.fixture.ParentClass";
+        String resource = name.replace('.', '/') + ".class";
+        byte[] parentBytes = fixtureClass(name);
+        Path parentJar = tempDir.resolve("parent.jar");
+        Path localJar = tempDir.resolve("collision.jar");
+        createJar(parentJar, Map.of(resource, parentBytes));
+        createJar(localJar, Map.of(resource, new byte[]{1, 2, 3}));
+
+        try (var parent = new URLClassLoader(new URL[]{parentJar.toUri().toURL()}, PARENT);
+             var loader = new KnotClassLoader(new URL[]{localJar.toUri().toURL()}, parent)) {
+            var provider = new CompositeClassProvider(loader);
+            assertThat(loader.loadClass(name).getClassLoader()).isSameAs(parent);
+            assertThat(provider.getClass(name)).isEqualTo(parentBytes);
+            assertThat(provider.getAllClasses().get(name).get()).isEqualTo(parentBytes);
+        }
+    }
+
+    /**
+     * Verifies local-first resolution and actual-parent fallback for ordinary plugin packages.
+     *
+     * @throws Exception if fixture creation or class loading fails
+     */
+    @Test
+    public void shouldUseLocalThenActualParentForPluginClasses() throws Exception {
+        String localName = "example.fixture.Local";
+        String parentName = "example.fixture.Parent";
+        byte[] localBytes = fixtureClass(localName);
+        byte[] parentBytes = fixtureClass(parentName);
+        Path parentJar = tempDir.resolve("parent.jar");
+        Path localJar = tempDir.resolve("local.jar");
+        createJar(parentJar, Map.of(parentName.replace('.', '/') + ".class", parentBytes,
+                localName.replace('.', '/') + ".class", new byte[]{1, 2, 3}));
+        createJar(localJar, Map.of(localName.replace('.', '/') + ".class", localBytes));
+
+        try (var parent = new URLClassLoader(new URL[]{parentJar.toUri().toURL()}, PARENT);
+             var loader = new KnotClassLoader(new URL[]{localJar.toUri().toURL()}, parent)) {
+            var provider = new CompositeClassProvider(loader);
+            assertThat(loader.loadClass(localName).getClassLoader()).isSameAs(loader);
+            assertThat(loader.loadClass(parentName).getClassLoader()).isSameAs(parent);
+            assertThat(provider.getClass(localName)).isEqualTo(localBytes);
+            assertThat(provider.getClass(parentName)).isEqualTo(parentBytes);
+        }
+    }
+
+    private static byte[] fixtureClass(String name) {
+        ClassWriter writer = new ClassWriter(0);
+        writer.visit(Opcodes.V25, Opcodes.ACC_PUBLIC, name.replace('.', '/'), null, "java/lang/Object", null);
+        writer.visitEnd();
+        return writer.toByteArray();
     }
 
     private static byte[] readClassBytes(Class<?> type) throws IOException {

@@ -42,11 +42,16 @@ configuration, and plugin development:
    subscribe to the [Steam Workshop item](https://steamcommunity.com/sharedfiles/filedetails/?id=3833849848).
 2. 📁 Place the `Avrix-Loader-<version>.jar` file into the root folder of your Project Zomboid installation (client or
    dedicated server).
-3. 💡 Launch the game via the command line or custom startup script:
+3. 💡 Change the working directory to the game installation root, then launch via the command line or a custom script:
 
 ```bash
+cd "/path/to/ProjectZomboid"
 java -jar ./Avrix-Loader-x.x.x.jar
 ```
+
+On PowerShell, use `Set-Location "C:\path\to\ProjectZomboid"` before running Java. The JVM working directory
+must be the actual game root (inside the application bundle on macOS). `-Davrix.game.dir` selects the installation;
+it does not change the process working directory. Relative plugin directories are resolved against the game root.
 
 *For dedicated servers with Steam integration disabled, append `-nosteam`:*
 

@@ -46,6 +46,9 @@ public class TestGameProvider implements GameProvider {
      */
     public static volatile Environment environment = Environment.BOTH;
 
+    /** Game root used when resolving relative loader paths. */
+    public static volatile Path launchDirectory = Path.of(".");
+
     /**
      * Arguments captured by the most recent {@link #launch(String[])} call.
      */
@@ -61,6 +64,7 @@ public class TestGameProvider implements GameProvider {
         closeCalls = 0;
         failInit = false;
         environment = Environment.BOTH;
+        launchDirectory = Path.of(".");
         lastLaunchArgs = new String[0];
     }
 
@@ -131,7 +135,7 @@ public class TestGameProvider implements GameProvider {
     /** {@inheritDoc} */
     @Override
     public Path getLaunchDirectory() {
-        return Path.of(".");
+        return launchDirectory;
     }
 
     /** {@inheritDoc} */

@@ -325,7 +325,15 @@ public class DefaultPluginManager implements PluginManager {
 
         List<Metadata> sortedPlugins;
         try {
-            sortedPlugins = resolvePluginLoadOrder(candidateSet.candidates);
+            try {
+                sortedPlugins = resolvePluginLoadOrder(candidateSet.candidates);
+            } catch (IllegalStateException failure) {
+                if (config.strict()) {
+                    throw failure;
+                }
+                sortedPlugins = new DependencyResolver(corePlugins, false)
+                        .resolveAvailable(candidateSet.candidates, loadResults::add);
+            }
         } catch (Throwable throwable) {
             LOGGER.error("Failed to resolve plugin load order", throwable);
             for (Metadata candidate : candidateSet.candidates) {
@@ -344,6 +352,10 @@ public class DefaultPluginManager implements PluginManager {
         List<PluginData> attachedContainers = new ArrayList<>(sortedPlugins.size());
         for (Metadata meta : sortedPlugins) {
             if (corePlugins.stream().anyMatch(core -> core.id().equals(meta.id()))) {
+                continue;
+            }
+
+            if (skipUnavailableDependencies(meta, attachedPlugins, "attached")) {
                 continue;
             }
 
@@ -393,6 +405,9 @@ public class DefaultPluginManager implements PluginManager {
                     if (!attachedPlugins.contains(pluginId)) {
                         continue;
                     }
+                    if (skipUnavailableDependencies(container.metadata(), preparedPlugins, "prepared")) {
+                        continue;
+                    }
                     registerMixins(container);
                     preparedPlugins.add(pluginId);
                     preparedContainers.add(container);
@@ -413,6 +428,9 @@ public class DefaultPluginManager implements PluginManager {
                 synchronized (pluginLock(pluginId)) {
                     if (closed) {
                         throw new IllegalStateException("PluginManager is closed");
+                    }
+                    if (skipUnavailableDependencies(container.metadata(), plugins.keySet(), "loaded")) {
+                        continue;
                     }
                     if (startPlugin(container)) {
                         loadResults.add(PluginLoadResult.loaded(pluginId));
@@ -825,6 +843,10 @@ public class DefaultPluginManager implements PluginManager {
         if (!preparedPlugins.contains(id)) {
             throw new IllegalStateException("Plugin was not prepared: " + id);
         }
+        List<String> unavailable = unavailableDependencies(meta, plugins.keySet());
+        if (!unavailable.isEmpty()) {
+            throw new IllegalStateException("Required dependencies are not loaded: " + String.join(", ", unavailable));
+        }
 
         File jarFile = container.getPluginFile()
                 .orElseThrow(() -> new IllegalStateException("Cannot load user plugin '" + id + "' without a physical JAR file"));
@@ -879,6 +901,25 @@ public class DefaultPluginManager implements PluginManager {
         long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
         String pluginType = (entrypoint != null && !entrypoint.isBlank()) ? "plugin" : "library";
         LOGGER.info("Loaded {} [{}] ({}@{}) in {}ms", pluginType, meta.name(), id, meta.version(), elapsedMillis);
+        return true;
+    }
+
+    private List<String> unavailableDependencies(Metadata metadata, Set<String> available) {
+        return metadata.dependencies().keySet().stream()
+                .filter(id -> !available.contains(id))
+                .filter(id -> corePlugins.stream().noneMatch(core -> core.id().equals(id)))
+                .sorted()
+                .toList();
+    }
+
+    private boolean skipUnavailableDependencies(Metadata metadata, Set<String> available, String phase) {
+        List<String> unavailable = unavailableDependencies(metadata, available);
+        if (unavailable.isEmpty()) {
+            return false;
+        }
+        String reason = "Required dependencies are not " + phase + ": " + String.join(", ", unavailable);
+        loadResults.add(PluginLoadResult.skipped(metadata.id(), reason));
+        LOGGER.warn("Skipping plugin [{}]: {}", metadata.id(), reason);
         return true;
     }
 

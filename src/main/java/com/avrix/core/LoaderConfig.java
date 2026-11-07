@@ -12,7 +12,8 @@ import java.util.Objects;
  * Groups the loader-level paths, manifest names, target environment, and stream redirection flag so they can be
  * supplied without relying on static {@link Constants} values.
  *
- * @param pluginsDirectory       directory scanned for plugin archives
+ * @param pluginsDirectory       directory scanned for plugin archives; the loader factory resolves relative paths
+ *                               against the game launch directory
  * @param metadataFileName       manifest file name inside each plugin archive
  * @param pluginExtension        file extension used to discover plugin archives
  * @param pluginIconName         icon file name inside each plugin archive

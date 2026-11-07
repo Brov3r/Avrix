@@ -4,6 +4,7 @@ import com.avrix.core.Environment;
 import com.avrix.core.LoaderConfig;
 import com.avrix.loader.LoaderContext;
 import com.avrix.loader.LoaderFactory;
+import com.avrix.logger.LogRetention;
 import com.avrix.utils.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,6 +36,7 @@ public final class Main {
      * @param args command-line arguments passed to the JVM process
      */
     public static void main(String[] args) {
+        LogRetention.cleanup();
         long bootstrapStartTime = System.nanoTime();
 
         try {

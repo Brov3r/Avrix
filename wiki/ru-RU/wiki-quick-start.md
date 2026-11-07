@@ -53,7 +53,7 @@ Java-окно перед загрузкой плагинов. Снятая га�
    страницы [Releases](https://github.com/Brov3r/Avrix/releases) на GitHub.
 2. 📁 Поместите скачанный `.jar` файл в корневую папку клиента или сервера Project Zomboid (например,
    `C:\Program Files (x86)\Steam\steamapps\common\ProjectZomboid`).
-3. 💡 Запустите игру через терминал (CMD / PowerShell / Bash):
+3. 💡 Перейдите в корневую папку игры и запустите её через терминал (CMD / PowerShell / Bash):
 
 ```bash
 java -jar ./Avrix-Loader-<version>.jar
@@ -75,7 +75,7 @@ JVM-параметры указываются до `-jar`, а аргументы
 # Подробные логи загрузчика (TRACE, DEBUG, INFO, WARN, ERROR)
 java -Dconsole.level=DEBUG -jar ./Avrix-Loader-<version>.jar
 
-# Запуск установки, расположенной вне текущего каталога
+# Явно выбрать установку (рабочий каталог JVM уже должен быть её корнем)
 java -Davrix.game.dir="C:\Path\To\ProjectZomboid" -jar ./Avrix-Loader-<version>.jar
 
 # Сохранить оригинальный вывод консоли Project Zomboid
@@ -84,6 +84,11 @@ java -jar ./Avrix-Loader-<version>.jar --no-redirect-log
 # Прерывать запуск при ошибке загрузки плагина или трансформации миксина
 java -jar ./Avrix-Loader-<version>.jar --strict
 ```
+
+В PowerShell смените каталог командой `Set-Location "C:\Path\To\ProjectZomboid"`, в CMD —
+`cd /d "C:\Path\To\ProjectZomboid"`. На macOS используйте каталог с файлами игры внутри application bundle.
+Свойства `avrix.game.dir` и `user.dir` не меняют рабочую директорию процесса. В IDE задайте её в настройках запуска.
+Относительный каталог плагинов разрешается относительно корня выбранной игры.
 
 `--strict` прерывает запуск при ошибках загрузки плагинов, разрешения зависимостей/конфликтов и трансформации
 миксинов. Некритичные предупреждения metadata (неизвестные ключи, дубликаты в `loadBefore`/`loadAfter`, пустые
@@ -95,10 +100,11 @@ java -jar ./Avrix-Loader-<version>.jar --strict
 маркеры, раскладка `java/` и `natives/`, Steam app manifest и, в последнюю очередь, имя каталога. Флаг окружения
 не требуется, но можно явно задать `-Davrix.environment=client|server` (или `AVRIX_ENVIRONMENT`).
 
-Avrix записывает ротируемый лог в `logs/log_<timestamp>.log` в рабочем каталоге. Файлы ротируются по 10 MB,
-хранятся 7 дней, а общий размер архива ограничен 1 GB. Каталог логов можно переопределить через
-`-Davrix.log.dir=...`. Порог вывода в консоль задаётся через `-Dconsole.level`, а файловый appender сохраняет
-сообщения уровня `DEBUG` и выше.
+Avrix записывает отдельный ротируемый лог `logs/avrix-<timestamp>.log` на каждый запуск. В рамках запуска файлы
+ротируются по 10 MB и хранятся 7 дней, а общий размер логов ограничен 1 GB; файлы предыдущих запусков удаляются по
+тем же лимитам возраста и размера при старте. Каталог логов можно переопределить через `-Davrix.log.dir=...`.
+Порог вывода в консоль задаётся через `-Dconsole.level`, а файловый appender сохраняет сообщения уровня `DEBUG` и
+выше.
 
 ---
 

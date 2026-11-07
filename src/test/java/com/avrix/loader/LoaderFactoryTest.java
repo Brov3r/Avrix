@@ -108,6 +108,26 @@ class LoaderFactoryTest {
                 .hasMessageContaining("Loader config");
     }
 
+    /**
+     * Verifies that relative plugin paths are rooted in the selected game installation.
+     *
+     * @throws IOException if fixture directories cannot be created
+     */
+    @Test
+    public void shouldResolveRelativePluginDirectoryAgainstGameRoot() throws IOException {
+        org.junit.jupiter.api.Assumptions.assumeTrue(canRunInProcess());
+        Path gameRoot = Files.createDirectories(tempDir.resolve("game"));
+        TestGameProvider.launchDirectory = gameRoot;
+        LoaderConfig config = new LoaderConfig(Path.of("custom-plugins"), Constants.METADATA_NAME,
+                Constants.PLUGIN_EXTENSION, Constants.PLUGIN_ICON_NAME, TestGameProvider.ID,
+                Environment.AUTO, false, false);
+
+        try (LoaderContext context = LoaderFactory.create(config)) {
+            context.initialize();
+            assertThat(gameRoot.resolve("custom-plugins")).isDirectory();
+        }
+    }
+
     @Test
     @DisplayName("Should roll back services and the context class loader when provider discovery fails")
     void shouldRollBackWhenProviderDiscoveryFails() {

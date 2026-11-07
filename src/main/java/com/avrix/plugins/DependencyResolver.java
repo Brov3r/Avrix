@@ -7,8 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -17,6 +19,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 
 /**
  * Resolves plugin dependencies and produces a deterministic topological load order.
@@ -26,6 +29,7 @@ public final class DependencyResolver {
     private static final Logger LOGGER = LoggerFactory.getLogger(DependencyResolver.class);
 
     private final Set<String> corePluginIds;
+    private final List<Metadata> corePlugins;
     private final boolean strict;
 
     /**
@@ -53,6 +57,7 @@ public final class DependencyResolver {
             ids.add(corePlugin.id());
         }
         this.corePluginIds = Set.copyOf(ids);
+        this.corePlugins = List.copyOf(corePlugins);
         this.strict = strict;
     }
 
@@ -74,11 +79,11 @@ public final class DependencyResolver {
             String id = meta.id();
 
             if (isReservedId(id) && !corePluginIds.contains(id)) {
-                throw new IllegalStateException("Plugin ID [%s] is reserved for a core component".formatted(id));
+                throw new ResolutionFailure(Set.of(id), "Plugin ID [%s] is reserved for a core component".formatted(id));
             }
 
             if (registry.put(id, meta) != null) {
-                throw new IllegalStateException("Duplicate plugin identifier [%s]".formatted(id));
+                throw new ResolutionFailure(Set.of(id), "Duplicate plugin identifier [%s]".formatted(id));
             }
         }
 
@@ -96,7 +101,7 @@ public final class DependencyResolver {
             String currentId = meta.id();
 
             if (meta.loadBefore().contains("*") && meta.loadAfter().contains("*")) {
-                throw new IllegalStateException(
+                throw new ResolutionFailure(Set.of(currentId),
                         "Plugin [%s] cannot declare both loadBefore and loadAfter wildcards".formatted(currentId)
                 );
             }
@@ -106,13 +111,13 @@ public final class DependencyResolver {
                 String constraint = dependency.getValue();
 
                 if (currentId.equals(requiredId)) {
-                    throw new IllegalStateException("Plugin [%s] cannot depend on itself".formatted(currentId));
+                    throw new ResolutionFailure(Set.of(currentId), "Plugin [%s] cannot depend on itself".formatted(currentId));
                 }
 
                 try {
                     SemVerConstraints.validate(constraint);
                 } catch (IllegalArgumentException e) {
-                    throw new IllegalStateException(
+                    throw new ResolutionFailure(Set.of(currentId),
                             "Invalid version constraint in plugin [%s] for dependency [%s]: %s"
                                     .formatted(currentId, requiredId, e.getMessage()),
                             e
@@ -122,7 +127,7 @@ public final class DependencyResolver {
                 Metadata requiredMeta = registry.get(requiredId);
 
                 if (requiredMeta == null) {
-                    throw new IllegalStateException(
+                    throw new ResolutionFailure(Set.of(currentId),
                             "Plugin [%s] depends on missing component [%s]".formatted(currentId, requiredId)
                     );
                 }
@@ -131,7 +136,7 @@ public final class DependencyResolver {
                 try {
                     actualVersion = Version.parse(requiredMeta.version());
                 } catch (Exception e) {
-                    throw new IllegalStateException(
+                    throw new ResolutionFailure(Set.of(currentId),
                             "Invalid version [%s] declared by plugin [%s] required by plugin [%s]"
                                     .formatted(requiredMeta.version(), requiredMeta.id(), currentId), e
                     );
@@ -141,14 +146,14 @@ public final class DependencyResolver {
                 try {
                     satisfies = actualVersion.satisfies(constraint);
                 } catch (Exception e) {
-                    throw new IllegalStateException(
+                    throw new ResolutionFailure(Set.of(currentId),
                             "Invalid version constraint in plugin [%s] for dependency [%s]: %s"
                                     .formatted(currentId, requiredId, e.getMessage()), e
                     );
                 }
 
                 if (!satisfies) {
-                    throw new IllegalStateException(
+                    throw new ResolutionFailure(Set.of(currentId),
                             "Plugin [%s] requires [%s] matching [%s], but found version [%s]"
                                     .formatted(currentId, requiredId, constraint, requiredMeta.version())
                     );
@@ -161,7 +166,7 @@ public final class DependencyResolver {
                 if ("*".equals(afterId)) {
                     wildcardAfterPlugins.add(currentId);
                 } else if (currentId.equals(afterId)) {
-                    throw new IllegalStateException("Plugin [%s] cannot declare loadAfter itself".formatted(currentId));
+                    throw new ResolutionFailure(Set.of(currentId), "Plugin [%s] cannot declare loadAfter itself".formatted(currentId));
                 } else {
                     Metadata afterMeta = registry.get(afterId);
                     if (afterMeta == null) {
@@ -176,7 +181,7 @@ public final class DependencyResolver {
                 if ("*".equals(beforeId)) {
                     wildcardBeforePlugins.add(currentId);
                 } else if (currentId.equals(beforeId)) {
-                    throw new IllegalStateException("Plugin [%s] cannot declare loadBefore itself".formatted(currentId));
+                    throw new ResolutionFailure(Set.of(currentId), "Plugin [%s] cannot declare loadBefore itself".formatted(currentId));
                 } else {
                     Metadata beforeMeta = registry.get(beforeId);
                     if (beforeMeta == null) {
@@ -275,7 +280,14 @@ public final class DependencyResolver {
                     .map(Map.Entry::getKey)
                     .sorted()
                     .toList();
-            throw new IllegalStateException("Cyclic plugin dependency or load order detected. Circular nodes: " + String.join(", ", cycleNodes));
+            Set<String> circularIds = new TreeSet<>();
+            for (String id : cycleNodes) {
+                if (reachesItself(id, adjacencyList)) {
+                    circularIds.add(id);
+                }
+            }
+            throw new ResolutionFailure(circularIds,
+                    "Cyclic plugin dependency or load order detected. Circular nodes: " + String.join(", ", circularIds));
         }
 
         List<Metadata> userPluginsOrder = sortedList.stream()
@@ -286,6 +298,68 @@ public final class DependencyResolver {
                 userPluginsOrder.size(), corePluginIds.size());
 
         return List.copyOf(userPluginsOrder);
+    }
+
+    /**
+     * Resolves the load order after excluding invalid plugins and their unavailable hard dependents.
+     * <p>
+     * Duplicate user IDs and cycle members are excluded entirely. Soft ordering references to excluded plugins
+     * do not prevent otherwise valid plugins from loading. Core descriptors are retained.
+     *
+     * @param candidates candidate descriptors, including the core descriptors supplied to this resolver
+     * @param failures consumer receiving a failure for each excluded user descriptor
+     * @return deterministic order of the remaining user plugins
+     * @throws NullPointerException if either argument is null
+     * @throws IllegalStateException if a failure cannot be resolved by excluding user plugins
+     */
+    public List<Metadata> resolveAvailable(Collection<Metadata> candidates, Consumer<PluginLoadResult> failures) {
+        Objects.requireNonNull(candidates, "Candidates list cannot be null");
+        Objects.requireNonNull(failures, "Failure consumer cannot be null");
+        List<Metadata> remaining = new ArrayList<>(candidates);
+        while (true) {
+            try {
+                return resolve(remaining);
+            } catch (ResolutionFailure failure) {
+                boolean removed = remaining.removeIf(meta -> {
+                    if (!failure.pluginIds.contains(meta.id()) || corePlugins.stream().anyMatch(core -> core == meta)) {
+                        return false;
+                    }
+                    failures.accept(PluginLoadResult.failed(meta.id(), failure));
+                    return true;
+                });
+                if (!removed) {
+                    throw failure;
+                }
+            }
+        }
+    }
+
+    private static boolean reachesItself(String start, Map<String, Set<String>> graph) {
+        Set<String> visited = new HashSet<>();
+        ArrayDeque<String> pending = new ArrayDeque<>(graph.get(start));
+        while (!pending.isEmpty()) {
+            String id = pending.removeFirst();
+            if (start.equals(id)) {
+                return true;
+            }
+            if (visited.add(id)) {
+                pending.addAll(graph.get(id));
+            }
+        }
+        return false;
+    }
+
+    private static final class ResolutionFailure extends IllegalStateException {
+        private final Set<String> pluginIds;
+
+        private ResolutionFailure(Set<String> pluginIds, String message) {
+            this(pluginIds, message, null);
+        }
+
+        private ResolutionFailure(Set<String> pluginIds, String message, Throwable cause) {
+            super(message, cause);
+            this.pluginIds = Set.copyOf(pluginIds);
+        }
     }
 
     /**

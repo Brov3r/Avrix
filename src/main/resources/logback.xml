@@ -1,7 +1,8 @@
 <configuration>
-    <statusListener class="ch.qos.logback.core.status.OnErrorConsoleStatusListener"/>
+    <!-- Logback 1.6.x prints every status event from OnErrorConsoleStatusListener, not only errors. -->
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
 
-    <timestamp key="startTs" datePattern="yyyy-MM-dd_HH-mm-ss_SSS"/>
+    <timestamp key="startTs" datePattern="yyyy-MM-dd_HH-mm-ss-SSS"/>
     <property name="LOG_DIR" value="${avrix.log.dir:-./logs}"/>
 
     <appender name="ISOLATED_CONSOLE" class="com.avrix.logger.IsolatedConsoleAppender">
@@ -19,13 +20,14 @@
             <level>DEBUG</level>
         </filter>
 
-        <file>${LOG_DIR}/log_${startTs}.log</file>
+        <file>${LOG_DIR}/avrix-${startTs}.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_DIR}/log_${startTs}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${LOG_DIR}/avrix-${startTs}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
             <maxHistory>7</maxHistory>
             <totalSizeCap>1GB</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
         </rollingPolicy>
 
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">

@@ -52,7 +52,7 @@ Use this model for dedicated servers, non-Steam installations, and development. 
    [Releases](https://github.com/Brov3r/Avrix/releases) page.
 2. 📁 Place the downloaded `.jar` file into the root directory of your Project Zomboid client or dedicated server (for
    example, `C:\Program Files (x86)\Steam\steamapps\common\ProjectZomboid`).
-3. 💡 Launch the game via your terminal (CMD, PowerShell, or Bash):
+3. 💡 Change to the game installation root and launch via your terminal (CMD, PowerShell, or Bash):
 
 ```bash
 java -jar ./Avrix-Loader-<version>.jar
@@ -75,7 +75,7 @@ JVM options must be placed before `-jar`, while loader and game arguments go aft
 # Detailed loader logs (TRACE, DEBUG, INFO, WARN, ERROR)
 java -Dconsole.level=DEBUG -jar ./Avrix-Loader-<version>.jar
 
-# Launch an installation located outside the current directory
+# Select an installation explicitly (the JVM working directory must already be its root)
 java -Davrix.game.dir="C:\Path\To\ProjectZomboid" -jar ./Avrix-Loader-<version>.jar
 
 # Keep the original Project Zomboid console output
@@ -84,6 +84,11 @@ java -jar ./Avrix-Loader-<version>.jar --no-redirect-log
 # Abort startup when any plugin fails to load or a mixin transformation fails
 java -jar ./Avrix-Loader-<version>.jar --strict
 ```
+
+In PowerShell, change directory with `Set-Location "C:\Path\To\ProjectZomboid"`; in CMD use
+`cd /d "C:\Path\To\ProjectZomboid"`. On macOS, use the game-files directory inside the application bundle.
+Neither `avrix.game.dir` nor `user.dir` changes the process working directory. Set it in your IDE launch configuration.
+Relative plugin directories are resolved against the selected game root.
 
 `--strict` aborts startup on plugin load failures, dependency/conflict resolution errors, and mixin transformation
 failures. Non-fatal metadata warnings (unknown keys, duplicate load-order entries, blank list entries, unknown
@@ -96,9 +101,10 @@ files: the `mainClass` in `ProjectZomboid64.json` takes priority, followed by la
 installation directory name. No environment flag is required, but `-Davrix.environment=client|server` (or
 `AVRIX_ENVIRONMENT`) can be used as an explicit override.
 
-Avrix writes a rotating log to `logs/log_<timestamp>.log` in the working directory. Log files roll at 10 MB, are kept
-for 7 days, and the total archive size is capped at 1 GB. Override the log directory with `-Davrix.log.dir=...`. The
-console threshold is controlled by `-Dconsole.level`, while the file appender records `DEBUG` and above.
+Avrix writes a separate rotating log to `logs/avrix-<timestamp>.log` for every launch. Within a launch, files roll at
+10 MB and are kept for 7 days, with the total log size capped at 1 GB; files from older launches are removed by the same
+age and size limits on startup. Override the log directory with `-Davrix.log.dir=...`. The console threshold is
+controlled by `-Dconsole.level`, while the file appender records `DEBUG` and above.
 
 ---
 

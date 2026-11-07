@@ -123,7 +123,6 @@ public class ZomboidGameProvider implements GameProvider {
     private PrintStream originalErr;
     private PrintStream redirectedOut;
     private PrintStream redirectedErr;
-    private String originalUserDir;
     private String originalJavaLibraryPath;
     private String originalLwjglLibraryPath;
     private final Map<String, String> originalProviderProperties = new HashMap<>();
@@ -131,10 +130,11 @@ public class ZomboidGameProvider implements GameProvider {
     private boolean systemStateCaptured = false;
 
     /**
-     * Initializes the game provider environment, synchronizes process working directory,
+     * Initializes the game provider environment,
      * applies mandatory system properties, and populates the {@link KnotClassLoader} with
      * native directories and bundled library JARs.
-     * <p><b>API Note:</b> Ensures working directory ({@code user.dir}) matches the game root to resolve media resources.
+     * <p>The JVM must be started in the game directory to resolve relative media and native resources.
+     * Initialization does not change the process working directory.
      *
      * @throws IllegalStateException if no classloader has been provided
      */
@@ -156,9 +156,6 @@ public class ZomboidGameProvider implements GameProvider {
 
         captureSystemState();
         try {
-            // Synchronize working directory with game root directory
-            System.setProperty("user.dir", launchDirectory.toAbsolutePath().toString());
-
             Map<String, String> providerProperties = getProviderArgs();
             if (!providerProperties.isEmpty()) {
                 captureProviderProperties(providerProperties);
@@ -220,6 +217,7 @@ public class ZomboidGameProvider implements GameProvider {
             if (!initialized) {
                 throw new IllegalStateException("Provider must be initialized before launch. Call init() first.");
             }
+            validateWorkingDirectory();
 
             this.launchArgs = (args == null) ? new String[0] : args.clone();
             gameArgs = this.launchArgs.clone();
@@ -577,9 +575,9 @@ public class ZomboidGameProvider implements GameProvider {
      */
     @Override
     public List<PluginSource> getPluginSources(boolean strict) {
-        return List.of(new ZomboidModPluginSource(
+        return List.of(ZomboidModPluginSource.forCacheRoot(
                 getLaunchDirectory(),
-                Path.of(System.getProperty("user.home", ".")),
+                getCacheRoot(),
                 getEnvironment(),
                 System.getProperty(ZomboidConstants.SERVER_NAME_PROPERTY, ZomboidConstants.DEFAULT_SERVER_NAME),
                 getNormalizedVersion(),
@@ -643,11 +641,30 @@ public class ZomboidGameProvider implements GameProvider {
     }
 
     /**
-     * Creates runtime marker files before the game entrypoint is invoked.
+     * Validates the process working directory and creates runtime markers before game startup.
+     *
+     * @throws IllegalStateException if the JVM was not started in the game directory
      */
     @Override
     public void beforeLaunch() {
+        validateWorkingDirectory();
         runtimeMarker.activate();
+    }
+
+    private void validateWorkingDirectory() {
+        Path launchDirectory = getLaunchDirectory().toAbsolutePath().normalize();
+        Path workingDirectory = Path.of("").toAbsolutePath().normalize();
+        try {
+            if (Files.isSameFile(workingDirectory, launchDirectory)) {
+                return;
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Cannot verify the game working directory: " + launchDirectory, e);
+        }
+        throw new IllegalStateException("Project Zomboid requires the JVM working directory to be ["
+                + launchDirectory + "], but it is [" + workingDirectory
+                + "]. Change directory to the game root before starting Java, or set the IDE working directory. "
+                + "Setting user.dir or avrix.game.dir does not change the process working directory.");
     }
 
     /**
@@ -685,7 +702,7 @@ public class ZomboidGameProvider implements GameProvider {
                             LOGGER::debug,
                             LOGGER::trace,
                             LOGGER::info
-                    ), charset),
+                    ), charset, false),
                     true,
                     charset
             );
@@ -698,7 +715,7 @@ public class ZomboidGameProvider implements GameProvider {
                             LOGGER::debug,
                             LOGGER::trace,
                             LOGGER::error
-                    ), charset),
+                    ), charset, false),
                     true,
                     charset
             );
@@ -746,11 +763,9 @@ public class ZomboidGameProvider implements GameProvider {
         }
 
         restoreProviderProperties();
-        restoreSystemProperty("user.dir", originalUserDir);
         restoreSystemProperty("java.library.path", originalJavaLibraryPath);
         restoreSystemProperty("org.lwjgl.librarypath", originalLwjglLibraryPath);
 
-        originalUserDir = null;
         originalJavaLibraryPath = null;
         originalLwjglLibraryPath = null;
         systemStateCaptured = false;
@@ -760,7 +775,6 @@ public class ZomboidGameProvider implements GameProvider {
         if (systemStateCaptured) {
             return;
         }
-        originalUserDir = System.getProperty("user.dir");
         originalJavaLibraryPath = System.getProperty("java.library.path");
         originalLwjglLibraryPath = System.getProperty("org.lwjgl.librarypath");
         systemStateCaptured = true;

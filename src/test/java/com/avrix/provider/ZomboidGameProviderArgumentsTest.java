@@ -1,5 +1,7 @@
 package com.avrix.provider;
 
+import com.avrix.core.Environment;
+import com.avrix.api.PluginArchive;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -7,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.nio.file.Files;
+import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -86,5 +90,62 @@ class ZomboidGameProviderArgumentsTest {
         } else {
             System.setProperty(name, value);
         }
+    }
+
+    /**
+     * Verifies discovery from a custom client cache directory.
+     *
+     * @throws IOException if fixture files cannot be created
+     */
+    @Test
+    public void shouldDiscoverClientPluginsFromConfiguredCache() throws IOException {
+        verifyCacheDiscovery(Environment.CLIENT);
+    }
+
+    /**
+     * Verifies discovery from a custom server cache directory and named profile.
+     *
+     * @throws IOException if fixture files cannot be created
+     */
+    @Test
+    public void shouldDiscoverServerPluginsFromConfiguredCache() throws IOException {
+        verifyCacheDiscovery(Environment.SERVER);
+    }
+
+    private void verifyCacheDiscovery(Environment environment) throws IOException {
+        Path cacheRoot = tempDir.resolve("custom profile");
+        Path versionDirectory = Files.createDirectories(cacheRoot.resolve("mods").resolve("CustomMod").resolve("42"));
+        Path archive = Files.createFile(versionDirectory.resolve("plugin.jar"));
+        Files.writeString(versionDirectory.resolve("mod.info"), "id=custom-mod\njarPlugins=plugin.jar\n");
+        if (environment == Environment.SERVER) {
+            Path serverDirectory = Files.createDirectories(cacheRoot.resolve("Server"));
+            Files.writeString(serverDirectory.resolve("custom-server.ini"), "Mods=custom-mod\n");
+        } else {
+            Files.writeString(cacheRoot.resolve("mods").resolve("default.txt"), "mods\n{\nmod = custom-mod,\n}\n");
+        }
+
+        ZomboidGameProvider provider = new ZomboidGameProvider() {
+            /** {@inheritDoc} */
+            @Override
+            public Path getLaunchDirectory() {
+                return tempDir.resolve("game");
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public String getNormalizedVersion() {
+                return "42.0.0";
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public Environment getEnvironment() {
+                return environment;
+            }
+        };
+        provider.configure(new String[]{"-cachedir=" + cacheRoot, "-servername", "custom-server"});
+
+        assertThat(provider.getPluginSources(false).getFirst().scanArchives())
+                .extracting(PluginArchive::file).containsExactly(archive.toRealPath().toFile());
     }
 }

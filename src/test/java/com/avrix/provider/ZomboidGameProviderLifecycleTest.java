@@ -1,6 +1,11 @@
 package com.avrix.provider;
 
 import com.avrix.core.KnotClassLoader;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.slf4j.LoggerFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -67,7 +72,12 @@ class ZomboidGameProviderLifecycleTest {
             provider.init(classLoader);
 
             assertThat(System.getProperty("user.dir"))
-                    .isEqualTo(gameDirectory.toAbsolutePath().normalize().toString());
+                    .isEqualTo(originalUserDir);
+
+            assertThatThrownBy(provider::beforeLaunch)
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("Change directory to the game root");
+            assertThat(Files.exists(gameDirectory.resolve(ZomboidConstants.RUNTIME_MARKER_NAME))).isFalse();
 
             provider.close();
         }
@@ -143,6 +153,39 @@ class ZomboidGameProviderLifecycleTest {
         Path gameDirectory = Files.createDirectories(tempDir.resolve("game"));
         Files.createFile(gameDirectory.resolve("ProjectZomboid64.exe"));
         return gameDirectory;
+    }
+
+    /** Verifies that the provider preserves complete stdout and stderr lines across print calls. */
+    @Test
+    public void shouldRedirectCompleteLinesAndFlushRemainderOnClose() {
+        captureSystemState();
+        var provider = new ZomboidGameProvider();
+        Logger logger = (Logger) LoggerFactory.getLogger(ZomboidGameProvider.class);
+        Level previousLevel = logger.getLevel();
+        boolean previousAdditive = logger.isAdditive();
+        logger.setLevel(Level.INFO);
+        logger.setAdditive(false);
+        var appender = new ListAppender<ILoggingEvent>();
+        appender.start();
+        provider.redirectSystemStreamsToLogger();
+        logger.addAppender(appender);
+        try {
+            System.out.print("stdout ");
+            System.err.print("stderr ");
+            assertThat(appender.list).isEmpty();
+            System.out.println("line");
+            System.err.println("line");
+            System.out.print("tail");
+            provider.close();
+            assertThat(appender.list).extracting(ILoggingEvent::getFormattedMessage)
+                    .containsExactly("stdout line", "stderr line", "tail");
+        } finally {
+            provider.close();
+            logger.detachAppender(appender);
+            logger.setLevel(previousLevel);
+            logger.setAdditive(previousAdditive);
+            appender.stop();
+        }
     }
 
     private void captureSystemState() {
