@@ -1,12 +1,18 @@
 -- Detection of an active Avrix loader session.
 --
--- Avrix writes avrix-active.marker at startup, refreshes its timestamp every
--- 30 seconds, and removes it on shutdown. A marker older than the heartbeat
--- timeout is treated as stale, so a crash does not leave the loader marked as
--- active forever.
+-- Avrix writes one avrix-active.marker in the Lua cache at startup. On Windows the
+-- file is kept open with DELETE_ON_CLOSE, so Lua checks its presence and the operating
+-- system removes it when the loader process exits, including after a crash. On other
+-- systems the marker stays readable and its timestamp is refreshed every 30 seconds.
 
 --- Maximum age of the last marker heartbeat before the loader is considered inactive.
 local MAX_MARKER_AGE_MS = 5 * 60 * 1000
+
+--- Whether Project Zomboid runs on Windows.
+local IS_WINDOWS = type(getFileSeparator) == "function" and getFileSeparator() == "\\"
+
+--- Marker file shared with the loader.
+local MARKER_NAME = "avrix-active.marker"
 
 --- Runtime state helper for the Avrix loader marker.
 ---@class AvrixRuntime
@@ -34,23 +40,45 @@ local function readTimestamp(reader)
     return tonumber(line)
 end
 
---- Reads the shared cache marker, falling back to older Workshop-only loaders.
+--- Checks whether the shared marker exists.
+---@return boolean exists True when the loader marker file is present.
+local function markerExists()
+    return type(cacheFileExists) == "function" and cacheFileExists(MARKER_NAME)
+end
+
+--- Checks whether the marker is held open by a live loader process.
+---
+--- On Windows a stale marker is readable, while an active marker is locked by the
+--- loader and cannot be opened with getFileReader.
+---@return boolean locked True when the marker cannot be opened for reading.
+local function markerIsLocked()
+    local reader = getFileReader(MARKER_NAME, false)
+    if reader == nil then
+        return true
+    end
+    pcall(function()
+        reader:close()
+    end)
+    return false
+end
+
+--- Reads the shared cache marker written by the loader.
 ---@return number|nil timestamp Marker timestamp in milliseconds, or nil when unavailable.
 local function readMarkerTimestamp()
-    -- The cache is shared with Java even when the loader JAR lives outside the Workshop mod.
-    local timestamp = readTimestamp(getFileReader("avrix-active.marker", false))
-    if timestamp then
-        return timestamp
-    end
-    return readTimestamp(getModFileReader("Avrix", "avrix-active.marker", false))
+    return readTimestamp(getFileReader(MARKER_NAME, false))
 end
 
 --- Checks whether the Avrix loader marked the current session as active.
 ---
---- The marker is active while it is younger than the heartbeat timeout. A missing
---- or unreadable marker means the loader is not running.
+--- The loader keeps the marker alive for the whole process, so entering a world,
+--- joining a server, or returning to the main menu re-checks it after Project Zomboid
+--- resets the Lua state.
 ---@return boolean active True when the Avrix loader is active for this session.
 function AvrixRuntime.isActive()
+    if IS_WINDOWS then
+        return markerExists() and markerIsLocked()
+    end
+
     local markerTime = readMarkerTimestamp()
     if not markerTime then
         return false
