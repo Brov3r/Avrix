@@ -4,7 +4,6 @@ import javax.swing.Icon;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 
 /**
  * Small chevron used by the language selector.

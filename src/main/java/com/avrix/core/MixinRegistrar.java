@@ -12,7 +12,7 @@ public interface MixinRegistrar {
      *
      * @param mixinClass fully qualified mixin class name
      */
-    public void addMixin(String mixinClass);
+    void addMixin(String mixinClass);
 
     /**
      * Checks a plugin's mixin declarations without changing the active transformer state.
@@ -23,6 +23,6 @@ public interface MixinRegistrar {
      * @param mixinClasses fully qualified mixin class names
      * @throws RuntimeException if a declaration cannot be registered
      */
-    public default void validateMixins(Collection<String> mixinClasses) {
+    default void validateMixins(Collection<String> mixinClasses) {
     }
 }

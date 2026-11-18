@@ -46,7 +46,9 @@ public final class ZomboidSwingApprovalMain {
 
             if (entries.isEmpty() || GraphicsEnvironment.isHeadless()) {
                 if (GraphicsEnvironment.isHeadless()) {
-                    System.err.println("Approval window cannot start in a headless JVM; pending plugins will be skipped");
+                    System.err.println(
+                            "Approval window cannot start in a headless JVM; pending plugins will be skipped"
+                    );
                 }
                 ZomboidApprovalBatch.writeResponse(
                         new BufferedWriter(new OutputStreamWriter(protocol, StandardCharsets.UTF_8)),

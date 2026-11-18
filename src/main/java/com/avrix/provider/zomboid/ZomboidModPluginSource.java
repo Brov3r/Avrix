@@ -129,13 +129,23 @@ public final class ZomboidModPluginSource implements PluginSource {
      * @throws NullPointerException if either root is null
      */
     public static ZomboidModPluginSource forCacheRoot(
-            Path gameRoot, Path cacheRoot, Environment environment, String serverName, String gameVersion, boolean strict
+            Path gameRoot,
+            Path cacheRoot,
+            Environment environment,
+            String serverName,
+            String gameVersion,
+            boolean strict
     ) {
         return new ZomboidModPluginSource(gameRoot, environment, serverName, gameVersion, strict, cacheRoot);
     }
 
     private ZomboidModPluginSource(
-            Path gameRoot, Environment environment, String serverName, String gameVersion, boolean strict, Path cacheRoot
+            Path gameRoot,
+            Environment environment,
+            String serverName,
+            String gameVersion,
+            boolean strict,
+            Path cacheRoot
     ) {
         this.gameRoot = Objects.requireNonNull(gameRoot, "Game root cannot be null")
                 .toAbsolutePath()
@@ -647,7 +657,9 @@ public final class ZomboidModPluginSource implements PluginSource {
         }
 
         if (relative.isAbsolute() || relative.getRoot() != null) {
-            errors.add("Absolute or rooted jarPlugins path [" + entry.value() + "] is not allowed in mod [" + modId + "]");
+            errors.add(
+                    "Absolute or rooted jarPlugins path [" + entry.value() + "] is not allowed in mod [" + modId + "]"
+            );
             return null;
         }
 

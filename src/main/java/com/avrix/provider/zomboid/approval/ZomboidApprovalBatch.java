@@ -102,19 +102,19 @@ public final class ZomboidApprovalBatch {
             requireCount(entries.size() + 1);
             try {
                 entries.add(new ZomboidApprovalEntry(
-                    decode(parts[1]),
-                    decode(parts[2]),
-                    decode(parts[3]),
-                    decode(parts[4]),
-                    decode(parts[5]),
-                    decode(parts[6]),
-                    decode(parts[7]),
-                    Path.of(decode(parts[8])),
-                    decode(parts[9]),
-                    parseLong(decode(parts[10])),
-                    parseLong(decode(parts[11])),
-                    decode(parts[12]),
-                    parts.length == 14 ? decodeList(parts[13]) : List.of()
+                        decode(parts[1]),
+                        decode(parts[2]),
+                        decode(parts[3]),
+                        decode(parts[4]),
+                        decode(parts[5]),
+                        decode(parts[6]),
+                        decode(parts[7]),
+                        Path.of(decode(parts[8])),
+                        decode(parts[9]),
+                        parseLong(decode(parts[10])),
+                        parseLong(decode(parts[11])),
+                        decode(parts[12]),
+                        parts.length == 14 ? decodeList(parts[13]) : List.of()
                 ));
             } catch (IllegalArgumentException e) {
                 throw new IOException("Invalid approval request entry: " + e.getMessage(), e);

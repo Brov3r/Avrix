@@ -3,6 +3,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 plugins {
     id 'java-library'
+    id 'checkstyle'
     id 'com.gradleup.shadow' version '9.6.1'
 }
 
@@ -57,6 +58,16 @@ tasks.withType(Javadoc).configureEach {
     options.addStringOption('Xdoclint:all', '-quiet')
 }
 
+checkstyle {
+    toolVersion = '14.4.0'
+    configFile = rootProject.file('config/checkstyle/checkstyle.xml')
+    maxWarnings = 0
+}
+
+tasks.named('checkstyleTest') {
+    enabled = false
+}
+
 tasks.named('check') {
     dependsOn tasks.named('javadoc')
     dependsOn 'smokeTest'
@@ -67,6 +78,7 @@ tasks.withType(Test).configureEach {
 }
 
 tasks.named('test', Test) {
+    dependsOn tasks.named('checkstyleMain')
     exclude '**/PackagedRuntimeSmokeTest*'
 }
 
@@ -95,6 +107,7 @@ tasks.named('processResources', ProcessResources) {
 }
 
 tasks.named('shadowJar', ShadowJar) {
+    dependsOn tasks.named('checkstyleMain')
     archiveBaseName.set(baseArchiveName)
     archiveClassifier.set('')
     destinationDirectory.set(file(customBuildPath))

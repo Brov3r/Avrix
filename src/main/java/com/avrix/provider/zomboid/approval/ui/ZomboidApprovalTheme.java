@@ -1,31 +1,20 @@
 package com.avrix.provider.zomboid.approval.ui;
 
-import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
-import javax.swing.JList;
 import javax.swing.JScrollBar;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-import javax.swing.plaf.basic.BasicButtonUI;
 import javax.swing.plaf.basic.BasicCheckBoxUI;
-import javax.swing.plaf.basic.BasicComboBoxUI;
-import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -350,7 +339,14 @@ public final class ZomboidApprovalTheme {
      * @param hover    whether the pointer is over the checkbox
      * @param enabled  whether the checkbox is interactive
      */
-    public static void paintCheckBox(Graphics2D graphics, int x, int y, boolean selected, boolean hover, boolean enabled) {
+    public static void paintCheckBox(
+            Graphics2D graphics,
+            int x,
+            int y,
+            boolean selected,
+            boolean hover,
+            boolean enabled
+    ) {
         paintCheckBox(graphics, x, y, selected, false, hover, enabled);
     }
 

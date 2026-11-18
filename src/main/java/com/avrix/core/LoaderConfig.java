@@ -37,7 +37,8 @@ public record LoaderConfig(
     /**
      * Creates a validated loader configuration.
      *
-     * @throws NullPointerException     if {@code pluginsDirectory}, {@code metadataFileName}, or {@code pluginIconName} is null
+     * @throws NullPointerException     if {@code pluginsDirectory}, {@code metadataFileName}, or
+     *                                  {@code pluginIconName} is null
      * @throws IllegalArgumentException if a string value is blank
      */
     public LoaderConfig {

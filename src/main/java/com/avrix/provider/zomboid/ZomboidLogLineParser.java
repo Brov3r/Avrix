@@ -17,15 +17,19 @@ public final class ZomboidLogLineParser implements Consumer<String> {
     /**
      * Regex pattern to match and extract components from a Zomboid log header.
      */
-    private static final Pattern HEADER_PATTERN =
-            Pattern.compile("^[ \t]*(?<lvl>LOG|INFO|ERROR|WARN|DEBUG|TRACE)\\s*:?\\s*(?:\\S+\\s+)?(?:f:\\d+(?:,[^>]*)?\\s*)?(?:st:[^>]+\\s*)?(?:at\\s+\\S+\\s*)?>[ \t]?(?:\\d+\\s+)?(?<msg>.*)$");
+    private static final Pattern HEADER_PATTERN = Pattern.compile(
+            "^[ \t]*(?<lvl>LOG|INFO|ERROR|WARN|DEBUG|TRACE)\\s*:?\\s*(?:\\S+\\s+)?"
+                    + "(?:f:\\d+(?:,[^>]*)?\\s*)?(?:st:[^>]+\\s*)?(?:at\\s+\\S+\\s*)?"
+                    + ">[ \t]?(?:\\d+\\s+)?(?<msg>.*)$"
+    );
 
     /**
      * Regex pattern for textual level prefixes emitted by game code and Lua scripts.
      */
-    private static final Pattern TEXT_LEVEL_PREFIX =
-            Pattern.compile("^(ERROR|WARNING|WARN|DEBUG|TRACE|INFO)\\s*:\\s*", Pattern.CASE_INSENSITIVE);
-    
+    private static final Pattern TEXT_LEVEL_PREFIX = Pattern.compile(
+            "^(ERROR|WARNING|WARN|DEBUG|TRACE|INFO)\\s*:\\s*", Pattern.CASE_INSENSITIVE
+    );
+
     /**
      * Regex pattern to normalize spaces around the '>' arrow in log messages.
      */
@@ -70,10 +74,14 @@ public final class ZomboidLogLineParser implements Consumer<String> {
      */
     @Override
     public void accept(String rawLine) {
-        if (rawLine == null) return;
+        if (rawLine == null) {
+            return;
+        }
 
         String line = rawLine.stripTrailing();
-        if (line.isEmpty()) return;
+        if (line.isEmpty()) {
+            return;
+        }
 
         Parsed parsed = parse(line);
         if (parsed == null) {
@@ -81,7 +89,9 @@ public final class ZomboidLogLineParser implements Consumer<String> {
             return;
         }
 
-        if (parsed.message().isBlank()) return;
+        if (parsed.message().isBlank()) {
+            return;
+        }
 
         switch (parsed.level()) {
             case ERROR -> errorSink.accept(parsed.message());
@@ -89,6 +99,7 @@ public final class ZomboidLogLineParser implements Consumer<String> {
             case DEBUG -> debugSink.accept(parsed.message());
             case TRACE -> traceSink.accept(parsed.message());
             case INFO -> infoSink.accept(parsed.message());
+            default -> fallbackSink.accept(parsed.message());
         }
     }
 
@@ -100,7 +111,9 @@ public final class ZomboidLogLineParser implements Consumer<String> {
      */
     private static Parsed parse(String line) {
         Matcher header = HEADER_PATTERN.matcher(line);
-        if (!header.matches()) return null;
+        if (!header.matches()) {
+            return null;
+        }
 
         Level level = Level.fromHeader(header.group("lvl"));
         String message = header.group("msg");
@@ -133,7 +146,26 @@ public final class ZomboidLogLineParser implements Consumer<String> {
      * Represents the supported log levels and provides parsing utilities.
      */
     private enum Level {
-        ERROR, WARN, INFO, DEBUG, TRACE;
+        /**
+         * Error-level messages.
+         */
+        ERROR,
+        /**
+         * Warning-level messages.
+         */
+        WARN,
+        /**
+         * Informational messages.
+         */
+        INFO,
+        /**
+         * Debug messages.
+         */
+        DEBUG,
+        /**
+         * Trace messages.
+         */
+        TRACE;
 
         /**
          * Resolves a log level from a header token.

@@ -7,7 +7,6 @@ import com.avrix.provider.zomboid.approval.MixinTargetInspector;
 import com.avrix.utils.FatalErrors;
 
 import javax.swing.JTable;
-import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.event.ChangeEvent;
@@ -232,14 +231,23 @@ public final class ApprovalTable extends JTable {
         }
         if (column == ApprovalColumns.AUTHOR) {
             return "<html><b>" + ApprovalFormatting.escapeHtml(entry.displayName()) + "</b><br/>"
-                    + messages.format(ApprovalMessage.LABEL_PLUGIN_ID, ApprovalFormatting.escapeHtml(entry.pluginId())) + "<br/>"
-                    + messages.format(ApprovalMessage.LABEL_MOD_ID, ApprovalFormatting.escapeHtml(entry.modId())) + "<br/>"
+                    + messages.format(
+                            ApprovalMessage.LABEL_PLUGIN_ID,
+                            ApprovalFormatting.escapeHtml(entry.pluginId())
+                    ) + "<br/>"
+                    + messages.format(
+                            ApprovalMessage.LABEL_MOD_ID,
+                            ApprovalFormatting.escapeHtml(entry.modId())
+                    ) + "<br/>"
                     + messages.format(
                             ApprovalMessage.LABEL_AUTHOR,
                             ApprovalFormatting.escapeHtml(ApprovalFormatting.blankToDash(entry.modAuthor()))
                     ) + "<br/>"
                     + ApprovalFormatting.escapeHtml(entry.jarPath().toString()) + "<br/>"
-                    + messages.format(ApprovalMessage.LABEL_SHA256, ApprovalFormatting.escapeHtml(entry.sha256())) + "</html>";
+                    + messages.format(
+                            ApprovalMessage.LABEL_SHA256,
+                            ApprovalFormatting.escapeHtml(entry.sha256())
+                    ) + "</html>";
         }
         if (column == ApprovalColumns.SIZE) {
             return ApprovalFormatting.formatSize(entry.size());

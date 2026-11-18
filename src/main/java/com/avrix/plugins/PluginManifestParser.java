@@ -158,7 +158,12 @@ public final class PluginManifestParser {
         try {
             return new JarFile(jarPath.toFile(), false);
         } catch (IOException e) {
-            LOGGER.error("Failed to parse metadata manifest from JAR [{}]: {}", jarPath.getFileName(), e.getMessage(), e);
+            LOGGER.error(
+                    "Failed to parse metadata manifest from JAR [{}]: {}",
+                    jarPath.getFileName(),
+                    e.getMessage(),
+                    e
+            );
             throw e;
         }
     }
@@ -177,7 +182,9 @@ public final class PluginManifestParser {
         try {
             JarEntry entry = jar.getJarEntry(entryPath);
             if (entry == null) {
-                throw new FileNotFoundException("Metadata entry [%s] not found in JAR [%s]".formatted(entryPath, jarPath));
+                throw new FileNotFoundException(
+                        "Metadata entry [%s] not found in JAR [%s]".formatted(entryPath, jarPath)
+                );
             }
 
             try (InputStream in = jar.getInputStream(entry)) {
@@ -197,7 +204,12 @@ public final class PluginManifestParser {
         } catch (ParsingException e) {
             throw withCause(source + ": " + parseFailureMessage(e), e);
         } catch (IOException e) {
-            LOGGER.error("Failed to parse metadata manifest from JAR [{}]: {}", jarPath.getFileName(), e.getMessage(), e);
+            LOGGER.error(
+                    "Failed to parse metadata manifest from JAR [{}]: {}",
+                    jarPath.getFileName(),
+                    e.getMessage(),
+                    e
+            );
             throw e;
         } catch (RuntimeException e) {
             throw withCause(source + ": " + parseFailureMessage(e), e);
@@ -356,7 +368,11 @@ public final class PluginManifestParser {
      * @return immutable normalized list
      * @throws SerializationException if the value is not a string list
      */
-    private List<String> readStringList(ConfigurationNode node, String key, String source) throws SerializationException {
+    private List<String> readStringList(
+            ConfigurationNode node,
+            String key,
+            String source
+    ) throws SerializationException {
         ConfigurationNode listNode = node.node(key);
         if (listNode.virtual() || listNode.isNull()) {
             return Collections.emptyList();
@@ -510,7 +526,8 @@ public final class PluginManifestParser {
      * @param node   manifest root node
      * @param source diagnostic source description
      * @return declared environment, or {@link Environment#BOTH} when omitted
-     * @throws SerializationException if the environment value is malformed or strict validation rejects an unknown value
+     * @throws SerializationException if the environment value is malformed or strict validation rejects an
+     *                                unknown value
      */
     private Environment readEnvironment(ConfigurationNode node, String source) throws SerializationException {
         ConfigurationNode environmentNode = node.node("environment");
@@ -667,6 +684,10 @@ public final class PluginManifestParser {
         /**
          * Validates and defensively copies the parsed manifest data.
          *
+         * @param metadata     parsed manifest descriptor
+         * @param classEntries immutable list of class resource paths
+         * @param multiRelease whether the archive is a multi-release JAR
+         * @param iconPresent  whether the archive contains the configured plugin icon
          * @throws NullPointerException if {@code metadata} or {@code classEntries} is {@code null}
          */
         public ParsedJarManifest {

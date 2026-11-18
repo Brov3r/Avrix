@@ -4,7 +4,13 @@ import com.avrix.utils.Constants;
 import com.avrix.utils.PluginIdentifiers;
 import com.avrix.utils.VersionValidation;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Immutable metadata descriptor for an Avrix plugin or runtime game provider.
@@ -62,7 +68,8 @@ public record Metadata(
         // Mandatory schema verification
         if (schema != Constants.METADATA_SCHEMA) {
             throw new IllegalArgumentException(
-                    "Unsupported metadata schema version (metadata: %d, supported: %d)".formatted(schema, Constants.METADATA_SCHEMA)
+                    "Unsupported metadata schema version (metadata: %d, supported: %d)"
+                            .formatted(schema, Constants.METADATA_SCHEMA)
             );
         }
 
@@ -203,8 +210,12 @@ public record Metadata(
 
         Map<String, String> normalized = new LinkedHashMap<>(values.size());
         for (Map.Entry<String, String> entry : values.entrySet()) {
-            String dependencyId = Objects.requireNonNull(entry.getKey(), "Dependency identifier cannot be null").strip();
-            String constraint = Objects.requireNonNull(entry.getValue(), "Dependency constraint cannot be null").strip();
+            String dependencyId = Objects.requireNonNull(
+                    entry.getKey(), "Dependency identifier cannot be null"
+            ).strip();
+            String constraint = Objects.requireNonNull(
+                    entry.getValue(), "Dependency constraint cannot be null"
+            ).strip();
             PluginIdentifiers.requireValid(dependencyId, "Dependency identifier");
             if (constraint.isEmpty()) {
                 throw new IllegalArgumentException(
@@ -601,7 +612,8 @@ public record Metadata(
          * Builds and validates the resulting {@link Metadata} record.
          *
          * @return validated immutable {@link Metadata} instance
-         * @throws NullPointerException     if any mandatory string field ({@code id}, {@code name}, {@code version}) is {@code null}
+         * @throws NullPointerException     if any mandatory string field ({@code id}, {@code name}, {@code version})
+         *                                  is {@code null}
          * @throws IllegalArgumentException if domain constraints or mandatory fields are violated
          */
         public Metadata build() {

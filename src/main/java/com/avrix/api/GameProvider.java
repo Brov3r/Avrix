@@ -19,14 +19,14 @@ public interface GameProvider {
     /**
      * Initializes the game environment, class loaders, and required paths.
      */
-    public void init();
+    void init();
 
     /**
      * Initializes the game environment with the loader classloader.
      *
      * @param classLoader flat classloader used to resolve game classes and attach libraries
      */
-    public default void init(KnotClassLoader classLoader) {
+    default void init(KnotClassLoader classLoader) {
         init();
     }
 
@@ -38,7 +38,7 @@ public interface GameProvider {
      *
      * @param args command-line arguments passed to the game
      */
-    public default void configure(String[] args) {
+    default void configure(String[] args) {
     }
 
     /**
@@ -46,7 +46,7 @@ public interface GameProvider {
      *
      * @param args command-line arguments to pass to the game
      */
-    public void launch(String[] args);
+    void launch(String[] args);
 
     /**
      * Validates launch prerequisites before any plugin entrypoints are executed.
@@ -56,7 +56,7 @@ public interface GameProvider {
      *
      * @throws IllegalStateException if the process cannot safely launch the game
      */
-    public default void validateLaunch() {
+    default void validateLaunch() {
     }
 
     /**
@@ -64,7 +64,7 @@ public interface GameProvider {
      * <p>
      * Providers can use this hook to create runtime artifacts such as marker files.
      */
-    public default void beforeLaunch() {
+    default void beforeLaunch() {
     }
 
     /**
@@ -72,7 +72,7 @@ public interface GameProvider {
      * <p>
      * Providers can use this hook to remove runtime artifacts created by {@link #beforeLaunch()}.
      */
-    public default void afterLaunch() {
+    default void afterLaunch() {
     }
 
     /**
@@ -80,63 +80,63 @@ public interface GameProvider {
      *
      * @return an array of launch arguments
      */
-    public String[] getLaunchArgs();
+    String[] getLaunchArgs();
 
     /**
      * Returns the display name of the game.
      *
      * @return the game name
      */
-    public String getName();
+    String getName();
 
     /**
      * Returns the unique identifier of the provider.
      *
      * @return the provider ID
      */
-    public String getId();
+    String getId();
 
     /**
      * Returns a list of the game's authors.
      *
      * @return a list of authors
      */
-    public List<String> getAuthors();
+    List<String> getAuthors();
 
     /**
      * Returns the game's license.
      *
      * @return the license string
      */
-    public String getLicense();
+    String getLicense();
 
     /**
      * Returns a list of contact URLs or information for the game.
      *
      * @return a list of contacts
      */
-    public List<String> getContacts();
+    List<String> getContacts();
 
     /**
      * Returns a normalized semantic version string of the game.
      *
      * @return the normalized version
      */
-    public String getNormalizedVersion();
+    String getNormalizedVersion();
 
     /**
      * Returns the raw version string of the game.
      *
      * @return the raw version
      */
-    public String getRawVersion();
+    String getRawVersion();
 
     /**
      * Returns the base launch directory of the game.
      *
      * @return the path to the launch directory
      */
-    public Path getLaunchDirectory();
+    Path getLaunchDirectory();
 
     /**
      * Returns the game user cache directory.
@@ -146,7 +146,7 @@ public interface GameProvider {
      *
      * @return cache directory path
      */
-    public default Path getCacheRoot() {
+    default Path getCacheRoot() {
         return Path.of(System.getProperty("user.home", ".")).resolve(".avrix");
     }
 
@@ -158,7 +158,7 @@ public interface GameProvider {
      *
      * @return configuration directory path
      */
-    public default Path getConfigRoot() {
+    default Path getConfigRoot() {
         return Path.of(System.getProperty("user.home", ".")).resolve(".avrix");
     }
 
@@ -167,14 +167,14 @@ public interface GameProvider {
      *
      * @return the entrypoint class name
      */
-    public String getEntrypoint();
+    String getEntrypoint();
 
     /**
      * Returns the current execution environment (e.g., CLIENT or SERVER).
      *
      * @return the environment
      */
-    public Environment getEnvironment();
+    Environment getEnvironment();
 
     /**
      * Synthesizes metadata describing this game provider.
@@ -184,7 +184,7 @@ public interface GameProvider {
      *
      * @return immutable metadata descriptor for the active game
      */
-    public default Metadata getMetadata() {
+    default Metadata getMetadata() {
         return new Metadata.Builder()
                 .id(getId())
                 .name(getName())
@@ -202,7 +202,7 @@ public interface GameProvider {
      *
      * @return a list of library paths
      */
-    public default List<Path> getJavaLibsPath() {
+    default List<Path> getJavaLibsPath() {
         return List.of();
     }
 
@@ -211,7 +211,7 @@ public interface GameProvider {
      *
      * @return a list of native library paths
      */
-    public default List<Path> getNativeLibsPath() {
+    default List<Path> getNativeLibsPath() {
         return List.of();
     }
 
@@ -220,7 +220,7 @@ public interface GameProvider {
      *
      * @return a map of system properties
      */
-    public default Map<String, String> getProviderArgs() {
+    default Map<String, String> getProviderArgs() {
         return Map.of();
     }
 
@@ -230,7 +230,7 @@ public interface GameProvider {
      * @param strict whether discovery errors should abort startup
      * @return plugin sources, or an empty list when the provider has no additional sources
      */
-    public default List<PluginSource> getPluginSources(boolean strict) {
+    default List<PluginSource> getPluginSources(boolean strict) {
         return List.of();
     }
 
@@ -241,19 +241,19 @@ public interface GameProvider {
      * @param environment active runtime environment
      * @return approval gate, or an allow-all gate when the provider does not require approval
      */
-    public default PluginApprovalGate createApprovalGate(Path cacheRoot, Environment environment) {
+    default PluginApprovalGate createApprovalGate(Path cacheRoot, Environment environment) {
         return PluginApprovalGate.allowAll();
     }
 
     /**
      * Redirects default output and error streams to the logger.
      */
-    public default void redirectSystemStreamsToLogger() {
+    default void redirectSystemStreamsToLogger() {
     }
 
     /**
      * Releases provider resources and restores any process-wide state it changed.
      */
-    public default void close() {
+    default void close() {
     }
 }

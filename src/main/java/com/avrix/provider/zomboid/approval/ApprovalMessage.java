@@ -243,7 +243,7 @@ public enum ApprovalMessage {
      *
      * @param key property key used by the message bundles
      */
-    private ApprovalMessage(String key) {
+    ApprovalMessage(String key) {
         this.key = key;
     }
 

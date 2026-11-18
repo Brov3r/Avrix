@@ -42,7 +42,7 @@ public enum ApprovalDetailGlyph {
 
     private final String icon;
 
-    private ApprovalDetailGlyph(String icon) {
+    ApprovalDetailGlyph(String icon) {
         this.icon = icon;
     }
 

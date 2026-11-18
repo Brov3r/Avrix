@@ -41,7 +41,8 @@ public final class DefaultLoaderProvider implements LoaderProvider {
      * resource is unavailable or an override is absent, falls back to default constant values defined in
      * {@link Constants}.
      *
-     * <p><b>Implementation Note:</b> Initializes an immutable synthetic {@link Metadata} instance representing the loader runtime.
+     * <p><b>Implementation Note:</b> Initializes an immutable synthetic {@link Metadata} instance representing the
+     * loader runtime.
      */
     public DefaultLoaderProvider() {
         Properties properties;

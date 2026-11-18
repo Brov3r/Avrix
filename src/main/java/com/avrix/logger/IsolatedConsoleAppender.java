@@ -14,12 +14,17 @@ import java.nio.charset.Charset;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * High-performance console appender that writes directly to low-level standard OS file descriptors.
+ * High-performance console appender that writes directly to low-level standard
+ * OS file descriptors.
  * <p>
- * Bypasses {@link System#out} and {@link System#err} redirections that might be installed
- * by the target game runtime or third-party mods, ensuring uninterrupted loader log output.
+ * Bypasses {@link System#out} and {@link System#err} redirections that might be
+ * installed
+ * by the target game runtime or third-party mods, ensuring uninterrupted loader
+ * log output.
  *
- * <p><b>API Note:</b> Thread-safe via internal {@link ReentrantLock} synchronizing writes to output streams.
+ * <p>
+ * <b>API Note:</b> Thread-safe via internal {@link ReentrantLock} synchronizing
+ * writes to output streams.
  */
 public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
 
@@ -33,7 +38,8 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
     private Level errorLevel = Level.WARN;
 
     /**
-     * Constructs a new {@link IsolatedConsoleAppender} bound to raw stdout/stderr file descriptors.
+     * Constructs a new {@link IsolatedConsoleAppender} bound to raw stdout/stderr
+     * file descriptors.
      */
     public IsolatedConsoleAppender() {
         this.outStream = new FileOutputStream(FileDescriptor.out);
@@ -68,9 +74,12 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
     }
 
     /**
-     * Sets the threshold level at and above which messages will be routed to standard error.
+     * Sets the threshold level at and above which messages will be routed to
+     * standard error.
      *
-     * @param levelStr the log level name (e.g., {@code "WARN"}, {@code "ERROR"}), defaults to {@code WARN} if null/blank
+     * @param levelStr the log level name (e.g., {@code "WARN"}, {@code "ERROR"}),
+     *                 defaults to {@code WARN} if
+     *                 null or blank
      */
     public void setErrorLevel(String levelStr) {
         if (levelStr == null || levelStr.isBlank()) {
@@ -81,8 +90,11 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
     }
 
     /**
-     * Appends a single logging event by serializing it through the encoder and writing to OS descriptors.
-     * <p><b>Implementation Note:</b> Directs output to {@link FileDescriptor#err} if the event level is greater than or
+     * Appends a single logging event by serializing it through the encoder and
+     * writing to OS descriptors.
+     * <p>
+     * <b>Implementation Note:</b> Directs output to {@link FileDescriptor#err} if
+     * the event level is greater than or
      * equal to {@link #errorLevel}; otherwise routes to {@link FileDescriptor#out}.
      *
      * @param event the logging event to process
@@ -114,9 +126,13 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
     }
 
     /**
-     * Starts the appender, validates encoder configuration, and configures console character encoding.
+     * Starts the appender, validates encoder configuration, and configures console
+     * character encoding.
      *
-     * <p><b>Implementation Note:</b> Detects the active console encoding via {@link System#console()} with fallback to {@link System#out}.
+     * <p>
+     * <b>Implementation Note:</b> Detects the active console encoding via
+     * {@link System#console()} with fallback
+     * to {@link System#out}.
      */
     @Override
     public void start() {
@@ -145,7 +161,8 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
     }
 
     /**
-     * Stops the appender, flushes any remaining buffered output, and releases encoder resources.
+     * Stops the appender, flushes any remaining buffered output, and releases
+     * encoder resources.
      */
     @Override
     public void stop() {
@@ -203,8 +220,10 @@ public final class IsolatedConsoleAppender extends AppenderBase<ILoggingEvent> {
     /**
      * Disables console output after the first write failure.
      * <p>
-     * GUI processes launched without an attached console can expose invalid standard handles. Continuing to write
-     * would make every log event fail and, when {@code System.err} is redirected to the logger, create a feedback
+     * GUI processes launched without an attached console can expose invalid
+     * standard handles. Continuing to write
+     * would make every log event fail and, when {@code System.err} is redirected to
+     * the logger, create a feedback
      * loop. The file appender remains active.
      *
      * @param message   failure description

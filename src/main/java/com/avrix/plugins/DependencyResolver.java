@@ -67,7 +67,7 @@ public final class DependencyResolver {
      * @param candidates candidate plugin descriptors, including core descriptors
      * @return ordered list of user plugins, with core descriptors omitted
      * @throws NullPointerException  if {@code candidates} is null
-     * @throws IllegalStateException if identifiers collide, a reserved ID is used, dependencies are missing,
+     * @throws ResolutionFailure     if identifiers collide, a reserved ID is used, dependencies are missing,
      *                               version constraints are invalid, a conflict is detected in strict mode, or a cycle
      *                               is detected
      */
@@ -79,7 +79,10 @@ public final class DependencyResolver {
             String id = meta.id();
 
             if (isReservedId(id) && !corePluginIds.contains(id)) {
-                throw new ResolutionFailure(Set.of(id), "Plugin ID [%s] is reserved for a core component".formatted(id));
+                throw new ResolutionFailure(
+                        Set.of(id),
+                        "Plugin ID [%s] is reserved for a core component".formatted(id)
+                );
             }
 
             if (registry.put(id, meta) != null) {
@@ -111,7 +114,10 @@ public final class DependencyResolver {
                 String constraint = dependency.getValue();
 
                 if (currentId.equals(requiredId)) {
-                    throw new ResolutionFailure(Set.of(currentId), "Plugin [%s] cannot depend on itself".formatted(currentId));
+                    throw new ResolutionFailure(
+                            Set.of(currentId),
+                            "Plugin [%s] cannot depend on itself".formatted(currentId)
+                    );
                 }
 
                 try {
@@ -166,7 +172,10 @@ public final class DependencyResolver {
                 if ("*".equals(afterId)) {
                     wildcardAfterPlugins.add(currentId);
                 } else if (currentId.equals(afterId)) {
-                    throw new ResolutionFailure(Set.of(currentId), "Plugin [%s] cannot declare loadAfter itself".formatted(currentId));
+                    throw new ResolutionFailure(
+                            Set.of(currentId),
+                            "Plugin [%s] cannot declare loadAfter itself".formatted(currentId)
+                    );
                 } else {
                     Metadata afterMeta = registry.get(afterId);
                     if (afterMeta == null) {
@@ -181,7 +190,10 @@ public final class DependencyResolver {
                 if ("*".equals(beforeId)) {
                     wildcardBeforePlugins.add(currentId);
                 } else if (currentId.equals(beforeId)) {
-                    throw new ResolutionFailure(Set.of(currentId), "Plugin [%s] cannot declare loadBefore itself".formatted(currentId));
+                    throw new ResolutionFailure(
+                            Set.of(currentId),
+                            "Plugin [%s] cannot declare loadBefore itself".formatted(currentId)
+                    );
                 } else {
                     Metadata beforeMeta = registry.get(beforeId);
                     if (beforeMeta == null) {
@@ -286,8 +298,10 @@ public final class DependencyResolver {
                     circularIds.add(id);
                 }
             }
-            throw new ResolutionFailure(circularIds,
-                    "Cyclic plugin dependency or load order detected. Circular nodes: " + String.join(", ", circularIds));
+            throw new ResolutionFailure(
+                    circularIds,
+                    "Cyclic plugin dependency or load order detected. Circular nodes: " + String.join(", ", circularIds)
+            );
         }
 
         List<Metadata> userPluginsOrder = sortedList.stream()

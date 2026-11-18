@@ -17,7 +17,7 @@ public interface PluginApprovalGate {
      * @param metadata parsed plugin metadata
      * @return approval status
      */
-    public Status evaluate(PluginArchive archive, Metadata metadata);
+    Status evaluate(PluginArchive archive, Metadata metadata);
 
     /**
      * Evaluates one archive against the active policy using a pre-computed content hash.
@@ -31,7 +31,7 @@ public interface PluginApprovalGate {
      * @param sha256   lowercase SHA-256 of the archive, or {@code null} when the archive is trusted
      * @return approval status
      */
-    public default Status evaluate(PluginArchive archive, Metadata metadata, String sha256) {
+    default Status evaluate(PluginArchive archive, Metadata metadata, String sha256) {
         return evaluate(archive, metadata);
     }
 
@@ -42,7 +42,7 @@ public interface PluginApprovalGate {
      * {@link #evaluate(PluginArchive, Metadata, String)} must be idempotent for the same archive and hash so callers
      * can retry pending archives in the same process without prompting twice.
      */
-    public default void flushPending() {
+    default void flushPending() {
     }
 
     /**
@@ -50,7 +50,7 @@ public interface PluginApprovalGate {
      *
      * @return allow-all approval gate
      */
-    public static PluginApprovalGate allowAll() {
+    static PluginApprovalGate allowAll() {
         return (archive, metadata) -> Status.APPROVED;
     }
 
@@ -59,7 +59,7 @@ public interface PluginApprovalGate {
      *
      * @return deny-all approval gate
      */
-    public static PluginApprovalGate denyAll() {
+    static PluginApprovalGate denyAll() {
         return (archive, metadata) -> Status.DENIED;
     }
 
@@ -68,14 +68,14 @@ public interface PluginApprovalGate {
      *
      * @return trusted-only approval gate
      */
-    public static PluginApprovalGate trustedOnly() {
+    static PluginApprovalGate trustedOnly() {
         return (archive, metadata) -> archive.trusted() ? Status.APPROVED : Status.DENIED;
     }
 
     /**
      * Plugin approval status.
      */
-    public enum Status {
+    enum Status {
         /**
          * Archive may be loaded.
          */

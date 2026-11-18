@@ -97,7 +97,9 @@ public final class PluginScanner {
         try (Stream<Path> stream = Files.list(pluginsDir)) {
             return stream
                     .filter(Files::isRegularFile)
-                    .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(config.pluginExtension()))
+                    .filter(path -> path.getFileName().toString()
+                            .toLowerCase(Locale.ROOT)
+                            .endsWith(config.pluginExtension()))
                     .sorted(Comparator.comparing(
                             path -> path.getFileName().toString().toLowerCase(Locale.ROOT)
                     ))

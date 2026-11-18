@@ -3,7 +3,6 @@ package com.avrix.provider.zomboid.approval.ui;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.SwingConstants;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import java.awt.Dimension;
 import java.awt.Graphics;

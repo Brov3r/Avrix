@@ -12,7 +12,7 @@ public interface ApprovalDetailElement {
      *
      * @return height in pixels
      */
-    public int height();
+    int height();
 
     /**
      * Paints the element.
@@ -22,5 +22,5 @@ public interface ApprovalDetailElement {
      * @param y        top edge
      * @param width    available width
      */
-    public void paint(Graphics2D graphics, int x, int y, int width);
+    void paint(Graphics2D graphics, int x, int y, int width);
 }

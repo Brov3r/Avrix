@@ -214,7 +214,11 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
             try {
                 pending.add(createEntry(archive, metadata, modId, sha256));
             } catch (IllegalArgumentException e) {
-                LOGGER.warn("Plugin [{}] exceeds approval metadata limits; denying: {}", pluginId(metadata), e.getMessage());
+                LOGGER.warn(
+                        "Plugin [{}] exceeds approval metadata limits; denying: {}",
+                        pluginId(metadata),
+                        e.getMessage()
+                );
                 return Status.DENIED;
             }
             pendingHashes.add(sha256);
@@ -391,7 +395,7 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
         synchronized (STORE_WRITE_LOCK) {
             Path lockFile = approvalsFile.resolveSibling("plugin-approvals.lock");
             try (FileChannel channel = FileChannel.open(lockFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-                 FileLock ignored = channel.lock()) {
+                    FileLock ignored = channel.lock()) {
                 Map<String, StoredDecision> merged = readApprovals();
                 merged.putAll(unsavedDecisions);
                 StringBuilder content = new StringBuilder(VERSION_LINE).append('\n');
@@ -413,7 +417,11 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
                 LOGGER.info("Saved {} plugin approval decision(s) to [{}]", approvals.size(), approvalsFile);
                 return true;
             } catch (IOException e) {
-                LOGGER.warn("Failed to save plugin approval store [{}]; decisions remain session-only", approvalsFile, e);
+                LOGGER.warn(
+                        "Failed to save plugin approval store [{}]; decisions remain session-only",
+                        approvalsFile,
+                        e
+                );
                 return false;
             }
         }
@@ -464,7 +472,8 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
 
         if (resolved == Policy.PROMPT && environment == Environment.SERVER && !interactiveApproval) {
             LOGGER.warn(
-                    "Plugin policy [prompt] has no interactive approval frontend on a dedicated server; using [deny-new]"
+                    "Plugin policy [prompt] has no interactive approval frontend on a dedicated server; "
+                            + "using [deny-new]"
             );
             return Policy.DENY_NEW;
         }
@@ -535,13 +544,22 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
     }
 
     private enum Policy {
+        /**
+         * Ask the user for each new archive.
+         */
         PROMPT("prompt"),
+        /**
+         * Deny newly discovered archives by default.
+         */
         DENY_NEW("deny-new"),
+        /**
+         * Allow all archives without prompting.
+         */
         ALLOW_ALL("allow-all");
 
         private final String displayName;
 
-        private Policy(String displayName) {
+        Policy(String displayName) {
             this.displayName = displayName;
         }
     }

@@ -168,14 +168,20 @@ public final class ZomboidSwingApprovalFrontend implements ZomboidApprovalFronte
             if (!requestLatch.await(remainingNanos(deadline), TimeUnit.NANOSECONDS)
                     || !process.waitFor(remainingNanos(deadline), TimeUnit.NANOSECONDS)
                     || !responseLatch.await(remainingNanos(deadline), TimeUnit.NANOSECONDS)) {
-                LOGGER.warn("Approval window timed out after {} second(s); pending plugins will be skipped", timeoutSeconds);
+                LOGGER.warn(
+                        "Approval window timed out after {} second(s); pending plugins will be skipped",
+                        timeoutSeconds
+                );
                 return new ZomboidApprovalResponse(false, List.of());
             }
 
             Throwable writeFailure = requestError.get();
             if (writeFailure != null) {
                 FatalErrors.rethrowIfFatal(writeFailure);
-                LOGGER.warn("Approval window closed before receiving the request; pending plugins will be skipped", writeFailure);
+                LOGGER.warn(
+                        "Approval window closed before receiving the request; pending plugins will be skipped",
+                        writeFailure
+                );
                 return new ZomboidApprovalResponse(false, List.of());
             }
 
@@ -200,7 +206,9 @@ public final class ZomboidSwingApprovalFrontend implements ZomboidApprovalFronte
                 return new ZomboidApprovalResponse(false, List.of());
             }
             if (!isValidResponse(pending, response)) {
-                LOGGER.warn("Approval window returned decisions outside the pending batch; pending plugins will be skipped");
+                LOGGER.warn(
+                        "Approval window returned decisions outside the pending batch; pending plugins will be skipped"
+                );
                 return new ZomboidApprovalResponse(false, List.of());
             }
             return response;

@@ -95,7 +95,9 @@ public final class Constants {
         try {
             Properties props = LoaderProperties.read(Constants.class.getClassLoader());
             if (props == null) {
-                throw new IllegalStateException("Resource '" + LoaderProperties.RESOURCE_NAME + "' not found in classpath");
+                throw new IllegalStateException(
+                        "Resource '" + LoaderProperties.RESOURCE_NAME + "' not found in classpath"
+                );
             }
 
             LOADER_VERSION = Objects.requireNonNull(

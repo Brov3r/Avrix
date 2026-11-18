@@ -4,7 +4,10 @@ import com.avrix.core.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -13,7 +16,10 @@ import java.nio.file.Files;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -214,7 +220,10 @@ public record PluginData(
             return Optional.empty();
         }
         String scheme = iconURI.getScheme();
-        if ("jar".equalsIgnoreCase(scheme) || "file".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme)) {
+        if ("jar".equalsIgnoreCase(scheme)
+                || "file".equalsIgnoreCase(scheme)
+                || "http".equalsIgnoreCase(scheme)
+                || "https".equalsIgnoreCase(scheme)) {
             return Optional.of(iconURI.toURL().openStream());
         }
         return openResource(iconURI.getPath());
@@ -346,7 +355,9 @@ public record PluginData(
             }
             current = candidate.toRealPath();
             if (!current.startsWith(realRoot) || !Files.isDirectory(current)) {
-                throw new IOException("Extraction directory escapes the target root or is not a directory: " + candidate);
+                throw new IOException(
+                        "Extraction directory escapes the target root or is not a directory: " + candidate
+                );
             }
         }
         return current;
@@ -389,7 +400,12 @@ public record PluginData(
             URI pathUri = new URI(null, null, "/" + normalizedPath, null);
             return Optional.of(URI.create("jar:" + fileUri.toASCIIString() + "!" + pathUri.toASCIIString()));
         } catch (URISyntaxException e) {
-            LOGGER.warn("Failed to construct URI for resource [{}] in plugin [{}]: {}", resourcePath, id(), e.getMessage());
+            LOGGER.warn(
+                    "Failed to construct URI for resource [{}] in plugin [{}]: {}",
+                    resourcePath,
+                    id(),
+                    e.getMessage()
+            );
             return Optional.empty();
         }
     }
@@ -429,7 +445,12 @@ public record PluginData(
             }
             return List.copyOf(results);
         } catch (IOException e) {
-            LOGGER.warn("Failed to list resources in directory [{}] for plugin [{}]: {}", directoryPath, id(), e.getMessage());
+            LOGGER.warn(
+                    "Failed to list resources in directory [{}] for plugin [{}]: {}",
+                    directoryPath,
+                    id(),
+                    e.getMessage()
+            );
             return List.of();
         }
     }
@@ -496,8 +517,12 @@ public record PluginData(
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PluginData that)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof PluginData that)) {
+            return false;
+        }
         return Objects.equals(id(), that.id()) && Objects.equals(metadata.version(), that.metadata.version());
     }
 

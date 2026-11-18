@@ -100,11 +100,13 @@ public final class NativeLibraryLocator {
         List<Path> candidates = new ArrayList<>();
         if (osName.contains("win")) {
             candidates.add(launchDirectory.resolve(isArm64 ? "winarm64" : is64Bit ? "win64" : "win32"));
-            candidates.add(launchDirectory.resolve("natives").resolve(isArm64 ? "winarm64" : is64Bit ? "win64" : "win32"));
+            candidates.add(launchDirectory.resolve("natives")
+                    .resolve(isArm64 ? "winarm64" : is64Bit ? "win64" : "win32"));
             candidates.add(launchDirectory.resolve("natives").resolve(isArm64 ? "windows-arm64" : "windows-x86_64"));
         } else if (osName.contains("linux")) {
             candidates.add(launchDirectory.resolve(isArm64 ? "linux-arm64" : is64Bit ? "linux64" : "linux32"));
-            candidates.add(launchDirectory.resolve("natives").resolve(isArm64 ? "linux-arm64" : is64Bit ? "linux64" : "linux32"));
+            candidates.add(launchDirectory.resolve("natives")
+                    .resolve(isArm64 ? "linux-arm64" : is64Bit ? "linux64" : "linux32"));
             candidates.add(launchDirectory.resolve("natives").resolve(isArm64 ? "linux-aarch64" : "linux-x86_64"));
         } else if (osName.contains("mac")) {
             candidates.add(launchDirectory.resolve(isArm64 ? "macarm64" : "mac64"));

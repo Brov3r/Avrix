@@ -26,7 +26,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.HexFormat;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -138,6 +145,7 @@ public class DefaultPluginManager implements PluginManager {
      * and registers core runtime metadata for the game provider and Avrix loader.
      *
      * @throws IllegalStateException if already initialized
+     * @throws UncheckedIOException if the plugins directory cannot be created
      */
     @Override
     public synchronized void init() {
@@ -154,7 +162,9 @@ public class DefaultPluginManager implements PluginManager {
                 Files.createDirectories(pluginsDir);
                 LOGGER.debug("Created plugins directory: [{}]", pluginsDir);
             } else if (!Files.isDirectory(pluginsDir)) {
-                throw new IllegalStateException("Path '%s' exists but is not a directory. Remove it and restart.".formatted(pluginsDir));
+                throw new IllegalStateException(
+                        "Path '%s' exists but is not a directory. Remove it and restart.".formatted(pluginsDir)
+                );
             }
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to create plugins directory: " + pluginsDir, e);
@@ -224,7 +234,10 @@ public class DefaultPluginManager implements PluginManager {
             if (parsedPlugin.disabledByFileName()) {
                 LOGGER.debug("Skipping plugin archive [{}] because it is listed in {}",
                         pluginFileName, Constants.DISABLED_PLUGINS_FILE_NAME);
-                loadResults.add(PluginLoadResult.skipped(pluginFileName, "Disabled by " + Constants.DISABLED_PLUGINS_FILE_NAME));
+                loadResults.add(PluginLoadResult.skipped(
+                        pluginFileName,
+                        "Disabled by " + Constants.DISABLED_PLUGINS_FILE_NAME
+                ));
                 continue;
             }
 
@@ -243,8 +256,15 @@ public class DefaultPluginManager implements PluginManager {
             Metadata metadata = parsedPlugin.metadata();
 
             if (isPluginDisabled(disabledPlugins, metadata, pluginFile)) {
-                LOGGER.debug("Skipping plugin [{}] because it is listed in {}", metadata.name(), Constants.DISABLED_PLUGINS_FILE_NAME);
-                loadResults.add(PluginLoadResult.skipped(metadata.id(), "Disabled by " + Constants.DISABLED_PLUGINS_FILE_NAME));
+                LOGGER.debug(
+                        "Skipping plugin [{}] because it is listed in {}",
+                        metadata.name(),
+                        Constants.DISABLED_PLUGINS_FILE_NAME
+                );
+                loadResults.add(PluginLoadResult.skipped(
+                        metadata.id(),
+                        "Disabled by " + Constants.DISABLED_PLUGINS_FILE_NAME
+                ));
                 continue;
             }
 
@@ -424,7 +444,11 @@ public class DefaultPluginManager implements PluginManager {
                 }
             } catch (Throwable throwable) {
                 FatalErrors.rethrowIfFatal(throwable);
-                LOGGER.error("Failed to prepare plugin [{}]. Skipping execution.", container.metadata().name(), throwable);
+                LOGGER.error(
+                        "Failed to prepare plugin [{}]. Skipping execution.",
+                        container.metadata().name(),
+                        throwable
+                );
                 loadResults.add(PluginLoadResult.failed(pluginId, throwable));
 
                 if (config.strict() || throwable instanceof UnsafeMixinStateException) {
@@ -449,7 +473,11 @@ public class DefaultPluginManager implements PluginManager {
                 }
             } catch (Throwable throwable) {
                 FatalErrors.rethrowIfFatal(throwable);
-                LOGGER.error("Failed to initialize plugin [{}]. Skipping execution.", container.metadata().name(), throwable);
+                LOGGER.error(
+                        "Failed to initialize plugin [{}]. Skipping execution.",
+                        container.metadata().name(),
+                        throwable
+                );
                 loadResults.add(PluginLoadResult.failed(pluginId, throwable));
 
                 if (config.strict() || !mixinsRegisteredPlugins.isEmpty()) {
@@ -650,7 +678,8 @@ public class DefaultPluginManager implements PluginManager {
      * instantiates the entrypoint class, and executes {@link Plugin#onInitialize(PluginData)}.
      *
      * @param container plugin metadata and file container
-     * @throws RuntimeException if attachment, mixin parsing, or entrypoint execution fails
+     * @throws IllegalStateException if the plugin manager is closed or not initialized
+     * @throws RuntimeException      if attachment, mixin parsing, or entrypoint execution fails
      */
     @Override
     public void loadPlugin(PluginData container) {
@@ -778,7 +807,9 @@ public class DefaultPluginManager implements PluginManager {
         }
 
         File jarFile = container.getPluginFile()
-                .orElseThrow(() -> new IllegalStateException("Cannot load user plugin '" + id + "' without a physical JAR file"));
+                .orElseThrow(() -> new IllegalStateException(
+                        "Cannot load user plugin '" + id + "' without a physical JAR file"
+                ));
 
         Path jarPath = jarFile.toPath();
         String expectedHash = approvedHashes.get(archiveHashKey(jarPath));
@@ -869,7 +900,9 @@ public class DefaultPluginManager implements PluginManager {
         }
 
         File jarFile = container.getPluginFile()
-                .orElseThrow(() -> new IllegalStateException("Cannot load user plugin '" + id + "' without a physical JAR file"));
+                .orElseThrow(() -> new IllegalStateException(
+                        "Cannot load user plugin '" + id + "' without a physical JAR file"
+                ));
 
         synchronized (stateLock) {
             if (closed || plugins.containsKey(id)) {
@@ -891,7 +924,9 @@ public class DefaultPluginManager implements PluginManager {
             Class<?> pluginClass = Class.forName(entrypoint, false, classLoader);
 
             if (!Plugin.class.isAssignableFrom(pluginClass)) {
-                throw new IllegalArgumentException("Declared entrypoint [" + entrypoint + "] does not implement Plugin interface");
+                throw new IllegalArgumentException(
+                        "Declared entrypoint [" + entrypoint + "] does not implement Plugin interface"
+                );
             }
 
             instance = (Plugin) pluginClass.getDeclaredConstructor().newInstance();

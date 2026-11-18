@@ -1,7 +1,6 @@
 package com.avrix.provider.zomboid.approval.ui;
 
 import javax.swing.JComponent;
-import javax.swing.JTable;
 import javax.swing.plaf.basic.BasicTableUI;
 import javax.swing.table.TableCellRenderer;
 import java.awt.Component;

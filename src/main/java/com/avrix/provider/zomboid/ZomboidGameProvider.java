@@ -30,7 +30,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.CodeSource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Production-ready Game Provider implementation for Project Zomboid (v42).
@@ -217,7 +226,8 @@ public class ZomboidGameProvider implements GameProvider {
         String[] gameArgs;
 
         // Keep the provider monitor only for setup. The game loop can run for the whole process lifetime and may
-        // call System.exit() from inside main(), so holding this lock during invocation would deadlock the shutdown hook.
+        // call System.exit() from inside main(), so holding this lock during invocation would deadlock the
+        // shutdown hook.
         synchronized (this) {
             if (!initialized) {
                 throw new IllegalStateException("Provider must be initialized before launch. Call init() first.");
@@ -237,11 +247,20 @@ public class ZomboidGameProvider implements GameProvider {
                         MethodType.methodType(void.class, String[].class)
                 );
             } catch (NoSuchMethodException e) {
-                LOGGER.error("Entrypoint [{}] does not declare public static void main(String[])", entrypointClassName, e);
+                LOGGER.error(
+                        "Entrypoint [{}] does not declare public static void main(String[])",
+                        entrypointClassName,
+                        e
+                );
                 throw new IllegalStateException("Entrypoint missing main method: " + entrypointClassName, e);
             } catch (Throwable throwable) {
                 FatalErrors.rethrowIfFatal(throwable);
-                LOGGER.error("Failed to resolve entrypoint [{}] for provider [{}]", entrypointClassName, getId(), throwable);
+                LOGGER.error(
+                        "Failed to resolve entrypoint [{}] for provider [{}]",
+                        entrypointClassName,
+                        getId(),
+                        throwable
+                );
                 throw new IllegalStateException("Game entrypoint resolution failed: " + getId(), throwable);
             }
         }
@@ -394,7 +413,8 @@ public class ZomboidGameProvider implements GameProvider {
 
     /**
      * Resolves the root filesystem directory hosting the Project Zomboid installation.
-     * <p><b>API Note:</b> Supports overriding via {@code -Davrix.game.dir} or environment variable {@code AVRIX_GAME_DIR}.
+     * <p><b>API Note:</b> Supports overriding via {@code -Davrix.game.dir} or environment variable
+     * {@code AVRIX_GAME_DIR}.
      * macOS application bundles are resolved to the directory containing the game files.
      *
      * @return absolute, normalized {@link Path} of the game installation directory

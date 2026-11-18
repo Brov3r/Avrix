@@ -3,7 +3,6 @@ package com.avrix.provider.zomboid.approval.ui;
 import com.avrix.provider.zomboid.approval.ApprovalMessage;
 import com.avrix.provider.zomboid.approval.ApprovalMessages;
 
-import java.awt.Font;
 import java.awt.FontMetrics;
 import java.time.Instant;
 import java.time.ZoneId;

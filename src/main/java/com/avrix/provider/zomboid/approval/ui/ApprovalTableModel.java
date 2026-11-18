@@ -274,7 +274,10 @@ public final class ApprovalTableModel extends AbstractTableModel {
         return inspections.computeIfAbsent(entryIndex, index -> {
             ZomboidApprovalEntry entry = entries.get(index);
             try {
-                return Objects.requireNonNull(inspector.apply(entry.jarPath(), entry.mixinClasses()), "Inspection result");
+                return Objects.requireNonNull(
+                        inspector.apply(entry.jarPath(), entry.mixinClasses()),
+                        "Inspection result"
+                );
             } catch (Throwable failure) {
                 FatalErrors.rethrowIfFatal(failure);
                 return new MixinTargetInspector.Result(entry.mixinClasses(), List.of(),

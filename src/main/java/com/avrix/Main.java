@@ -11,7 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -70,13 +74,20 @@ public final class Main {
                 context.initialize();
 
                 if (!config.redirectSystemStreams()) {
-                    LOGGER.info("System log stream redirection is disabled via CLI argument: [{}]", Constants.NO_REDIRECT_FLAG_NAME);
+                    LOGGER.info(
+                            "System log stream redirection is disabled via CLI argument: [{}]",
+                            Constants.NO_REDIRECT_FLAG_NAME
+                    );
                 } else {
                     context.redirectSystemStreams();
                 }
 
                 long bootstrapDurationMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - bootstrapStartTime);
-                LOGGER.info("Avrix loader bootstrap completed in {}ms. Delegating control to {}...", bootstrapDurationMillis, context.getGameName());
+                LOGGER.info(
+                        "Avrix loader bootstrap completed in {}ms. Delegating control to {}...",
+                        bootstrapDurationMillis,
+                        context.getGameName()
+                );
 
                 context.launch(gameLaunchArgs);
             } finally {
