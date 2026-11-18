@@ -769,19 +769,6 @@ public class DefaultPluginManager implements PluginManager {
     }
 
     /**
-     * Attaches a plugin archive to the flat classloader without registering mixins.
-     *
-     * @param container    plugin metadata and file container
-     * @param classEntries class entries collected while parsing the manifest, or {@code null} when unavailable
-     * @return {@code true} if the archive is attached, {@code false} if the plugin is already loaded
-     * @throws IllegalStateException if the plugin has no physical JAR file
-     * @throws MalformedURLException if the plugin archive cannot be converted to a URL
-     */
-    private boolean attachPlugin(PluginData container, List<String> classEntries) throws MalformedURLException {
-        return attachPlugin(container, classEntries, null);
-    }
-
-    /**
      * Attaches a plugin archive using optionally pre-computed archive flags.
      *
      * @param container    plugin metadata and file container

@@ -1,7 +1,6 @@
 package com.avrix.provider.zomboid;
 
 import com.avrix.api.PluginApprovalGate;
-import com.avrix.api.PluginApprovalGate.Status;
 import com.avrix.api.PluginArchive;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;

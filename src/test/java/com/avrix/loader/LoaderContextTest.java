@@ -26,11 +26,10 @@ class LoaderContextTest {
     @Test
     @DisplayName("Should initialize plugins and delegate game lifecycle operations")
     void shouldDelegateLifecycleOperations() throws Exception {
-        try (KnotClassLoader classLoader = newClassLoader()) {
-            RecordingGameProvider gameProvider = new RecordingGameProvider();
-            RecordingPluginManager pluginManager = new RecordingPluginManager();
-            LoaderContext context = new LoaderContext(classLoader, gameProvider, null, pluginManager);
-
+        RecordingGameProvider gameProvider = new RecordingGameProvider();
+        RecordingPluginManager pluginManager = new RecordingPluginManager();
+        try (KnotClassLoader classLoader = newClassLoader();
+                LoaderContext context = new LoaderContext(classLoader, gameProvider, null, pluginManager)) {
             context.initialize();
             context.redirectSystemStreams();
             context.launch(new String[]{"-test"});
@@ -48,11 +47,10 @@ class LoaderContextTest {
     @Test
     @DisplayName("Should invoke the post-launch hook when the game launch fails")
     void shouldInvokeAfterLaunchWhenLaunchFails() throws Exception {
-        try (KnotClassLoader classLoader = newClassLoader()) {
-            RecordingGameProvider gameProvider = new RecordingGameProvider();
-            gameProvider.failLaunch = true;
-            LoaderContext context = new LoaderContext(classLoader, gameProvider, null, new RecordingPluginManager());
-
+        RecordingGameProvider gameProvider = new RecordingGameProvider();
+        gameProvider.failLaunch = true;
+        try (KnotClassLoader classLoader = newClassLoader();
+                LoaderContext context = new LoaderContext(classLoader, gameProvider, null, new RecordingPluginManager())) {
             assertThatThrownBy(() -> context.launch(new String[]{"-test"}))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("simulated launch failure");
