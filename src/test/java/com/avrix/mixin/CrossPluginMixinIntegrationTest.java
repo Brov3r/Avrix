@@ -18,8 +18,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.CleanupMode;
 import org.junit.jupiter.api.io.TempDir;
+import test.mixin.plugin.BasePluginServiceMixin;
 import test.plugin.BasePluginService;
-import test.plugin.BasePluginServiceMixin;
 import test.plugin.PluginAEntrypoint;
 
 import java.io.File;

@@ -11,25 +11,16 @@ import test.game.TargetGameService;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.function.Supplier;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Edge-case tests for {@link CompositeClassProvider} classpath scanning and lookup fallbacks.
- * <p>
- * These tests complement {@link CompositeClassProviderTest} by exercising scheme branches, corrupt
- * archives, and resource-lookup fallbacks that the happy-path tests do not reach.
+ * Edge-case tests for {@link CompositeClassProvider} lookup fallbacks.
  */
 @DisplayName("CompositeClassProvider Edge Case Tests")
 class CompositeClassProviderEdgeTest {
@@ -67,9 +58,10 @@ class CompositeClassProviderEdgeTest {
     }
 
     @Test
-    @DisplayName("Should surface an illegal argument when every lookup path misses")
+    @DisplayName("Should surface a class-not-found error when every lookup path misses")
     void shouldFailWhenEveryResourceLookupMisses() throws Exception {
-        try (KnotClassLoader loader = new ThrowingResourceKnotClassLoader(new URL[0], new NoResourceParentClassLoader())) {
+        try (KnotClassLoader loader = new ThrowingResourceKnotClassLoader(
+                new URL[0], new NoResourceParentClassLoader())) {
             CompositeClassProvider provider = new CompositeClassProvider(loader);
 
             assertThatThrownBy(() -> provider.getClass("missing.edge.AbsentClass"))
@@ -96,81 +88,22 @@ class CompositeClassProviderEdgeTest {
     }
 
     @Test
-    @DisplayName("Should ignore file URLs that are neither directories nor JAR archives")
-    void shouldIgnoreNonDirectoryAndNonJarFileUrls() throws Exception {
-        Path textFile = tempDir.resolve("notes.txt");
-        Files.writeString(textFile, "not a classpath entry");
-        Path missingFile = tempDir.resolve("missing.jar");
+    @DisplayName("Should report a missing class when the active loader is absent")
+    void shouldFailWithoutActiveLoader() {
+        CompositeClassProvider provider = new CompositeClassProvider(() -> null);
 
-        try (KnotClassLoader loader = new KnotClassLoader(
-                new URL[]{textFile.toUri().toURL(), missingFile.toUri().toURL()}, PARENT)) {
-            CompositeClassProvider provider = new CompositeClassProvider(loader);
-
-            assertThat(provider.getAllClasses()).isEmpty();
-        }
+        assertThatThrownBy(() -> provider.getClass("test.game.TargetGameService"))
+                .isInstanceOf(ClassNotFoundException.class)
+                .hasMessageContaining("No active class loader");
     }
 
     @Test
-    @DisplayName("Should ignore non-file URLs without attempting to open them")
-    void shouldIgnoreNonFileUrls() throws Exception {
-        URL httpUrl = URI.create("http://example.invalid/avrix-classes/").toURL();
+    @DisplayName("Should expose a supplier-backed provider")
+    void shouldUseSupplierBackedLoader() throws Exception {
+        try (KnotClassLoader loader = new KnotClassLoader(new URL[0], PARENT)) {
+            CompositeClassProvider provider = new CompositeClassProvider(() -> loader);
 
-        try (KnotClassLoader loader = new KnotClassLoader(new URL[]{httpUrl}, PARENT)) {
-            CompositeClassProvider provider = new CompositeClassProvider(loader);
-
-            assertThat(provider.getAllClasses()).isEmpty();
-        }
-    }
-
-    @Test
-    @DisplayName("Should survive a file with a .jar extension that is not a valid archive")
-    void shouldSurviveCorruptJarFile() throws Exception {
-        Path corruptJar = tempDir.resolve("corrupt.jar");
-        Files.writeString(corruptJar, "this is definitely not a zip archive");
-
-        try (KnotClassLoader loader = new KnotClassLoader(new URL[]{corruptJar.toUri().toURL()}, PARENT)) {
-            CompositeClassProvider provider = new CompositeClassProvider(loader);
-
-            assertThat(provider.getAllClasses()).isEmpty();
-        }
-    }
-
-    @Test
-    @DisplayName("Should scan jar-scheme URLs and skip directories, META-INF, and non-class entries")
-    void shouldScanJarSchemeUrlAndSkipNonClassEntries() throws Exception {
-        byte[] classBytes = readClassBytes(TargetGameService.class);
-
-        Map<String, byte[]> entries = new LinkedHashMap<>();
-        entries.put("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\r\n\r\n".getBytes());
-        entries.put("META-INF/versions/9/hidden/Hidden.class", classBytes);
-        entries.put("dir/", new byte[0]);
-        entries.put("dir/notes.txt", "ignored".getBytes());
-        entries.put("dir/Visible.class", classBytes);
-
-        Path jarPath = tempDir.resolve("jar-scheme.jar");
-        createJar(jarPath, entries);
-
-        URL jarUrl = URI.create("jar:" + jarPath.toUri().toASCIIString() + "!/").toURL();
-
-        try (KnotClassLoader loader = new KnotClassLoader(new URL[]{jarUrl}, PARENT)) {
-            CompositeClassProvider provider = new CompositeClassProvider(loader);
-            Map<String, Supplier<byte[]>> classes = provider.getAllClasses();
-
-            assertThat(classes).containsOnlyKeys("dir.Visible");
-            assertThat(classes.get("dir.Visible").get()).isEqualTo(classBytes);
-        }
-    }
-
-    @Test
-    @DisplayName("Should ignore a jar-scheme URL whose archive does not exist")
-    void shouldIgnoreMissingJarSchemeUrl() throws Exception {
-        Path missingJar = tempDir.resolve("absent.jar");
-        URL jarUrl = URI.create("jar:" + missingJar.toUri().toASCIIString() + "!/").toURL();
-
-        try (KnotClassLoader loader = new KnotClassLoader(new URL[]{jarUrl}, PARENT)) {
-            CompositeClassProvider provider = new CompositeClassProvider(loader);
-
-            assertThat(provider.getAllClasses()).isEmpty();
+            assertThat(provider.getClassNode("java.lang.Object").name).isEqualTo("java/lang/Object");
         }
     }
 
@@ -182,16 +115,6 @@ class CompositeClassProviderEdgeTest {
                 throw new IOException("Class resource not found: " + resourcePath);
             }
             return inputStream.readAllBytes();
-        }
-    }
-
-    private static void createJar(Path jarPath, Map<String, byte[]> entries) throws IOException {
-        try (JarOutputStream outputStream = new JarOutputStream(Files.newOutputStream(jarPath))) {
-            for (Map.Entry<String, byte[]> entry : entries.entrySet()) {
-                outputStream.putNextEntry(new JarEntry(entry.getKey()));
-                outputStream.write(entry.getValue());
-                outputStream.closeEntry();
-            }
         }
     }
 

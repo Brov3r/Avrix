@@ -22,7 +22,8 @@ class ClassLoadingPolicyTest {
         assertThat(policy.delegatesToParent("ch.qos.logback.classic.Logger")).isTrue();
         assertThat(policy.delegatesToParent("com.avrix.Main")).isTrue();
         assertThat(policy.delegatesToParent("org.objectweb.asm.ClassReader")).isTrue();
-        assertThat(policy.delegatesToParent("net.lenni0451.classtransform.TransformerManager")).isTrue();
+        assertThat(policy.delegatesToParent("org.spongepowered.asm.mixin.Mixin")).isTrue();
+        assertThat(policy.delegatesToParent("com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation")).isTrue();
         assertThat(policy.delegatesToParent("org.spongepowered.configurate.ConfigurationNode")).isTrue();
         assertThat(policy.delegatesToParent("com.github.zafarkhaja.semver.Version")).isTrue();
         assertThat(policy.delegatesToParent("org.yaml.snakeyaml.Yaml")).isTrue();
@@ -36,7 +37,8 @@ class ClassLoadingPolicyTest {
                         "ch.qos.logback.",
                         "com.avrix.",
                         "org.objectweb.asm.",
-                        "net.lenni0451.classtransform.",
+                        "org.spongepowered.asm.",
+                        "com.llamalad7.mixinextras.",
                         "org.spongepowered.configurate.",
                         "com.github.zafarkhaja.semver.",
                         "org.yaml.snakeyaml.",

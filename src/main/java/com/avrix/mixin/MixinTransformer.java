@@ -4,27 +4,46 @@ import com.avrix.core.ClassTransformer;
 import com.avrix.core.KnotClassLoader;
 import com.avrix.core.MixinRegistrar;
 import com.avrix.utils.FatalErrors;
-import net.lenni0451.classtransform.TransformerManager;
-import net.lenni0451.classtransform.mixinstranslator.MixinsTranslator;
-import net.lenni0451.classtransform.utils.FailStrategy;
+import com.llamalad7.mixinextras.MixinExtrasBootstrap;
+import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.mixin.MixinEnvironment;
+import org.spongepowered.asm.mixin.Mixins;
+import org.spongepowered.asm.mixin.transformer.Config;
+import org.spongepowered.asm.mixin.transformer.IMixinTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Instance-scoped mixin transformer for the Avrix loader.
- * <p>
- * Encapsulates the {@link TransformerManager} and configures the {@link MixinsTranslator} preprocessor
- * to allow Sponge-style mixin annotations to run on top of ClassTransform.
+ *
+ * <p>Each registered mixin class receives a generated Mixin configuration that points to the class and its declared
+ * targets. The configuration is served from memory by {@link MixinHostService}, so plugin metadata stays the single
+ * source of truth and no {@code .mixins.json} resources are required.
  */
 public final class MixinTransformer implements ClassTransformer, MixinRegistrar {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MixinTransformer.class);
+    private static final Object BOOTSTRAP_LOCK = new Object();
+    private static final AtomicLong CONFIG_SEQUENCE = new AtomicLong();
+    private static final int BASE_PRIORITY = 1000;
 
-    private final TransformerManager manager;
+    private static boolean bootstrapped;
+
+    private final boolean strict;
     private final CompositeClassProvider classProvider;
+    private final IMixinTransformer transformer;
+    private final MixinEnvironment environment;
+    private final Set<String> registeredMixins = ConcurrentHashMap.newKeySet();
+    private final Set<String> targetClasses = ConcurrentHashMap.newKeySet();
 
     /**
      * Creates a lenient mixin transformer for the provided {@link KnotClassLoader}.
@@ -45,62 +64,76 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
      *
      * @param knotClassLoader the flat classloader containing game classes, dependencies, and plugins
      * @param strict          whether transformation failures should abort class loading
-     * @throws NullPointerException if {@code knotClassLoader} is null
+     * @throws NullPointerException  if {@code knotClassLoader} is null
+     * @throws IllegalStateException if the Mixin transformer cannot be initialized
      */
     public MixinTransformer(KnotClassLoader knotClassLoader, boolean strict) {
         Objects.requireNonNull(knotClassLoader, "KnotClassLoader cannot be null");
 
+        this.strict = strict;
         this.classProvider = new CompositeClassProvider(knotClassLoader);
-        this.manager = new TransformerManager(classProvider);
-        this.manager.setFailStrategy(strict ? FailStrategy.THROW : FailStrategy.CANCEL);
+        MixinHostService.configure(knotClassLoader);
+        initializeMixin();
 
-        // Translate SpongePowered Mixin annotations into ClassTransform format
-        this.manager.addTransformerPreprocessor(new MixinsTranslator());
+        this.environment = MixinEnvironment.getCurrentEnvironment();
+        Object activeTransformer = this.environment.getActiveTransformer();
+        if (!(activeTransformer instanceof IMixinTransformer activeMixinTransformer)) {
+            throw new IllegalStateException("Mixin transformer was not initialized by the host service");
+        }
+        this.transformer = activeMixinTransformer;
 
         LOGGER.info("Mixin environment initialized successfully (strict={}).", strict);
     }
 
     /**
-     * Transforms class bytecode using the active {@link TransformerManager}.
+     * Initializes the process-wide Mixin runtime once.
      *
-     * @param className     binary name of the class
-     * @param originalBytes original class bytes
-     * @return transformed class bytes, or {@code null} if no transformation is applied
+     * <p>Mixin keeps global configuration state, so every transformer instance shares the same active transformer.
+     * Instance-specific registrations are still tracked separately and only target classes registered on this
+     * instance are transformed.
      */
-    @Override
-    public synchronized byte[] transform(String className, byte[] originalBytes) {
-        FailStrategy strategy = manager.getFailStrategy();
-        // ClassTransform's CANCEL strategy also swallows VirtualMachineError before our classloader can see it.
-        manager.setFailStrategy(FailStrategy.THROW);
-        try {
-            return manager.transform(className, originalBytes);
-        } catch (Throwable failure) {
-            FatalErrors.rethrowIfFatal(failure);
-            if (strategy != FailStrategy.CANCEL && strategy != FailStrategy.CONTINUE) {
-                throw failure;
+    private static void initializeMixin() {
+        synchronized (BOOTSTRAP_LOCK) {
+            if (!bootstrapped) {
+                MixinBootstrap.init();
+                bootstrapped = true;
             }
-            LOGGER.error("Failed to transform class [{}]; using original bytecode", className, failure);
-            return null;
-        } finally {
-            manager.setFailStrategy(strategy);
+            MixinExtrasBootstrap.init();
         }
     }
 
     /**
-     * Returns the active {@link TransformerManager} instance.
+     * Transforms class bytecode using the active Mixin transformer.
      *
-     * @return transformer manager owned by this instance
+     * @param className     binary name of the class
+     * @param originalBytes original class bytes
+     * @return transformed class bytes, or {@code null} if the class is not a registered mixin target
      */
-    public TransformerManager getManager() {
-        return manager;
+    @Override
+    public synchronized byte[] transform(String className, byte[] originalBytes) {
+        if (className == null || originalBytes == null || !targetClasses.contains(className)) {
+            return null;
+        }
+
+        try {
+            byte[] transformed = transformer.transformClass(environment, className, originalBytes);
+            return transformed == null || Arrays.equals(transformed, originalBytes) ? null : transformed;
+        } catch (Throwable failure) {
+            FatalErrors.rethrowIfFatal(failure);
+            if (strict) {
+                throw failure;
+            }
+            LOGGER.error("Failed to transform class [{}]; using original bytecode", className, failure);
+            return null;
+        }
     }
 
     /**
-     * Registers a single mixin transformer by its fully qualified class name.
+     * Registers a single mixin class by its fully qualified class name.
      *
-     * @param mixinClass the fully qualified class name of the mixin (e.g., {@code com.avrix.plugin.mixin.PlayerMixin})
+     * @param mixinClass the fully qualified class name of the mixin (e.g., {@code com.example.PlayerMixin})
      * @throws NullPointerException     if {@code mixinClass} is null
-     * @throws IllegalArgumentException if {@code mixinClass} is blank
+     * @throws IllegalArgumentException if {@code mixinClass} is blank, cannot be found, or is not a valid mixin
      */
     @Override
     public synchronized void addMixin(String mixinClass) {
@@ -109,36 +142,46 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
         if (mixinClass.isBlank()) {
             throw new IllegalArgumentException("Mixin class name cannot be blank");
         }
+        if (!registeredMixins.add(mixinClass)) {
+            return;
+        }
 
-        manager.addTransformer(mixinClass);
-        LOGGER.debug("Registered mixin transformer: [{}]", mixinClass);
+        try {
+            List<String> targets = inspectMixin(mixinClass);
+            registerConfiguration(mixinClass, targets);
+            targetClasses.addAll(targets);
+            LOGGER.debug("Registered mixin transformer: [{}] targeting {}", mixinClass, targets);
+        } catch (RuntimeException e) {
+            registeredMixins.remove(mixinClass);
+            throw e;
+        }
     }
 
     /**
-     * Checks all declarations using a disposable manager without registering active transformations.
-     * <p>
-     * This checks registration, not whether every injection will succeed when its target class is transformed.
+     * Checks all declarations without registering them with the active Mixin runtime.
+     *
+     * <p>This validates that each class exists and carries a {@code @Mixin} annotation with at least one target. It
+     * does not verify whether individual injections can be applied to the target class.
      *
      * @param mixinClasses fully qualified mixin class names
-     * @throws NullPointerException if the collection or a class name is null
-     * @throws RuntimeException if a mixin cannot be read or registered
+     * @throws NullPointerException     if the collection or a class name is null
+     * @throws IllegalArgumentException if a mixin class name is blank
+     * @throws RuntimeException         if a mixin cannot be read or is not a valid mixin declaration
      */
     @Override
     public synchronized void validateMixins(Collection<String> mixinClasses) {
         Objects.requireNonNull(mixinClasses, "Mixins collection cannot be null");
-        if (mixinClasses.isEmpty()) {
-            return;
-        }
-        TransformerManager validation = new TransformerManager(classProvider);
-        validation.setFailStrategy(FailStrategy.THROW);
-        validation.addTransformerPreprocessor(new MixinsTranslator());
         for (String mixin : mixinClasses) {
-            validation.addTransformer(Objects.requireNonNull(mixin, "Mixin class cannot be null"));
+            Objects.requireNonNull(mixin, "Mixin class cannot be null");
+            if (mixin.isBlank()) {
+                throw new IllegalArgumentException("Mixin class name cannot be blank");
+            }
+            inspectMixin(mixin);
         }
     }
 
     /**
-     * Registers a collection of mixin transformer classes.
+     * Registers a collection of mixin classes.
      *
      * @param mixins collection of fully qualified mixin class names
      * @throws NullPointerException if {@code mixins} or any of its elements is null
@@ -149,5 +192,99 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
         for (String mixin : mixins) {
             addMixin(mixin);
         }
+    }
+
+    /**
+     * Checks whether this transformer has registered a mixin class.
+     *
+     * @param mixinClass fully qualified mixin class name
+     * @return {@code true} if the class is registered on this instance
+     */
+    boolean isMixinRegistered(String mixinClass) {
+        return registeredMixins.contains(mixinClass);
+    }
+
+    private List<String> inspectMixin(String mixinClass) {
+        try {
+            byte[] classBytes = classProvider.getClass(mixinClass);
+            return MixinIntrospector.requireTargets(mixinClass, classBytes);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalArgumentException("Mixin class not found: " + mixinClass, e);
+        }
+    }
+
+    private void registerConfiguration(String mixinClass, List<String> targets) {
+        int separator = mixinClass.lastIndexOf('.');
+        if (separator <= 0 || separator == mixinClass.length() - 1) {
+            throw new IllegalArgumentException(
+                    "Mixin class [" + mixinClass + "] must be declared in a named package"
+            );
+        }
+
+        String packageName = mixinClass.substring(0, separator);
+        String simpleName = mixinClass.substring(separator + 1);
+
+        for (String target : targets) {
+            if (target.startsWith(packageName + ".")) {
+                throw new IllegalArgumentException(
+                        "Mixin [" + mixinClass + "] must not share its package with target [" + target + "]"
+                );
+            }
+        }
+
+        long sequence = CONFIG_SEQUENCE.incrementAndGet();
+        String configName = "mixins/host/" + sequence + ".json";
+        String config = mixinConfig(packageName, simpleName, sequence);
+        MixinHostService.registerConfig(configName, config);
+        Mixins.addConfiguration(configName);
+        requestConfigSelection();
+
+        Config registered = Mixins.getConfigs().stream()
+                .filter(candidate -> configName.equals(candidate.getName()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(
+                        "Mixin configuration [" + configName + "] was rejected for " + mixinClass
+                ));
+        LOGGER.trace("Registered Mixin configuration [{}] for {}", registered.getName(), mixinClass);
+    }
+
+    /**
+     * Requests another configuration selection pass from Mixin.
+     *
+     * <p>Mixin only looks for newly registered configurations while no mixin has been applied in the current phase.
+     * Avrix can register plugin mixins after game classes have already been transformed, so the processed counter is
+     * reset to let the next transform pick up newly registered configurations.
+     */
+    private static void requestConfigSelection() {
+        Object activeTransformer = MixinEnvironment.getCurrentEnvironment().getActiveTransformer();
+        if (activeTransformer == null) {
+            return;
+        }
+
+        try {
+            Field processorField = activeTransformer.getClass().getDeclaredField("processor");
+            processorField.setAccessible(true);
+            Object processor = processorField.get(activeTransformer);
+
+            Field transformedCountField = processor.getClass().getDeclaredField("transformedCount");
+            transformedCountField.setAccessible(true);
+            transformedCountField.setInt(processor, 0);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            LOGGER.warn("Unable to request a new Mixin configuration selection pass", e);
+        }
+    }
+
+    private String mixinConfig(String packageName, String simpleName, long sequence) {
+        int priority = BASE_PRIORITY + (int) (sequence % 100_000L);
+        return new StringBuilder(192)
+                .append('{')
+                .append("\"required\":").append(strict).append(',')
+                .append("\"target\":\"@env(").append(environment.getPhase()).append(")\",")
+                .append("\"package\":\"").append(packageName).append("\",")
+                .append("\"compatibility\":\"JAVA_25\",")
+                .append("\"priority\":").append(priority).append(',')
+                .append("\"mixins\":[\"").append(simpleName).append("\"]")
+                .append('}')
+                .toString();
     }
 }

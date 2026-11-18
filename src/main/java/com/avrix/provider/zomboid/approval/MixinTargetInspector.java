@@ -1,10 +1,6 @@
 package com.avrix.provider.zomboid.approval;
 
-import org.objectweb.asm.AnnotationVisitor;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
+import com.avrix.mixin.MixinIntrospector;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,17 +17,9 @@ import java.util.jar.JarFile;
  * Reads the target classes of declared mixin classes from a plugin archive without loading plugin code.
  * <p>
  * The approval window runs before plugins are loaded, so class loading is not an option. The declared mixin class
- * names arrive through the approval protocol; this inspector uses ASM to read their {@code @Mixin} or
- * {@code @CTransformer} annotations.
+ * names arrive through the approval protocol; this inspector uses ASM to read their {@code @Mixin} annotations.
  */
 public final class MixinTargetInspector {
-
-    private static final String MIXIN_DESCRIPTOR = "Lorg/spongepowered/asm/mixin/Mixin;";
-    private static final String C_TRANSFORMER_DESCRIPTOR =
-            "Lnet/lenni0451/classtransform/annotations/CTransformer;";
-    private static final String VALUE = "value";
-    private static final String MIXIN_TARGETS = "targets";
-    private static final String C_TRANSFORMER_NAMES = "name";
 
     private MixinTargetInspector() {
         throw new UnsupportedOperationException("MixinTargetInspector utility class cannot be instantiated");
@@ -72,7 +60,7 @@ public final class MixinTargetInspector {
                         issues.add("Mixin class exceeds inspection byte limit: " + mixin);
                         continue;
                     }
-                    collectTargets(bytes, targets);
+                    collectTargets(mixin, bytes, targets);
                 } catch (IOException | RuntimeException e) {
                     issues.add("Cannot read mixin class " + mixin + ": " + message(e));
                 }
@@ -84,82 +72,19 @@ public final class MixinTargetInspector {
         }
     }
 
-    private static void collectTargets(byte[] classBytes, Set<String> targets) {
-        ClassReader reader = new ClassReader(classBytes);
-        reader.accept(new ClassVisitor(Opcodes.ASM9) {
-            /**
-             * Visits a class annotation.
-             *
-             * @param descriptor annotation descriptor
-             * @param visible    whether the annotation is visible at runtime
-             * @return visitor for annotation values, or {@code null} when the annotation is not a mixin annotation
-             */
-            @Override
-            public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
-                return switch (descriptor) {
-                    case MIXIN_DESCRIPTOR -> annotationVisitor(VALUE, MIXIN_TARGETS, targets);
-                    case C_TRANSFORMER_DESCRIPTOR -> annotationVisitor(VALUE, C_TRANSFORMER_NAMES, targets);
-                    default -> null;
-                };
-            }
-        }, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-    }
-
-    private static AnnotationVisitor annotationVisitor(
-            String classArrayName,
-            String stringArrayName,
-            Set<String> targets
-    ) {
-        return new AnnotationVisitor(Opcodes.ASM9) {
-            /**
-             * Visits a named annotation value.
-             *
-             * @param name  value name
-             * @param value value
-             */
-            @Override
-            public void visit(String name, Object value) {
-                addTarget(name, value, classArrayName, stringArrayName, targets);
-            }
-
-            /**
-             * Visits an array-valued annotation member.
-             *
-             * @param name member name
-             * @return visitor for array values
-             */
-            @Override
-            public AnnotationVisitor visitArray(String name) {
-                return new AnnotationVisitor(Opcodes.ASM9) {
-                    /**
-                     * Visits one array element.
-                     *
-                     * @param ignored element name, unused for array values
-                     * @param value   array element value
-                     */
-                    @Override
-                    public void visit(String ignored, Object value) {
-                        addTarget(name, value, classArrayName, stringArrayName, targets);
-                    }
-                };
-            }
-        };
-    }
-
-    private static void addTarget(
-            String name,
-            Object value,
-            String classArrayName,
-            String stringArrayName,
-            Set<String> targets
-    ) {
-        if (targets.size() >= ApprovalLimits.MAX_MIXINS) {
-            return;
+    private static void collectTargets(String mixin, byte[] classBytes, Set<String> targets) {
+        MixinIntrospector.Result result = MixinIntrospector.scan(classBytes);
+        if (!result.mixin()) {
+            throw new IllegalArgumentException("Class is not annotated with @Mixin");
         }
-        if (classArrayName.equals(name) && value instanceof Type type) {
-            targets.add(ApprovalLimits.displayText(type.getClassName()));
-        } else if (stringArrayName.equals(name) && value instanceof String text && !text.isBlank()) {
-            targets.add(ApprovalLimits.displayText(text.strip()));
+        if (result.targetClasses().isEmpty()) {
+            throw new IllegalArgumentException("Mixin declares no target classes");
+        }
+        for (String target : result.targetClasses()) {
+            if (targets.size() >= ApprovalLimits.MAX_MIXINS) {
+                return;
+            }
+            targets.add(ApprovalLimits.displayText(target));
         }
     }
 
@@ -180,6 +105,10 @@ public final class MixinTargetInspector {
 
         /**
          * Creates an immutable inspection result.
+         *
+         * @param mixinClasses  declared mixin class names
+         * @param targetClasses unique target class names
+         * @param issues        non-fatal inspection notes
          */
         public Result {
             mixinClasses = boundedDisplay(mixinClasses);

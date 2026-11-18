@@ -4,20 +4,18 @@ import com.avrix.core.KnotClassLoader;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.tree.ClassNode;
 import test.game.TargetGameService;
-import test.plugin.BasePluginService;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -40,7 +38,7 @@ class CompositeClassProviderTest {
     @Test
     @DisplayName("Should reject a null KnotClassLoader")
     void shouldRejectNullClassLoader() {
-        assertThatThrownBy(() -> new CompositeClassProvider(null))
+        assertThatThrownBy(() -> new CompositeClassProvider((KnotClassLoader) null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("KnotClassLoader");
     }
@@ -61,15 +59,31 @@ class CompositeClassProviderTest {
     }
 
     @Test
+    @DisplayName("Should parse a class into an ASM node")
+    void shouldParseClassNode() throws Exception {
+        try (KnotClassLoader loader = new KnotClassLoader(
+                new URL[]{TargetGameService.class.getProtectionDomain().getCodeSource().getLocation()}, PARENT)) {
+            CompositeClassProvider provider = new CompositeClassProvider(loader);
+
+            ClassNode node = provider.getClassNode(TargetGameService.class.getName());
+
+            assertThat(node.name).isEqualTo(TargetGameService.class.getName().replace('.', '/'));
+            assertThat(node.methods).extracting(method -> method.name).contains("getGreeting", "executePipeline");
+        }
+    }
+
+    @Test
     @DisplayName("Should read JDK bytecode through the platform lookup")
     void shouldReadJdkBytecode() throws Exception {
         try (KnotClassLoader loader = new KnotClassLoader(new URL[0], PARENT)) {
             CompositeClassProvider provider = new CompositeClassProvider(loader);
 
             byte[] bytes = provider.getClass("java.lang.String");
+            ClassNode node = provider.getClassNode("java.lang.String");
 
             assertThat(bytes).isNotEmpty();
             assertThat(isClassFile(bytes)).isTrue();
+            assertThat(node.name).isEqualTo("java/lang/String");
         }
     }
 
@@ -86,57 +100,10 @@ class CompositeClassProviderTest {
             assertThatThrownBy(() -> provider.getClass("missing.absent.AbsentClass"))
                     .isInstanceOf(ClassNotFoundException.class)
                     .hasMessageContaining("Bytecode not found");
-        }
-    }
 
-    @Test
-    @DisplayName("Should return an empty map when no URLs are registered")
-    void shouldReturnEmptyClassMapForEmptyClasspath() throws Exception {
-        try (KnotClassLoader loader = new KnotClassLoader(new URL[0], PARENT)) {
-            CompositeClassProvider provider = new CompositeClassProvider(loader);
-
-            assertThat(provider.getAllClasses()).isEmpty();
-        }
-    }
-
-    @Test
-    @DisplayName("Should scan directory and JAR classpath entries and map their suppliers")
-    void shouldScanDirectoryAndJarEntries() throws Exception {
-        byte[] alphaBytes = readClassBytes(TargetGameService.class);
-        byte[] betaBytes = readClassBytes(BasePluginService.class);
-
-        Path classesDir = Files.createDirectories(tempDir.resolve("classes"));
-        writeBytes(classesDir.resolve("scanned").resolve("sample").resolve("Alpha.class"), alphaBytes);
-        writeBytes(classesDir.resolve("scanned").resolve("sample").resolve("Nested").resolve("Beta.class"), betaBytes);
-        Files.writeString(classesDir.resolve("scanned").resolve("sample").resolve("notes.txt"), "ignored");
-
-        Map<String, byte[]> jarEntries = new LinkedHashMap<>();
-        jarEntries.put("META-INF/MANIFEST.MF", "Manifest-Version: 1.0\r\n\r\n".getBytes());
-        jarEntries.put("jarred/sample/Gamma.class", alphaBytes);
-        jarEntries.put("META-INF/versions/9/jarred/sample/Hidden.class", betaBytes);
-
-        Path jarPath = tempDir.resolve("classes.jar");
-        createJar(jarPath, jarEntries);
-
-        try (KnotClassLoader loader = new KnotClassLoader(
-                new URL[]{classesDir.toUri().toURL(), jarPath.toUri().toURL()}, PARENT)) {
-            CompositeClassProvider provider = new CompositeClassProvider(loader);
-            Map<String, Supplier<byte[]>> classes = provider.getAllClasses();
-
-            assertThat(classes).containsKeys(
-                    "scanned.sample.Alpha",
-                    "scanned.sample.Nested.Beta",
-                    "jarred.sample.Gamma");
-
-            assertThat(classes.keySet()).noneMatch(className -> className.startsWith("META-INF"));
-
-            assertThat(classes.get("scanned.sample.Alpha").get()).isEqualTo(alphaBytes);
-            assertThat(classes.get("scanned.sample.Nested.Beta").get()).isEqualTo(betaBytes);
-            assertThat(classes.get("jarred.sample.Gamma").get()).isEqualTo(alphaBytes);
-
-            classes.put("other.Placeholder", () -> new byte[0]);
-
-            assertThat(classes).containsKey("other.Placeholder");
+            assertThatThrownBy(() -> provider.getClassNode("missing.absent.AbsentClass"))
+                    .isInstanceOf(ClassNotFoundException.class)
+                    .hasMessageContaining("Bytecode not found");
         }
     }
 
@@ -159,8 +126,8 @@ class CompositeClassProviderTest {
     }
 
     @Test
-    @DisplayName("Should resolve versioned classes from multi-release JARs during class scanning")
-    void shouldResolveMultiReleaseJarClassesDuringClassScan() throws Exception {
+    @DisplayName("Should resolve versioned classes from multi-release JARs")
+    void shouldResolveMultiReleaseJarClasses() throws Exception {
         Path jarPath = tempDir.resolve("multi-release.jar");
         String classPath = TargetGameService.class.getName().replace('.', '/') + ".class";
         byte[] baseBytes = readClassBytes(TargetGameService.class);
@@ -183,20 +150,11 @@ class CompositeClassProviderTest {
             outputStream.putNextEntry(new JarEntry(versionedPath));
             outputStream.write(versionedBytes);
             outputStream.closeEntry();
-
-            outputStream.putNextEntry(new JarEntry("META-INF/versions/" + Runtime.version().feature()
-                    + "/versioned/Only.class"));
-            outputStream.write(versionedBytes);
-            outputStream.closeEntry();
         }
 
         try (KnotClassLoader loader = new KnotClassLoader(new URL[]{jarPath.toUri().toURL()}, PARENT)) {
-            Map<String, Supplier<byte[]>> classes = new CompositeClassProvider(loader).getAllClasses();
-
-            assertThat(classes).containsKey(TargetGameService.class.getName());
-            assertThat(classes.get(TargetGameService.class.getName()).get()).isEqualTo(versionedBytes);
-            assertThat(classes).containsKey("versioned.Only");
-            assertThat(classes.get("versioned.Only").get()).isEqualTo(versionedBytes);
+            assertThat(new CompositeClassProvider(loader).getClass(TargetGameService.class.getName()))
+                    .isEqualTo(versionedBytes);
         }
     }
 
@@ -215,7 +173,6 @@ class CompositeClassProviderTest {
             var provider = new CompositeClassProvider(loader);
             assertThat(loader.loadClass(name).getClassLoader()).isSameAs(loader);
             assertThat(provider.getClass(name)).isEqualTo(bytes);
-            assertThat(provider.getAllClasses().get(name).get()).isEqualTo(bytes);
         }
     }
 
@@ -239,7 +196,6 @@ class CompositeClassProviderTest {
             var provider = new CompositeClassProvider(loader);
             assertThat(loader.loadClass(name).getClassLoader()).isSameAs(parent);
             assertThat(provider.getClass(name)).isEqualTo(parentBytes);
-            assertThat(provider.getAllClasses().get(name).get()).isEqualTo(parentBytes);
         }
     }
 

@@ -1,16 +1,17 @@
-package test.game;
+package test.mixin.game;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import test.game.PipelineGameService;
 
 import java.util.List;
 
 /**
- * First independent mixin injecting at HEAD into {@link TargetGameService#executePipeline(List, String)}.
+ * First independent mixin injecting at HEAD into {@link PipelineGameService#executePipeline(List, String)}.
  */
-@Mixin(TargetGameService.class)
+@Mixin(PipelineGameService.class)
 public abstract class FirstPipelineInjectMixin {
 
     @Inject(

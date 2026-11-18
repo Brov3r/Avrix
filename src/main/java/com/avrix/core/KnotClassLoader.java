@@ -7,7 +7,12 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.*;
+import java.net.JarURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -304,6 +309,20 @@ public class KnotClassLoader extends URLClassLoader {
     }
 
     /**
+     * Checks whether a class has already been defined by this class loader.
+     *
+     * <p>This method does not trigger loading and is safe to call from bytecode transformers.
+     *
+     * @param className binary class name
+     * @return {@code true} when the class is already defined locally
+     * @throws NullPointerException if {@code className} is null
+     */
+    public boolean isClassLoaded(String className) {
+        Objects.requireNonNull(className, "Class name cannot be null");
+        return findLoadedClass(className) != null;
+    }
+
+    /**
      * Checks whether a class name is delegated to the parent classloader by the active policy.
      *
      * @param className binary class name
@@ -590,7 +609,7 @@ public class KnotClassLoader extends URLClassLoader {
         connection.setUseCaches(false);
 
         try (InputStream inputStream = connection.getInputStream();
-             ByteArrayOutputStream buffer = new ByteArrayOutputStream(Math.max(4096, inputStream.available()))) {
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream(Math.max(4096, inputStream.available()))) {
             inputStream.transferTo(buffer);
             return buffer.toByteArray();
         }
@@ -602,6 +621,7 @@ public class KnotClassLoader extends URLClassLoader {
      * @param className binary name of the class
      * @param rawBytes  original raw bytecode
      * @return transformed bytecode, or {@code null} if no modification occurred
+     * @throws IllegalStateException if strict failure handling is enabled and transformation fails
      */
     protected byte[] transformClass(String className, byte[] rawBytes) {
         ClassTransformer transformer = this.classTransformer;
@@ -658,7 +678,7 @@ public class KnotClassLoader extends URLClassLoader {
             if (connection instanceof JarURLConnection jarConnection) {
                 return jarConnection.getJarFileURL();
             }
-        } catch (IOException _) {
+        } catch (IOException ignored) {
         }
         return resource;
     }
@@ -679,7 +699,7 @@ public class KnotClassLoader extends URLClassLoader {
                     return fileName.toString();
                 }
             }
-        } catch (URISyntaxException | IllegalArgumentException _) {
+        } catch (URISyntaxException | IllegalArgumentException ignored) {
         }
         return url.toExternalForm();
     }

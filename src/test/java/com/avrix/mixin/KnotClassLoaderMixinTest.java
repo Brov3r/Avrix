@@ -2,15 +2,21 @@ package com.avrix.mixin;
 
 import com.avrix.core.KnotClassLoader;
 import com.avrix.core.ServiceManager;
-import net.lenni0451.classtransform.utils.FailStrategy;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import test.game.FirstPipelineInjectMixin;
-import test.game.SecondPipelineInjectMixin;
+import test.game.ExtrasGameService;
+import test.game.PipelineGameService;
+import test.game.PlainGameService;
+import test.game.StringTargetService;
 import test.game.TargetGameService;
-import test.game.TargetGameServiceMixin;
+import test.mixin.game.ExtrasGameServiceMixin;
+import test.mixin.game.FirstPipelineInjectMixin;
+import test.mixin.game.RegistrationOnlyMixin;
+import test.mixin.game.SecondPipelineInjectMixin;
+import test.mixin.game.StringTargetMixin;
+import test.mixin.game.TargetGameServiceMixin;
 
 import java.io.File;
 import java.io.UncheckedIOException;
@@ -30,8 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * End-to-end integration test validating bytecode transformations on the fly
- * within the unified {@link KnotClassLoader} via ClassTransform and MixinsTranslator.
+ * End-to-end integration tests for bytecode transformations performed by Mixin inside the Avrix class loader.
  */
 @DisplayName("KnotClassLoader & Mixin Integration Tests")
 class KnotClassLoaderMixinTest {
@@ -63,14 +68,6 @@ class KnotClassLoaderMixinTest {
     }
 
     @Test
-    @DisplayName("Should configure the transformation failure strategy from the strict flag")
-    void shouldConfigureTransformationFailureStrategy() {
-        assertThat(mixinTransformer.getManager().getFailStrategy()).isEqualTo(FailStrategy.CANCEL);
-        assertThat(new MixinTransformer(knotClassLoader, true).getManager().getFailStrategy())
-                .isEqualTo(FailStrategy.THROW);
-    }
-
-    @Test
     @DisplayName("Should successfully transform target class bytecode via registered mixin")
     void shouldTransformClassWithMixin() throws Throwable {
         String targetClassName = TargetGameService.class.getName();
@@ -99,11 +96,9 @@ class KnotClassLoaderMixinTest {
 
     @Test
     @DisplayName("Should sequentially execute multiple mixin injections on the same target method")
-    @SuppressWarnings("unchecked")
     void shouldApplyMultipleInjectionsToSameMethod() throws Throwable {
-        String targetClassName = TargetGameService.class.getName();
+        String targetClassName = PipelineGameService.class.getName();
 
-        // Register both independent mixins targeting the same method
         mixinTransformer.addMixin(FirstPipelineInjectMixin.class.getName());
         mixinTransformer.addMixin(SecondPipelineInjectMixin.class.getName());
 
@@ -122,10 +117,7 @@ class KnotClassLoaderMixinTest {
         List<String> executionTrace = new ArrayList<>();
         String returnValue = (String) executePipelineHandle.invoke(instance, executionTrace, "SampleData");
 
-        // Assert return value from original method is intact
         assertThat(returnValue).isEqualTo("PROCESSED: SampleData");
-
-        // Verify that both HEAD and TAIL mixin injections executed in proper chronological order
         assertThat(executionTrace).containsExactly(
                 "INJECT_FIRST: SampleData",
                 "ORIGINAL_BODY: SampleData",
@@ -134,9 +126,45 @@ class KnotClassLoaderMixinTest {
     }
 
     @Test
+    @DisplayName("Should transform a target declared with the string @Mixin syntax")
+    void shouldTransformClassWithStringTargetMixin() throws Throwable {
+        mixinTransformer.addMixin(StringTargetMixin.class.getName());
+
+        Class<?> transformedClass = knotClassLoader.loadClass(StringTargetService.class.getName());
+        Object instance = transformedClass.getDeclaredConstructor().newInstance();
+
+        MethodHandles.Lookup lookup = MethodHandles.publicLookup();
+        MethodHandle getValueHandle = lookup.findVirtual(
+                transformedClass,
+                "getValue",
+                MethodType.methodType(String.class)
+        );
+
+        assertThat((String) getValueHandle.invoke(instance)).isEqualTo("string-target");
+    }
+
+    @Test
+    @DisplayName("Should apply MixinExtras injectors")
+    void shouldApplyMixinExtrasInjector() throws Throwable {
+        mixinTransformer.addMixin(ExtrasGameServiceMixin.class.getName());
+
+        Class<?> transformedClass = knotClassLoader.loadClass(ExtrasGameService.class.getName());
+        Object instance = transformedClass.getDeclaredConstructor().newInstance();
+
+        MethodHandles.Lookup lookup = MethodHandles.publicLookup();
+        MethodHandle formatHandle = lookup.findVirtual(
+                transformedClass,
+                "format",
+                MethodType.methodType(String.class, String.class)
+        );
+
+        assertThat((String) formatHandle.invoke(instance, "value")).isEqualTo("base:VALUE");
+    }
+
+    @Test
     @DisplayName("Should load original unmodified bytecode when no mixin is registered")
     void shouldLoadUnmodifiedClassWithoutMixin() throws Throwable {
-        String targetClassName = TargetGameService.class.getName();
+        String targetClassName = PlainGameService.class.getName();
 
         Class<?> rawClass = knotClassLoader.loadClass(targetClassName);
         Object instance = rawClass.getDeclaredConstructor().newInstance();
@@ -162,20 +190,23 @@ class KnotClassLoaderMixinTest {
             return null;
         });
 
-        knotClassLoader.loadClass(TargetGameService.class.getName());
+        knotClassLoader.loadClass(PlainGameService.class.getName());
 
-        assertThat(transformedClasses).contains(TargetGameService.class.getName());
+        assertThat(transformedClasses).contains(PlainGameService.class.getName());
     }
 
     @Test
-    @DisplayName("Should expose the transformer manager and register mixin collections")
-    void shouldExposeManagerAndRegisterMixinCollections() {
-        assertThat(mixinTransformer.getManager()).isNotNull();
+    @DisplayName("Should register mixins and expose registration state")
+    void shouldRegisterMixinCollections() {
         assertThatThrownBy(() -> new MixinTransformer(null))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("KnotClassLoader");
 
-        mixinTransformer.addMixins(List.of(TargetGameServiceMixin.class.getName()));
+        mixinTransformer.addMixins(List.of(RegistrationOnlyMixin.class.getName()));
+        mixinTransformer.addMixin(RegistrationOnlyMixin.class.getName());
+
+        assertThat(mixinTransformer.isMixinRegistered(RegistrationOnlyMixin.class.getName())).isTrue();
+        assertThat(mixinTransformer.isMixinRegistered(FirstPipelineInjectMixin.class.getName())).isFalse();
 
         assertThatThrownBy(() -> mixinTransformer.addMixins(null))
                 .isInstanceOf(NullPointerException.class)
@@ -188,6 +219,14 @@ class KnotClassLoaderMixinTest {
         assertThatThrownBy(() -> mixinTransformer.addMixin(" "))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Mixin class name cannot be blank");
+    }
+
+    @Test
+    @DisplayName("Should reject mixin classes without a @Mixin annotation")
+    void shouldRejectClassesWithoutMixinAnnotation() {
+        assertThatThrownBy(() -> mixinTransformer.addMixin(TargetGameService.class.getName()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("not annotated with @Mixin");
     }
 
     private static URL[] resolveCurrentClasspathUrls() {

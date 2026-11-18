@@ -3,7 +3,6 @@ package com.avrix.benchmark;
 import com.avrix.utils.Constants;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
 import test.benchmark.MixinPlugin;
@@ -23,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
@@ -36,6 +36,7 @@ import java.util.jar.JarOutputStream;
 final class BenchmarkFixtures {
 
     private static final String GENERATED_PACKAGE = "test.benchmark.generated";
+    private static final AtomicInteger RUN_SEQUENCE = new AtomicInteger();
     private static final int MIXIN_TARGET_COUNT = 64;
     private static final int RESOURCE_PAYLOAD_SIZE = 1024;
     private static final int RESOURCE_CONFIG_SIZE = 512;
@@ -119,8 +120,12 @@ final class BenchmarkFixtures {
      * @throws IOException if a fixture cannot be written
      */
     static MixinFixture createMixinPlugins(Path root, int pluginCount) throws IOException {
+        String basePackage = nextBasePackage();
+        String pluginPackage = basePackage + ".plugin";
+        String mixinPackage = basePackage + ".mixin";
+        String targetPackage = basePackage + ".target";
         Path gameJar = root.resolve("mixin-game.jar");
-        List<String> targetClasses = createTargetClasses(gameJar, MIXIN_TARGET_COUNT);
+        List<String> targetClasses = createTargetClasses(gameJar, MIXIN_TARGET_COUNT, targetPackage);
 
         Path directory = root.resolve("mixin-plugins-" + pluginCount);
         Files.createDirectories(directory);
@@ -130,8 +135,8 @@ final class BenchmarkFixtures {
             String targetClass = targetClasses.get(targetIndex);
             int expectedMixins = ((pluginCount - 1 - targetIndex) / MIXIN_TARGET_COUNT) + 1;
 
-            String entrypoint = GENERATED_PACKAGE + ".MixinPlugin%04d".formatted(i);
-            String mixinClass = GENERATED_PACKAGE + ".Mixin%04d".formatted(i);
+            String entrypoint = pluginPackage + ".MixinPlugin%04d".formatted(i);
+            String mixinClass = mixinPackage + ".Mixin%04d".formatted(i);
             Path destination = directory.resolve("mixin-%04d.jar".formatted(i));
 
             try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(destination))) {
@@ -172,8 +177,12 @@ final class BenchmarkFixtures {
      * @throws IOException if a fixture cannot be written
      */
     static RealWorldFixture createRealWorldPlugins(Path root, int pluginCount) throws IOException {
+        String basePackage = nextBasePackage();
+        String pluginPackage = basePackage + ".plugin";
+        String mixinPackage = basePackage + ".mixin";
+        String targetPackage = basePackage + ".target";
         Path gameJar = root.resolve("real-world-game.jar");
-        List<String> gameTargetClasses = createTargetClasses(gameJar, MIXIN_TARGET_COUNT);
+        List<String> gameTargetClasses = createTargetClasses(gameJar, MIXIN_TARGET_COUNT, targetPackage);
 
         Path directory = root.resolve("real-world-plugins-" + pluginCount);
         Files.createDirectories(directory);
@@ -183,10 +192,10 @@ final class BenchmarkFixtures {
             String gameTargetClass = gameTargetClasses.get(gameTargetIndex);
             int expectedGameMixins = ((pluginCount - 1 - gameTargetIndex) / MIXIN_TARGET_COUNT) + 1;
 
-            String entrypoint = GENERATED_PACKAGE + ".RealWorldPlugin%04d".formatted(i);
-            String selfTargetClass = GENERATED_PACKAGE + ".SelfTarget%04d".formatted(i);
-            String selfMixinClass = GENERATED_PACKAGE + ".SelfMixin%04d".formatted(i);
-            String gameMixinClass = GENERATED_PACKAGE + ".GameMixin%04d".formatted(i);
+            String entrypoint = pluginPackage + ".RealWorldPlugin%04d".formatted(i);
+            String selfTargetClass = targetPackage + ".SelfTarget%04d".formatted(i);
+            String selfMixinClass = mixinPackage + ".SelfMixin%04d".formatted(i);
+            String gameMixinClass = mixinPackage + ".GameMixin%04d".formatted(i);
             Path destination = directory.resolve("real-world-%04d.jar".formatted(i));
 
             try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(destination))) {
@@ -242,10 +251,11 @@ final class BenchmarkFixtures {
      * @return fully qualified target class names
      * @throws IOException if the JAR cannot be written
      */
-    private static List<String> createTargetClasses(Path destination, int targetCount) throws IOException {
+    private static List<String> createTargetClasses(Path destination, int targetCount, String targetPackage)
+            throws IOException {
         List<String> targetClasses = new ArrayList<>(targetCount);
         for (int i = 0; i < targetCount; i++) {
-            targetClasses.add(GENERATED_PACKAGE + ".Target%04d".formatted(i));
+            targetClasses.add(targetPackage + ".Target%04d".formatted(i));
         }
 
         try (JarOutputStream jar = new JarOutputStream(Files.newOutputStream(destination))) {
@@ -284,6 +294,10 @@ final class BenchmarkFixtures {
             reader.accept(remapper, 0);
             return writer.toByteArray();
         }
+    }
+
+    private static String nextBasePackage() {
+        return GENERATED_PACKAGE + ".r" + RUN_SEQUENCE.incrementAndGet();
     }
 
     private static String internalName(Class<?> type) {
@@ -326,7 +340,6 @@ final class BenchmarkFixtures {
         private final Map<String, String> mappings;
 
         private MapRemapper(Map<String, String> mappings) {
-            super(Opcodes.ASM9);
             this.mappings = Map.copyOf(mappings);
         }
 

@@ -1,9 +1,10 @@
-package test.plugin;
+package test.mixin.plugin;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import test.plugin.BasePluginService;
 
 @Mixin(BasePluginService.class)
 /**

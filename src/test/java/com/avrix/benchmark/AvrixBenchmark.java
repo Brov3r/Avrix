@@ -8,14 +8,15 @@ import com.avrix.core.MixinRegistrar;
 import com.avrix.mixin.MixinTransformer;
 import com.avrix.plugins.DefaultPluginManager;
 import com.avrix.plugins.DependencyResolver;
+import com.avrix.plugins.PluginLoadResult;
 import com.avrix.plugins.PluginLoadStatus;
 import com.avrix.plugins.PluginManifestParser;
 import com.avrix.plugins.PluginScanner;
 import com.avrix.provider.DefaultLoaderProvider;
 import com.avrix.utils.Constants;
 import test.game.TargetGameService;
-import test.game.TargetGameServiceMixin;
 import test.loader.TestGameProvider;
+import test.mixin.game.TargetGameServiceMixin;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -319,7 +321,7 @@ public final class AvrixBenchmark {
             manager.loadPlugins();
             manager.close();
 
-            List<com.avrix.plugins.PluginLoadResult> results = manager.getLoadResults();
+            List<PluginLoadResult> results = manager.getLoadResults();
             long loaded = results.stream()
                     .filter(result -> result.status() == PluginLoadStatus.LOADED)
                     .count();
@@ -377,7 +379,7 @@ public final class AvrixBenchmark {
 
     private static URL[] classpathUrls() {
         String classpath = System.getProperty("java.class.path", "");
-        return Stream.of(classpath.split(java.util.regex.Pattern.quote(File.pathSeparator)))
+        return Stream.of(classpath.split(Pattern.quote(File.pathSeparator)))
                 .filter(path -> !path.isBlank())
                 .map(Path::of)
                 .map(Path::toUri)

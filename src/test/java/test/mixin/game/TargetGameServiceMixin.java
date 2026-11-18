@@ -1,7 +1,8 @@
-package test.game;
+package test.mixin.game;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
+import test.game.TargetGameService;
 
 /**
  * SpongePowered Mixin targeting {@link TargetGameService}.

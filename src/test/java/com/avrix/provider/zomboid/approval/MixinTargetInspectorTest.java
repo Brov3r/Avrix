@@ -25,18 +25,66 @@ class MixinTargetInspectorTest {
     @Test
     void shouldReadTargetsFromClassLiteral() throws Exception {
         Path jar = createJar(
-                "schema: 1\nid: test\nname: Test\nversion: 1.0.0\nmixins: [test.game.TargetGameServiceMixin]\n",
-                "test/game/TargetGameServiceMixin.class"
+                "schema: 1\nid: test\nname: Test\nversion: 1.0.0\nmixins: [test.mixin.game.TargetGameServiceMixin]\n",
+                "test/mixin/game/TargetGameServiceMixin.class"
         );
 
         MixinTargetInspector.Result result = MixinTargetInspector.inspect(
                 jar,
-                List.of("test.game.TargetGameServiceMixin")
+                List.of("test.mixin.game.TargetGameServiceMixin")
         );
 
-        assertThat(result.mixinClasses()).containsExactly("test.game.TargetGameServiceMixin");
+        assertThat(result.mixinClasses()).containsExactly("test.mixin.game.TargetGameServiceMixin");
         assertThat(result.targetClasses()).containsExactly("test.game.TargetGameService");
         assertThat(result.issues()).isEmpty();
+    }
+
+    @Test
+    void shouldReadTargetsFromStringLiteral() throws Exception {
+        Path jar = createJar(
+                "schema: 1\nid: test\nname: Test\nversion: 1.0.0\nmixins: [test.mixin.game.StringTargetMixin]\n",
+                "test/mixin/game/StringTargetMixin.class"
+        );
+
+        MixinTargetInspector.Result result = MixinTargetInspector.inspect(
+                jar,
+                List.of("test.mixin.game.StringTargetMixin")
+        );
+
+        assertThat(result.targetClasses()).containsExactly("test.game.StringTargetService");
+        assertThat(result.issues()).isEmpty();
+    }
+
+    @Test
+    void shouldReportNonMixinClass() throws Exception {
+        Path jar = createJar(
+                "schema: 1\nid: test\nname: Test\nversion: 1.0.0\nmixins: [test.game.PlainGameService]\n",
+                "test/game/PlainGameService.class"
+        );
+
+        MixinTargetInspector.Result result = MixinTargetInspector.inspect(
+                jar,
+                List.of("test.game.PlainGameService")
+        );
+
+        assertThat(result.targetClasses()).isEmpty();
+        assertThat(result.issues()).anyMatch(issue -> issue.contains("not annotated with @Mixin"));
+    }
+
+    @Test
+    void shouldReportMixinWithoutTargets() throws Exception {
+        Path jar = createJar(
+                "schema: 1\nid: test\nname: Test\nversion: 1.0.0\nmixins: [test.mixin.game.NoTargetMixin]\n",
+                "test/mixin/game/NoTargetMixin.class"
+        );
+
+        MixinTargetInspector.Result result = MixinTargetInspector.inspect(
+                jar,
+                List.of("test.mixin.game.NoTargetMixin")
+        );
+
+        assertThat(result.targetClasses()).isEmpty();
+        assertThat(result.issues()).anyMatch(issue -> issue.contains("declares no target classes"));
     }
 
     @Test
