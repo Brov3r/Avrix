@@ -221,13 +221,13 @@ java {
 
 repositories {
     mavenCentral()
-    maven { url = 'https://maven.lenni0451.net/everything' }
 }
 
 dependencies {
     // Compile-only: provided by the game and loader at runtime, so they are not shaded.
     compileOnly(fileTree(dir: 'libs', include: '*.jar'))
-    compileOnly 'net.lenni0451.classtransform:core:1.15.1'
+    compileOnly 'net.fabricmc:sponge-mixin:0.17.5+mixin.0.8.7'
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.5'
 
     testImplementation platform('org.junit:junit-bom:6.1.3')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -385,36 +385,40 @@ public void onShutdown() {
 
 ### `ExampleMixin.java` (Трансформация байт-кода)
 
-Avrix поддерживает трансформации через ClassTransform, а также трансляцию стандартных аннотаций SpongePowered Mixin:
+Avrix использует среду SpongePowered Mixin, поддерживаемую FabricMC, и включает MixinExtras. Классы миксинов плагина
+используют стандартные аннотации Mixin:
 
 ```java
-package com.example.exampleplugin;
+package com.example.exampleplugin.mixin;
 
-import net.lenni0451.classtransform.annotations.CTarget;
-import net.lenni0451.classtransform.annotations.CTransformer;
-import net.lenni0451.classtransform.annotations.injection.CInject;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * Bytecode transformer targeting {@code zombie.Lua.LuaEventManager}.
+ * Миксин для {@code zombie.Lua.LuaEventManager}.
  */
-@CTransformer(name = "zombie.Lua.LuaEventManager")
-public class ExampleMixin {
+@Mixin(targets = "zombie.Lua.LuaEventManager")
+public class LuaEventManagerMixin {
+
     /**
-     * Injects custom logic at the start (HEAD) of triggerEvent(String).
+     * Вставляет логику в начало (HEAD) метода triggerEvent(String).
      *
-     * @param eventName name of the triggered Lua event
+     * @param eventName имя события Lua
+     * @param callback  колбэк инъекции
      */
-    @CInject(
-            method = "triggerEvent(Ljava/lang/String;)V",
-            target = @CTarget("HEAD")
-    )
-    private static void injectEvent0(String eventName) {
+    @Inject(method = "triggerEvent(Ljava/lang/String;)V", at = @At("HEAD"))
+    private void onTriggerEvent(String eventName, CallbackInfo callback) {
         System.out.printf("Intercepted Lua event trigger: [%s]%n", eventName);
     }
 }
 ```
 
-Элементы `mixins` — это полные имена классов трансформации (FQCN), а не пути к файлам конфигурации. Регистрация
+Держите миксины в отдельном пакете, в котором нет целевых классов. Это стандартное требование Mixin. Аннотации
+MixinExtras, например `@WrapOperation` и `@ModifyExpressionValue`, также доступны.
+
+Элементы `mixins` — это полные имена классов миксинов (FQCN), а не пути к файлам конфигурации. Регистрация
 выполняется при подготовке плагина-владельца, до запуска его entrypoint.
 
 ---

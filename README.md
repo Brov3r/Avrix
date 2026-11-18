@@ -19,8 +19,8 @@ on-the-fly mixin bytecode transformation.
 
 ## ✨ Features
 
-* **Mixin Technology:** Native support for Sponge-style mixin annotations powered
-  by [ClassTransform](https://github.com/Lenni0451/ClassTransform) and ASM bytecode manipulation.
+* **Mixin Technology:** Native support for SpongePowered Mixin and MixinExtras, powered by the
+  [FabricMC Mixin](https://github.com/FabricMC/Mixin) runtime and ASM bytecode manipulation.
 * **Unified Classloading:** Flat knot-classloader architecture ensuring zero classloader visibility barriers and fast
   class resolution.
 * **Client and Server:** Supports graphical clients and headless dedicated servers on Windows and Linux. macOS code

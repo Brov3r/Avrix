@@ -2,44 +2,40 @@
 
 ## ⚡ Bytecode Transformation & Mixins
 
-Avrix implements its class modification subsystem on top of the lightweight,
-high-performance [ClassTransform](https://github.com/Lenni0451/ClassTransform) library. For an in-depth understanding of
-transformation internals, refer to the [official ClassTransform Wiki](https://github.com/Lenni0451/ClassTransform/wiki).
+Avrix uses the SpongePowered Mixin runtime maintained by [FabricMC](https://github.com/FabricMC/Mixin) and bundles
+[MixinExtras](https://github.com/LlamaLad7/MixinExtras). Mixin classes are registered from plugin metadata; no
+`.mixins.json` file is needed.
 
 ---
 
-### Supported Annotation Formats
+### Supported Annotations
 
-Avrix provides developers with full flexibility in choosing mixin syntax:
-
-1. **Native ClassTransform Annotations** (`@CTransformer`, `@CInject`, `@COverride`, `@CRedirect`):
-   Recommended for developers starting fresh without prior Minecraft modding experience.
-2. **Standard SpongePowered Mixin Annotations** (`@Mixin`, `@Inject`, `@Overwrite`, `@Redirect`):
-   Supported via the built-in `MixinsTranslator` preprocessor inside the Avrix core. If you have previously built mods
-   for FabricMC or Sponge, many existing mixin declarations can be reused; verify that the annotations and features you
-   use are supported by the translator.
+Plugin mixins use the standard SpongePowered Mixin annotations (`@Mixin`, `@Inject`, `@Overwrite`, `@Redirect`,
+`@Accessor`, and others). MixinExtras annotations such as `@WrapOperation`, `@ModifyExpressionValue`, `@Local`, and
+`@Share` are supported as well.
 
 ---
 
 ### Dependency Configuration in `build.gradle`
 
-To use mixin annotations in your plugin codebase, declare the dependencies in the `dependencies` block:
+To compile mixin annotations in your plugin, declare the dependencies as compile-only:
 
 ```groovy
 dependencies {
-    // Compile-only: provided by the loader at runtime.
-    compileOnly 'net.lenni0451.classtransform:core:1.15.1'
-
-    // Only needed when using @Mixin syntax.
-    compileOnly 'net.lenni0451.classtransform:mixinsdummy:1.15.1'
+    // Provided by the loader at runtime.
+    compileOnly 'net.fabricmc:sponge-mixin:0.17.5+mixin.0.8.7'
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.5'
 }
 ```
+
+Do not shade these libraries into your plugin. The loader provides them and delegates their packages to a single
+runtime copy.
 
 ---
 
 ### Registering Mixins in a Plugin
 
-To instruct the loader to apply your transformer classes, list them in your `metadata.yml` manifest:
+List mixin classes in your `metadata.yml` manifest:
 
 ```yaml
 mixins:
@@ -47,28 +43,57 @@ mixins:
   - "com.example.myplugin.mixin.InventoryMixin"
 ```
 
-The entries are fully qualified transformer class names, not configuration file paths.
+The entries are fully qualified mixin class names, not configuration file paths. Each class must carry a `@Mixin`
+annotation with at least one target:
+
+```java
+package com.example.myplugin.mixin;
+
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Mixin(targets = "zombie.characters.IsoPlayer")
+public class PlayerMixin {
+
+    @Inject(method = "update", at = @At("HEAD"))
+    private void onUpdate(CallbackInfo callback) {
+        // Custom logic.
+    }
+}
+```
+
+Keep mixins in a dedicated package that contains no target classes. Mixin treats every class in a mixin package as
+part of that package, so mixing targets and mixins in one package is invalid.
+
+---
+
+### Registration and Lifecycle
 
 All plugin archives are attached and all declared mixins are registered during the preparation phase, before any
 plugin entrypoint runs. A plugin's `onInitialize` can therefore load target classes without racing another plugin's
-mixin registration. `loadBefore` / `loadAfter` still control preparation order and therefore the order in which
-multiple mixins are applied to the same target.
+mixin registration. `loadBefore` / `loadAfter` control preparation order and therefore the order in which multiple
+mixin configurations are applied to the same target.
 
-Each plugin's declarations are checked before registration. If registration may have left partial state, startup
-aborts even in lenient mode. Entrypoint failures after any mixins are registered are also fatal to startup, because
-already registered or applied transformations cannot be safely rolled back.
+Each plugin's declarations are checked before registration. A declaration is rejected when the class is missing, is
+not annotated with `@Mixin`, has no target, or shares its package with a target. If registration may have left
+partial state, startup aborts even in lenient mode. Entrypoint failures after any mixins are registered are also fatal
+to startup, because already registered or applied transformations cannot be safely rolled back.
 
-Multi-release JARs are supported for normal class loading, mixin targets, and wildcard class discovery. In strict mode
-a mixin transformation failure aborts startup; without `--strict` the affected class is loaded without the failed
-transformation and the error is logged.
+Generated configurations follow the loader's strictness. In strict mode a failed mixin is required and aborts class
+loading; without `--strict` the affected class is loaded without the failed transformation and the error is logged.
+
+Mixin configuration resources are generated in memory from `metadata.yml`; the loader never writes mixin JSON files
+to disk. Multi-release JARs are supported for normal class loading, mixin targets, and wildcard class discovery.
 
 ---
 
 ### Learning Resources
 
-The principles of writing mixins in Avrix are similar to the FabricMC ecosystem:
-
-* [Introduction to Mixins (FabricMC Wiki)](https://fabricmc.net/wiki/tutorial:mixin_introduction) — Core injection
+* [Fabric Mixin](https://github.com/FabricMC/Mixin) — maintained Mixin runtime used by Avrix.
+* [MixinExtras](https://github.com/LlamaLad7/MixinExtras) — additional injectors and sugar.
+* [Introduction to Mixins (FabricMC Wiki)](https://fabricmc.net/wiki/tutorial:mixin_introduction) — core injection
   points (`HEAD`, `RETURN`, `INVOKE`).
-* [SpongePowered Mixin Documentation](https://github.com/SpongePowered/Mixin/wiki) — Comprehensive guide on field
-  accessors and local variable manipulation.
+* [SpongePowered Mixin Documentation](https://github.com/SpongePowered/Mixin/wiki) — field accessors, local variable
+  manipulation, and advanced injection points.
