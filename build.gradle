@@ -228,9 +228,21 @@ if (osName.contains('win')) {
     ]
 }
 
-def clientCandidates = steamCommonRoots.collect { new File(it, 'ProjectZomboid') }
+def clientArchiveNames = ['projectzomboid.jar']
+def clientLaunchConfigNames = ['ProjectZomboid64.json', 'ProjectZomboid32.json']
+def containsGameMarker = { File directory, List<String> markerNames ->
+    directory.isDirectory() && markerNames.any { new File(directory, it).isFile() }
+}
+def clientShellCandidates = steamCommonRoots.collect { new File(it, 'ProjectZomboid') }
+def clientCandidates = clientShellCandidates.collectMany { shellDirectory ->
+    // Linux Steam installs may keep the client game files in a nested game root.
+    [shellDirectory, new File(shellDirectory, 'projectzomboid')]
+}
+def legacyClientDir = clientShellCandidates.find { it.isDirectory() } ?: clientShellCandidates[0]
+def archiveClientDir = clientCandidates.find { containsGameMarker(it, clientArchiveNames) }
+def configClientDir = clientCandidates.find { containsGameMarker(it, clientLaunchConfigNames) }
+def defaultClientDir = archiveClientDir ?: configClientDir ?: legacyClientDir
 def serverCandidates = steamCommonRoots.collect { new File(it, 'Project Zomboid Dedicated Server') }
-def defaultClientDir = clientCandidates.find { it.isDirectory() } ?: clientCandidates[0]
 def defaultServerDir = serverCandidates.find { it.isDirectory() } ?: serverCandidates[0]
 
 def projectDirectory = layout.projectDirectory.asFile

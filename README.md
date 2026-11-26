@@ -86,7 +86,7 @@ properties or environment variables when the game is installed elsewhere:
 ./gradlew runServer -PpzServerDir="C:\Program Files (x86)\Steam\steamapps\common\Project Zomboid Dedicated Server"
 
 # Linux
-./gradlew runClient -PpzClientDir="$HOME/.steam/steam/steamapps/common/ProjectZomboid"
+./gradlew runClient -PpzClientDir="$HOME/.steam/steam/steamapps/common/ProjectZomboid/projectzomboid"
 
 # macOS (experimental, game launch unverified)
 ./gradlew runClient -PpzClientDir="$HOME/Library/Application Support/Steam/steamapps/common/ProjectZomboid"
