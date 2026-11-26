@@ -10,8 +10,10 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.DirectoryIteratorException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -366,8 +368,26 @@ public final class ZomboidModPluginSource implements PluginSource {
                     }
                 }
             } catch (IOException e) {
-                errors.add("Failed to scan Workshop content [" + workshopContent + "]: " + e.getMessage());
-                LOGGER.warn("Failed to scan Workshop content [{}]", workshopContent, e);
+                if (e instanceof NoSuchFileException) {
+                    LOGGER.debug("Workshop content disappeared before it could be scanned [{}]", workshopContent, e);
+                } else {
+                    String message = "Failed to scan Workshop content [" + workshopContent + "]: " + e.getMessage();
+                    errors.add(message);
+                    LOGGER.warn(message, e);
+                }
+            } catch (DirectoryIteratorException e) {
+                IOException cause = e.getCause();
+                if (cause instanceof NoSuchFileException) {
+                    LOGGER.debug(
+                            "Workshop content disappeared before it could be scanned [{}]",
+                            workshopContent,
+                            cause
+                    );
+                } else {
+                    String message = "Failed to scan Workshop content [" + workshopContent + "]: " + cause.getMessage();
+                    errors.add(message);
+                    LOGGER.warn(message, cause);
+                }
             }
         }
     }
@@ -398,7 +418,22 @@ public final class ZomboidModPluginSource implements PluginSource {
                 }
             }
         } catch (IOException e) {
-            LOGGER.debug("Failed to scan mod directory [{}]", modsRoot, e);
+            if (e instanceof NoSuchFileException) {
+                LOGGER.debug("Mod directory disappeared before it could be scanned [{}]", modsRoot, e);
+            } else {
+                String message = "Failed to scan mod directory [" + modsRoot + "]: " + e.getMessage();
+                errors.add(message);
+                LOGGER.warn(message, e);
+            }
+        } catch (DirectoryIteratorException e) {
+            IOException cause = e.getCause();
+            if (cause instanceof NoSuchFileException) {
+                LOGGER.debug("Mod directory disappeared while it was being scanned [{}]", modsRoot, cause);
+            } else {
+                String message = "Failed to scan mod directory [" + modsRoot + "]: " + cause.getMessage();
+                errors.add(message);
+                LOGGER.warn(message, cause);
+            }
         }
     }
 
@@ -409,27 +444,38 @@ public final class ZomboidModPluginSource implements PluginSource {
             Set<String> errors
     ) {
         Path commonDirectory = modDirectory.resolve(COMMON_DIRECTORY);
-        List<Path> versionDirectories = versionDirectories(modDirectory);
+        Set<String> modErrors = new LinkedHashSet<>();
+        List<Path> versionDirectories = versionDirectories(modDirectory, modErrors);
         Path selectedDirectory = versionDirectories.isEmpty() ? null : versionDirectories.get(0);
         Path versionFallback = selectedDirectory != null ? selectedDirectory : commonDirectory;
 
         ModInfo selectedInfo = selectedDirectory == null
                 ? null
-                : parseModInfo(selectedDirectory.resolve("mod.info"), selectedDirectory);
+                : parseModInfo(selectedDirectory.resolve("mod.info"), selectedDirectory, modErrors);
 
         ModInfo commonInfo = Files.isDirectory(commonDirectory)
-                ? parseModInfo(commonDirectory.resolve("mod.info"), commonDirectory)
+                ? parseModInfo(commonDirectory.resolve("mod.info"), commonDirectory, modErrors)
                 : null;
-
-        if (selectedInfo == null && commonInfo == null) {
-            return;
-        }
 
         String modId = firstNonBlank(
                 selectedInfo != null ? selectedInfo.id() : null,
                 commonInfo != null ? commonInfo.id() : null,
                 modDirectory.getFileName().toString()
         );
+
+        if (!activeMods.contains(modId.toLowerCase(Locale.ROOT))) {
+            return;
+        }
+
+        for (String modError : modErrors) {
+            errors.add(modError);
+            LOGGER.warn(modError);
+        }
+
+        if (selectedInfo == null && commonInfo == null) {
+            return;
+        }
+
         String modName = firstNonBlank(
                 selectedInfo != null ? selectedInfo.name() : null,
                 commonInfo != null ? commonInfo.name() : null,
@@ -442,15 +488,13 @@ public final class ZomboidModPluginSource implements PluginSource {
         );
         String workshopId = workshopItemId(modDirectory);
 
-        if (!activeMods.contains(modId.toLowerCase(Locale.ROOT))) {
-            return;
-        }
-
         Path realModRoot;
         try {
             realModRoot = modDirectory.toRealPath();
         } catch (IOException e) {
-            LOGGER.debug("Failed to resolve mod directory [{}]", modDirectory, e);
+            String message = "Failed to resolve mod directory [" + modDirectory + "]: " + e.getMessage();
+            errors.add(message);
+            LOGGER.warn(message, e);
             return;
         }
 
@@ -493,9 +537,10 @@ public final class ZomboidModPluginSource implements PluginSource {
      * the nearest newer directory is used. If the game version is unknown, the newest directory is selected.
      *
      * @param modDirectory mod root directory
+     * @param errors       mod-local errors retained until the mod is known to be active
      * @return zero or one selected version directory
      */
-    private List<Path> versionDirectories(Path modDirectory) {
+    private List<Path> versionDirectories(Path modDirectory, Set<String> errors) {
         List<VersionedDirectory> candidates = new ArrayList<>(3);
 
         try (DirectoryStream<Path> versions = Files.newDirectoryStream(modDirectory, VERSION_DIRECTORY_PATTERN)) {
@@ -510,7 +555,18 @@ public final class ZomboidModPluginSource implements PluginSource {
                 }
             }
         } catch (IOException e) {
-            LOGGER.debug("Failed to enumerate version directories in [{}]", modDirectory, e);
+            if (e instanceof NoSuchFileException) {
+                LOGGER.debug("Version directory disappeared before it could be scanned [{}]", modDirectory, e);
+            } else {
+                errors.add("Failed to enumerate version directories in [" + modDirectory + "]: " + e.getMessage());
+            }
+        } catch (DirectoryIteratorException e) {
+            IOException cause = e.getCause();
+            if (cause instanceof NoSuchFileException) {
+                LOGGER.debug("Version directory disappeared while it was being scanned [{}]", modDirectory, cause);
+            } else {
+                errors.add("Failed to enumerate version directories in [" + modDirectory + "]: " + cause.getMessage());
+            }
         }
 
         if (candidates.isEmpty()) {
@@ -544,8 +600,13 @@ public final class ZomboidModPluginSource implements PluginSource {
         return List.of(selected.directory());
     }
 
-    private static ModInfo parseModInfo(Path modInfo, Path baseDirectory) {
+    private static ModInfo parseModInfo(Path modInfo, Path baseDirectory, Set<String> errors) {
+        if (Files.notExists(modInfo)) {
+            return null;
+        }
+
         if (!Files.isRegularFile(modInfo)) {
+            errors.add("Failed to read mod.info [" + modInfo + "]: not a regular file");
             return null;
         }
 
@@ -594,7 +655,11 @@ public final class ZomboidModPluginSource implements PluginSource {
                 }
             }
         } catch (IOException e) {
-            LOGGER.debug("Failed to read mod.info [{}]", modInfo, e);
+            if (e instanceof NoSuchFileException) {
+                LOGGER.debug("mod.info disappeared before it could be read [{}]", modInfo, e);
+            } else {
+                errors.add("Failed to read mod.info [" + modInfo + "]: " + e.getMessage());
+            }
             return null;
         }
 

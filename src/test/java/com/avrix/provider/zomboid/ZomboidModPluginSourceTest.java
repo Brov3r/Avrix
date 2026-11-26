@@ -337,6 +337,123 @@ class ZomboidModPluginSourceTest {
     }
 
     @Test
+    @DisplayName("Should report an unreadable mod.info of an active mod when another layer provides the id")
+    void shouldReportUnreadableModInfoOfActiveMod() throws Exception {
+        Path home = createUserHome();
+        Path gameRoot = createGameRoot();
+        writeClientActiveMods(home, "active-mod");
+
+        Path modRoot = home.resolve("Zomboid/mods/ActiveMod");
+        Path common = modRoot.resolve("common");
+        Files.createDirectories(common);
+        Files.writeString(common.resolve("mod.info"), """
+                id=active-mod
+                """);
+
+        Path versionInfo = modRoot.resolve("42/mod.info");
+        Files.createDirectories(versionInfo.getParent());
+        Files.write(versionInfo, new byte[]{(byte) 0xc3, (byte) 0x28});
+
+        assertThat(new ZomboidModPluginSource(
+                gameRoot, home, Environment.CLIENT, null, "42.21.0", false
+        ).scan()).isEmpty();
+
+        assertThatThrownBy(() -> new ZomboidModPluginSource(
+                gameRoot, home, Environment.CLIENT, null, "42.21.0", true
+        ).scan())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining(versionInfo.toString());
+    }
+
+    @Test
+    @DisplayName("Should ignore a corrupted mod.info of an inactive mod in strict mode")
+    void shouldIgnoreCorruptedModInfoOfInactiveMod() throws Exception {
+        Path home = createUserHome();
+        Path gameRoot = createGameRoot();
+        writeClientActiveMods(home, "active-mod");
+
+        Path mods = home.resolve("Zomboid/mods");
+        writeMod(mods, "ActiveMod", "active-mod",
+                "media/java/active.jar", "media/java/active.jar");
+
+        Path inactiveRoot = mods.resolve("InactiveMod");
+        Path inactiveCommon = inactiveRoot.resolve("common");
+        Files.createDirectories(inactiveCommon);
+        Files.writeString(inactiveCommon.resolve("mod.info"), """
+                id=inactive-mod
+                """);
+
+        Path inactiveInfo = inactiveRoot.resolve("42/mod.info");
+        Files.createDirectories(inactiveInfo.getParent());
+        Files.write(inactiveInfo, new byte[]{(byte) 0xc3, (byte) 0x28});
+
+        List<Path> result = new ZomboidModPluginSource(
+                gameRoot, home, Environment.CLIENT, null, "42.21.0", true
+        ).scan();
+
+        assertThat(result)
+                .extracting(path -> path.getFileName().toString())
+                .containsExactly("active.jar");
+    }
+
+    @Test
+    @DisplayName("Should report a mod.info path that is not a regular file")
+    void shouldReportNonRegularModInfo() throws Exception {
+        Path home = createUserHome();
+        Path gameRoot = createGameRoot();
+        writeClientActiveMods(home, "active-mod");
+
+        Path versionInfo = home.resolve("Zomboid/mods/active-mod/42/mod.info");
+        Files.createDirectories(versionInfo);
+
+        assertThat(new ZomboidModPluginSource(
+                gameRoot, home, Environment.CLIENT, null, "42.21.0", false
+        ).scan()).isEmpty();
+
+        assertThatThrownBy(() -> new ZomboidModPluginSource(
+                gameRoot, home, Environment.CLIENT, null, "42.21.0", true
+        ).scan())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("not a regular file")
+                .hasMessageContaining(versionInfo.toString());
+    }
+
+    @Test
+    @DisplayName("Should allow missing optional mod directories in strict mode")
+    void shouldAllowMissingOptionalModDirectories() throws Exception {
+        Path home = createUserHome();
+        Path gameRoot = createGameRoot();
+        writeClientActiveMods(home, "active-mod");
+
+        Path common = home.resolve("Zomboid/mods/active-mod/common");
+        Files.createDirectories(common);
+        Files.writeString(common.resolve("mod.info"), """
+                id=active-mod
+                """);
+
+        assertThat(new ZomboidModPluginSource(
+                gameRoot, home, Environment.CLIENT, null, "42.21.0", true
+        ).scan()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should allow a missing local mods directory in strict mode")
+    void shouldAllowMissingLocalModsDirectory() throws Exception {
+        Path home = createUserHome();
+        Path gameRoot = createGameRoot();
+
+        Path serverDir = home.resolve("Zomboid/Server");
+        Files.createDirectories(serverDir);
+        Files.writeString(serverDir.resolve("myserver.ini"), """
+                Mods=active-mod
+                """);
+
+        assertThat(new ZomboidModPluginSource(
+                gameRoot, home, Environment.SERVER, "myserver", "42.21.0", true
+        ).scan()).isEmpty();
+    }
+
+    @Test
     @Timeout(60)
     @DisplayName("Should scan more than 1000 mods and load plugins only from active ones")
     void shouldScanManyMods() throws Exception {
