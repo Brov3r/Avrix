@@ -14,8 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -43,6 +45,7 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
     private final IMixinTransformer transformer;
     private final MixinEnvironment environment;
     private final Set<String> registeredMixins = ConcurrentHashMap.newKeySet();
+    private final Set<String> registeredMixinPackages = ConcurrentHashMap.newKeySet();
     private final Set<String> targetClasses = ConcurrentHashMap.newKeySet();
 
     /**
@@ -131,9 +134,14 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
     /**
      * Registers a single mixin class by its fully qualified class name.
      *
+     * <p>Package restrictions are validated before any Mixin configuration is created. The mixin must be declared in
+     * a named package, its targets must not belong to its own package, and its targets must not belong to the package
+     * of an already registered mixin in either direction. Registering an already registered mixin is a no-op.
+     *
      * @param mixinClass the fully qualified class name of the mixin (e.g., {@code com.example.PlayerMixin})
      * @throws NullPointerException     if {@code mixinClass} is null
-     * @throws IllegalArgumentException if {@code mixinClass} is blank, cannot be found, or is not a valid mixin
+     * @throws IllegalArgumentException if {@code mixinClass} is blank, cannot be found, is not a valid mixin, or
+     *                                  conflicts with a registered mixin package
      */
     @Override
     public synchronized void addMixin(String mixinClass) {
@@ -142,55 +150,53 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
         if (mixinClass.isBlank()) {
             throw new IllegalArgumentException("Mixin class name cannot be blank");
         }
-        if (!registeredMixins.add(mixinClass)) {
+        if (registeredMixins.contains(mixinClass)) {
             return;
         }
 
-        try {
-            List<String> targets = inspectMixin(mixinClass);
-            registerConfiguration(mixinClass, targets);
-            targetClasses.addAll(targets);
-            LOGGER.debug("Registered mixin transformer: [{}] targeting {}", mixinClass, targets);
-        } catch (RuntimeException e) {
-            registeredMixins.remove(mixinClass);
-            throw e;
-        }
+        MixinDeclaration declaration = inspectDeclaration(mixinClass);
+        validatePackageCompatibility(List.of(declaration));
+        registerDeclaration(declaration);
     }
 
     /**
      * Checks all declarations without registering them with the active Mixin runtime.
      *
-     * <p>This validates that each class exists and carries a {@code @Mixin} annotation with at least one target. It
-     * does not verify whether individual injections can be applied to the target class.
+     * <p>This validates that each class exists and carries a {@code @Mixin} annotation with at least one target.
+     * Deterministic package restrictions are checked as well: the mixin must be declared in a named package, its
+     * targets must not belong to its own package, and every target is checked against all mixin packages declared in
+     * this batch and all already registered mixin packages in both directions, regardless of declaration order.
+     * Already registered mixins are treated as idempotent no-ops, matching {@link #addMixin}. Target classes are never
+     * loaded or resolved. This method does not verify whether individual injections can be applied to the target class.
      *
      * @param mixinClasses fully qualified mixin class names
      * @throws NullPointerException     if the collection or a class name is null
-     * @throws IllegalArgumentException if a mixin class name is blank
+     * @throws IllegalArgumentException if a mixin class name is blank, has no named package, or creates a package
+     *                                  conflict with this batch or with already registered mixins
      * @throws RuntimeException         if a mixin cannot be read or is not a valid mixin declaration
      */
     @Override
     public synchronized void validateMixins(Collection<String> mixinClasses) {
-        Objects.requireNonNull(mixinClasses, "Mixins collection cannot be null");
-        for (String mixin : mixinClasses) {
-            Objects.requireNonNull(mixin, "Mixin class cannot be null");
-            if (mixin.isBlank()) {
-                throw new IllegalArgumentException("Mixin class name cannot be blank");
-            }
-            inspectMixin(mixin);
-        }
+        validatePackageCompatibility(parseDeclarations(mixinClasses));
     }
 
     /**
      * Registers a collection of mixin classes.
      *
+     * <p>All declarations are parsed and preflighted before the first registration, so a batch rejected by package
+     * validation leaves no partial registrations. Parsed declarations are reused during registration, so their class
+     * bytes are not read again. If an individual registration fails after preflight, the failure is propagated; Mixin
+     * does not provide a way to unregister configurations created earlier in the same call.
+     *
      * @param mixins collection of fully qualified mixin class names
-     * @throws NullPointerException if {@code mixins} or any of its elements is null
+     * @throws NullPointerException     if {@code mixins} or any of its elements is null
+     * @throws IllegalArgumentException if any declaration fails preflight validation
      */
     public synchronized void addMixins(Collection<String> mixins) {
-        Objects.requireNonNull(mixins, "Mixins collection cannot be null");
-
-        for (String mixin : mixins) {
-            addMixin(mixin);
+        List<MixinDeclaration> declarations = parseDeclarations(mixins);
+        validatePackageCompatibility(declarations);
+        for (MixinDeclaration declaration : declarations) {
+            registerDeclaration(declaration);
         }
     }
 
@@ -213,7 +219,31 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
         }
     }
 
-    private void registerConfiguration(String mixinClass, List<String> targets) {
+    private List<MixinDeclaration> parseDeclarations(Collection<String> mixinClasses) {
+        Objects.requireNonNull(mixinClasses, "Mixins collection cannot be null");
+
+        List<String> pending = new ArrayList<>(mixinClasses.size());
+        for (String mixin : mixinClasses) {
+            pending.add(Objects.requireNonNull(mixin, "Mixin class cannot be null"));
+        }
+
+        List<MixinDeclaration> declarations = new ArrayList<>(pending.size());
+        Set<String> seen = new HashSet<>(pending.size());
+        for (String mixin : pending) {
+            if (mixin.isBlank()) {
+                throw new IllegalArgumentException("Mixin class name cannot be blank");
+            }
+            if (registeredMixins.contains(mixin) || !seen.add(mixin)) {
+                continue;
+            }
+            declarations.add(inspectDeclaration(mixin));
+        }
+        return declarations;
+    }
+
+    private MixinDeclaration inspectDeclaration(String mixinClass) {
+        List<String> targets = inspectMixin(mixinClass);
+
         int separator = mixinClass.lastIndexOf('.');
         if (separator <= 0 || separator == mixinClass.length() - 1) {
             throw new IllegalArgumentException(
@@ -223,18 +253,103 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
 
         String packageName = mixinClass.substring(0, separator);
         String simpleName = mixinClass.substring(separator + 1);
+        return new MixinDeclaration(mixinClass, packageName, simpleName, List.copyOf(targets));
+    }
 
-        for (String target : targets) {
-            if (target.startsWith(packageName + ".")) {
-                throw new IllegalArgumentException(
-                        "Mixin [" + mixinClass + "] must not share its package with target [" + target + "]"
-                );
+    /**
+     * Validates declarations against their own packages, all packages in the batch, and all registered packages.
+     *
+     * <p>Membership is checked by walking the parent package prefixes of every target and probing package sets, so
+     * each target is compared against package names rather than against every declaration.
+     *
+     * @param declarations new declarations from the current batch
+     */
+    private void validatePackageCompatibility(List<MixinDeclaration> declarations) {
+        if (declarations.isEmpty()) {
+            return;
+        }
+
+        Set<String> newPackages = new HashSet<>(Math.max(4, declarations.size()));
+        for (MixinDeclaration declaration : declarations) {
+            newPackages.add(declaration.packageName());
+        }
+
+        for (MixinDeclaration declaration : declarations) {
+            for (String target : declaration.targets()) {
+                String owningPackage = findOwningMixinPackage(target, newPackages);
+                if (owningPackage != null) {
+                    if (owningPackage.equals(declaration.packageName())) {
+                        throw new IllegalArgumentException(
+                                "Mixin [" + declaration.mixinClass()
+                                        + "] must not share its package with target [" + target + "]"
+                        );
+                    }
+                    throw new IllegalArgumentException(
+                            "Target [" + target + "] of mixin [" + declaration.mixinClass()
+                                    + "] is inside mixin package [" + owningPackage + "]"
+                    );
+                }
+
+                String registeredPackage = findOwningMixinPackage(target, registeredMixinPackages);
+                if (registeredPackage != null) {
+                    throw new IllegalArgumentException(
+                            "Target [" + target + "] of mixin [" + declaration.mixinClass()
+                                    + "] is inside mixin package [" + registeredPackage + "] (already registered)"
+                    );
+                }
             }
         }
 
+        if (!targetClasses.isEmpty()) {
+            for (String target : targetClasses) {
+                String owningPackage = findOwningMixinPackage(target, newPackages);
+                if (owningPackage != null) {
+                    throw new IllegalArgumentException(
+                            "Registered target [" + target + "] is inside mixin package [" + owningPackage + "]"
+                    );
+                }
+            }
+        }
+    }
+
+    private static String findOwningMixinPackage(String target, Set<String> packages) {
+        if (packages.isEmpty()) {
+            return null;
+        }
+
+        int separator = target.lastIndexOf('.');
+        while (separator > 0) {
+            String candidate = target.substring(0, separator);
+            if (packages.contains(candidate)) {
+                return candidate;
+            }
+            separator = candidate.lastIndexOf('.');
+        }
+        return null;
+    }
+
+    private void registerDeclaration(MixinDeclaration declaration) {
+        if (!registeredMixins.add(declaration.mixinClass())) {
+            return;
+        }
+
+        try {
+            registerConfiguration(declaration);
+            targetClasses.addAll(declaration.targets());
+            registeredMixinPackages.add(declaration.packageName());
+            LOGGER.debug(
+                    "Registered mixin transformer: [{}] targeting {}", declaration.mixinClass(), declaration.targets()
+            );
+        } catch (RuntimeException e) {
+            registeredMixins.remove(declaration.mixinClass());
+            throw e;
+        }
+    }
+
+    private void registerConfiguration(MixinDeclaration declaration) {
         long sequence = CONFIG_SEQUENCE.incrementAndGet();
         String configName = "mixins/host/" + sequence + ".json";
-        String config = mixinConfig(packageName, simpleName, sequence);
+        String config = mixinConfig(declaration.packageName(), declaration.simpleName(), sequence);
         MixinHostService.registerConfig(configName, config);
         Mixins.addConfiguration(configName);
         requestConfigSelection();
@@ -243,9 +358,9 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
                 .filter(candidate -> configName.equals(candidate.getName()))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException(
-                        "Mixin configuration [" + configName + "] was rejected for " + mixinClass
+                        "Mixin configuration [" + configName + "] was rejected for " + declaration.mixinClass()
                 ));
-        LOGGER.trace("Registered Mixin configuration [{}] for {}", registered.getName(), mixinClass);
+        LOGGER.trace("Registered Mixin configuration [{}] for {}", registered.getName(), declaration.mixinClass());
     }
 
     /**
@@ -272,6 +387,14 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
         } catch (ReflectiveOperationException | RuntimeException e) {
             LOGGER.warn("Unable to request a new Mixin configuration selection pass", e);
         }
+    }
+
+    private record MixinDeclaration(
+            String mixinClass,
+            String packageName,
+            String simpleName,
+            List<String> targets
+    ) {
     }
 
     private String mixinConfig(String packageName, String simpleName, long sequence) {
