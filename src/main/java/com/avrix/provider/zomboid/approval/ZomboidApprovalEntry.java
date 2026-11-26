@@ -18,7 +18,7 @@ import java.util.Objects;
  * @param sha256               lowercase SHA-256 of the JAR
  * @param size                 JAR size in bytes
  * @param modifiedEpochMillis  last-modified time in epoch milliseconds, or {@code 0} when unavailable
- * @param previousSha256       previously approved hash for the same mod, or an empty string
+ * @param previousSha256       previously approved hash for the same plugin in the same mod, or an empty string
  * @param mixinClasses         mixin transformer class names declared in the plugin metadata
  */
 public record ZomboidApprovalEntry(

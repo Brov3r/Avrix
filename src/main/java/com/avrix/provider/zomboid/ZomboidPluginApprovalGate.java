@@ -46,7 +46,7 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZomboidPluginApprovalGate.class);
 
-    private static final String VERSION_LINE = "VERSION\t2";
+    private static final String VERSION_LINE = "VERSION\t3";
     private static final String APPROVALS_FILE_NAME = "plugin-approvals.txt";
     private static final Object STORE_WRITE_LOCK = new Object();
 
@@ -264,10 +264,11 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
             modAuthor = String.join(", ", metadata.authors());
         }
         String workshopId = archive.attributes().getOrDefault(PluginArchive.ATTRIBUTE_WORKSHOP_ID, "");
+        String pluginIdentity = pluginId(metadata);
 
         return new ZomboidApprovalEntry(
                 modId,
-                pluginId(metadata),
+                pluginIdentity,
                 modAuthor,
                 displayName,
                 archive.sourceType(),
@@ -277,15 +278,20 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
                 sha256,
                 size,
                 modified,
-                previousHash(modId, sha256),
+                previousHash(modId, pluginIdentity, sha256),
                 metadata == null ? List.of() : metadata.mixins()
         );
     }
 
-    private String previousHash(String modId, String currentHash) {
+    private String previousHash(String modId, String pluginId, String currentHash) {
+        // Matching only by mod ID would attribute another plugin's approval to a new archive in the same mod.
+        if (pluginId.isBlank()) {
+            return "";
+        }
         return approvals.values().stream()
                 .filter(StoredDecision::allow)
                 .filter(decision -> decision.modId().equals(modId))
+                .filter(decision -> decision.pluginId().equals(pluginId))
                 .filter(decision -> !decision.sha256().equals(currentHash))
                 .max(Comparator.comparingLong(StoredDecision::time))
                 .map(StoredDecision::sha256)
@@ -330,7 +336,8 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
                     entry.modId(),
                     entry.sourceType(),
                     entry.sourceName(),
-                    entry.workshopId()
+                    entry.workshopId(),
+                    entry.pluginId()
             );
             approvals.put(decision.sha256(), stored);
             unsavedDecisions.put(decision.sha256(), stored);
@@ -378,6 +385,8 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
         String sourceType = decode(parts[5]);
         String sourceName = decode(parts[6]);
         String workshopId = decode(parts[7]);
+        // Version 2 entries have no plugin identity and cannot be used as a previous version of a specific archive.
+        String pluginId = parts.length > 8 ? decode(parts[8]) : "";
         if (sha256.isBlank() || allow == null) {
             return;
         }
@@ -389,7 +398,8 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
                 modId,
                 sourceType,
                 sourceName,
-                workshopId
+                workshopId,
+                pluginId
         ));
     }
 
@@ -416,6 +426,7 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
                                 .append('\t').append(encode(decision.sourceType()))
                                 .append('\t').append(encode(decision.sourceName()))
                                 .append('\t').append(encode(decision.workshopId()))
+                                .append('\t').append(encode(decision.pluginId()))
                                 .append('\n'));
                 writeAtomically(approvalsFile, content.toString());
                 approvals.clear();
@@ -581,7 +592,8 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
             String modId,
             String sourceType,
             String sourceName,
-            String workshopId
+            String workshopId,
+            String pluginId
     ) {
     }
 }

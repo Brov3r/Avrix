@@ -269,6 +269,99 @@ class ZomboidPluginApprovalGateTest {
     }
 
     @Test
+    @DisplayName("Should not attribute another plugin's approval to an archive of the same mod")
+    void shouldNotReusePreviousHashAcrossPluginsOfOneMod() throws Exception {
+        Path alphaJar = tempDir.resolve("alpha.jar");
+        Path betaJar = tempDir.resolve("beta.jar");
+        Files.writeString(alphaJar, "alpha-v1");
+        Files.writeString(betaJar, "beta-v1");
+
+        AtomicReference<List<ZomboidApprovalEntry>> alphaBatch = new AtomicReference<>();
+        ZomboidPluginApprovalGate first = service(Environment.CLIENT, "prompt", allowFrontend(true, alphaBatch));
+        assertThat(first.evaluate(archive(alphaJar, "shared-mod"), metadata("alpha")))
+                .isEqualTo(PluginApprovalGate.Status.PENDING);
+        first.flushPending();
+        String alphaHash = alphaBatch.get().get(0).sha256();
+
+        // Keep the beta decision strictly newer so a mod-wide lookup would select it for alpha.
+        Thread.sleep(5);
+
+        AtomicReference<List<ZomboidApprovalEntry>> betaBatch = new AtomicReference<>();
+        ZomboidPluginApprovalGate second = service(Environment.CLIENT, "prompt", allowFrontend(true, betaBatch));
+        assertThat(second.evaluate(archive(betaJar, "shared-mod"), metadata("beta")))
+                .isEqualTo(PluginApprovalGate.Status.PENDING);
+        second.flushPending();
+        assertThat(betaBatch.get()).hasSize(1);
+        assertThat(betaBatch.get().get(0).previousSha256()).isEmpty();
+        String betaHash = betaBatch.get().get(0).sha256();
+
+        Files.writeString(alphaJar, "alpha-v2");
+        AtomicReference<List<ZomboidApprovalEntry>> changedBatch = new AtomicReference<>();
+        ZomboidPluginApprovalGate third = service(Environment.CLIENT, "prompt", pending -> {
+            changedBatch.set(List.copyOf(pending));
+            return new ZomboidApprovalResponse(false, List.of());
+        });
+        assertThat(third.evaluate(archive(alphaJar, "shared-mod"), metadata("alpha")))
+                .isEqualTo(PluginApprovalGate.Status.PENDING);
+        third.flushPending();
+        assertThat(changedBatch.get()).hasSize(1);
+        assertThat(changedBatch.get().get(0).previousSha256()).isEqualTo(alphaHash);
+
+        ZomboidPluginApprovalGate reloaded = service(Environment.CLIENT, "deny-new", null);
+        assertThat(reloaded.evaluate(archive(betaJar, "shared-mod"), metadata("beta")))
+                .isEqualTo(PluginApprovalGate.Status.APPROVED);
+        assertThat(reloaded.evaluate(archive(alphaJar, "shared-mod"), metadata("alpha"), alphaHash))
+                .isEqualTo(PluginApprovalGate.Status.APPROVED);
+        assertThat(Files.readString(approvalsFile)).contains(alphaHash, betaHash);
+    }
+
+    @Test
+    @DisplayName("Should load version 2 decisions and not attribute them as a previous plugin version")
+    void shouldKeepLegacyDecisionWithoutPluginIdentity() throws IOException {
+        Path legacyJar = tempDir.resolve("legacy.jar");
+        Files.writeString(legacyJar, "legacy-v1");
+
+        AtomicReference<List<ZomboidApprovalEntry>> firstBatch = new AtomicReference<>();
+        ZomboidPluginApprovalGate first = service(Environment.CLIENT, "prompt", allowFrontend(true, firstBatch));
+        assertThat(first.evaluate(archive(legacyJar, "legacy-mod"), metadata("legacy-plugin")))
+                .isEqualTo(PluginApprovalGate.Status.PENDING);
+        first.flushPending();
+        String legacyHash = firstBatch.get().get(0).sha256();
+
+        // Rewrite the store in the version 2 layout, which has no plugin identity column.
+        StringBuilder legacyStore = new StringBuilder("VERSION\t2\n");
+        for (String line : Files.readAllLines(approvalsFile)) {
+            if (line.startsWith("APPROVAL\t")) {
+                String[] parts = line.split("\t", -1);
+                legacyStore.append(String.join("\t", List.of(parts).subList(0, 8))).append('\n');
+            }
+        }
+        Files.writeString(approvalsFile, legacyStore.toString());
+
+        ZomboidPluginApprovalGate legacy = service(Environment.CLIENT, "deny-new", null);
+        assertThat(legacy.evaluate(archive(legacyJar, "legacy-mod"), metadata("legacy-plugin")))
+                .isEqualTo(PluginApprovalGate.Status.APPROVED);
+
+        Files.writeString(legacyJar, "legacy-v2");
+        AtomicReference<List<ZomboidApprovalEntry>> changedBatch = new AtomicReference<>();
+        ZomboidPluginApprovalGate updated = service(Environment.CLIENT, "prompt", allowFrontend(true, changedBatch));
+        assertThat(updated.evaluate(archive(legacyJar, "legacy-mod"), metadata("legacy-plugin")))
+                .isEqualTo(PluginApprovalGate.Status.PENDING);
+        updated.flushPending();
+        assertThat(changedBatch.get()).hasSize(1);
+        assertThat(changedBatch.get().get(0).previousSha256()).isEmpty();
+        String updatedHash = changedBatch.get().get(0).sha256();
+
+        assertThat(Files.readString(approvalsFile)).contains(legacyHash, updatedHash);
+
+        ZomboidPluginApprovalGate reloaded = service(Environment.CLIENT, "deny-new", null);
+        assertThat(reloaded.evaluate(archive(legacyJar, "legacy-mod"), metadata("legacy-plugin"), legacyHash))
+                .isEqualTo(PluginApprovalGate.Status.APPROVED);
+        assertThat(reloaded.evaluate(archive(legacyJar, "legacy-mod"), metadata("legacy-plugin")))
+                .isEqualTo(PluginApprovalGate.Status.APPROVED);
+    }
+
+    @Test
     @DisplayName("Should treat prompt as deny-new on a dedicated server")
     void shouldFallbackToDenyNewOnServer() {
         ZomboidPluginApprovalGate service = service(
@@ -427,9 +520,13 @@ class ZomboidPluginApprovalGateTest {
     }
 
     private PluginArchive archive() {
+        return archive(pluginJar, "test-mod");
+    }
+
+    private static PluginArchive archive(Path jar, String modId) {
         return new PluginArchive(
-                pluginJar.toFile(),
-                "test-mod",
+                jar.toFile(),
+                modId,
                 "Test Mod",
                 PluginArchive.SOURCE_MOD,
                 null,
@@ -438,9 +535,13 @@ class ZomboidPluginApprovalGateTest {
     }
 
     private Metadata metadata() {
+        return metadata("test-plugin");
+    }
+
+    private static Metadata metadata(String id) {
         return new Metadata.Builder()
                 .schema(Constants.METADATA_SCHEMA)
-                .id("test-plugin")
+                .id(id)
                 .name("Test Plugin")
                 .version("1.0.0")
                 .environment(Environment.BOTH)
