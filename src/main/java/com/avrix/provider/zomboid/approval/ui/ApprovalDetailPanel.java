@@ -141,7 +141,7 @@ public final class ApprovalDetailPanel extends JComponent {
                 ZomboidApprovalTheme.ACCENT
         ));
         result.add(new ApprovalTextElement(List.of(
-                messages.format(ApprovalMessage.DETAIL_MOD_ID, ApprovalFormatting.blankToDash(entry.modId())),
+                messages.format(ApprovalMessage.DETAIL_MOD_ID, ApprovalFormatting.blankToDash(entry.displayModId())),
                 messages.format(ApprovalMessage.DETAIL_PLUGIN_ID, ApprovalFormatting.blankToDash(entry.pluginId())),
                 messages.format(ApprovalMessage.DETAIL_AUTHOR, ApprovalFormatting.blankToDash(entry.modAuthor())),
                 messages.format(ApprovalMessage.DETAIL_SOURCE, source(entry)),

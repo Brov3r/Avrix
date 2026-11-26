@@ -49,6 +49,37 @@ class ZomboidApprovalBatchTest {
     }
 
     @Test
+    @DisplayName("Should keep the identity mod ID while exposing a safe display value")
+    void shouldKeepIdentityModIdInProtocol() throws IOException {
+        String rawModId = "mod\u0000\r\nID\u001B\u202E";
+        ZomboidApprovalEntry entry = new ZomboidApprovalEntry(
+                rawModId,
+                "plugin",
+                "Author",
+                "Plugin",
+                PluginArchive.SOURCE_MOD,
+                "Mod",
+                "",
+                Path.of("plugin.jar"),
+                "a".repeat(64),
+                0L,
+                0L,
+                "",
+                List.of()
+        );
+
+        StringWriter writer = new StringWriter();
+        ZomboidApprovalBatch.writeRequest(writer, List.of(entry));
+        List<ZomboidApprovalEntry> parsed = ZomboidApprovalBatch.readRequest(
+                new StringReader(writer.toString())
+        );
+
+        assertThat(parsed).hasSize(1);
+        assertThat(parsed.get(0).modId()).isEqualTo(rawModId);
+        assertThat(parsed.get(0).displayModId()).isEqualTo("mod ID");
+    }
+
+    @Test
     @DisplayName("Should round-trip approval responses")
     void shouldRoundTripResponse() throws IOException {
         ZomboidApprovalResponse response = new ZomboidApprovalResponse(true, List.of(

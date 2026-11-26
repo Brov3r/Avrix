@@ -3,6 +3,7 @@ package com.avrix.provider.zomboid;
 import com.avrix.api.PluginArchive;
 import com.avrix.api.PluginSource;
 import com.avrix.core.Environment;
+import com.avrix.utils.DisplayText;
 import com.github.zafarkhaja.semver.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -640,11 +641,11 @@ public final class ZomboidModPluginSource implements PluginSource {
                     }
                 } else if (key.equalsIgnoreCase("name")) {
                     if (name == null || name.isBlank()) {
-                        name = value;
+                        name = DisplayText.sanitizeSingleLine(value);
                     }
                 } else if (key.equalsIgnoreCase("author") || key.equalsIgnoreCase("authors")) {
                     if (author == null || author.isBlank()) {
-                        author = value;
+                        author = DisplayText.sanitizeSingleLine(value);
                     }
                 } else if (key.equalsIgnoreCase(ZomboidConstants.JAR_PLUGINS_KEY)) {
                     for (String entry : value.split(JAR_SEPARATOR_PATTERN)) {

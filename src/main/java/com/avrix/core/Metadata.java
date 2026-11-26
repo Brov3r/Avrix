@@ -1,6 +1,7 @@
 package com.avrix.core;
 
 import com.avrix.utils.Constants;
+import com.avrix.utils.DisplayText;
 import com.avrix.utils.PluginIdentifiers;
 import com.avrix.utils.VersionValidation;
 
@@ -143,7 +144,11 @@ public record Metadata(
     }
 
     /**
-     * Compact constructor enforcing domain invariants, normalizing string values, and collection immutability.
+     * Compact constructor enforcing domain invariants, sanitizing display text, and collection immutability.
+     * <p>
+     * Display fields are sanitized for presentation: {@code name}, {@code license}, {@code authors}, and
+     * {@code contacts} become single-line text, while {@code description} keeps line feeds and tabs. Identity fields
+     * such as {@code id}, {@code version}, entrypoints, and mixins are validated without sanitization.
      *
      * @throws NullPointerException     if any mandatory string field ({@code id}, {@code name}, {@code version}) is
      *                                  {@code null}
@@ -166,7 +171,7 @@ public record Metadata(
         Objects.requireNonNull(version, "Plugin 'version' cannot be null");
 
         id = id.strip();
-        name = name.strip();
+        name = DisplayText.sanitizeSingleLine(name);
         version = version.strip();
 
         if (id.isBlank()) {
@@ -195,17 +200,17 @@ public record Metadata(
             throw new IllegalArgumentException("Invalid plugin version [" + version + "]");
         }
 
-        // Optional scalar fields normalization
+        // Optional display fields normalization
         environment = Objects.requireNonNullElse(environment, Environment.BOTH);
-        description = Objects.requireNonNullElse(description, "").strip();
-        license = Objects.requireNonNullElse(license, "UNLICENSED").strip();
+        description = DisplayText.sanitizeMultiline(Objects.requireNonNullElse(description, "")).strip();
+        license = DisplayText.sanitizeSingleLine(Objects.requireNonNullElse(license, "UNLICENSED"));
         if (license.isBlank()) {
             license = "UNLICENSED";
         }
 
         // Defensive copy, normalization, and unmodifiable collection creation
-        authors = normalizeList(authors);
-        contacts = normalizeList(contacts);
+        authors = normalizeDisplayList(authors);
+        contacts = normalizeDisplayList(contacts);
         mainEntrypoints = normalizeJavaNames(normalizeList(mainEntrypoints), "Plugin 'entrypoint'");
         clientEntrypoints = normalizeJavaNames(
                 normalizeList(clientEntrypoints),
@@ -324,6 +329,27 @@ public record Metadata(
             String trimmed = value.strip();
             if (!trimmed.isEmpty()) {
                 normalized.add(trimmed);
+            }
+        }
+        return List.copyOf(normalized);
+    }
+
+    /**
+     * Creates an immutable list of single-line display values with blank entries removed.
+     *
+     * @param values source values, may be {@code null}
+     * @return immutable sanitized display-value list
+     */
+    private static List<String> normalizeDisplayList(List<String> values) {
+        if (values == null || values.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> normalized = new ArrayList<>(values.size());
+        for (String value : values) {
+            String sanitized = DisplayText.sanitizeSingleLine(value);
+            if (!sanitized.isEmpty()) {
+                normalized.add(sanitized);
             }
         }
         return List.copyOf(normalized);

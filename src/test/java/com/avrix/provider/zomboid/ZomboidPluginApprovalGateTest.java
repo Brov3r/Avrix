@@ -9,13 +9,18 @@ import com.avrix.provider.zomboid.approval.ZomboidApprovalDecision;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalEntry;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalFrontend;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalResponse;
+import com.avrix.provider.zomboid.approval.ZomboidConsoleApprovalFrontend;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -169,6 +174,54 @@ class ZomboidPluginApprovalGateTest {
         assertThat(batch.get()).hasSize(1);
         assertThat(batch.get().get(0).modId()).isEqualTo("test-mod");
         assertThat(batch.get().get(0).modAuthor()).isEqualTo("Mod Author");
+    }
+
+    @Test
+    @DisplayName("Should pass sanitized metadata and source text to the approval console")
+    void shouldSanitizeApprovalEntryAndConsoleOutput() {
+        StringWriter output = new StringWriter();
+        ZomboidConsoleApprovalFrontend console = new ZomboidConsoleApprovalFrontend(
+                new BufferedReader(new StringReader("n\nn\n")),
+                new PrintWriter(output, true),
+                5
+        );
+        AtomicReference<List<ZomboidApprovalEntry>> batch = new AtomicReference<>();
+        ZomboidApprovalFrontend recordingConsole = pending -> {
+            batch.set(List.copyOf(pending));
+            return console.request(pending);
+        };
+        ZomboidPluginApprovalGate service = service(Environment.CLIENT, "prompt", recordingConsole);
+
+        Metadata metadata = new Metadata.Builder()
+                .schema(Constants.METADATA_SCHEMA)
+                .id("sanitized-plugin")
+                .name("Evil\u0000\r\nName\u202E\u001B")
+                .version("1.0.0")
+                .authors("Bad\nAuthor")
+                .build();
+        PluginArchive archive = new PluginArchive(
+                pluginJar.toFile(),
+                "test-mod",
+                "Sou\u0000rce\r\nName",
+                PluginArchive.SOURCE_MOD,
+                Map.of(PluginArchive.ATTRIBUTE_AUTHOR, "Mod\u001BAuthor\r\n"),
+                false
+        );
+
+        assertThat(service.evaluate(archive, metadata)).isEqualTo(PluginApprovalGate.Status.PENDING);
+        service.flushPending();
+
+        assertThat(batch.get()).hasSize(1);
+        ZomboidApprovalEntry entry = batch.get().get(0);
+        assertThat(entry.displayName()).isEqualTo("Evil Name");
+        assertThat(entry.modAuthor()).isEqualTo("Mod Author");
+        assertThat(entry.sourceName()).isEqualTo("Sou rce Name");
+        assertThat(entry.modId()).isEqualTo("test-mod");
+        assertThat(entry.pluginId()).isEqualTo("sanitized-plugin");
+
+        String consoleText = output.toString().replace("\r\n", "\n");
+        assertThat(consoleText).contains("Evil Name", "Mod Author", "Sou rce Name");
+        assertThat(consoleText).doesNotContain("\u0000", "\u001B", "\u202E", "\r");
     }
 
     @Test

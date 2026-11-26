@@ -237,7 +237,7 @@ public final class ApprovalTable extends JTable {
                     ) + "<br/>"
                     + messages.format(
                             ApprovalMessage.LABEL_MOD_ID,
-                            ApprovalFormatting.escapeHtml(entry.modId())
+                            ApprovalFormatting.escapeHtml(entry.displayModId())
                     ) + "<br/>"
                     + messages.format(
                             ApprovalMessage.LABEL_AUTHOR,

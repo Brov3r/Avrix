@@ -1,5 +1,7 @@
 package com.avrix.provider.zomboid.approval.ui;
 
+import com.avrix.provider.zomboid.approval.ZomboidApprovalEntry;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -7,6 +9,8 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import java.awt.image.BufferedImage;
+import java.nio.file.Path;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -44,6 +48,49 @@ public class ApprovalRendererTest {
             }
             renderer.getTableCellRendererComponent(table, text, true, true, 0, ApprovalColumns.AUTHOR);
             assertThat(label.getClientProperty("html")).isNull();
+        });
+    }
+
+    /**
+     * Verifies that a sanitized approval entry renders without control characters in a table cell.
+     *
+     * @throws Exception if the EDT cannot execute the test
+     */
+    @Test
+    public void shouldRenderSanitizedApprovalEntryWithoutControls() throws Exception {
+        ZomboidApprovalEntry entry = new ZomboidApprovalEntry(
+                "mod-id",
+                "plugin-id",
+                "Auth\u001B\r\nor",
+                "Dis\u0000play\n\rName\u202E",
+                "mod",
+                "Sou\u001Brce",
+                "",
+                Path.of("plugin.jar"),
+                "a".repeat(64),
+                0L,
+                0L,
+                "",
+                List.of()
+        );
+
+        SwingUtilities.invokeAndWait(() -> {
+            var table = new JTable(1, 4);
+            table.setDefaultRenderer(Object.class, new ApprovalCellRenderer());
+            var renderer = table.getCellRenderer(0, ApprovalColumns.AUTHOR);
+            var label = (JLabel) renderer.getTableCellRendererComponent(
+                    table,
+                    entry.modAuthor(),
+                    false,
+                    false,
+                    0,
+                    ApprovalColumns.AUTHOR
+            );
+
+            assertThat(label.getText()).isEqualTo("Auth or");
+            assertThat(label.getText()).doesNotContain("\n", "\r", "\u001B");
+            assertThat(entry.displayName()).isEqualTo("Dis play Name");
+            assertThat(entry.displayName()).doesNotContain("\n", "\r", "\u001B", "\u202E", "\u0000");
         });
     }
 }

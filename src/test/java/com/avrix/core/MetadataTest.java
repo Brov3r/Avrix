@@ -279,6 +279,76 @@ class MetadataTest {
     }
 
     @Nested
+    @DisplayName("Display Sanitization Tests")
+    class DisplaySanitizationTests {
+
+        @Test
+        @DisplayName("Should sanitize name, license, authors, contacts, and description")
+        void shouldSanitizeDisplayFields() {
+            var meta = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("display-plugin")
+                    .version("1.0.0")
+                    .name(" \u0000Evil\nName\u202E ")
+                    .description("  First\r\nSecond\u0000Third\u001B  ")
+                    .authors(List.of(" A\nB ", "\tC\u0000D\t", "\u0000\u001B"))
+                    .contacts(List.of(" https://example.com\n?q=1 ", "\u202E"))
+                    .license(" \u0000MIT\n2.0 ")
+                    .build();
+
+            assertThat(meta.name()).isEqualTo("Evil Name");
+            assertThat(meta.description()).isEqualTo("First\nSecond Third");
+            assertThat(meta.authors()).containsExactly("A B", "C D");
+            assertThat(meta.contacts()).containsExactly("https://example.com ?q=1");
+            assertThat(meta.license()).isEqualTo("MIT 2.0");
+        }
+
+        @Test
+        @DisplayName("Should leave identity fields byte-for-byte unchanged")
+        void shouldNotChangeIdentityFields() {
+            var dependencies = Map.of("core-lib", ">=1.0.0");
+            var meta = new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("identity-plugin")
+                    .version("1.2.3")
+                    .name("Name\u0000")
+                    .description("Description\u001B")
+                    .authors(List.of("Author\nName"))
+                    .contacts(List.of("contact\u0000value"))
+                    .license("\u0000")
+                    .entrypoint("com.example.IdentityMain")
+                    .mixins("com.example.IdentityMixin")
+                    .loadBefore("after-me")
+                    .loadAfter("before-me")
+                    .dependencies(dependencies)
+                    .build();
+
+            assertThat(meta.name()).isEqualTo("Name");
+            assertThat(meta.id()).isEqualTo("identity-plugin");
+            assertThat(meta.version()).isEqualTo("1.2.3");
+            assertThat(meta.entrypoint()).isEqualTo("com.example.IdentityMain");
+            assertThat(meta.mixins()).containsExactly("com.example.IdentityMixin");
+            assertThat(meta.loadBefore()).containsExactly("after-me");
+            assertThat(meta.loadAfter()).containsExactly("before-me");
+            assertThat(meta.dependencies()).isEqualTo(dependencies);
+            assertThat(meta.license()).isEqualTo("UNLICENSED");
+        }
+
+        @Test
+        @DisplayName("Should reject a name that is blank after sanitization")
+        void shouldRejectNameWithOnlyControlCharacters() {
+            assertThatThrownBy(() -> new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("control-name")
+                    .version("1.0.0")
+                    .name("\u0000\u001B\u202E")
+                    .build())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Plugin 'name' cannot be blank");
+        }
+    }
+
+    @Nested
     @DisplayName("Builder Tests")
     class BuilderTests {
 

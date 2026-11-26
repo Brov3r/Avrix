@@ -160,7 +160,7 @@ public final class ZomboidConsoleApprovalFrontend implements ZomboidApprovalFron
         String displayName = entry.displayName().isBlank() ? entry.pluginId() : entry.displayName();
         out.printf("[%d/%d] %s%n", index, total, displayName);
         out.println("  Plugin ID: " + ApprovalFormatting.blankToDash(entry.pluginId()));
-        out.println("  Mod ID: " + ApprovalFormatting.blankToDash(entry.modId()));
+        out.println("  Mod ID: " + ApprovalFormatting.blankToDash(entry.displayModId()));
         out.println("  Author: " + ApprovalFormatting.blankToDash(entry.modAuthor()));
         out.println("  Source: " + describeSource(entry));
         out.println("  Size: " + ApprovalFormatting.formatSize(entry.size()));

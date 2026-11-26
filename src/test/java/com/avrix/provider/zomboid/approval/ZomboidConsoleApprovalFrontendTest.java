@@ -26,6 +26,34 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ZomboidConsoleApprovalFrontendTest {
 
     @Test
+    @DisplayName("Should render sanitized display fields without control characters")
+    void shouldRenderSanitizedDisplayFields() {
+        StringWriter output = new StringWriter();
+        ZomboidConsoleApprovalFrontend frontend = frontend("n\nn\n", output);
+        ZomboidApprovalEntry entry = new ZomboidApprovalEntry(
+                "test-mod",
+                "test-plugin",
+                "Auth\u001B\r\nor",
+                "Dis\u0000play\nName\u202E",
+                "mod",
+                "Sou\u001Brce\nName",
+                "",
+                Path.of("plugin.jar"),
+                "a".repeat(64),
+                1024L,
+                0L,
+                "",
+                List.of()
+        );
+
+        frontend.request(List.of(entry));
+
+        String rendered = output.toString();
+        assertThat(rendered).contains("Dis play Name", "Auth or", "Sou rce Name");
+        assertThat(rendered).doesNotContain("\u0000", "\u001B", "\u202E");
+    }
+
+    @Test
     @DisplayName("Should allow, deny, and remember individual decisions")
     void shouldAllowDenyAndRemember() {
         StringWriter output = new StringWriter();
@@ -69,6 +97,35 @@ class ZomboidConsoleApprovalFrontendTest {
                 new ZomboidApprovalDecision("a".repeat(64), false),
                 new ZomboidApprovalDecision("b".repeat(64), false)
         );
+    }
+
+    @Test
+    @DisplayName("Should print a sanitized mod ID without control characters")
+    void shouldPrintSanitizedModId() {
+        StringWriter output = new StringWriter();
+        ZomboidConsoleApprovalFrontend frontend = frontend("n\nn\n", output);
+        ZomboidApprovalEntry entry = new ZomboidApprovalEntry(
+                "mod\u0000\r\nID\u001B\u202E",
+                "plugin",
+                "Author",
+                "Plugin",
+                "mod",
+                "Mod",
+                "",
+                Path.of("plugin.jar"),
+                "a".repeat(64),
+                0L,
+                0L,
+                "",
+                List.of()
+        );
+
+        frontend.request(List.of(entry));
+
+        String consoleText = output.toString().replace("\r\n", "\n");
+        assertThat(consoleText).contains("Mod ID: mod ID");
+        assertThat(consoleText).doesNotContain("\u0000", "\u001B", "\u202E", "\r");
+        assertThat(entry.modId()).isEqualTo("mod\u0000\r\nID\u001B\u202E");
     }
 
     @Test

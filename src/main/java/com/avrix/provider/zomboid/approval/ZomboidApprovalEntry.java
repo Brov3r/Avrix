@@ -1,5 +1,7 @@
 package com.avrix.provider.zomboid.approval;
 
+import com.avrix.utils.DisplayText;
+
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -40,8 +42,8 @@ public record ZomboidApprovalEntry(
     /**
      * Creates a validated approval entry.
      * <p>
-     * Human-readable names are truncated for presentation. Identifiers, hashes, paths, and mixin declarations are
-     * never truncated; oversized values are rejected instead.
+     * Human-readable names are sanitized and truncated for presentation. Identifiers, hashes, paths, and mixin
+     * declarations are never sanitized or truncated; oversized values are rejected instead.
      *
      * @throws NullPointerException if {@code jarPath} or {@code sha256} is null
      * @throws IllegalArgumentException if identity fields, paths, or mixin declarations exceed approval limits
@@ -49,10 +51,16 @@ public record ZomboidApprovalEntry(
     public ZomboidApprovalEntry {
         modId = Objects.requireNonNullElse(modId, "");
         pluginId = Objects.requireNonNullElse(pluginId, "");
-        modAuthor = ApprovalLimits.displayText(Objects.requireNonNullElse(modAuthor, ""));
-        displayName = ApprovalLimits.displayText(Objects.requireNonNullElse(displayName, ""));
+        modAuthor = ApprovalLimits.displayText(
+                DisplayText.sanitizeSingleLine(Objects.requireNonNullElse(modAuthor, ""))
+        );
+        displayName = ApprovalLimits.displayText(
+                DisplayText.sanitizeSingleLine(Objects.requireNonNullElse(displayName, ""))
+        );
         sourceType = Objects.requireNonNullElse(sourceType, "");
-        sourceName = ApprovalLimits.displayText(Objects.requireNonNullElse(sourceName, ""));
+        sourceName = ApprovalLimits.displayText(
+                DisplayText.sanitizeSingleLine(Objects.requireNonNullElse(sourceName, ""))
+        );
         workshopId = Objects.requireNonNullElse(workshopId, "");
         jarPath = Objects.requireNonNull(jarPath, "JAR path cannot be null");
         sha256 = Objects.requireNonNull(sha256, "SHA-256 cannot be null");
@@ -78,5 +86,17 @@ public record ZomboidApprovalEntry(
         if (mixinCharacters > ApprovalLimits.MAX_FIELD_CHARACTERS) {
             throw new IllegalArgumentException("Mixin declarations exceed approval text limit");
         }
+    }
+
+    /**
+     * Returns the source mod identifier sanitized for console or UI presentation.
+     * <p>
+     * The returned value never contains ISO control characters or bidirectional formatting controls. {@link #modId()}
+     * remains the exact identity value used by the approval store and protocol.
+     *
+     * @return sanitized single-line display form of the source mod identifier
+     */
+    public String displayModId() {
+        return DisplayText.sanitizeSingleLine(modId);
     }
 }

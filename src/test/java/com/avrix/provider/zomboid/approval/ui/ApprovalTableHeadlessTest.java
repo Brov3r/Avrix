@@ -216,6 +216,47 @@ public class ApprovalTableHeadlessTest {
         assertThat(result.mixinClasses()).containsExactly("test.mixin.EffectiveMixin");
     }
 
+    /**
+     * Verifies that the author tooltip shows the sanitized mod ID while the entry keeps its identity value.
+     *
+     * @throws Exception if the EDT cannot execute the test
+     */
+    @Test
+    public void shouldRenderSanitizedModIdInTooltip() throws Exception {
+        String rawModId = "mod\u0000\r\nID\u001B\u202E";
+        var messages = new ApprovalMessages();
+        var entry = new ZomboidApprovalEntry(rawModId, "plugin", "Author", "Plugin", "mod", "Mod", "",
+                directory.resolve("tooltip.jar"), "a".repeat(64), 0L, 0L, "", List.of());
+        var model = new ApprovalTableModel(List.of(entry), messages,
+                (path, mixins) -> new MixinTargetInspector.Result(mixins, List.of(), List.of()));
+
+        SwingUtilities.invokeAndWait(() -> {
+            var table = new ApprovalTable(model, messages);
+            try {
+                table.setRowHeight(ApprovalColumns.BASE_ROW_HEIGHT);
+                table.setBounds(0, 0, 1200, 200);
+                table.doLayout();
+                var cell = table.getCellRect(0, ApprovalColumns.AUTHOR, true);
+                String tooltip = table.getToolTipText(new MouseEvent(
+                        table,
+                        MouseEvent.MOUSE_MOVED,
+                        System.currentTimeMillis(),
+                        0,
+                        cell.x + 2,
+                        cell.y + 2,
+                        0,
+                        false
+                ));
+
+                assertThat(tooltip).isNotNull().contains("mod ID");
+                assertThat(tooltip).doesNotContain("\u0000", "\r", "\u001B", "\u202E");
+                assertThat(entry.modId()).isEqualTo(rawModId);
+            } finally {
+                table.cancelInspections();
+            }
+        });
+    }
+
     private ZomboidApprovalEntry entry(String hash) {
         return new ZomboidApprovalEntry("mod", "plugin", "Author", "Plugin", "mod", "Mod", "",
                 directory.resolve(hash + ".jar"), hash.repeat(64), 0L, 0L, "", List.of("example.Mixin"));

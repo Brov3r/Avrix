@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -83,6 +84,42 @@ class ZomboidModPluginSourceTest {
         assertThat(archives).hasSize(1);
         assertThat(archives.get(0).attributes())
                 .containsEntry(PluginArchive.ATTRIBUTE_AUTHOR, "Test Author");
+    }
+
+    @Test
+    @DisplayName("Should sanitize control characters from mod.info name and author")
+    void shouldSanitizeModInfoDisplayFields() throws Exception {
+        Path home = createUserHome();
+        Path gameRoot = createGameRoot();
+        writeClientActiveMods(home, "control-mod");
+
+        Path version = home.resolve("Zomboid/mods/ControlMod/42");
+        Files.createDirectories(version.resolve("media/java"));
+        Files.writeString(version.resolve("mod.info"), """
+                id=control-mod
+                name=Evil\u0000\tName\u001B
+                author=Bad\u202E\u001BAuthor
+                jarPlugins=media/java/control.jar
+                """, StandardCharsets.UTF_8);
+        Files.createFile(version.resolve("media/java/control.jar"));
+
+        List<PluginArchive> archives = new ZomboidModPluginSource(
+                gameRoot,
+                home,
+                Environment.CLIENT,
+                null
+        ).scanArchives();
+
+        assertThat(archives).hasSize(1);
+        PluginArchive archive = archives.get(0);
+        String author = archive.attributes().get(PluginArchive.ATTRIBUTE_AUTHOR);
+
+        assertThat(archive.sourceId()).isEqualTo("control-mod");
+        assertThat(archive.sourceName()).isEqualTo("Evil Name");
+        assertThat(author).isEqualTo("Bad Author");
+        assertThat(archive.sourceName()).doesNotContain("\u0000", "\t", "\u001B", "\r", "\n");
+        assertThat(author).doesNotContain("\u0000", "\t", "\u001B", "\u202E", "\r", "\n");
+        assertThat(archive.file().getName()).isEqualTo("control.jar");
     }
 
     @Test
