@@ -16,7 +16,7 @@ The loader registers these contracts during bootstrap:
 
 | Contract          | Implementation                                        |
 |-------------------|-------------------------------------------------------|
-| `KnotClassLoader` | Flat transforming classloader hosting the runtime     |
+| `KnotClassLoader` | Flat transforming classloader hosting game and plugin classes |
 | `LoaderProvider`  | Loader name, version, authors, license, and contacts  |
 | `GameProvider`    | Active client or dedicated server game provider       |
 | `PluginManager`   | Active plugin manager                                 |
@@ -175,3 +175,55 @@ boolean removed = ServiceManager.unregister(DatabaseService.class);
 > [!WARNING]
 > `ServiceManager` is a global registry. Do not unregister services owned by the loader or by other plugins unless you
 > control their lifecycle.
+
+---
+
+### 🔎 Plugin Lookup and Version Checks
+
+`PluginManager` exposes convenience lookups for integrations:
+
+- `findPlugin(String id)` returns the loaded plugin or core component; empty when the ID is not loaded.
+- `findLoadResult(String id)` returns the most recent recorded result (`LOADED`, `FAILED`, or `SKIPPED`); empty when no
+  attempt was recorded.
+- `isLoaded(String id)` is the boolean form of `findPlugin(id)`.
+- `isLoaded(String id, String versionConstraint)` checks the declared version against a dependency-style SemVer
+  constraint. A missing plugin returns `false`; an invalid constraint throws `IllegalArgumentException`.
+- `getUserPlugins()` returns only plugins backed by a physical JAR, sorted by plugin ID.
+
+```java
+PluginManager plugins = ServiceManager.get(PluginManager.class);
+
+if (plugins.isLoaded("core-api", ">=2.1.0")) {
+    // A compatible provider is loaded.
+}
+
+plugins.findPlugin("optional-plugin").ifPresent(plugin ->
+        LOGGER.debug("Using optional plugin {}", plugin.metadata().version()));
+
+for (PluginData plugin : plugins.getUserPlugins()) {
+    LOGGER.debug("User plugin: {} {}", plugin.id(), plugin.metadata().version());
+}
+```
+
+---
+
+### 🧭 Classpath Conflicts
+
+`PluginManager.getClasspathConflicts()` returns immutable `ClasspathConflict` entries sorted by resource path:
+
+```java
+ClasspathConflict(
+        String resourcePath,
+        List<String> pluginIds,
+        String winnerPluginId
+)
+```
+
+Detection runs while plugin archives are attached. Avrix keeps first-wins classpath behavior: the earliest attached
+archive wins, and later copies are never merged. `pluginIds` is in discovery order. Classes delegated to the parent class
+loader (`java.*`, `org.slf4j.*`, `com.avrix.*`, ASM/Mixin, and other loader libraries) are excluded, as are
+infrastructure entries such as `module-info.class` and `META-INF/*`.
+
+The report is diagnostic only: conflicts do not fail loading. The loader writes a bounded `WARN` summary with the first
+10 entries plus the remaining count. The report is cleared at the start of a new `loadPlugins()` run; direct
+`loadPlugin(...)` calls add to the current report.

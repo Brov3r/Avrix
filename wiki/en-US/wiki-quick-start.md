@@ -92,9 +92,12 @@ In PowerShell, change directory with `Set-Location "C:\Path\To\ProjectZomboid"`;
 Neither `avrix.game.dir` nor `user.dir` changes the process working directory. Set it in your IDE launch configuration.
 Relative plugin directories are resolved against the selected game root.
 
-`--strict` aborts startup on plugin load failures, dependency/conflict resolution errors, and mixin transformation
-failures and unknown metadata `environment` values. Unknown keys, duplicate load-order entries, and blank list entries
-remain warnings. Duplicate YAML keys are always rejected; if the duplicate-key check cannot be enabled, parsing fails.
+`--strict` aborts startup on plugin load failures, dependency/conflict resolution errors, mixin transformation failures,
+and unknown metadata `environment` values. Without `--strict`, an unknown `environment` only warns and falls back to
+`both`; unknown side names inside `entrypoints` or `mixins` are rejected even without `--strict`, so a manifest with an
+unknown side is never loaded. The other metadata warnings are limited to unknown top-level keys, duplicate
+`loadBefore`/`loadAfter` entries, and blank list entries. Duplicate YAML keys are always rejected; if the duplicate-key
+check cannot be enabled, parsing fails.
 
 Mixin declarations are checked before registration. A registration failure that may leave partial transformer state,
 or an entrypoint failure after any mixins were registered, aborts startup even without `--strict`: such changes cannot
@@ -312,8 +315,25 @@ is logged as a warning; under `--strict` it aborts load order resolution. Non-fa
 never abort parsing; invalid schema, identifiers, versions, entrypoints, mixins, and dependency structure always fail.
 For game
 provider descriptors, `entrypoint` means the game's main class rather than a `Plugin` implementation; loader
-descriptors leave it empty. Parser dispatch is keyed by `schema`, so schema 2 and later versions can coexist with
-existing version-1 manifests.
+descriptors leave it empty. Parser dispatch is keyed by `schema`: only schema `1` and schema `2` are supported, and any
+other value is rejected.
+
+### Display Text Sanitization
+
+Human-readable metadata is sanitized before it reaches logs, the approval UI, or the console. `name`, `authors`,
+`contacts`, and `license` are reduced to single-line text, while `description` keeps line breaks and tabs; CRLF and lone
+CR are normalized to LF. ISO control characters (including ESC), bidirectional formatting controls, and Unicode line or
+paragraph separators are removed or replaced with spaces. The `name` and `author` values read from `mod.info` are
+sanitized the same way. Approval rows and console prompts therefore use sanitized names, authors, and source labels.
+
+Identity and machine-readable values are never sanitized: `id`, `version`, entrypoints, mixins, SHA-256 hashes, and
+filesystem paths are preserved exactly and validated separately. The Mod ID read from `mod.info` is shown in the
+approval console and window through a sanitized display form (control, bidirectional, and ESC characters are removed),
+while the identity `modId` used by the approval store, protocol, and `previousHash` lookup stays unchanged. Plugin IDs
+are already validated, so they are not re-sanitized.
+
+> [!NOTE]
+> Sanitization is presentation hygiene, not a security boundary. Plugins still run arbitrary Java code.
 
 ---
 
@@ -400,6 +420,35 @@ other plugins. Loader integrations can inspect the most recent attempt through `
 returns immutable `PluginLoadResult` entries with `LOADED`, `FAILED`, or `SKIPPED` status. `PluginManager.close()` shuts
 down loaded plugins in reverse order and is called automatically by the loader on JVM shutdown.
 
+### Plugin Data Directory
+
+`PluginData.getDataDirectory()` returns the writable directory reserved for the plugin: `<pluginsDir>/<plugin-id>`. The
+path is absolute and normalized. The directory is created lazily on the first call, not when the archive is attached, so
+a plugin that never requests it creates nothing. Every entrypoint of one plugin receives the same path. Synthetic and
+core descriptors return `Optional.empty()`. If creation fails, the method throws `UncheckedIOException`.
+
+```java
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+@Override
+public void onInitialize(PluginData pluginData) {
+    Path stateFile = pluginData.getDataDirectory()
+            .orElseThrow(() -> new IllegalStateException("Plugin data directory is unavailable"))
+            .resolve("state.txt");
+
+    try {
+        Files.writeString(stateFile, "enabled=true");
+    } catch (IOException e) {
+        throw new UncheckedIOException("Failed to write " + stateFile, e);
+    }
+}
+```
+
+`<pluginsDir>` is the configured plugins directory, not the game root.
+
 ---
 
 ### Side-Aware Metadata (schema 2)
@@ -442,6 +491,8 @@ mixins:
 - Schema 2 also accepts the schema 1 fields as shorthand: singular `entrypoint` is one `entrypoints.main` item, and
   list `mixins` is `mixins.common`.
 - Declaring both `entrypoint` and `entrypoints` in the same manifest is invalid.
+- Unknown side names inside `entrypoints` or `mixins` are rejected: only `main`/`client`/`server` are accepted for
+  entrypoints and `common`/`client`/`server` for mixins.
 - Duplicate class names are skipped; the first occurrence wins. Each entrypoint must implement `Plugin` and have an
   accessible no-arg constructor. Mixin entries remain FQCNs, not resource paths.
 

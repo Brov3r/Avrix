@@ -110,6 +110,12 @@ loading; without `--strict` the affected class is loaded without the failed tran
 Mixin configuration resources are generated in memory from `metadata.yml`; the loader never writes mixin JSON files
 to disk. Multi-release JARs are supported for normal class loading, mixin targets, and wildcard class discovery.
 
+Each generated configuration uses `minVersion` `0.8.7` and `compatibilityLevel` `JAVA_25`. The plugin's canonical
+`Metadata.id` is attached as the mixin owner for diagnostics; it is not the Workshop item ID, which identifies the
+distribution package and may contain several plugins. Successful registration is logged at `DEBUG` with the mixin class
+and its target classes. A `CallbackInfo` or `CallbackInfoReturnable` parameter in an `@Inject` method is standard Mixin
+usage and is not a declaration error.
+
 ---
 
 ### Learning Resources

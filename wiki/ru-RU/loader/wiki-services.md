@@ -14,7 +14,7 @@
 
 | Контракт          | Реализация                                                    |
 |-------------------|---------------------------------------------------------------|
-| `KnotClassLoader` | Плоский трансформирующий загрузчик классов, в котором работает рантайм |
+| `KnotClassLoader` | Плоский трансформирующий загрузчик классов, содержащий классы игры и плагинов |
 | `LoaderProvider`  | Имя, версия, авторы, лицензия и контакты загрузчика           |
 | `GameProvider`    | Активный игровой провайдер клиента или выделенного сервера    |
 | `PluginManager`   | Активный менеджер плагинов                                    |
@@ -168,3 +168,56 @@ boolean removed = ServiceManager.unregister(DatabaseService.class);
 > [!WARNING]
 > `ServiceManager` — глобальный реестр. Не удаляйте сервисы загрузчика или других плагинов, если не управляете их
 > жизненным циклом.
+
+---
+
+### 🔎 Поиск плагинов и проверка версий
+
+`PluginManager` предоставляет удобные методы для интеграций:
+
+- `findPlugin(String id)` — загруженный плагин или core-компонент; пусто, если ID не загружен.
+- `findLoadResult(String id)` — последний записанный результат (`LOADED`, `FAILED` или `SKIPPED`); пусто, если попыток
+  не было.
+- `isLoaded(String id)` — логическая форма `findPlugin(id)`.
+- `isLoaded(String id, String versionConstraint)` — проверяет объявленную версию по SemVer-ограничению того же формата,
+  что и у зависимостей. Отсутствующий плагин даёт `false`; некорректное ограничение — `IllegalArgumentException`.
+- `getUserPlugins()` — только плагины с физическим JAR, отсортированные по ID.
+
+```java
+PluginManager plugins = ServiceManager.get(PluginManager.class);
+
+if (plugins.isLoaded("core-api", ">=2.1.0")) {
+    // Совместимый провайдер загружен.
+}
+
+plugins.findPlugin("optional-plugin").ifPresent(plugin ->
+        LOGGER.debug("Using optional plugin {}", plugin.metadata().version()));
+
+for (PluginData plugin : plugins.getUserPlugins()) {
+    LOGGER.debug("User plugin: {} {}", plugin.id(), plugin.metadata().version());
+}
+```
+
+---
+
+### 🧭 Конфликты classpath
+
+`PluginManager.getClasspathConflicts()` возвращает неизменяемые записи `ClasspathConflict`, отсортированные по пути
+ресурса:
+
+```java
+ClasspathConflict(
+        String resourcePath,
+        List<String> pluginIds,
+        String winnerPluginId
+)
+```
+
+Проверка выполняется при подключении архивов плагинов. Avrix сохраняет порядок first-wins: побеждает самый ранний
+подключённый архив, а более поздние копии не объединяются. `pluginIds` идёт в порядке обнаружения. Классы,
+делегируемые родительскому загрузчику (`java.*`, `org.slf4j.*`, `com.avrix.*`, ASM/Mixin и другие библиотеки
+загрузчика), исключаются, как и служебные записи вроде `module-info.class` и `META-INF/*`.
+
+Отчёт носит диагностический характер: конфликты не прерывают загрузку. Загрузчик пишет ограниченную сводку `WARN` —
+первые 10 записей и количество остальных. Отчёт очищается в начале нового вызова `loadPlugins()`; прямые вызовы
+`loadPlugin(...)` добавляются в текущий отчёт.

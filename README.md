@@ -28,6 +28,14 @@ on-the-fly mixin bytecode transformation.
 * **Automated Dependency Resolution:** Strict semantic versioning (SemVer) validation and DAG topological sort for
   plugin load order.
 * **Zero-Friction Modding:** Drop plugin `.jar` files into the `plugins/` directory to load them.
+* **Per-Plugin Data:** `PluginData.getDataDirectory()` lazily creates `<pluginsDir>/<plugin-id>` for persistent state
+  shared by all entrypoints of a plugin.
+* **Plugin Lookup API:** `findPlugin`, `findLoadResult`, `isLoaded` with SemVer constraints, and `getUserPlugins` expose
+  loaded state to integrations.
+* **Conflict Diagnostics:** first-wins classpath conflicts are reported through `getClasspathConflicts()` without
+  changing load order.
+* **Safe Display Text:** control, ESC, and bidirectional characters are stripped or replaced in metadata and `mod.info`
+  display values before they reach the console or approval UI.
 
 ## 📚 Documentation
 
@@ -50,8 +58,9 @@ java -jar ./Avrix-Loader-x.x.x.jar
 ```
 
 On PowerShell, use `Set-Location "C:\path\to\ProjectZomboid"` before running Java. The JVM working directory
-must be the actual game root (inside the application bundle on macOS). `-Davrix.game.dir` selects the installation;
-it does not change the process working directory. Relative plugin directories are resolved against the game root.
+must be the actual game root (inside the application bundle on macOS); this requirement remains even when
+`-Davrix.game.dir` is set. `-Davrix.game.dir` only selects the installation and does not change the process working
+directory. Relative plugin directories are resolved against the game root.
 
 *For dedicated servers with Steam integration disabled, append `-nosteam`:*
 

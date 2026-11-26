@@ -23,8 +23,9 @@ Key concepts used across this documentation:
   features.
 - **Mixin:** An on-the-fly bytecode transformation mechanism that alters target game classes (Project Zomboid) during
   class loading without modifying original game files.
-- **KnotClassLoader:** A transforming classloader that hosts game classes, loader runtime, and plugins in a single flat
-  domain. JVM internals, logging, and loader-owned libraries are delegated to the parent classloader.
+- **KnotClassLoader:** A transforming classloader that hosts game and plugin classes in a single flat domain. JVM
+  internals, the loader API (`com.avrix.*`), logging, ASM, Mixin, MixinExtras, and other loader-owned libraries are
+  delegated to the parent classloader.
 - **ServiceManager:** A thread-safe, type-safe service registry (Service Locator) that binds interface contracts to
   runtime implementations.
 - **Workshop Mod:** A Project Zomboid mod distributed through Steam Workshop. A Workshop mod can declare Avrix Java

@@ -115,7 +115,8 @@ Rules:
 - A version-specific `mod.info` with `jarPlugins` overrides `common` jar declarations. `common` remains the fallback
   when the selected version does not declare any `jarPlugins` entries.
 - Avrix selects the highest version directory at or below the running game version. If every directory is newer, it
-  uses the nearest newer directory. If the game version is unknown, it uses the newest directory.
+  uses the nearest newer directory. When the game version cannot be resolved, the provider falls back to `0.0.0`, so the
+  nearest newer directory is selected instead of the newest one.
 - Absolute paths, drive/UNC paths, root-relative paths, and **any** `..` segment are rejected. Every `jarPlugins`
   path must stay inside the mod directory.
 - Symlinks or junctions that resolve outside the mod directory are rejected.
@@ -168,8 +169,10 @@ Both sources are merged, deduplicated by canonical path, and sorted by file name
 a plugin by its `id` or by its archive name, regardless of whether the plugin came from `plugins/` or a mod.
 
 If the same plugin ID exists in `plugins/` and in an active mod, the **mod archive wins** and the archive from
-`plugins/` is ignored with a warning. Duplicate IDs within the same source (two `plugins/` archives or two mod
-archives) are reported as load-order failures; `--strict` turns them into a startup abort.
+`plugins/` is ignored; replacing the trusted archive with the mod archive is logged at `INFO`. If the mod archive is
+denied by the approval policy, it is not loaded and the trusted copy from `plugins/` remains active. Duplicate IDs
+within the same source (two `plugins/` archives or two mod archives) are reported as load-order failures; `--strict`
+turns them into a startup abort.
 
 ---
 
@@ -216,7 +219,7 @@ Policy behavior:
 | Policy | Behavior |
 |---|---|
 | `prompt` | Unknown/changed JARs are not loaded. An interactive approval frontend runs before plugin loading. |
-| `deny-new` | Unknown/changed JARs are silently skipped. No UI. |
+| `deny-new` | Unknown/changed JARs are skipped without a UI and logged at `INFO`. |
 | `allow-all` | Every active mod JAR loads without approval. Development only. |
 
 The approval flow is owned by the Project Zomboid provider, not by the Lua mod. The Swing window runs in a separate JVM
@@ -224,14 +227,18 @@ because the game process is headless; the console frontend prompts in the same p
 launch when at least one archive needs a decision:
 
 1. Avrix scans active `jarPlugins`, hashes each JAR with SHA-256, and does not load unknown/changed archives.
-2. The approval frontend lists every pending archive with its source, size, and SHA-256; the Swing window also shows
-   the modification time.
-3. In the Swing window, unchecked rows are denied; press **Apply** to apply all rows or **Cancel** to skip everything.
-   The console frontend asks for each archive separately.
-4. Decisions are applied immediately; approved plugins load in the same launch.
-5. Enable **Remember for future launches** to keep the same decisions on later launches. Otherwise they apply to the
+2. The Swing window lists every pending archive. Its expanded details show the source, author, size, modification time,
+   SHA-256, absolute JAR path, the declared mixins that apply to the active environment, the target classes those mixins
+   affect, the previous approved SHA-256 when one exists, and inspection notes for problems found while reading the
+   archive.
+3. The console frontend asks for each archive separately. It prints the plugin ID, mod ID, author, source, size,
+   SHA-256, and previous approved hash when present, but it does not print the JAR path, mixin declarations, affected
+   classes, modification time, or inspection notes.
+4. In the Swing window, unchecked rows are denied; press **Apply** to apply all rows or **Cancel** to skip everything.
+5. Decisions are applied immediately; approved plugins load in the same launch.
+6. Enable **Remember for future launches** to keep the same decisions on later launches. Otherwise they apply to the
    current session only.
-6. Approved hashes load without another prompt. A changed JAR hash requires approval again.
+7. Approved hashes load without another prompt. A changed JAR hash requires approval again.
 
 One approval file is created per installation, inside the game or dedicated-server root:
 
