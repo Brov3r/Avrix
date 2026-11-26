@@ -442,6 +442,7 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
                 .append("\"required\":").append(strict).append(',')
                 .append("\"target\":\"@env(").append(environment.getPhase()).append(")\",")
                 .append("\"package\":\"").append(packageName).append("\",")
+                .append("\"minVersion\":\"0.8.7\",")
                 .append("\"compatibility\":\"JAVA_25\",")
                 .append("\"priority\":").append(priority).append(',')
                 .append("\"mixins\":[\"").append(simpleName).append("\"]")
