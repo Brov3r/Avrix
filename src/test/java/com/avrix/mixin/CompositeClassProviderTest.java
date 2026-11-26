@@ -4,6 +4,7 @@ import com.avrix.core.KnotClassLoader;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.ClassNode;
@@ -69,6 +70,22 @@ class CompositeClassProviderTest {
 
             assertThat(node.name).isEqualTo(TargetGameService.class.getName().replace('.', '/'));
             assertThat(node.methods).extracting(method -> method.name).contains("getGreeting", "executePipeline");
+        }
+    }
+
+    @Test
+    @DisplayName("Should forward reader flags to ClassReader.accept")
+    void shouldForwardReaderFlags() throws Exception {
+        try (KnotClassLoader loader = new KnotClassLoader(
+                new URL[]{TargetGameService.class.getProtectionDomain().getCodeSource().getLocation()}, PARENT)) {
+            CompositeClassProvider provider = new CompositeClassProvider(loader);
+
+            ClassNode node = provider.getClassNode(
+                    TargetGameService.class.getName(), true, ClassReader.SKIP_CODE);
+
+            assertThat(node.methods).extracting(method -> method.name)
+                    .contains("getGreeting", "executePipeline");
+            assertThat(node.methods).allSatisfy(method -> assertThat(method.instructions.size()).isZero());
         }
     }
 

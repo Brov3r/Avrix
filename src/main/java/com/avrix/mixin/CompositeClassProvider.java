@@ -150,21 +150,22 @@ public final class CompositeClassProvider implements IClassBytecodeProvider {
     /**
      * Reads a class into an ASM node for Mixin processing.
      *
-     * <p>Transformer and export flags are irrelevant for the Avrix loader because classes are transformed by the
-     * owning {@link MixinTransformer} before definition.
+     * <p>Transformer processing is irrelevant for the Avrix loader because classes are transformed by the owning
+     * {@link MixinTransformer} before definition. Reader flags are forwarded to ASM unchanged so Mixin can request
+     * reduced parsing such as {@link ClassReader#SKIP_CODE}.
      *
      * @param name           the fully qualified binary name of the class
      * @param runTransformers whether transformer processing is requested
-     * @param export         export flags requested by Mixin
+     * @param readerFlags    flags to pass to {@code ClassReader.accept}
      * @return parsed class node
      * @throws ClassNotFoundException if the bytecode cannot be found
      * @throws IOException            if the class file cannot be read
      */
     @Override
-    public ClassNode getClassNode(String name, boolean runTransformers, int export)
+    public ClassNode getClassNode(String name, boolean runTransformers, int readerFlags)
             throws ClassNotFoundException, IOException {
         ClassNode classNode = new ClassNode();
-        new ClassReader(getClass(name)).accept(classNode, 0);
+        new ClassReader(getClass(name)).accept(classNode, readerFlags);
         return classNode;
     }
 
