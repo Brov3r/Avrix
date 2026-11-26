@@ -70,9 +70,9 @@ public final class Main {
             );
 
             LoaderContext context = LoaderFactory.create(config, gameLaunchArgs);
-            Runtime.getRuntime().addShutdownHook(new Thread(context::close, "avrix-shutdown"));
 
             try {
+                Runtime.getRuntime().addShutdownHook(new Thread(context::close, "avrix-shutdown"));
                 context.initialize();
 
                 if (!config.redirectSystemStreams()) {
