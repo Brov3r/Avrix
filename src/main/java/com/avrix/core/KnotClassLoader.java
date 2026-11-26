@@ -539,13 +539,14 @@ public class KnotClassLoader extends URLClassLoader {
         }
 
         try {
-            byte[] rawBytes = readResourceBytes(resource);
+            URLConnection connection = resource.openConnection();
+            byte[] rawBytes = readResourceBytes(connection);
             byte[] transformedBytes = transformClass(name, rawBytes);
             byte[] finalBytes = (transformedBytes != null) ? transformedBytes : rawBytes;
 
             definePackageIfNecessary(name);
 
-            URL codeSourceUrl = extractCodeSourceUrl(resource);
+            URL codeSourceUrl = extractCodeSourceUrl(resource, connection);
             CodeSource codeSource = new CodeSource(codeSourceUrl, (CodeSigner[]) null);
             ProtectionDomain domain = new ProtectionDomain(codeSource, null, this, null);
 
@@ -618,12 +619,11 @@ public class KnotClassLoader extends URLClassLoader {
      * multi-release JARs, which cannot use the class index and are resolved through the standard
      * URL lookup. Non-local JARs keep the original stream behavior. Handles are released by {@link #close()}.
      *
-     * @param resource the target resource URL
+     * @param connection the opened resource connection
      * @return raw byte array
      * @throws IOException if reading the resource stream fails
      */
-    private byte[] readResourceBytes(URL resource) throws IOException {
-        URLConnection connection = resource.openConnection();
+    private byte[] readResourceBytes(URLConnection connection) throws IOException {
         if (connection instanceof JarURLConnection jarConnection) {
             Path jarPath = localJarPath(jarConnection.getJarFileURL());
             if (jarPath != null && jarConnection.getEntryName() != null) {
@@ -767,17 +767,16 @@ public class KnotClassLoader extends URLClassLoader {
     /**
      * Resolves the archive or folder URL for code source identification.
      *
-     * @param resource the resource URL
-     * @return the underlying JAR or root directory URL
+     * <p>Reuses the connection opened for reading, so custom URL handlers are honored and the resource URL
+     * does not need to be parsed or reopened.
+     *
+     * @param resource   the resource URL
+     * @param connection the connection used to read the resource
+     * @return the underlying JAR URL for JAR resources, or the original resource URL otherwise
      */
-    private URL extractCodeSourceUrl(URL resource) {
-        try {
-            URLConnection connection = resource.openConnection();
-            connection.setUseCaches(false);
-            if (connection instanceof JarURLConnection jarConnection) {
-                return jarConnection.getJarFileURL();
-            }
-        } catch (IOException ignored) {
+    private URL extractCodeSourceUrl(URL resource, URLConnection connection) {
+        if (connection instanceof JarURLConnection jarConnection) {
+            return jarConnection.getJarFileURL();
         }
         return resource;
     }

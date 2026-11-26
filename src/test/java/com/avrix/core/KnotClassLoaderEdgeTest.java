@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -23,6 +24,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -240,6 +242,26 @@ class KnotClassLoaderEdgeTest {
             assertThat(loaded.getClassLoader()).isSameAs(loader);
             assertThat(loaded.getProtectionDomain().getCodeSource().getLocation().toExternalForm())
                     .isEqualTo(flaky.toExternalForm());
+        }
+    }
+
+    @Test
+    @DisplayName("Should reuse the resource connection to resolve the code source")
+    void shouldReuseResourceConnectionForCodeSource() throws Exception {
+        byte[] classBytes = readClassBytes(TargetGameService.class.getName());
+        URL expectedJarUrl = new URL("https", "example.invalid", "/expected.jar");
+        AtomicInteger opens = new AtomicInteger();
+        URL resource = rawCharacterJarUrl(classBytes, expectedJarUrl, opens);
+
+        try (TestableKnotClassLoader loader = new TestableKnotClassLoader(new URL[0], PARENT)) {
+            loader.resourceOverride = resource;
+
+            Class<?> loaded = loader.findClassDirect(TargetGameService.class.getName());
+
+            assertThat(resource.toExternalForm()).contains("[");
+            assertThat(opens.get()).isEqualTo(1);
+            assertThat(loaded.getProtectionDomain().getCodeSource().getLocation().toExternalForm())
+                    .isEqualTo(expectedJarUrl.toExternalForm());
         }
     }
 
@@ -553,6 +575,39 @@ class KnotClassLoaderEdgeTest {
             }
         };
         return URL.of(URI.create("avrix-test:class"), handler);
+    }
+
+    @SuppressWarnings("deprecation")
+    private static URL rawCharacterJarUrl(
+            byte[] classBytes, URL jarFileUrl, AtomicInteger opens) throws MalformedURLException {
+        URLStreamHandler handler = new URLStreamHandler() {
+            @Override
+            protected URLConnection openConnection(URL url) throws IOException {
+                opens.incrementAndGet();
+                return new JarURLConnection(url) {
+                    @Override
+                    public void connect() {
+                    }
+
+                    @Override
+                    public JarFile getJarFile() {
+                        throw new UnsupportedOperationException("test connection does not expose a JAR file");
+                    }
+
+                    @Override
+                    public URL getJarFileURL() {
+                        return jarFileUrl;
+                    }
+
+                    @Override
+                    public InputStream getInputStream() {
+                        return new ByteArrayInputStream(classBytes);
+                    }
+                };
+            }
+        };
+        String entryName = TargetGameService.class.getName().replace('.', '/') + ".class";
+        return new URL("jar", "", -1, "file:/wrong/a[rc]hive.jar!/" + entryName, handler);
     }
 
     /**
