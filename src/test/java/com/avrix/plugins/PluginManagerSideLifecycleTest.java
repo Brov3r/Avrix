@@ -416,6 +416,202 @@ class PluginManagerSideLifecycleTest {
     }
 
     /**
+     * Verifies the full server matrix: two main handlers, two server handlers, a wrong-side client handler, and
+     * common/server mixins only.
+     *
+     * @throws IOException if a fixture archive cannot be written
+     */
+    @Test
+    @DisplayName("Should run two main and two server handlers with common/server mixins only")
+    void shouldRunFullServerMatrixWithCommonAndServerMixins() throws IOException {
+        List<String> validated = new ArrayList<>();
+        List<String> added = new ArrayList<>();
+        MixinRegistrar registrar = new MixinRegistrar() {
+            /** {@inheritDoc} */
+            @Override
+            public void addMixin(String mixinClass) {
+                if (mixinClass.contains("Client")) {
+                    throw new IllegalStateException("Wrong-side mixin registered: " + mixinClass);
+                }
+                added.add(mixinClass);
+                PhaseTracker.record("mixin:" + mixinClass);
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void validateMixins(Collection<String> mixinClasses) {
+                if (mixinClasses.stream().anyMatch(name -> name.contains("Client"))) {
+                    throw new IllegalStateException("Wrong-side mixin validated");
+                }
+                validated.addAll(mixinClasses);
+            }
+        };
+
+        writePluginJar("matrix-server", """
+                entrypoints:
+                  main:
+                    - "%s"
+                    - "%s"
+                  client:
+                    - "%s"
+                  server:
+                    - "%s"
+                    - "%s"
+                mixins:
+                  common:
+                    - "example.CommonMixin"
+                  client:
+                    - "example.ClientMixin"
+                  server:
+                    - "example.ServerMixin"
+                """.formatted(
+                MainHandler.class.getName(),
+                SecondMainHandler.class.getName(),
+                WrongClientHandler.class.getName(),
+                ServerHandler.class.getName(),
+                SecondServerHandler.class.getName()
+        ), RecordingPlugin.class, MainHandler.class, SecondMainHandler.class, WrongClientHandler.class,
+                ServerHandler.class, SecondServerHandler.class);
+
+        DefaultPluginManager manager = manager(Environment.SERVER, registrar, false);
+        manager.init();
+        manager.loadPlugins();
+
+        assertThat(PhaseTracker.events()).containsExactly(
+                "mixin:example.CommonMixin",
+                "mixin:example.ServerMixin",
+                "init:matrix-server:main",
+                "init:matrix-server:main-second",
+                "init:matrix-server:server",
+                "init:matrix-server:server-second"
+        );
+        assertThat(validated).containsExactly("example.CommonMixin", "example.ServerMixin");
+        assertThat(added).containsExactly("example.CommonMixin", "example.ServerMixin");
+
+        PluginData serverData = manager.getPlugins().get("matrix-server");
+        assertThat(serverData.instances()).hasSize(4);
+        assertThat(serverData.instances().get(0)).isInstanceOf(MainHandler.class);
+        assertThat(serverData.instances().get(1)).isInstanceOf(SecondMainHandler.class);
+        assertThat(serverData.instances().get(2)).isInstanceOf(ServerHandler.class);
+        assertThat(serverData.instances().get(3)).isInstanceOf(SecondServerHandler.class);
+        assertThat(serverData.instance()).isSameAs(serverData.instances().getFirst());
+        assertThat(serverData.getPluginInstance().orElseThrow()).isSameAs(serverData.instances().getFirst());
+
+        manager.close();
+
+        assertThat(PhaseTracker.events()).containsExactly(
+                "mixin:example.CommonMixin",
+                "mixin:example.ServerMixin",
+                "init:matrix-server:main",
+                "init:matrix-server:main-second",
+                "init:matrix-server:server",
+                "init:matrix-server:server-second",
+                "shutdown:matrix-server:server-second",
+                "shutdown:matrix-server:server",
+                "shutdown:matrix-server:main-second",
+                "shutdown:matrix-server:main"
+        );
+    }
+
+    /**
+     * Verifies the full client matrix: two main handlers, two client handlers, a wrong-side server handler, and
+     * common/client mixins only.
+     *
+     * @throws IOException if a fixture archive cannot be written
+     */
+    @Test
+    @DisplayName("Should run two main and two client handlers with common/client mixins only")
+    void shouldRunFullClientMatrixWithCommonAndClientMixins() throws IOException {
+        List<String> validated = new ArrayList<>();
+        List<String> added = new ArrayList<>();
+        MixinRegistrar registrar = new MixinRegistrar() {
+            /** {@inheritDoc} */
+            @Override
+            public void addMixin(String mixinClass) {
+                if (mixinClass.contains("Server")) {
+                    throw new IllegalStateException("Wrong-side mixin registered: " + mixinClass);
+                }
+                added.add(mixinClass);
+                PhaseTracker.record("mixin:" + mixinClass);
+            }
+
+            /** {@inheritDoc} */
+            @Override
+            public void validateMixins(Collection<String> mixinClasses) {
+                if (mixinClasses.stream().anyMatch(name -> name.contains("Server"))) {
+                    throw new IllegalStateException("Wrong-side mixin validated");
+                }
+                validated.addAll(mixinClasses);
+            }
+        };
+
+        writePluginJar("matrix-client", """
+                entrypoints:
+                  main:
+                    - "%s"
+                    - "%s"
+                  client:
+                    - "%s"
+                    - "%s"
+                  server:
+                    - "%s"
+                mixins:
+                  common:
+                    - "example.CommonMixin"
+                  client:
+                    - "example.ClientMixin"
+                  server:
+                    - "example.ServerMixin"
+                """.formatted(
+                MainHandler.class.getName(),
+                SecondMainHandler.class.getName(),
+                ClientHandler.class.getName(),
+                SecondClientHandler.class.getName(),
+                WrongServerHandler.class.getName()
+        ), RecordingPlugin.class, MainHandler.class, SecondMainHandler.class, ClientHandler.class,
+                SecondClientHandler.class, WrongServerHandler.class);
+
+        DefaultPluginManager manager = manager(Environment.CLIENT, registrar, false);
+        manager.init();
+        manager.loadPlugins();
+
+        assertThat(PhaseTracker.events()).containsExactly(
+                "mixin:example.CommonMixin",
+                "mixin:example.ClientMixin",
+                "init:matrix-client:main",
+                "init:matrix-client:main-second",
+                "init:matrix-client:client",
+                "init:matrix-client:client-second"
+        );
+        assertThat(validated).containsExactly("example.CommonMixin", "example.ClientMixin");
+        assertThat(added).containsExactly("example.CommonMixin", "example.ClientMixin");
+
+        PluginData clientData = manager.getPlugins().get("matrix-client");
+        assertThat(clientData.instances()).hasSize(4);
+        assertThat(clientData.instances().get(0)).isInstanceOf(MainHandler.class);
+        assertThat(clientData.instances().get(1)).isInstanceOf(SecondMainHandler.class);
+        assertThat(clientData.instances().get(2)).isInstanceOf(ClientHandler.class);
+        assertThat(clientData.instances().get(3)).isInstanceOf(SecondClientHandler.class);
+        assertThat(clientData.instance()).isSameAs(clientData.instances().getFirst());
+        assertThat(clientData.getPluginInstance().orElseThrow()).isSameAs(clientData.instances().getFirst());
+
+        manager.close();
+
+        assertThat(PhaseTracker.events()).containsExactly(
+                "mixin:example.CommonMixin",
+                "mixin:example.ClientMixin",
+                "init:matrix-client:main",
+                "init:matrix-client:main-second",
+                "init:matrix-client:client",
+                "init:matrix-client:client-second",
+                "shutdown:matrix-client:client-second",
+                "shutdown:matrix-client:client",
+                "shutdown:matrix-client:main-second",
+                "shutdown:matrix-client:main"
+        );
+    }
+
+    /**
      * Verifies that a direct load after a batch uses the same side ordering and participates in reverse shutdown.
      *
      * @throws IOException if a fixture archive cannot be written
@@ -599,12 +795,30 @@ class PluginManagerSideLifecycleTest {
         }
     }
 
+    /** Records a second client handler. */
+    public static final class SecondClientHandler extends RecordingPlugin {
+        /** {@inheritDoc} */
+        @Override
+        protected String phase() {
+            return "client-second";
+        }
+    }
+
     /** Records a server handler. */
     public static final class ServerHandler extends RecordingPlugin {
         /** {@inheritDoc} */
         @Override
         protected String phase() {
             return "server";
+        }
+    }
+
+    /** Records a second server handler. */
+    public static final class SecondServerHandler extends RecordingPlugin {
+        /** {@inheritDoc} */
+        @Override
+        protected String phase() {
+            return "server-second";
         }
     }
 
@@ -642,6 +856,27 @@ class PluginManagerSideLifecycleTest {
         @Override
         protected String phase() {
             return "wrong-server";
+        }
+    }
+
+    /** Client handler that fails the test if it is ever initialized on a server run. */
+    public static final class WrongClientHandler extends RecordingPlugin {
+        static {
+            PhaseTracker.record("loaded:wrong-client");
+            failIfLoaded();
+        }
+
+        /**
+         * Aborts the test process when the wrong-side class is initialized.
+         */
+        private static void failIfLoaded() {
+            throw new AssertionError("Wrong-side client handler was loaded");
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        protected String phase() {
+            return "wrong-client";
         }
     }
 }
