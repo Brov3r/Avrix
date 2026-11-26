@@ -630,6 +630,9 @@ public class ZomboidGameProvider implements GameProvider {
 
     /**
      * Creates the Project Zomboid Workshop approval gate.
+     * <p>
+     * The environment is forwarded to the gate, which uses it to resolve the effective mixin list shown in the
+     * approval window and console.
      *
      * @param cacheRoot   game cache directory
      * @param environment active runtime environment

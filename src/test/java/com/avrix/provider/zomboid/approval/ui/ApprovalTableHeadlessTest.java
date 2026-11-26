@@ -196,6 +196,26 @@ public class ApprovalTableHeadlessTest {
         }
     }
 
+    /**
+     * Verifies that the table model hands exactly the effective mixin list from the approval entry to the inspector.
+     */
+    @Test
+    public void shouldInspectExactlyEffectiveMixins() {
+        var received = new AtomicReference<List<String>>();
+        var entry = new ZomboidApprovalEntry("mod", "plugin", "Author", "Plugin", "mod", "Mod", "",
+                directory.resolve("effective.jar"), "c".repeat(64), 0L, 0L, "",
+                List.of("test.mixin.EffectiveMixin"));
+        var model = new ApprovalTableModel(List.of(entry), new ApprovalMessages(), (path, mixins) -> {
+            received.set(mixins);
+            return new MixinTargetInspector.Result(mixins, List.of("example.Target"), List.of());
+        });
+
+        MixinTargetInspector.Result result = model.inspection(0);
+
+        assertThat(received.get()).containsExactly("test.mixin.EffectiveMixin");
+        assertThat(result.mixinClasses()).containsExactly("test.mixin.EffectiveMixin");
+    }
+
     private ZomboidApprovalEntry entry(String hash) {
         return new ZomboidApprovalEntry("mod", "plugin", "Author", "Plugin", "mod", "Mod", "",
                 directory.resolve(hash + ".jar"), hash.repeat(64), 0L, 0L, "", List.of("example.Mixin"));

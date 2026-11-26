@@ -498,6 +498,179 @@ class MetadataTest {
     }
 
     @Nested
+    @DisplayName("Side-Aware Resolution Tests")
+    class SideAwareResolutionTests {
+
+        @Test
+        @DisplayName("Should resolve main and active-side declarations in declaration order without duplicates")
+        void shouldResolveDeclarationsForEachEnvironment() {
+            var meta = new Metadata.Builder()
+                    .schema(Constants.METADATA_SCHEMA_2)
+                    .id("side-plugin")
+                    .name("Side Plugin")
+                    .version("1.0.0")
+                    .mainEntrypoints(List.of("com.example.Main", "com.example.Second"))
+                    .clientEntrypoints(List.of("com.example.Client", "com.example.Main"))
+                    .serverEntrypoints(List.of("com.example.Server"))
+                    .mixins(List.of("com.example.mixins.Common", "com.example.mixins.Overlap"))
+                    .clientMixins(List.of("com.example.mixins.Overlap", "com.example.mixins.ClientExtra"))
+                    .serverMixins(List.of("com.example.mixins.Server"))
+                    .build();
+
+            assertThat(meta.entrypoint()).isEqualTo("com.example.Main");
+            assertThat(meta.mainEntrypoints()).containsExactly("com.example.Main", "com.example.Second");
+            assertThat(meta.clientEntrypoints()).containsExactly("com.example.Client", "com.example.Main");
+            assertThat(meta.serverEntrypoints()).containsExactly("com.example.Server");
+            assertThat(meta.mixins()).containsExactly("com.example.mixins.Common", "com.example.mixins.Overlap");
+            assertThat(meta.clientMixins())
+                    .containsExactly("com.example.mixins.Overlap", "com.example.mixins.ClientExtra");
+            assertThat(meta.serverMixins()).containsExactly("com.example.mixins.Server");
+
+            assertThat(meta.entrypointsFor(Environment.CLIENT))
+                    .containsExactly("com.example.Main", "com.example.Second", "com.example.Client");
+            assertThat(meta.entrypointsFor(Environment.SERVER))
+                    .containsExactly("com.example.Main", "com.example.Second", "com.example.Server");
+            assertThat(meta.entrypointsFor(Environment.BOTH))
+                    .containsExactly("com.example.Main", "com.example.Second");
+            assertThat(meta.entrypointsFor(Environment.AUTO))
+                    .containsExactly("com.example.Main", "com.example.Second");
+
+            assertThat(meta.mixinsFor(Environment.CLIENT)).containsExactly(
+                    "com.example.mixins.Common",
+                    "com.example.mixins.Overlap",
+                    "com.example.mixins.ClientExtra"
+            );
+            assertThat(meta.mixinsFor(Environment.SERVER)).containsExactly(
+                    "com.example.mixins.Common",
+                    "com.example.mixins.Overlap",
+                    "com.example.mixins.Server"
+            );
+            assertThat(meta.mixinsFor(Environment.BOTH))
+                    .containsExactly("com.example.mixins.Common", "com.example.mixins.Overlap");
+            assertThat(meta.mixinsFor(Environment.AUTO))
+                    .containsExactly("com.example.mixins.Common", "com.example.mixins.Overlap");
+        }
+
+        @Test
+        @DisplayName("Should return unmodifiable side declaration lists")
+        void shouldReturnUnmodifiableSideLists() {
+            var meta = new Metadata.Builder()
+                    .schema(Constants.METADATA_SCHEMA_2)
+                    .id("immutable-side-plugin")
+                    .name("Immutable Side Plugin")
+                    .version("1.0.0")
+                    .mainEntrypoints(List.of("com.example.Main"))
+                    .clientEntrypoints(List.of("com.example.Client"))
+                    .serverEntrypoints(List.of("com.example.Server"))
+                    .mixins(List.of("com.example.mixins.Common"))
+                    .clientMixins(List.of("com.example.mixins.Client"))
+                    .serverMixins(List.of("com.example.mixins.Server"))
+                    .build();
+
+            assertThatThrownBy(() -> meta.mainEntrypoints().add("com.example.Extra"))
+                    .isInstanceOf(UnsupportedOperationException.class);
+            assertThatThrownBy(() -> meta.clientEntrypoints().clear())
+                    .isInstanceOf(UnsupportedOperationException.class);
+            assertThatThrownBy(() -> meta.serverEntrypoints().remove(0))
+                    .isInstanceOf(UnsupportedOperationException.class);
+            assertThatThrownBy(() -> meta.clientMixins().add("com.example.mixins.Extra"))
+                    .isInstanceOf(UnsupportedOperationException.class);
+            assertThatThrownBy(() -> meta.serverMixins().clear())
+                    .isInstanceOf(UnsupportedOperationException.class);
+        }
+
+        @Test
+        @DisplayName("Should map the legacy singular entrypoint and flat mixins to main and common sections")
+        void shouldMapLegacyConstructorToMainAndCommon() {
+            var meta = new Metadata(
+                    SCHEMA,
+                    "Legacy Plugin",
+                    "Legacy description",
+                    "legacy-plugin",
+                    "1.0.0",
+                    Environment.BOTH,
+                    List.of("Author"),
+                    "MIT",
+                    List.of("contact@example.com"),
+                    Map.of(),
+                    List.of(),
+                    List.of(),
+                    "com.example.LegacyMain",
+                    List.of("com.example.mixins.LegacyMixin"),
+                    List.of()
+            );
+
+            assertThat(meta.mainEntrypoints()).containsExactly("com.example.LegacyMain");
+            assertThat(meta.entrypoint()).isEqualTo("com.example.LegacyMain");
+            assertThat(meta.clientEntrypoints()).isEmpty();
+            assertThat(meta.serverEntrypoints()).isEmpty();
+            assertThat(meta.mixins()).containsExactly("com.example.mixins.LegacyMixin");
+            assertThat(meta.clientMixins()).isEmpty();
+            assertThat(meta.serverMixins()).isEmpty();
+            assertThat(meta.entrypointsFor(Environment.CLIENT)).containsExactly("com.example.LegacyMain");
+            assertThat(meta.mixinsFor(Environment.SERVER)).containsExactly("com.example.mixins.LegacyMixin");
+        }
+
+        @Test
+        @DisplayName("Should reject side-specific declarations and multiple main entrypoints in schema 1")
+        void shouldRejectSchema2DeclarationsInSchema1() {
+            assertThatThrownBy(() -> new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("legacy-side-plugin")
+                    .name("Legacy Side Plugin")
+                    .version("1.0.0")
+                    .clientEntrypoints(List.of("com.example.Client"))
+                    .build())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("require metadata schema " + Constants.METADATA_SCHEMA_2);
+
+            assertThatThrownBy(() -> new Metadata.Builder()
+                    .schema(SCHEMA)
+                    .id("legacy-multiple-main")
+                    .name("Legacy Multiple Main")
+                    .version("1.0.0")
+                    .mainEntrypoints(List.of("com.example.First", "com.example.Second"))
+                    .build())
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("at most one entrypoint");
+        }
+
+        @Test
+        @DisplayName("Should let the singular builder entrypoint replace previously declared main entrypoints")
+        void shouldReplaceMainEntrypointsWithSingularEntrypoint() {
+            var meta = new Metadata.Builder()
+                    .schema(Constants.METADATA_SCHEMA_2)
+                    .id("replacement-plugin")
+                    .name("Replacement Plugin")
+                    .version("1.0.0")
+                    .mainEntrypoints(List.of("com.example.First"))
+                    .entrypoint("com.example.Replacement")
+                    .build();
+
+            assertThat(meta.mainEntrypoints()).containsExactly("com.example.Replacement");
+            assertThat(meta.entrypoint()).isEqualTo("com.example.Replacement");
+        }
+
+        @Test
+        @DisplayName("Should reject a null active environment during side resolution")
+        void shouldRejectNullActiveEnvironment() {
+            var meta = new Metadata.Builder()
+                    .schema(Constants.METADATA_SCHEMA_2)
+                    .id("null-environment-plugin")
+                    .name("Null Environment Plugin")
+                    .version("1.0.0")
+                    .build();
+
+            assertThatThrownBy(() -> meta.entrypointsFor(null))
+                    .isInstanceOf(NullPointerException.class)
+                    .hasMessageContaining("Active environment cannot be null");
+            assertThatThrownBy(() -> meta.mixinsFor(null))
+                    .isInstanceOf(NullPointerException.class)
+                    .hasMessageContaining("Active environment cannot be null");
+        }
+    }
+
+    @Nested
     @DisplayName("fromNode YAML Deserialization Tests")
     class FromNodeTests {
 
@@ -634,6 +807,30 @@ class MetadataTest {
             assertThat(meta.contacts()).containsExactly("https://projectzomboid.com");
             assertThat(meta.loadBefore()).isEmpty();
             assertThat(meta.loadAfter()).isEmpty();
+        }
+
+        @Test
+        @DisplayName("Should resolve provider entrypoints through the side-aware accessor")
+        void shouldResolveProviderEntrypointByEnvironment() {
+            var provider = new TestGameProvider(
+                    "project-zomboid",
+                    "Project Zomboid",
+                    "42.20.2",
+                    Environment.CLIENT,
+                    "zombie.gameStates.MainScreenState",
+                    List.of("The Indie Stone"),
+                    "PROPRIETARY",
+                    List.of("https://projectzomboid.com")
+            );
+
+            var meta = provider.getMetadata();
+
+            assertThat(meta.mainEntrypoints()).containsExactly("zombie.gameStates.MainScreenState");
+            assertThat(meta.entrypointsFor(Environment.CLIENT))
+                    .containsExactly("zombie.gameStates.MainScreenState");
+            assertThat(meta.entrypointsFor(Environment.SERVER))
+                    .containsExactly("zombie.gameStates.MainScreenState");
+            assertThat(meta.mixinsFor(Environment.CLIENT)).isEmpty();
         }
     }
 

@@ -34,37 +34,60 @@ import java.util.jar.JarFile;
  *
  * @param pluginPath physical path to the plugin JAR file on disk; {@code null} for virtual/synthetic plugins
  * @param iconURI    URI pointing to the plugin icon graphic; {@code null} if omitted
- * @param instance   instantiated {@link Plugin} lifecycle instance; {@code null} for library/mixin-only plugins
+ * @param instance   first initialized {@link Plugin} handler; {@code null} for library/mixin-only plugins
+ * @param instances  initialized {@link Plugin} handlers in startup order; empty for library/mixin-only plugins
  * @param metadata   declarative manifest descriptor; cannot be {@code null}
  */
 public record PluginData(
         Path pluginPath,
         URI iconURI,
         Plugin instance,
+        List<Plugin> instances,
         Metadata metadata
 ) {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginData.class);
 
     /**
-     * Compact constructor enforcing domain invariants and path normalization.
+     * Compact constructor enforcing domain invariants, path normalization, and immutable handler storage.
+     * <p>
+     * The legacy {@code instance} component always mirrors the first entry of {@code instances}, so both single- and
+     * multi-handler descriptors expose a single unambiguous value through {@link #instance()}.
      *
-     * @throws NullPointerException if {@code metadata} is {@code null}
+     * @throws NullPointerException if {@code metadata} is {@code null} or {@code instances} contains {@code null}
      */
     public PluginData {
         Objects.requireNonNull(metadata, "Plugin metadata cannot be null");
         pluginPath = (pluginPath != null) ? pluginPath.toAbsolutePath().normalize() : null;
+        if (instances == null || instances.isEmpty()) {
+            instances = instance != null ? List.of(instance) : List.of();
+        } else {
+            instances = List.copyOf(instances);
+        }
+        instance = instances.isEmpty() ? null : instances.getFirst();
     }
 
     /**
-     * Secondary constructor supporting legacy {@link File} references.
+     * Secondary constructor supporting legacy {@link File} references and a single handler.
      *
      * @param pluginFile physical JAR file on disk; can be {@code null}
      * @param iconURI    URI pointing to the plugin icon; can be {@code null}
-     * @param instance   plugin instance; can be {@code null}
+     * @param instance   plugin handler; can be {@code null}
      * @param metadata   plugin metadata descriptor; cannot be {@code null}
      */
     public PluginData(File pluginFile, URI iconURI, Plugin instance, Metadata metadata) {
-        this(pluginFile != null ? pluginFile.toPath() : null, iconURI, instance, metadata);
+        this(pluginFile != null ? pluginFile.toPath() : null, iconURI, instance, null, metadata);
+    }
+
+    /**
+     * Secondary constructor supporting a path reference and a single handler.
+     *
+     * @param pluginPath physical JAR path on disk; can be {@code null}
+     * @param iconURI    URI pointing to the plugin icon; can be {@code null}
+     * @param instance   plugin handler; can be {@code null}
+     * @param metadata   plugin metadata descriptor; cannot be {@code null}
+     */
+    public PluginData(Path pluginPath, URI iconURI, Plugin instance, Metadata metadata) {
+        this(pluginPath, iconURI, instance, null, metadata);
     }
 
     /**
@@ -73,7 +96,7 @@ public record PluginData(
      * @param metadata plugin metadata descriptor; cannot be {@code null}
      */
     public PluginData(Metadata metadata) {
-        this((Path) null, null, null, metadata);
+        this((Path) null, null, null, null, metadata);
     }
 
     /**
@@ -113,9 +136,12 @@ public record PluginData(
     }
 
     /**
-     * Retrieves the active {@link Plugin} lifecycle instance.
+     * Retrieves the first successfully initialized {@link Plugin} lifecycle instance.
+     * <p>
+     * For plugins with several active entrypoints this is the first handler in startup order, which preserves the
+     * legacy single-instance contract. Use {@link #instances()} to access every initialized handler.
      *
-     * @return optional containing the initialized instance, or empty if library-only
+     * @return optional containing the first initialized handler, or empty if library-only
      */
     public Optional<Plugin> getPluginInstance() {
         return Optional.ofNullable(instance);

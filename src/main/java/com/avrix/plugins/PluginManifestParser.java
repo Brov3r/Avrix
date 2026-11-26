@@ -54,9 +54,14 @@ public final class PluginManifestParser {
             "loadBefore",
             "loadAfter",
             "entrypoint",
+            "entrypoints",
             "mixins",
             "conflicts"
     );
+
+    private static final List<String> ENTRYPOINT_SIDES = List.of("main", "client", "server");
+
+    private static final List<String> MIXIN_SIDES = List.of("common", "client", "server");
 
     /**
      * Constructs a lenient plugin manifest parser.
@@ -308,22 +313,42 @@ public final class PluginManifestParser {
         int schema = readSchema(node, source);
         return switch (schema) {
             case Constants.METADATA_SCHEMA -> parseSchema1(node, source);
+            case Constants.METADATA_SCHEMA_2 -> parseSchema2(node, source);
             default -> throw new SerializationException(
-                    "%s: Unsupported metadata schema [%d], supported: %d"
-                            .formatted(source, schema, Constants.METADATA_SCHEMA)
+                    "%s: Unsupported metadata schema [%d], supported: %d, %d"
+                            .formatted(
+                                    source,
+                                    schema,
+                                    Constants.METADATA_SCHEMA,
+                                    Constants.METADATA_SCHEMA_2
+                            )
             );
         };
     }
 
     /**
-     * Parses a manifest that declares the currently supported schema version.
+     * Parses a manifest that declares the legacy schema version.
      *
      * @param node   root configuration node
      * @param source diagnostic source description
      * @return parsed immutable metadata
-     * @throws SerializationException if any manifest value is invalid
+     * @throws SerializationException if any manifest value is invalid or schema-2 syntax is used
      */
     private Metadata parseSchema1(ConfigurationNode node, String source) throws SerializationException {
+        if (isPresent(node.node("entrypoints"))) {
+            throw new SerializationException(
+                    source + ": Metadata key [entrypoints] requires metadata schema " + Constants.METADATA_SCHEMA_2
+            );
+        }
+
+        ConfigurationNode mixinsNode = node.node("mixins");
+        if (isPresent(mixinsNode) && mixinsNode.isMap()) {
+            throw new SerializationException(
+                    source + ": Metadata key [mixins] must be a list of strings in metadata schema "
+                            + Constants.METADATA_SCHEMA
+            );
+        }
+
         String id = node.node("id").getString();
         String entrypoint = node.node("entrypoint").getString("");
         List<String> mixins = readStringList(node, "mixins", source);
@@ -360,6 +385,232 @@ public final class PluginManifestParser {
     }
 
     /**
+     * Parses a schema-2 manifest with side-specific entrypoints and mixins.
+     * <p>
+     * The singular {@code entrypoint} key is accepted as a shorthand for the main side, and a flat {@code mixins} list
+     * is accepted as a shorthand for the common side. The two entrypoint forms cannot be combined.
+     *
+     * @param node   root configuration node
+     * @param source diagnostic source description
+     * @return parsed immutable metadata
+     * @throws SerializationException if any manifest value is invalid, side sections are unknown, or both entrypoint
+     *                                forms are declared
+     */
+    private Metadata parseSchema2(ConfigurationNode node, String source) throws SerializationException {
+        ClassSections entrypoints = readEntrypointSections(node, source);
+        ClassSections mixins = readMixinSections(node, source);
+
+        Metadata.Builder builder = new Metadata.Builder()
+                .schema(Constants.METADATA_SCHEMA_2)
+                .id(node.node("id").getString())
+                .name(node.node("name").getString())
+                .description(node.node("description").getString(""))
+                .version(node.node("version").getString())
+                .license(node.node("license").getString("UNLICENSED"))
+                .environment(readEnvironment(node, source))
+                .mainEntrypoints(entrypoints.shared())
+                .clientEntrypoints(entrypoints.client())
+                .serverEntrypoints(entrypoints.server())
+                .mixins(mixins.shared())
+                .clientMixins(mixins.client())
+                .serverMixins(mixins.server());
+
+        builder.loadBefore(readIdentifierList(node, "loadBefore", source, true));
+        builder.loadAfter(readIdentifierList(node, "loadAfter", source, true));
+        builder.authors(readStringList(node, "authors", source));
+        builder.contacts(readStringList(node, "contacts", source));
+        builder.conflicts(readIdentifierList(node, "conflicts", source, false));
+
+        for (Map.Entry<String, String> dependency : readDependencies(node, source).entrySet()) {
+            builder.addDependency(dependency.getKey(), dependency.getValue());
+        }
+
+        Metadata metadata;
+        try {
+            metadata = builder.build();
+        } catch (RuntimeException e) {
+            throw withCause(source + ": Invalid metadata: " + e.getMessage(), e);
+        }
+
+        return metadata;
+    }
+
+    /**
+     * Reads all entrypoint sections from a schema-2 manifest.
+     *
+     * @param node   manifest root node
+     * @param source diagnostic source description
+     * @return immutable entrypoint sections; the shared section contains main entrypoints
+     * @throws SerializationException if both entrypoint forms are declared or a section is malformed
+     */
+    private ClassSections readEntrypointSections(ConfigurationNode node, String source)
+            throws SerializationException {
+        ConfigurationNode singularNode = node.node("entrypoint");
+        ConfigurationNode sectionsNode = node.node("entrypoints");
+        boolean singularPresent = isPresent(singularNode);
+        boolean sectionsPresent = isPresent(sectionsNode);
+
+        if (singularPresent && sectionsPresent) {
+            throw new SerializationException(
+                    source + ": Metadata keys [entrypoint] and [entrypoints] cannot be combined"
+            );
+        }
+        if (singularPresent) {
+            return new ClassSections(readSingleClass(singularNode, "entrypoint", source), List.of(), List.of());
+        }
+        if (!sectionsPresent) {
+            return new ClassSections(List.of(), List.of(), List.of());
+        }
+
+        requireSectionMap(sectionsNode, "entrypoints", source);
+        validateSectionKeys(sectionsNode, "entrypoints", ENTRYPOINT_SIDES, source);
+        return new ClassSections(
+                readClassList(sectionsNode.node("main"), "entrypoints.main", source),
+                readClassList(sectionsNode.node("client"), "entrypoints.client", source),
+                readClassList(sectionsNode.node("server"), "entrypoints.server", source)
+        );
+    }
+
+    /**
+     * Reads all mixin sections from a schema-2 manifest.
+     *
+     * @param node   manifest root node
+     * @param source diagnostic source description
+     * @return immutable mixin sections; the shared section contains common mixins
+     * @throws SerializationException if a section is malformed or an unknown side is declared
+     */
+    private ClassSections readMixinSections(ConfigurationNode node, String source) throws SerializationException {
+        ConfigurationNode mixinsNode = node.node("mixins");
+        if (!isPresent(mixinsNode)) {
+            return new ClassSections(List.of(), List.of(), List.of());
+        }
+
+        if (!mixinsNode.isMap()) {
+            return new ClassSections(readClassList(mixinsNode, "mixins", source), List.of(), List.of());
+        }
+
+        validateSectionKeys(mixinsNode, "mixins", MIXIN_SIDES, source);
+        return new ClassSections(
+                readClassList(mixinsNode.node("common"), "mixins.common", source),
+                readClassList(mixinsNode.node("client"), "mixins.client", source),
+                readClassList(mixinsNode.node("server"), "mixins.server", source)
+        );
+    }
+
+    /**
+     * Reads a single entrypoint class name from the legacy shorthand key.
+     *
+     * @param entrypointNode scalar entrypoint node
+     * @param key            manifest key used in diagnostics
+     * @param source         diagnostic source description
+     * @return immutable singleton list, or an empty list when the value is blank
+     * @throws SerializationException if the value is not a scalar string
+     */
+    private List<String> readSingleClass(ConfigurationNode entrypointNode, String key, String source)
+            throws SerializationException {
+        if (entrypointNode.isMap() || entrypointNode.isList()) {
+            throw new SerializationException(source + ": Metadata key [" + key + "] must be a string");
+        }
+
+        String value = entrypointNode.getString("");
+        String normalized = value == null ? "" : value.strip();
+        if (normalized.isEmpty()) {
+            return List.of();
+        }
+        return List.of(normalized);
+    }
+
+    /**
+     * Reads a side section and verifies that it is represented as a map.
+     *
+     * @param sectionNode section node
+     * @param section     section name used in diagnostics
+     * @param source      diagnostic source description
+     * @throws SerializationException if the section is not a map
+     */
+    private void requireSectionMap(ConfigurationNode sectionNode, String section, String source)
+            throws SerializationException {
+        if (!sectionNode.isMap()) {
+            throw new SerializationException(
+                    source + ": Metadata key [" + section + "] must be a map of side names to string lists"
+            );
+        }
+    }
+
+    /**
+     * Rejects unknown side names inside a schema-2 section.
+     *
+     * @param sectionNode section node
+     * @param section     section name used in diagnostics
+     * @param allowed     allowed side names in declaration order
+     * @param source      diagnostic source description
+     * @throws SerializationException if an unknown side name is present
+     */
+    private void validateSectionKeys(
+            ConfigurationNode sectionNode,
+            String section,
+            List<String> allowed,
+            String source
+    ) throws SerializationException {
+        for (Object key : sectionNode.childrenMap().keySet()) {
+            String side = String.valueOf(key);
+            if (!allowed.contains(side)) {
+                throw new SerializationException(
+                        source + ": Unknown key [" + side + "] in metadata section [" + section
+                                + "], allowed: " + String.join(", ", allowed)
+                );
+            }
+        }
+    }
+
+    /**
+     * Reads a list of class names, skipping blanks and removing duplicates by first occurrence.
+     *
+     * @param listNode list node, may be virtual
+     * @param label    manifest key used in diagnostics
+     * @param source   diagnostic source description
+     * @return immutable normalized class-name list
+     * @throws SerializationException if the node is a map or cannot be read as a string list
+     */
+    private List<String> readClassList(ConfigurationNode listNode, String label, String source)
+            throws SerializationException {
+        if (isPresent(listNode) && !listNode.isList()) {
+            throw new SerializationException(
+                    "%s: Metadata key [%s] must be a list of strings".formatted(source, label)
+            );
+        }
+        List<String> values = readStringListNode(listNode, label, source);
+        return deduplicate(values);
+    }
+
+    /**
+     * Removes duplicate strings while preserving the first occurrence order.
+     *
+     * @param values source values
+     * @return immutable list without duplicates
+     */
+    private static List<String> deduplicate(List<String> values) {
+        List<String> unique = new ArrayList<>(values.size());
+        Set<String> seen = new HashSet<>();
+        for (String value : values) {
+            if (seen.add(value)) {
+                unique.add(value);
+            }
+        }
+        return List.copyOf(unique);
+    }
+
+    /**
+     * Checks whether a configuration node carries a declared value.
+     *
+     * @param node configuration node
+     * @return {@code true} if the node is neither virtual nor null
+     */
+    private static boolean isPresent(ConfigurationNode node) {
+        return !node.virtual() && !node.isNull();
+    }
+
+    /**
      * Reads a string list, trimming values and rejecting blank entries.
      *
      * @param node   manifest root node
@@ -373,22 +624,43 @@ public final class PluginManifestParser {
             String key,
             String source
     ) throws SerializationException {
-        ConfigurationNode listNode = node.node(key);
+        return readStringListNode(node.node(key), key, source);
+    }
+
+    /**
+     * Reads a string list from a specific node, trimming values and skipping blank entries.
+     *
+     * @param listNode list node, may be virtual
+     * @param label    manifest key used in diagnostics
+     * @param source   diagnostic source description
+     * @return immutable normalized list
+     * @throws SerializationException if the node is a map or cannot be read as a string list
+     */
+    private List<String> readStringListNode(
+            ConfigurationNode listNode,
+            String label,
+            String source
+    ) throws SerializationException {
         if (listNode.virtual() || listNode.isNull()) {
             return Collections.emptyList();
+        }
+        if (listNode.isMap()) {
+            throw new SerializationException(
+                    "%s: Metadata key [%s] must be a list of strings".formatted(source, label)
+            );
         }
 
         List<String> values;
         try {
             values = listNode.getList(String.class, Collections.emptyList());
         } catch (SerializationException e) {
-            throw withCause("%s: Metadata key [%s] must be a list of strings".formatted(source, key), e);
+            throw withCause("%s: Metadata key [%s] must be a list of strings".formatted(source, label), e);
         }
 
         List<String> normalized = new ArrayList<>(values.size());
         for (String value : values) {
             if (value == null || value.isBlank()) {
-                warn(source, "Metadata key [%s] contains a blank list entry".formatted(key));
+                warn(source, "Metadata key [%s] contains a blank list entry".formatted(label));
                 continue;
             }
             normalized.add(value.strip());
@@ -654,6 +926,17 @@ public final class PluginManifestParser {
      */
     private void warn(String source, String message) {
         LOGGER.warn(source + ": " + message);
+    }
+
+    /**
+     * Class-name declarations grouped by side.
+     *
+     * @param shared common declarations; main entrypoints for the entrypoint section, common mixins for the mixin
+     *               section
+     * @param client client-only declarations
+     * @param server server-only declarations
+     */
+    private record ClassSections(List<String> shared, List<String> client, List<String> server) {
     }
 
     /**

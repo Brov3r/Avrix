@@ -16,8 +16,9 @@ import java.util.jar.JarFile;
 /**
  * Reads the target classes of declared mixin classes from a plugin archive without loading plugin code.
  * <p>
- * The approval window runs before plugins are loaded, so class loading is not an option. The declared mixin class
- * names arrive through the approval protocol; this inspector uses ASM to read their {@code @Mixin} annotations.
+ * The approval window runs before plugins are loaded, so class loading is not an option. The effective mixin class
+ * names for the active environment arrive through the approval protocol; this inspector uses ASM to read their
+ * {@code @Mixin} annotations.
  */
 public final class MixinTargetInspector {
 
@@ -27,9 +28,11 @@ public final class MixinTargetInspector {
 
     /**
      * Inspects a plugin archive for the targets of its declared mixin classes.
+     * <p>
+     * An empty list is not inspected: archives without effective mixins for the active environment are not opened.
      *
      * @param jarPath      plugin archive path
-     * @param mixinClasses mixin transformer class names declared in the plugin metadata
+     * @param mixinClasses effective mixin transformer class names for the active environment
      * @return inspection result, never {@code null}
      * @throws NullPointerException if {@code jarPath} is {@code null}
      */
@@ -42,6 +45,10 @@ public final class MixinTargetInspector {
                 .filter(value -> !value.isEmpty())
                 .distinct()
                 .toList();
+        if (mixins.isEmpty()) {
+            return new Result(List.of(), List.of(), List.of());
+        }
+
         List<String> issues = new ArrayList<>();
         try (JarFile jar = new JarFile(jarPath.toFile(), false, JarFile.OPEN_READ, Runtime.version())) {
             Set<String> targets = new LinkedHashSet<>();

@@ -7,10 +7,12 @@ import com.avrix.utils.VersionValidation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Immutable metadata descriptor for an Avrix plugin or runtime game provider.
@@ -18,25 +20,38 @@ import java.util.Objects;
  * Encapsulates all declarative manifest information parsed from {@code metadata.yml} or synthesized by an
  * active game provider. Used for topological dependency sorting, environment filtering, and mixin bootstrap
  * configuration.
+ * <p>
+ * Metadata schema {@code 1} stores a single main entrypoint and a flat mixin list. Metadata schema {@code 2}
+ * additionally stores client- and server-specific entrypoints and mixins. The side-aware accessors
+ * {@link #entrypointsFor(Environment)} and {@link #mixinsFor(Environment)} resolve the declarations that apply to a
+ * concrete runtime environment, while {@link #entrypoint()} and {@link #mixins()} remain the legacy schema-1 view.
  *
- * @param schema       metadata specification schema version (mandatory, must match {@link Constants#METADATA_SCHEMA})
- * @param name         human-readable display name of the plugin (mandatory, non-blank)
- * @param description  brief summary of plugin functionality; defaults to empty string
- * @param id           unique canonical identifier (mandatory, non-blank, matching
- *                     {@link PluginIdentifiers#PATTERN})
- * @param version      semantic version string conforming to SemVer (mandatory, non-blank)
- * @param environment  target execution environment constraint; defaults to {@link Environment#BOTH}
- * @param authors      unmodifiable list of author attribution names
- * @param license      software licensing model descriptor; defaults to {@code "UNLICENSED"}
- * @param contacts     unmodifiable list of contact endpoints or repository links
- * @param dependencies unmodifiable map of prerequisite plugin IDs to semantic version constraint ranges
- * @param loadBefore   unmodifiable list of plugin IDs that must be loaded strictly after this plugin
- * @param loadAfter    unmodifiable list of plugin IDs that must be loaded strictly before this plugin
- * @param entrypoint   entrypoint class name; for user plugins this is a {@link com.avrix.plugins.Plugin}
- *                     implementation, for game provider descriptors it is the game's main class, and for loader
- *                     descriptors it is empty
- * @param mixins       unmodifiable list of fully qualified mixin class names registered with the loader
- * @param conflicts    unmodifiable list of plugin IDs declared incompatible with this plugin
+ * @param schema            metadata specification schema version (mandatory, must be {@link Constants#METADATA_SCHEMA}
+ *                          or {@link Constants#METADATA_SCHEMA_2})
+ * @param name              human-readable display name of the plugin (mandatory, non-blank)
+ * @param description       brief summary of plugin functionality; defaults to empty string
+ * @param id                unique canonical identifier (mandatory, non-blank, matching
+ *                          {@link PluginIdentifiers#PATTERN})
+ * @param version           semantic version string conforming to SemVer (mandatory, non-blank)
+ * @param environment       target execution environment constraint; defaults to {@link Environment#BOTH}
+ * @param authors           unmodifiable list of author attribution names
+ * @param license           software licensing model descriptor; defaults to {@code "UNLICENSED"}
+ * @param contacts          unmodifiable list of contact endpoints or repository links
+ * @param dependencies      unmodifiable map of prerequisite plugin IDs to semantic version constraint ranges
+ * @param loadBefore        unmodifiable list of plugin IDs that must be loaded strictly after this plugin
+ * @param loadAfter         unmodifiable list of plugin IDs that must be loaded strictly before this plugin
+ * @param mainEntrypoints   unmodifiable list of fully qualified entrypoint class names that apply to every environment
+ * @param mixins            unmodifiable list of common fully qualified mixin class names; for schema {@code 1} this is
+ *                          the complete flat mixin list
+ * @param conflicts         unmodifiable list of plugin IDs declared incompatible with this plugin
+ * @param clientEntrypoints unmodifiable list of fully qualified entrypoint class names that apply only on the client;
+ *                          always empty for schema {@code 1}
+ * @param serverEntrypoints unmodifiable list of fully qualified entrypoint class names that apply only on the server;
+ *                          always empty for schema {@code 1}
+ * @param clientMixins      unmodifiable list of fully qualified mixin class names that apply only on the client;
+ *                          always empty for schema {@code 1}
+ * @param serverMixins      unmodifiable list of fully qualified mixin class names that apply only on the server;
+ *                          always empty for schema {@code 1}
  */
 public record Metadata(
         int schema,
@@ -51,10 +66,81 @@ public record Metadata(
         Map<String, String> dependencies,
         List<String> loadBefore,
         List<String> loadAfter,
-        String entrypoint,
+        List<String> mainEntrypoints,
         List<String> mixins,
-        List<String> conflicts
+        List<String> conflicts,
+        List<String> clientEntrypoints,
+        List<String> serverEntrypoints,
+        List<String> clientMixins,
+        List<String> serverMixins
 ) {
+
+    /**
+     * Creates metadata using the legacy schema-1 shape.
+     * <p>
+     * The singular entrypoint is stored as the only main entrypoint, and the flat mixin list becomes the common mixin
+     * list. Client- and server-specific declarations are empty. This constructor preserves the original record
+     * descriptor for source and binary compatibility.
+     *
+     * @param schema       metadata specification schema version
+     * @param name         human-readable display name of the plugin
+     * @param description  brief summary of plugin functionality
+     * @param id           unique canonical identifier
+     * @param version      semantic version string
+     * @param environment  target execution environment constraint
+     * @param authors      list of author attribution names
+     * @param license      software licensing model descriptor
+     * @param contacts     list of contact endpoints or repository links
+     * @param dependencies map of prerequisite plugin IDs to semantic version constraint ranges
+     * @param loadBefore   list of plugin IDs that must be loaded strictly after this plugin
+     * @param loadAfter    list of plugin IDs that must be loaded strictly before this plugin
+     * @param entrypoint   singular main entrypoint class name, or {@code null} or blank for none
+     * @param mixins       flat mixin class names
+     * @param conflicts    list of plugin IDs declared incompatible with this plugin
+     * @throws NullPointerException     if any mandatory string field ({@code id}, {@code name}, {@code version}) is
+     *                                  {@code null}
+     * @throws IllegalArgumentException if identifiers, version, entrypoint, mixin names, or dependency identifiers are
+     *                                  invalid, or the schema version is unsupported
+     */
+    public Metadata(
+            int schema,
+            String name,
+            String description,
+            String id,
+            String version,
+            Environment environment,
+            List<String> authors,
+            String license,
+            List<String> contacts,
+            Map<String, String> dependencies,
+            List<String> loadBefore,
+            List<String> loadAfter,
+            String entrypoint,
+            List<String> mixins,
+            List<String> conflicts
+    ) {
+        this(
+                schema,
+                name,
+                description,
+                id,
+                version,
+                environment,
+                authors,
+                license,
+                contacts,
+                dependencies,
+                loadBefore,
+                loadAfter,
+                entrypoint == null ? List.of() : List.of(entrypoint),
+                mixins,
+                conflicts,
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of()
+        );
+    }
 
     /**
      * Compact constructor enforcing domain invariants, normalizing string values, and collection immutability.
@@ -62,14 +148,15 @@ public record Metadata(
      * @throws NullPointerException     if any mandatory string field ({@code id}, {@code name}, {@code version}) is
      *                                  {@code null}
      * @throws IllegalArgumentException if identifiers, version, entrypoint, mixin names, or dependency identifiers are
-     *                                  invalid, or the schema version is unsupported
+     *                                  invalid, if the schema version is unsupported, or if side-specific declarations
+     *                                  are used with schema {@code 1}
      */
     public Metadata {
         // Mandatory schema verification
-        if (schema != Constants.METADATA_SCHEMA) {
+        if (schema != Constants.METADATA_SCHEMA && schema != Constants.METADATA_SCHEMA_2) {
             throw new IllegalArgumentException(
-                    "Unsupported metadata schema version (metadata: %d, supported: %d)"
-                            .formatted(schema, Constants.METADATA_SCHEMA)
+                    "Unsupported metadata schema version (metadata: %d, supported: %d, %d)"
+                            .formatted(schema, Constants.METADATA_SCHEMA, Constants.METADATA_SCHEMA_2)
             );
         }
 
@@ -112,24 +199,110 @@ public record Metadata(
         environment = Objects.requireNonNullElse(environment, Environment.BOTH);
         description = Objects.requireNonNullElse(description, "").strip();
         license = Objects.requireNonNullElse(license, "UNLICENSED").strip();
-        entrypoint = Objects.requireNonNullElse(entrypoint, "").strip();
         if (license.isBlank()) {
             license = "UNLICENSED";
-        }
-        if (!entrypoint.isEmpty() && !PluginIdentifiers.isValidJavaName(entrypoint)) {
-            throw new IllegalArgumentException(
-                    "Plugin 'entrypoint' value [" + entrypoint + "] is not a valid Java class name"
-            );
         }
 
         // Defensive copy, normalization, and unmodifiable collection creation
         authors = normalizeList(authors);
         contacts = normalizeList(contacts);
+        mainEntrypoints = normalizeJavaNames(normalizeList(mainEntrypoints), "Plugin 'entrypoint'");
+        clientEntrypoints = normalizeJavaNames(
+                normalizeList(clientEntrypoints),
+                "Plugin 'client entrypoints'"
+        );
+        serverEntrypoints = normalizeJavaNames(
+                normalizeList(serverEntrypoints),
+                "Plugin 'server entrypoints'"
+        );
         mixins = normalizeJavaNames(normalizeList(mixins), "Plugin mixin");
+        clientMixins = normalizeJavaNames(normalizeList(clientMixins), "Plugin 'client mixins'");
+        serverMixins = normalizeJavaNames(normalizeList(serverMixins), "Plugin 'server mixins'");
         dependencies = normalizeDependencies(dependencies);
         loadBefore = normalizeIdentifierList(loadBefore, "Plugin 'loadBefore'", true);
         loadAfter = normalizeIdentifierList(loadAfter, "Plugin 'loadAfter'", true);
         conflicts = normalizeIdentifierList(conflicts, "Plugin 'conflicts'", false);
+
+        // Schema 1 keeps its original single-entrypoint, flat-mixin semantics.
+        if (schema == Constants.METADATA_SCHEMA) {
+            if (mainEntrypoints.size() > 1) {
+                throw new IllegalArgumentException(
+                        "Metadata schema " + Constants.METADATA_SCHEMA + " supports at most one entrypoint"
+                );
+            }
+            if (!clientEntrypoints.isEmpty()
+                    || !serverEntrypoints.isEmpty()
+                    || !clientMixins.isEmpty()
+                    || !serverMixins.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Side-specific entrypoints and mixins require metadata schema "
+                                + Constants.METADATA_SCHEMA_2
+                );
+            }
+        }
+    }
+
+    /**
+     * Returns the legacy singular entrypoint.
+     * <p>
+     * The value is the first main entrypoint declared by the metadata, or an empty string when no main entrypoint
+     * exists. Schema {@code 2} may declare additional main, client, or server entrypoints; use
+     * {@link #entrypointsFor(Environment)} to obtain the effective list.
+     *
+     * @return first main entrypoint class name, or an empty string
+     */
+    public String entrypoint() {
+        return mainEntrypoints.isEmpty() ? "" : mainEntrypoints.get(0);
+    }
+
+    /**
+     * Resolves the effective entrypoint list for an active runtime environment.
+     * <p>
+     * Main entrypoints are always included first, in declaration order. Client entrypoints are appended when the active
+     * environment is {@link Environment#CLIENT}, and server entrypoints are appended when it is
+     * {@link Environment#SERVER}. {@link Environment#BOTH} and {@link Environment#AUTO} select no concrete side, so
+     * only main entrypoints are returned for them. Duplicates are removed by first occurrence, with main declarations
+     * taking precedence over side declarations.
+     * <p>
+     * This method does not apply the plugin's own {@link #environment()} constraint; callers should filter plugins by
+     * that constraint before resolving entrypoints.
+     *
+     * @param activeEnvironment concrete runtime environment, cannot be {@code null}
+     * @return unmodifiable effective entrypoint list
+     * @throws NullPointerException if {@code activeEnvironment} is {@code null}
+     */
+    public List<String> entrypointsFor(Environment activeEnvironment) {
+        Objects.requireNonNull(activeEnvironment, "Active environment cannot be null");
+        return switch (activeEnvironment) {
+            case CLIENT -> mergeDistinct(mainEntrypoints, clientEntrypoints);
+            case SERVER -> mergeDistinct(mainEntrypoints, serverEntrypoints);
+            case BOTH, AUTO -> List.copyOf(mainEntrypoints);
+        };
+    }
+
+    /**
+     * Resolves the effective mixin list for an active runtime environment.
+     * <p>
+     * Common mixins are always included first, in declaration order. Client mixins are appended when the active
+     * environment is {@link Environment#CLIENT}, and server mixins are appended when it is
+     * {@link Environment#SERVER}. {@link Environment#BOTH} and {@link Environment#AUTO} select no concrete side, so
+     * only common mixins are returned for them. Duplicates are removed by first occurrence, with common declarations
+     * taking precedence over side declarations.
+     * <p>
+     * This method does not apply the plugin's own {@link #environment()} constraint; callers should filter plugins by
+     * that constraint before resolving mixins.
+     *
+     * @param activeEnvironment concrete runtime environment, cannot be {@code null}
+     * @return unmodifiable effective mixin list
+     * @throws NullPointerException if {@code activeEnvironment} is {@code null}
+     */
+    public List<String> mixinsFor(Environment activeEnvironment) {
+        Objects.requireNonNull(activeEnvironment, "Active environment cannot be null");
+        return switch (activeEnvironment) {
+            case CLIENT -> mergeDistinct(mixins, clientMixins);
+            case SERVER -> mergeDistinct(mixins, serverMixins);
+            case BOTH, AUTO -> List.copyOf(mixins);
+        };
     }
 
     /**
@@ -233,6 +406,29 @@ public record Metadata(
     }
 
     /**
+     * Concatenates two immutable lists while removing duplicates by first occurrence.
+     *
+     * @param primary   declarations that take precedence
+     * @param secondary declarations appended after the primary list
+     * @return unmodifiable merged list
+     */
+    private static List<String> mergeDistinct(List<String> primary, List<String> secondary) {
+        List<String> merged = new ArrayList<>(primary.size() + secondary.size());
+        Set<String> seen = new HashSet<>();
+        for (String value : primary) {
+            if (seen.add(value)) {
+                merged.add(value);
+            }
+        }
+        for (String value : secondary) {
+            if (seen.add(value)) {
+                merged.add(value);
+            }
+        }
+        return List.copyOf(merged);
+    }
+
+    /**
      * Fluent Builder for constructing immutable {@link Metadata} instances.
      */
     public static final class Builder {
@@ -255,9 +451,13 @@ public record Metadata(
         private final Map<String, String> dependencies = new HashMap<>();
         private final List<String> loadBefore = new ArrayList<>();
         private final List<String> loadAfter = new ArrayList<>();
-        private String entrypoint = "";
+        private final List<String> mainEntrypoints = new ArrayList<>();
         private final List<String> mixins = new ArrayList<>();
         private final List<String> conflicts = new ArrayList<>();
+        private final List<String> clientEntrypoints = new ArrayList<>();
+        private final List<String> serverEntrypoints = new ArrayList<>();
+        private final List<String> clientMixins = new ArrayList<>();
+        private final List<String> serverMixins = new ArrayList<>();
 
         /**
          * Sets the schema version.
@@ -520,18 +720,65 @@ public record Metadata(
         }
 
         /**
-         * Sets the fully-qualified name of the main plugin entrypoint class.
+         * Sets the singular main plugin entrypoint, replacing any main entrypoints added earlier.
+         * <p>
+         * A {@code null} or blank value clears the main entrypoint list. This method preserves the legacy schema-1
+         * builder behavior; use {@link #mainEntrypoints(List)} to declare several main entrypoints.
          *
-         * @param entrypoint binary name of the entrypoint class
+         * @param entrypoint binary name of the entrypoint class, or {@code null} for none
          * @return this builder instance
          */
         public Builder entrypoint(String entrypoint) {
-            this.entrypoint = entrypoint;
+            this.mainEntrypoints.clear();
+            if (entrypoint != null) {
+                this.mainEntrypoints.add(entrypoint);
+            }
             return this;
         }
 
         /**
-         * Appends a list of fully qualified mixin class names.
+         * Appends main entrypoint class names that apply to every environment.
+         *
+         * @param entrypoints list of fully qualified entrypoint class names
+         * @return this builder instance
+         */
+        public Builder mainEntrypoints(List<String> entrypoints) {
+            if (entrypoints != null) {
+                this.mainEntrypoints.addAll(entrypoints);
+            }
+            return this;
+        }
+
+        /**
+         * Appends client-only entrypoint class names.
+         *
+         * @param entrypoints list of fully qualified entrypoint class names
+         * @return this builder instance
+         */
+        public Builder clientEntrypoints(List<String> entrypoints) {
+            if (entrypoints != null) {
+                this.clientEntrypoints.addAll(entrypoints);
+            }
+            return this;
+        }
+
+        /**
+         * Appends server-only entrypoint class names.
+         *
+         * @param entrypoints list of fully qualified entrypoint class names
+         * @return this builder instance
+         */
+        public Builder serverEntrypoints(List<String> entrypoints) {
+            if (entrypoints != null) {
+                this.serverEntrypoints.addAll(entrypoints);
+            }
+            return this;
+        }
+
+        /**
+         * Appends common fully qualified mixin class names that apply to every environment.
+         * <p>
+         * For schema {@code 1} this is the complete flat mixin list.
          *
          * @param mixins list of mixin class names
          * @return this builder instance
@@ -544,7 +791,7 @@ public record Metadata(
         }
 
         /**
-         * Appends multiple fully qualified mixin class names.
+         * Appends multiple common fully qualified mixin class names.
          *
          * @param mixins array of mixin class names
          * @return this builder instance
@@ -557,7 +804,7 @@ public record Metadata(
         }
 
         /**
-         * Appends a single fully qualified mixin class name.
+         * Appends a single common fully qualified mixin class name.
          *
          * @param mixin mixin class name
          * @return this builder instance
@@ -565,6 +812,32 @@ public record Metadata(
         public Builder addMixin(String mixin) {
             if (mixin != null && !mixin.isBlank()) {
                 this.mixins.add(mixin);
+            }
+            return this;
+        }
+
+        /**
+         * Appends client-only fully qualified mixin class names.
+         *
+         * @param mixins list of mixin class names
+         * @return this builder instance
+         */
+        public Builder clientMixins(List<String> mixins) {
+            if (mixins != null) {
+                this.clientMixins.addAll(mixins);
+            }
+            return this;
+        }
+
+        /**
+         * Appends server-only fully qualified mixin class names.
+         *
+         * @param mixins list of mixin class names
+         * @return this builder instance
+         */
+        public Builder serverMixins(List<String> mixins) {
+            if (mixins != null) {
+                this.serverMixins.addAll(mixins);
             }
             return this;
         }
@@ -612,9 +885,10 @@ public record Metadata(
          * Builds and validates the resulting {@link Metadata} record.
          *
          * @return validated immutable {@link Metadata} instance
-         * @throws NullPointerException     if any mandatory string field ({@code id}, {@code name}, {@code version})
-         *                                  is {@code null}
-         * @throws IllegalArgumentException if domain constraints or mandatory fields are violated
+         * @throws NullPointerException     if any mandatory string field ({@code id}, {@code name}, {@code version}) is
+         *                                  {@code null}
+         * @throws IllegalArgumentException if domain constraints or mandatory fields are violated, or if side-specific
+         *                                  declarations are used with schema {@code 1}
          */
         public Metadata build() {
             return new Metadata(
@@ -630,9 +904,13 @@ public record Metadata(
                     dependencies,
                     loadBefore,
                     loadAfter,
-                    entrypoint,
+                    mainEntrypoints,
                     mixins,
-                    conflicts
+                    conflicts,
+                    clientEntrypoints,
+                    serverEntrypoints,
+                    clientMixins,
+                    serverMixins
             );
         }
     }

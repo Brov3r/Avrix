@@ -87,7 +87,7 @@ class PluginManifestParserValidationTest {
     @DisplayName("Should reject an unsupported metadata schema version")
     void shouldRejectUnsupportedSchemaVersion() throws IOException {
         ConfigurationNode node = load("""
-                schema: 2
+                schema: 3
                 id: future-plugin
                 name: Future Plugin
                 version: "1.0.0"
@@ -95,8 +95,8 @@ class PluginManifestParserValidationTest {
 
         assertThatThrownBy(() -> lenientParser.fromNode(node))
                 .isInstanceOf(SerializationException.class)
-                .hasMessageContaining("Unsupported metadata schema [2]")
-                .hasMessageContaining("supported: " + Constants.METADATA_SCHEMA);
+                .hasMessageContaining("Unsupported metadata schema [3]")
+                .hasMessageContaining("supported: 1, 2");
     }
 
     @Test

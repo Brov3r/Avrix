@@ -32,9 +32,14 @@ public final class Constants {
     public static final String PLUGIN_ICON_NAME = "icon.png";
 
     /**
-     * Supported metadata schema specification version.
+     * Legacy metadata schema specification version using a single entrypoint and a flat mixin list.
      */
     public static final int METADATA_SCHEMA = 1;
+
+    /**
+     * Metadata schema version introducing side-specific entrypoints and mixins.
+     */
+    public static final int METADATA_SCHEMA_2 = 2;
 
     /**
      * File extension for plugin archive packages.

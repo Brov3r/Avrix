@@ -4,6 +4,7 @@ import com.avrix.api.PluginApprovalGate;
 import com.avrix.api.PluginArchive;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;
+import com.avrix.provider.zomboid.approval.MixinTargetInspector;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalDecision;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalEntry;
 import com.avrix.provider.zomboid.approval.ZomboidApprovalFrontend;
@@ -19,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -488,6 +490,98 @@ class ZomboidPluginApprovalGateTest {
         assertThat(called).isFalse();
     }
 
+    @Test
+    @DisplayName("Should expose schema 2 effective mixins for client, server, and both plugin environments")
+    void shouldExposeEffectiveMixinsForActiveSide() throws IOException {
+        List<String> commonMixins = List.of("test.mixin.CommonMixin");
+        List<String> clientMixins = List.of("test.mixin.ClientMixin");
+        List<String> serverMixins = List.of("test.mixin.ServerMixin");
+
+        for (Environment active : List.of(Environment.CLIENT, Environment.SERVER)) {
+            for (Environment pluginEnvironment : List.of(Environment.CLIENT, Environment.SERVER, Environment.BOTH)) {
+                Path jar = tempDir.resolve("mixins-" + active + "-" + pluginEnvironment + ".jar");
+                Files.writeString(jar, active + "-" + pluginEnvironment);
+
+                AtomicReference<List<ZomboidApprovalEntry>> batch = new AtomicReference<>();
+                ZomboidPluginApprovalGate gate = service(active, "prompt", interactiveAllowFrontend(false, batch));
+                Metadata metadata = schema2Metadata(
+                        "plugin-" + environmentId(active) + "-" + environmentId(pluginEnvironment),
+                        pluginEnvironment,
+                        commonMixins,
+                        clientMixins,
+                        serverMixins
+                );
+
+                assertThat(gate.evaluate(archive(jar, "test-mod"), metadata))
+                        .isEqualTo(PluginApprovalGate.Status.PENDING);
+                gate.flushPending();
+
+                assertThat(batch.get()).hasSize(1);
+                List<String> visibleMixins = batch.get().get(0).mixinClasses();
+                assertThat(visibleMixins).isEqualTo(metadata.mixinsFor(active));
+                assertThat(visibleMixins).containsAll(commonMixins);
+                if (active == Environment.CLIENT) {
+                    assertThat(visibleMixins).containsAll(clientMixins);
+                    assertThat(visibleMixins).doesNotContainAnyElementsOf(serverMixins);
+                } else {
+                    assertThat(visibleMixins).containsAll(serverMixins);
+                    assertThat(visibleMixins).doesNotContainAnyElementsOf(clientMixins);
+                }
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("Should not inspect declarations of the side opposite to the active environment")
+    void shouldNotInspectOppositeSide() throws IOException {
+        record Case(Environment active, List<String> clientMixins, List<String> serverMixins,
+                    List<String> excludedMixins) {
+        }
+        List<Case> cases = List.of(
+                new Case(Environment.CLIENT, List.of(), List.of("test.mixin.ServerMixin"),
+                        List.of("test.mixin.ServerMixin")),
+                new Case(Environment.SERVER, List.of("test.mixin.ClientMixin"), List.of(),
+                        List.of("test.mixin.ClientMixin"))
+        );
+
+        for (Case testCase : cases) {
+            Path jar = tempDir.resolve("opposite-" + testCase.active() + ".jar");
+            Files.writeString(jar, "opposite-side-content");
+
+            AtomicReference<List<ZomboidApprovalEntry>> batch = new AtomicReference<>();
+            ZomboidPluginApprovalGate gate = service(
+                    testCase.active(),
+                    "prompt",
+                    interactiveAllowFrontend(false, batch)
+            );
+            Metadata metadata = schema2Metadata(
+                    "opposite-" + environmentId(testCase.active()),
+                    Environment.BOTH,
+                    List.of(),
+                    testCase.clientMixins(),
+                    testCase.serverMixins()
+            );
+
+            assertThat(gate.evaluate(archive(jar, "test-mod"), metadata))
+                    .isEqualTo(PluginApprovalGate.Status.PENDING);
+            gate.flushPending();
+
+            ZomboidApprovalEntry entry = batch.get().get(0);
+            assertThat(entry.mixinClasses()).isEqualTo(metadata.mixinsFor(testCase.active()));
+            assertThat(entry.mixinClasses()).doesNotContainAnyElementsOf(testCase.excludedMixins());
+            Environment opposite = testCase.active() == Environment.CLIENT ? Environment.SERVER : Environment.CLIENT;
+            assertThat(metadata.mixinsFor(opposite)).containsExactlyElementsOf(testCase.excludedMixins());
+
+            // A missing archive proves the inspector does not open archives without effective mixins.
+            Files.delete(jar);
+            MixinTargetInspector.Result inspection =
+                    MixinTargetInspector.inspect(entry.jarPath(), entry.mixinClasses());
+            assertThat(inspection.mixinClasses()).isEmpty();
+            assertThat(inspection.targetClasses()).isEmpty();
+            assertThat(inspection.issues()).isEmpty();
+        }
+    }
+
     private ZomboidPluginApprovalGate service(
             Environment environment,
             String policy,
@@ -508,6 +602,35 @@ class ZomboidPluginApprovalGateTest {
         return pending -> {
             batch.set(List.copyOf(pending));
             return new ZomboidApprovalResponse(persist, decisions(pending, true));
+        };
+    }
+
+    private static ZomboidApprovalFrontend interactiveAllowFrontend(
+            boolean persist,
+            AtomicReference<List<ZomboidApprovalEntry>> batch
+    ) {
+        return new ZomboidApprovalFrontend() {
+            /**
+             * Captures the pending batch and approves every entry.
+             *
+             * @param pending archives awaiting approval
+             * @return approval response for the captured batch
+             */
+            @Override
+            public ZomboidApprovalResponse request(List<ZomboidApprovalEntry> pending) {
+                batch.set(List.copyOf(pending));
+                return new ZomboidApprovalResponse(persist, decisions(pending, true));
+            }
+
+            /**
+             * Reports interactive support so the prompt policy stays active on a dedicated server.
+             *
+             * @return always {@code true}
+             */
+            @Override
+            public boolean supportsInteractivePrompt() {
+                return true;
+            }
         };
     }
 
@@ -545,6 +668,29 @@ class ZomboidPluginApprovalGateTest {
                 .name("Test Plugin")
                 .version("1.0.0")
                 .environment(Environment.BOTH)
+                .build();
+    }
+
+    private static String environmentId(Environment environment) {
+        return environment.name().toLowerCase(Locale.ROOT);
+    }
+
+    private static Metadata schema2Metadata(
+            String id,
+            Environment environment,
+            List<String> commonMixins,
+            List<String> clientMixins,
+            List<String> serverMixins
+    ) {
+        return new Metadata.Builder()
+                .schema(Constants.METADATA_SCHEMA_2)
+                .id(id)
+                .name("Test Plugin")
+                .version("1.0.0")
+                .environment(environment)
+                .mixins(commonMixins)
+                .clientMixins(clientMixins)
+                .serverMixins(serverMixins)
                 .build();
     }
 }

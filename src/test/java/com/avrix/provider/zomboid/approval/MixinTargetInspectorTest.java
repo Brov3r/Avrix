@@ -111,6 +111,17 @@ class MixinTargetInspectorTest {
         assertThat(result.issues()).isEmpty();
     }
 
+    @Test
+    void shouldNotOpenArchiveWithoutEffectiveMixins() {
+        Path missing = tempDir.resolve("missing.jar");
+
+        MixinTargetInspector.Result result = MixinTargetInspector.inspect(missing, List.of());
+
+        assertThat(result.mixinClasses()).isEmpty();
+        assertThat(result.targetClasses()).isEmpty();
+        assertThat(result.issues()).isEmpty();
+    }
+
     private Path createJar(String metadata, String... classEntries) throws IOException {
         Path jar = tempDir.resolve("plugin.jar");
         try (JarOutputStream output = new JarOutputStream(Files.newOutputStream(jar))) {

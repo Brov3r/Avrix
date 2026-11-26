@@ -55,6 +55,7 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
     private static final String POLICY_ALLOW_ALL = "allow-all";
 
     private final Path approvalsFile;
+    private final Environment environment;
     private final Policy policy;
     private final ZomboidApprovalFrontend frontend;
 
@@ -71,7 +72,7 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
      * Creates an approval gate.
      *
      * @param configRoot  per-user directory for the persistent approval store
-     * @param environment active runtime environment
+     * @param environment active runtime environment; also selects the effective mixins shown for approval
      * @param policyValue configured policy value, or {@code null} for the environment default
      * @param frontend    frontend used to resolve pending archives
      * @throws NullPointerException if {@code configRoot} is null
@@ -91,8 +92,9 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
                 ? frontend
                 : ZomboidApprovalFrontend.denyAll();
         this.frontend = resolvedFrontend;
+        this.environment = environment == null ? Environment.CLIENT : environment;
         this.policy = resolvePolicy(
-                environment == null ? Environment.CLIENT : environment,
+                this.environment,
                 policyValue,
                 resolvedFrontend.supportsInteractivePrompt()
         );
@@ -279,7 +281,7 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
                 size,
                 modified,
                 previousHash(modId, pluginIdentity, sha256),
-                metadata == null ? List.of() : metadata.mixins()
+                metadata == null ? List.of() : metadata.mixinsFor(environment)
         );
     }
 

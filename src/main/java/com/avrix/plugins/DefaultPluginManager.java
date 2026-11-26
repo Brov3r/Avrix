@@ -834,7 +834,7 @@ public class DefaultPluginManager implements PluginManager {
                     classLoader.addURL(jarUrl, true, classEntries, multiRelease);
                 }
             } else {
-                classLoader.addURL(jarUrl, !meta.mixins().isEmpty());
+                classLoader.addURL(jarUrl, !activeMixins(meta).isEmpty());
             }
         } catch (MalformedURLException | RuntimeException e) {
             attachedPlugins.remove(id);
@@ -846,10 +846,10 @@ public class DefaultPluginManager implements PluginManager {
     }
 
     /**
-     * Registers all declared mixins for an attached plugin.
+     * Registers all declared mixins that apply to the active environment for an attached plugin.
      *
      * <p>The plugin's canonical manifest ID is passed as the mixin owner so Mixin diagnostics identify the plugin
-     * instead of reporting an unknown owner.
+     * instead of reporting an unknown owner. Wrong-side declarations are neither validated nor registered.
      *
      * @param container plugin metadata and file container
      */
@@ -861,33 +861,39 @@ public class DefaultPluginManager implements PluginManager {
             return;
         }
 
-        if (!meta.mixins().isEmpty()) {
-            mixinRegistrar.validateMixins(meta.mixins());
-            try {
-                for (String mixin : meta.mixins()) {
-                    mixinRegistrar.addMixin(mixin, id);
-                }
-            } catch (Throwable failure) {
-                FatalErrors.rethrowIfFatal(failure);
-                throw new UnsafeMixinStateException("Mixin registration may have left partial state for plugin " + id,
-                        failure);
-            }
-            mixinsRegisteredPlugins.add(id);
-            LOGGER.debug("Registered {} mixin configuration(s) for plugin [{}]", meta.mixins().size(), id);
+        List<String> mixins = activeMixins(meta);
+        if (mixins.isEmpty()) {
+            return;
         }
+
+        mixinRegistrar.validateMixins(mixins);
+        try {
+            for (String mixin : mixins) {
+                mixinRegistrar.addMixin(mixin, id);
+            }
+        } catch (Throwable failure) {
+            FatalErrors.rethrowIfFatal(failure);
+            throw new UnsafeMixinStateException("Mixin registration may have left partial state for plugin " + id,
+                    failure);
+        }
+        mixinsRegisteredPlugins.add(id);
+        LOGGER.debug("Registered {} mixin configuration(s) for plugin [{}]", mixins.size(), id);
     }
 
     /**
-     * Starts a prepared plugin by creating its entrypoint and invoking {@link Plugin#onInitialize(PluginData)}.
+     * Starts a prepared plugin by creating each active entrypoint and invoking
+     * {@link Plugin#onInitialize(PluginData)} in declaration order.
+     *
+     * <p>Main entrypoints run first, followed by the active client or server list. If any entrypoint fails, every
+     * handler constructed for this plugin is shut down in reverse creation order before the failure is rethrown.
      *
      * @param container plugin metadata and file container
      * @throws IllegalStateException  if the plugin was not prepared or cannot be started
-     * @throws ReflectiveOperationException if the entrypoint cannot be loaded or instantiated
+     * @throws ReflectiveOperationException if an entrypoint cannot be loaded or instantiated
      */
     private boolean startPlugin(PluginData container) throws ReflectiveOperationException {
         Metadata meta = container.metadata();
         String id = meta.id();
-        String entrypoint = meta.entrypoint();
 
         if (!preparedPlugins.contains(id)) {
             throw new IllegalStateException("Plugin was not prepared: " + id);
@@ -917,31 +923,44 @@ public class DefaultPluginManager implements PluginManager {
                 iconlessPlugins.add(id);
             }
         }
-        Plugin instance = null;
-        if (entrypoint != null && !entrypoint.isBlank()) {
-            Class<?> pluginClass = Class.forName(entrypoint, false, classLoader);
 
-            if (!Plugin.class.isAssignableFrom(pluginClass)) {
-                throw new IllegalArgumentException(
-                        "Declared entrypoint [" + entrypoint + "] does not implement Plugin interface"
+        List<String> entrypoints = activeEntrypoints(meta);
+        List<Plugin> instances = new ArrayList<>(entrypoints.size());
+        PluginData callbackContainer = null;
+        try {
+            for (String entrypoint : entrypoints) {
+                if (entrypoint == null || entrypoint.isBlank()) {
+                    continue;
+                }
+
+                Class<?> pluginClass = Class.forName(entrypoint, false, classLoader);
+                if (!Plugin.class.isAssignableFrom(pluginClass)) {
+                    throw new IllegalArgumentException(
+                            "Declared entrypoint [" + entrypoint + "] does not implement Plugin interface"
+                    );
+                }
+
+                Plugin instance = (Plugin) pluginClass.getDeclaredConstructor().newInstance();
+                instances.add(instance);
+                callbackContainer = new PluginData(
+                        jarFile.toPath(),
+                        iconUri,
+                        instances.getFirst(),
+                        instances,
+                        meta
                 );
+                instance.onInitialize(callbackContainer);
+                LOGGER.debug("Initialized entrypoint [{}] for plugin [{}]", entrypoint, id);
             }
-
-            instance = (Plugin) pluginClass.getDeclaredConstructor().newInstance();
+        } catch (Throwable failure) {
+            FatalErrors.rethrowIfFatal(failure);
+            shutdownInstances(id, instances);
+            throw failure;
         }
 
-        PluginData finalizedContainer = new PluginData(jarFile, iconUri, instance, meta);
-        if (instance != null) {
-            try {
-                instance.onInitialize(finalizedContainer);
-            } catch (Throwable failure) {
-                FatalErrors.rethrowIfFatal(failure);
-                shutdownQuietly(id, instance);
-                throw failure;
-            }
-            LOGGER.debug("Initialized entrypoint [{}] for plugin [{}]", entrypoint, id);
-        }
-
+        PluginData finalizedContainer = (callbackContainer != null)
+                ? callbackContainer
+                : new PluginData(jarFile.toPath(), iconUri, null, List.of(), meta);
         boolean closedDuringStart;
         synchronized (stateLock) {
             closedDuringStart = closed;
@@ -953,14 +972,46 @@ public class DefaultPluginManager implements PluginManager {
         }
 
         if (closedDuringStart) {
-            shutdownQuietly(id, instance);
+            shutdownInstances(id, instances);
             return false;
         }
 
         long elapsedMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime);
-        String pluginType = (entrypoint != null && !entrypoint.isBlank()) ? "plugin" : "library";
+        String pluginType = instances.isEmpty() ? "library" : "plugin";
         LOGGER.info("Loaded {} [{}] ({}@{}) in {}ms", pluginType, meta.name(), id, meta.version(), elapsedMillis);
         return true;
+    }
+
+    /**
+     * Returns the mixin declarations that apply to the active runtime environment.
+     *
+     * @param metadata plugin metadata
+     * @return ordered active mixin class names
+     */
+    private List<String> activeMixins(Metadata metadata) {
+        return metadata.mixinsFor(config.environment());
+    }
+
+    /**
+     * Returns the entrypoint declarations that apply to the active runtime environment.
+     *
+     * @param metadata plugin metadata
+     * @return ordered active entrypoint class names
+     */
+    private List<String> activeEntrypoints(Metadata metadata) {
+        return metadata.entrypointsFor(config.environment());
+    }
+
+    /**
+     * Shuts down handler instances in reverse startup order without allowing a failure to escape.
+     *
+     * @param pluginId  plugin identifier used for logging
+     * @param instances initialized handler instances in startup order
+     */
+    private static void shutdownInstances(String pluginId, List<Plugin> instances) {
+        for (int i = instances.size() - 1; i >= 0; i--) {
+            shutdownQuietly(pluginId, instances.get(i));
+        }
     }
 
     private List<String> unavailableDependencies(Metadata metadata, Set<String> available) {
@@ -1020,7 +1071,7 @@ public class DefaultPluginManager implements PluginManager {
             if (pluginData == null) {
                 continue;
             }
-            pluginData.getPluginInstance().ifPresent(plugin -> shutdownQuietly(pluginId, plugin));
+            shutdownInstances(pluginId, pluginData.instances());
         }
 
         synchronized (stateLock) {
