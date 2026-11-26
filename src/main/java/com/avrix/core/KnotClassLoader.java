@@ -61,6 +61,7 @@ public class KnotClassLoader extends URLClassLoader {
     private volatile int firstNonIndexedUrlPosition = Integer.MAX_VALUE;
     private volatile ClassTransformer classTransformer;
     private volatile boolean strictTransformationFailures = false;
+    private volatile boolean closed;
 
     static {
         registerAsParallelCapable();
@@ -199,6 +200,8 @@ public class KnotClassLoader extends URLClassLoader {
 
     /**
      * Adds a URL to the local classpath unless an equivalent normalized URL is already registered.
+     * <p>
+     * The call has no effect once the loader is closed.
      *
      * @param url classpath URL to add
      * @throws NullPointerException     if {@code url} is null
@@ -213,7 +216,8 @@ public class KnotClassLoader extends URLClassLoader {
      * Adds a URL to the local classpath and optionally indexes its class entries.
      * <p>
      * Indexing trades one JAR scan for constant-time class resource lookup. It is intended for archives whose classes
-     * are resolved frequently, especially plugin archives that register mixins.
+     * are resolved frequently, especially plugin archives that register mixins. The call has no effect once the loader
+     * is closed.
      *
      * @param url                 classpath URL to add
      * @param indexClassResources whether class entries of a file-based JAR should be indexed
@@ -228,7 +232,7 @@ public class KnotClassLoader extends URLClassLoader {
      * Adds a URL to the local classpath and optionally indexes the provided class entries.
      * <p>
      * Passing pre-collected class entries avoids rescanning the JAR. Its manifest is still checked to preserve
-     * standard classpath ordering.
+     * standard classpath ordering. The call has no effect once the loader is closed.
      *
      * @param url                 classpath URL to add
      * @param indexClassResources whether class entries of a file-based JAR should be indexed
@@ -244,6 +248,7 @@ public class KnotClassLoader extends URLClassLoader {
      * Adds a URL to the local classpath and indexes the provided class entries with a known multi-release flag.
      *
      * <p>The manifest is still checked for additional classpath entries that must retain standard lookup ordering.
+     * The call has no effect once the loader is closed.
      *
      * @param url                 classpath URL to add
      * @param indexClassResources whether class entries of a file-based JAR should be indexed
@@ -268,6 +273,11 @@ public class KnotClassLoader extends URLClassLoader {
             Boolean multiRelease
     ) {
         Objects.requireNonNull(url, "URL cannot be null");
+        if (closed) {
+            LOGGER.trace("Class loader is closed, ignoring URL: [{}]", formatDisplayName(url));
+            return;
+        }
+
         final String key;
         try {
             key = url.toURI().normalize().toString();
@@ -681,6 +691,19 @@ public class KnotClassLoader extends URLClassLoader {
         } catch (IOException ignored) {
         }
         return resource;
+    }
+
+    /**
+     * Closes the classpath and invalidates the class resource index.
+     *
+     * @throws IOException if closing the classpath fails
+     */
+    @Override
+    public synchronized void close() throws IOException {
+        closed = true;
+        classResourceIndex.clear();
+        firstNonIndexedUrlPosition = Integer.MAX_VALUE;
+        super.close();
     }
 
     /**
