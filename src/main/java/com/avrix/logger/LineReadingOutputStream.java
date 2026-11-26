@@ -153,6 +153,8 @@ public final class LineReadingOutputStream extends OutputStream {
      * Emits the buffered remainder when partial-line flushing is enabled.
      * <p>
      * In delimiter-only mode this method preserves the buffered bytes and CRLF state.
+     * Flushing never separates a CR/LF pair, so a flush between {@code \r} and {@code \n}
+     * does not emit a spurious empty line.
      */
     @Override
     public void flush() {
@@ -167,7 +169,6 @@ public final class LineReadingOutputStream extends OutputStream {
         lock.lock();
         try {
             lineToEmit = flushBufferLocked(false);
-            lastWasCR = false;
         } finally {
             lock.unlock();
         }

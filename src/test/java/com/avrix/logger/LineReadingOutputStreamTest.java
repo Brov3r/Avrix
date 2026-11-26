@@ -202,6 +202,18 @@ class LineReadingOutputStreamTest {
     }
 
     @Test
+    @DisplayName("Should not emit a phantom empty line when flush splits a CRLF pair")
+    void shouldNotEmitPhantomLineWhenFlushSplitsCrLf() throws IOException {
+        LineReadingOutputStream stream = new LineReadingOutputStream(lines::add);
+
+        stream.write("line\r".getBytes(StandardCharsets.UTF_8));
+        stream.flush();
+        stream.write('\n');
+
+        assertThat(lines).containsExactly("line");
+    }
+
+    @Test
     @DisplayName("Should respect offset and length of a batch write")
     void shouldRespectOffsetAndLength() {
         LineReadingOutputStream stream = new LineReadingOutputStream(lines::add);
