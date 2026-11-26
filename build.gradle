@@ -21,7 +21,7 @@ repositories {
 dependencies {
     // Logging API and provider
     api 'org.slf4j:slf4j-api:2.0.20'
-    implementation 'ch.qos.logback:logback-classic:1.6.6'
+    implementation 'ch.qos.logback:logback-classic:1.6.8'
 
     // Mixin runtime and MixinExtras extensions
     implementation 'net.fabricmc:sponge-mixin:0.17.5+mixin.0.8.7'
