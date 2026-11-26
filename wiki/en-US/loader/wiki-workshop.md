@@ -82,8 +82,8 @@ MyPlugin.jar
 └── com/example/myplugin/MyMixin.class
 ```
 
-The plugin can use the same `entrypoint`, `mixins`, dependencies, environment, and version constraints as a plugin
-installed in `plugins/`.
+The plugin can use the same metadata fields as a plugin installed in `plugins/`, including the schema 2
+(`Avrix 2.6.0+`) `entrypoints` and side-aware `mixins`, dependencies, environment, and version constraints.
 
 ---
 

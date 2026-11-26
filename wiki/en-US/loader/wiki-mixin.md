@@ -35,7 +35,7 @@ runtime copy.
 
 ### Registering Mixins in a Plugin
 
-List mixin classes in your `metadata.yml` manifest:
+In a schema 1 manifest, list mixin classes in `metadata.yml`:
 
 ```yaml
 mixins:
@@ -67,14 +67,37 @@ public class PlayerMixin {
 Keep mixins in a dedicated package that contains no target classes. Mixin treats every class in a mixin package as
 part of that package, so mixing targets and mixins in one package is invalid.
 
+For schema 2 (Avrix 2.6.0+), declare mixins by side:
+
+```yaml
+schema: 2
+mixins:
+  common:
+    - "com.example.myplugin.mixin.CommonMixin"
+  client:
+    - "com.example.myplugin.mixin.client.ClientMixin"
+  server:
+    - "com.example.myplugin.mixin.server.ServerMixin"
+```
+
+`common` applies on both sides, while `client` and `server` apply only in the matching runtime. If the active runtime
+environment is `both` or `auto`, only `common` is registered. The schema 1 list `mixins: [...]` is still accepted and means
+`mixins.common`. At runtime, `Metadata.mixinsFor(Environment)` resolves `common` plus the active side, while
+`mixins()` remains the legacy common list.
+
 ---
 
 ### Registration and Lifecycle
 
-All plugin archives are attached and all declared mixins are registered during the preparation phase, before any
-plugin entrypoint runs. A plugin's `onInitialize` can therefore load target classes without racing another plugin's
-mixin registration. `loadBefore` / `loadAfter` control preparation order and therefore the order in which multiple
-mixin configurations are applied to the same target.
+All plugin JARs are attached and all active mixins are registered in one preparation batch, before the first plugin
+initializer runs. This includes `mixins.common` plus the matching `client` or `server` list. A plugin's
+`onInitialize` can therefore load target classes without racing another plugin's mixin registration.
+`loadBefore` / `loadAfter` control plugin order and therefore the order in which multiple mixin configurations are
+applied to the same target. Plugin initializers run after the whole batch is ready, not immediately after each
+plugin's own mixins.
+
+Side-specific mixin lists are metadata routing, not Fabric-style `preLaunch` phases. Only the active side's list is
+registered; there is no separate client or server mixin launch stage.
 
 Each plugin's declarations are checked before registration. A declaration is rejected when the class is missing, is
 not annotated with `@Mixin`, has no target, or shares its package with a target. If registration may have left

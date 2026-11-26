@@ -297,9 +297,10 @@ conflicts: # (Опционально) ID плагинов, несовмести�
   - "legacy-plugin"
 ```
 
-`schema` обязателен и должен быть равен `1`, `version` должен быть корректной SemVer-строкой, а идентификаторы
-`avrix-loader` и `project-zomboid` зарезервированы за загрузчиком и игровым провайдером. Всегда заключайте `version`
-и ограничения зависимостей в кавычки (`"1.10.0"`, `">=1.2.0"`), чтобы YAML не преобразовал их в числа. Секция
+`schema` обязателен и выбирает формат манифеста: схема 1 использует `1`, схема 2 — `2` (см. ниже). `version`
+должен быть корректной SemVer-строкой, а идентификаторы `avrix-loader` и `project-zomboid` зарезервированы за
+загрузчиком и игровым провайдером. Всегда заключайте `version` и ограничения зависимостей в кавычки
+(`"1.10.0"`, `">=1.2.0"`), чтобы YAML не преобразовал их в числа. Секция
 `dependencies` должна быть map'ой «ID плагина → ограничение»; списочный синтаксис не поддерживается. Если плагин
 зависит от инициализации другого плагина, укажите зависимость или `loadAfter`. Неизвестные идентификаторы в
 `loadBefore` / `loadAfter` выводятся как предупреждения, потому что указанный плагин может быть опциональным. Чтобы
@@ -313,14 +314,14 @@ conflicts: # (Опционально) ID плагинов, несовмести�
 metadata выводятся, но не прерывают разбор; ошибки schema, ID, версии, entrypoint, mixin и структуры зависимостей
 всегда являются фатальными. Для
 descriptor'а игрового провайдера `entrypoint` означает главный класс игры, а не реализацию `Plugin`; у descriptor'а
-загрузчика поле пустое. Разбор манифеста выбирается по `schema`, поэтому будущую версию схемы можно добавить, не
-меняя существующие манифесты версии 1.
+загрузчика поле пустое. Разбор манифеста выбирается по `schema`, поэтому схема 2 и последующие версии могут
+сосуществовать с существующими манифестами версии 1.
 
 ---
 
 ### `ExamplePlugin.java` (Точка входа)
 
-Каждый плагин может иметь одну точку входа, реализующую интерфейс `Plugin` (либо не иметь ее вовсе, если плагин
+Плагин схемы 1 может иметь одну точку входа, реализующую интерфейс `Plugin` (либо не иметь ее вовсе, если плагин
 выполняет роль чистой библиотеки или набора миксинов):
 
 ```java
@@ -342,7 +343,7 @@ public class ExamplePlugin implements Plugin {
      * Invoked after the plugin JAR is attached and its mixins are registered,
      * but before the game starts.
      *
-     * @param pluginData container containing active metadata, jar path, and icon
+     * @param pluginData plugin metadata, archive access, and the handler snapshot
      */
     @Override
     public void onInitialize(PluginData pluginData) {
@@ -357,12 +358,32 @@ public class ExamplePlugin implements Plugin {
 
 `Plugin` предоставляет два callback'а жизненного цикла:
 
-- `onInitialize(PluginData)` вызывается один раз после подключения всех JAR-файлов плагинов и регистрации всех
-  миксинов, но до запуска игры. Переданный `PluginData` уже содержит инициализированный экземпляр плагина. Здесь
-  следует захватывать ресурсы и регистрировать сервисы.
-- `onShutdown()` вызывается при завершении загрузчика. Загруженные плагины останавливаются в обратном порядке загрузки;
-  реализация по умолчанию ничего не делает. Он также вызывается, если `onInitialize()` завершился ошибкой после
-  создания экземпляра: очистка должна учитывать частично инициализированные поля и освобождать уже захваченные ресурсы.
+- `onInitialize(PluginData)` вызывается один раз для каждого активного экземпляра entrypoint'а — после подключения
+  всех JAR-файлов плагинов и регистрации всех активных миксинов, но до запуска игры. Callback получает снапшот
+  `PluginData` с обработчиками плагина (см. ниже). Здесь следует захватывать ресурсы и регистрировать сервисы.
+- `onShutdown()` вызывается при завершении загрузчика в порядке, строго обратном инициализации. Реализация по
+  умолчанию ничего не делает. Он также вызывается, если `onInitialize()` завершился ошибкой после создания
+  экземпляра: очистка должна учитывать частично инициализированные поля и освобождать уже захваченные ресурсы.
+
+Для пакета плагинов инициализация идёт так:
+
+1. Сначала регистрируются все активные миксины: `mixins.common` вместе с подходящим списком `client` или `server`
+   либо плоский список схемы 1.
+2. Плагины инициализируются в разрешённом топологическом порядке (`dependencies`, `loadAfter`, `loadBefore`).
+3. Внутри одного плагина классы `entrypoints.main` идут в порядке объявления, затем активный список стороны
+   (`client` на клиенте, `server` на сервере).
+
+Завершение идёт строго в обратном порядке: для каждого плагина в обратном топологическом порядке сначала
+entrypoint'ы активной стороны в обратном порядке объявления, затем `main` в обратном порядке объявления.
+
+`PluginData` хранит неизменяемый снапшот обработчиков (`Plugin`). Во время `onInitialize` `instances()` содержит
+уже созданные обработчики, включая текущий (текущий добавляется до вызова его callback'а); снапшот фиксируется в
+момент callback'а, поэтому более ранний callback не видит обработчики, созданные позже. После завершения загрузки сохранённый дескриптор содержит все
+активные обработчики. `instance()` возвращает первый успешно созданный обработчик или `null`; `getPluginInstance()`
+— то же значение в виде `Optional<Plugin>`. Оба метода дают legacy-представление одного обработчика и для второго
+и последующих entrypoint'ов не обязаны указывать на текущий. Список всех обработчиков возвращает только
+`instances()`; используйте его для плагинов с несколькими entrypoint'ами. У плагинов без entrypoint'ов (только
+библиотека или миксины) снапшот пуст, и первого обработчика нет.
 
 ```java
 @Override
@@ -380,6 +401,123 @@ public void onShutdown() {
 других плагинов. Интеграции могут получить результаты последней попытки через `PluginManager.getLoadResults()` —
 неизменяемый список `PluginLoadResult` со статусами `LOADED`, `FAILED` и `SKIPPED`. `PluginManager.close()` завершает
 загруженные плагины в обратном порядке и вызывается загрузчиком автоматически при остановке JVM.
+
+---
+
+### Метаданные с учётом стороны (schema 2)
+
+Схема 2 позволяет одному JAR объявить разные entrypoint'ы и миксины для клиента и выделенного сервера. Схема 1 не
+меняется: существующий манифест сохраняет единственный `entrypoint`, плоский список `mixins` и прежнее поведение.
+
+```yaml
+schema: 2
+id: "example-dual-side"
+name: "Example Dual-Side Plugin"
+version: "%PLUGIN_VERSION%"
+description: "Shared, client-only, and server-only code in one plugin"
+environment: "*"                         # Фильтрует плагин целиком: "*"/"both", "client" или "server"
+
+entrypoints:
+  main:
+    - "com.example.exampleplugin.ExamplePlugin"
+  client:
+    - "com.example.exampleplugin.client.ExampleClientPlugin"
+  server:
+    - "com.example.exampleplugin.server.ExampleServerPlugin"
+
+mixins:
+  common:
+    - "com.example.exampleplugin.mixin.ExampleCommonMixin"
+  client:
+    - "com.example.exampleplugin.mixin.client.ExampleClientMixin"
+  server:
+    - "com.example.exampleplugin.mixin.server.ExampleServerMixin"
+```
+
+- Каждый список может содержать несколько реализаций `Plugin`; они инициализируются в порядке объявления.
+- `entrypoints.main` и `mixins.common` активны на обеих сторонах. Списки `client` и `server` активны только в
+  соответствующем окружении.
+- Верхнеуровневый `environment` по-прежнему фильтрует плагин целиком. Например, `environment: "server"` не даёт
+  плагину загрузиться на клиенте, поэтому его `entrypoints.client` и `mixins.client` никогда не выполняются.
+- Если активное окружение — `both` или `auto`, активны только объявления `main`/`common`; списки `client` и
+  `server` пропускаются.
+- Схема 2 также принимает поля схемы 1 как сокращения: одиночный `entrypoint` — это один элемент
+  `entrypoints.main`, а список `mixins` — это `mixins.common`.
+- Одновременное объявление `entrypoint` и `entrypoints` недопустимо.
+- Повторяющиеся имена классов пропускаются; используется первое вхождение. Каждый entrypoint должен реализовывать
+  `Plugin` и иметь доступный конструктор без аргументов. Элементы `mixins` остаются FQCN, а не путями к ресурсам.
+
+Во время выполнения `Metadata.entrypointsFor(Environment)` и `Metadata.mixinsFor(Environment)` вычисляют
+эффективные списки: main/common плюс активную сторону. Legacy-аксессоры `entrypoint()` и `mixins()` сохраняют
+представление схемы 1: `entrypoint()` возвращает первый основной entrypoint, а `mixins()` — общий список
+(`mixins.common`); для схемы 1 это исходные одиночный entrypoint и плоский список.
+
+Классы миксинов используют стандартный шаблон `@Mixin` из раздела
+[Трансформация байт-кода и миксины](./loader/wiki-mixin.md). `ExamplePlugin` повторяет шаблон, показанный выше. Два
+класса для конкретных сторон выглядят так:
+
+```java
+package com.example.exampleplugin.client;
+
+import com.avrix.plugins.Plugin;
+import com.avrix.plugins.PluginData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Client-side entrypoint declared under {@code entrypoints.client}.
+ */
+public final class ExampleClientPlugin implements Plugin {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExampleClientPlugin.class);
+
+    /**
+     * Initializes client-only features.
+     *
+     * @param pluginData plugin metadata and archive access
+     */
+    @Override
+    public void onInitialize(PluginData pluginData) {
+        LOGGER.info("Client-only initialization for [{}]", pluginData.id());
+    }
+}
+```
+
+```java
+package com.example.exampleplugin.server;
+
+import com.avrix.plugins.Plugin;
+import com.avrix.plugins.PluginData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Server-side entrypoint declared under {@code entrypoints.server}.
+ */
+public final class ExampleServerPlugin implements Plugin {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExampleServerPlugin.class);
+
+    /**
+     * Initializes server-only features.
+     *
+     * @param pluginData plugin metadata and archive access
+     */
+    @Override
+    public void onInitialize(PluginData pluginData) {
+        LOGGER.info("Server-only initialization for [{}]", pluginData.id());
+    }
+}
+```
+
+С `loadAfter: ["core"]`, `entrypoints.main: [A, B]` и `entrypoints.client: [C]` клиентский запуск инициализирует
+`core`, затем A, B и C; при завершении вызываются C, B и A в обратном порядке. Полные правила пакетной
+инициализации — в разделе [Жизненный цикл плагина](#жизненный-цикл-плагина).
+
+Эти списки лишь распределяют код по сторонам в рамках одного пакета инициализации. Это не фазы entrypoint'ов
+`preLaunch` из Fabric: Avrix не добавляет `preLaunch` или пользовательские типы entrypoint'ов, а клиентские
+объявления не выполняются в отдельной более поздней фазе. В одном процессе активна только одна сторона.
+
+> [!NOTE]
+> Схема 2 поддерживается начиная с Avrix 2.6.0.
 
 ---
 
@@ -419,7 +557,7 @@ public class LuaEventManagerMixin {
 MixinExtras, например `@WrapOperation` и `@ModifyExpressionValue`, также доступны.
 
 Элементы `mixins` — это полные имена классов миксинов (FQCN), а не пути к файлам конфигурации. Регистрация
-выполняется при подготовке плагина-владельца, до запуска его entrypoint.
+выполняется при пакетной подготовке, до запуска любого entrypoint.
 
 ---
 

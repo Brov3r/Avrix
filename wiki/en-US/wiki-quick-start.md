@@ -296,9 +296,10 @@ conflicts: # (Optional) Plugin IDs declared incompatible with this plugin
   - "legacy-plugin"
 ```
 
-`schema` is required and must be `1`, `version` must be a valid SemVer string, and the identifiers `avrix-loader` and
-`project-zomboid` are reserved for the loader and game provider. Always quote `version` and dependency constraints
-(`"1.10.0"`, `">=1.2.0"`) so YAML does not coerce them into numbers. The `dependencies` section must be a map of plugin
+`schema` is required and selects the manifest format: schema 1 uses `1`, schema 2 uses `2` (see below). `version`
+must be a valid SemVer string, and the identifiers `avrix-loader` and `project-zomboid` are reserved for the loader
+and game provider. Always quote `version` and dependency constraints (`"1.10.0"`, `">=1.2.0"`) so YAML does not
+coerce them into numbers. The `dependencies` section must be a map of plugin
 identifiers to constraints; list syntax is not supported. Use a dependency or `loadAfter` entry when your plugin relies
 on another plugin being initialized first. Unknown identifiers in `loadBefore` / `loadAfter` are reported as warnings
 because the referenced plugin may be optional. To require a minimum loader or game version, declare a constraint on
@@ -311,15 +312,15 @@ is logged as a warning; under `--strict` it aborts load order resolution. Non-fa
 never abort parsing; invalid schema, identifiers, versions, entrypoints, mixins, and dependency structure always fail.
 For game
 provider descriptors, `entrypoint` means the game's main class rather than a `Plugin` implementation; loader
-descriptors leave it empty. Parser dispatch is keyed by `schema`, so a future schema version can be added without
-changing existing version-1 manifests.
+descriptors leave it empty. Parser dispatch is keyed by `schema`, so schema 2 and later versions can coexist with
+existing version-1 manifests.
 
 ---
 
 ### `ExamplePlugin.java` (Entrypoint)
 
-Each plugin can define a main entrypoint implementing the `Plugin` interface (or omit it entirely if the plugin serves
-solely as a library or mixin pack):
+A schema 1 plugin can define one main entrypoint implementing the `Plugin` interface (or omit it entirely if the
+plugin serves solely as a library or mixin pack):
 
 ```java
 package com.example.exampleplugin;
@@ -340,7 +341,7 @@ public class ExamplePlugin implements Plugin {
      * Invoked after the plugin JAR is attached and its mixins are registered,
      * but before the game starts.
      *
-     * @param pluginData container containing active metadata, jar path, and icon
+     * @param pluginData plugin metadata, archive access, and the handler snapshot
      */
     @Override
     public void onInitialize(PluginData pluginData) {
@@ -355,12 +356,32 @@ public class ExamplePlugin implements Plugin {
 
 `Plugin` exposes two lifecycle callbacks:
 
-- `onInitialize(PluginData)` is invoked once, after all plugin archives are attached and all plugin mixins are
-  registered, but before the game starts. The passed `PluginData` already contains the initialized plugin instance.
-  Acquire resources and register services here.
-- `onShutdown()` is invoked when the loader shuts down. Loaded plugins are shut down in reverse load order, and the
-  default implementation does nothing. It is also called if `onInitialize()` fails after construction; cleanup must
-  tolerate partially initialized fields and release any resources already acquired.
+- `onInitialize(PluginData)` is invoked once for each active entrypoint instance, after all plugin JARs are attached
+  and all active mixins are registered, but before the game starts. The callback receives a `PluginData` snapshot
+  of the plugin's handlers (see below). Acquire resources and register services here.
+- `onShutdown()` is invoked when the loader shuts down, in the exact reverse of initialization order. The default
+  implementation does nothing. It is also called if `onInitialize()` fails after construction; cleanup must tolerate
+  partially initialized fields and release any resources already acquired.
+
+For a batch of plugins, initialization follows this order:
+
+1. All active mixins are registered first: `mixins.common` plus the matching `client` or `server` list, or the flat
+   schema 1 list.
+2. Plugins are initialized in the resolved topological order (`dependencies`, `loadAfter`, `loadBefore`).
+3. Within one plugin, `entrypoints.main` classes run in declaration order, followed by the active side list
+   (`client` on a client, `server` on a server).
+
+Shutdown reverses that sequence exactly: for each plugin in reverse topological order, active-side entrypoints run
+in reverse declaration order, then `main` in reverse declaration order.
+
+`PluginData` carries an immutable snapshot of handlers (`Plugin` instances). During `onInitialize`,
+`instances()` contains the handlers created so far, including the current one (the current handler is added before
+its callback runs); the snapshot is frozen at callback time, so an earlier callback does not see handlers created
+later. After loading completes, the stored descriptor contains all active handlers. `instance()` returns the first
+successfully created handler or `null`; `getPluginInstance()` is the same value as `Optional<Plugin>`. Both are the
+legacy single-handler view and are not necessarily the handler currently running for the second and later
+entrypoints. `instances()` is the only list-returning view; use it for multi-entrypoint plugins. Plugins without
+entrypoints (library or mixin-only) have an empty snapshot and no first handler.
 
 ```java
 @Override
@@ -378,6 +399,123 @@ If your plugin registers a service, unregister it in `onShutdown()`; never unreg
 other plugins. Loader integrations can inspect the most recent attempt through `PluginManager.getLoadResults()`, which
 returns immutable `PluginLoadResult` entries with `LOADED`, `FAILED`, or `SKIPPED` status. `PluginManager.close()` shuts
 down loaded plugins in reverse order and is called automatically by the loader on JVM shutdown.
+
+---
+
+### Side-Aware Metadata (schema 2)
+
+Schema 2 lets one JAR declare separate entrypoints and mixins for the client and dedicated server. Schema 1 is
+unchanged: an existing manifest keeps its single `entrypoint`, flat `mixins` list, and behavior.
+
+```yaml
+schema: 2
+id: "example-dual-side"
+name: "Example Dual-Side Plugin"
+version: "%PLUGIN_VERSION%"
+description: "Shared, client-only, and server-only code in one plugin"
+environment: "*"                         # Filters the whole plugin: "*"/"both", "client", or "server"
+
+entrypoints:
+  main:
+    - "com.example.exampleplugin.ExamplePlugin"
+  client:
+    - "com.example.exampleplugin.client.ExampleClientPlugin"
+  server:
+    - "com.example.exampleplugin.server.ExampleServerPlugin"
+
+mixins:
+  common:
+    - "com.example.exampleplugin.mixin.ExampleCommonMixin"
+  client:
+    - "com.example.exampleplugin.mixin.client.ExampleClientMixin"
+  server:
+    - "com.example.exampleplugin.mixin.server.ExampleServerMixin"
+```
+
+- Each list may contain multiple `Plugin` implementations; they initialize in declaration order.
+- `entrypoints.main` and `mixins.common` are active on both sides. The `client` and `server` lists are active only
+  in the matching runtime.
+- Top-level `environment` still filters the whole plugin. For example, `environment: "server"` prevents the plugin
+  from loading on a client, so its `entrypoints.client` and `mixins.client` never run.
+- When the active runtime environment is `both` or `auto`, only the common/main declarations are active; client and
+  server lists are skipped.
+- Schema 2 also accepts the schema 1 fields as shorthand: singular `entrypoint` is one `entrypoints.main` item, and
+  list `mixins` is `mixins.common`.
+- Declaring both `entrypoint` and `entrypoints` in the same manifest is invalid.
+- Duplicate class names are skipped; the first occurrence wins. Each entrypoint must implement `Plugin` and have an
+  accessible no-arg constructor. Mixin entries remain FQCNs, not resource paths.
+
+At runtime, `Metadata.entrypointsFor(Environment)` and `Metadata.mixinsFor(Environment)` resolve the effective
+lists: main/common plus the active side. The legacy `entrypoint()` and `mixins()` accessors keep the schema 1 view:
+`entrypoint()` returns the first main entrypoint and `mixins()` returns the common (`mixins.common`) list. For
+schema 1 they are the original singular entrypoint and flat list.
+
+The mixin classes use the standard `@Mixin` pattern from
+[Bytecode Transformation & Mixins](./loader/wiki-mixin.md). `ExamplePlugin` follows the pattern shown above. The two
+side-specific classes are minimal:
+
+```java
+package com.example.exampleplugin.client;
+
+import com.avrix.plugins.Plugin;
+import com.avrix.plugins.PluginData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Client-side entrypoint declared under {@code entrypoints.client}.
+ */
+public final class ExampleClientPlugin implements Plugin {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExampleClientPlugin.class);
+
+    /**
+     * Initializes client-only features.
+     *
+     * @param pluginData plugin metadata and archive access
+     */
+    @Override
+    public void onInitialize(PluginData pluginData) {
+        LOGGER.info("Client-only initialization for [{}]", pluginData.id());
+    }
+}
+```
+
+```java
+package com.example.exampleplugin.server;
+
+import com.avrix.plugins.Plugin;
+import com.avrix.plugins.PluginData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Server-side entrypoint declared under {@code entrypoints.server}.
+ */
+public final class ExampleServerPlugin implements Plugin {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExampleServerPlugin.class);
+
+    /**
+     * Initializes server-only features.
+     *
+     * @param pluginData plugin metadata and archive access
+     */
+    @Override
+    public void onInitialize(PluginData pluginData) {
+        LOGGER.info("Server-only initialization for [{}]", pluginData.id());
+    }
+}
+```
+
+With `loadAfter: ["core"]`, `entrypoints.main: [A, B]`, and `entrypoints.client: [C]`, a client launch initializes
+`core`, then A, B, and C; shutdown calls C, B, A in reverse. The full batch rules are in
+[Plugin Lifecycle](#plugin-lifecycle).
+
+These buckets route code for one initialization batch. They are not Fabric-style `preLaunch` entrypoint phases:
+Avrix does not add a `preLaunch` or custom entrypoint type, and client declarations do not run in a separate later
+phase. Only one side is active in a process.
+
+> [!NOTE]
+> Schema 2 is supported starting with Avrix 2.6.0.
 
 ---
 
@@ -417,7 +555,7 @@ Keep mixins in a dedicated package that contains no target classes. This is a st
 from MixinExtras, such as `@WrapOperation` and `@ModifyExpressionValue`, are available as well.
 
 The `mixins` entries are fully qualified mixin class names, not configuration file paths. Registration happens
-while the owning plugin is prepared, before its entrypoint runs.
+during batch preparation, before any entrypoint runs.
 
 ---
 
