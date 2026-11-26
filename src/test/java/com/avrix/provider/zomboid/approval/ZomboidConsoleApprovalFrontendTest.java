@@ -1,12 +1,19 @@
 package com.avrix.provider.zomboid.approval;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -88,6 +95,40 @@ class ZomboidConsoleApprovalFrontendTest {
         assertThat(response.persist()).isFalse();
         assertThat(response.decisions()).isEmpty();
         assertThat(output.toString()).contains("No approval input");
+    }
+
+    @Test
+    @DisplayName("Should keep the prompt writer captured before System.out redirection")
+    void shouldKeepPromptWriterCapturedBeforeRedirection() throws Exception {
+        Assumptions.assumeTrue(
+                System.console() == null,
+                "The default constructor uses the real console when one is attached"
+        );
+
+        InputStream originalIn = System.in;
+        PrintStream originalOut = System.out;
+        ByteArrayOutputStream prompts = new ByteArrayOutputStream();
+        try {
+            System.setIn(new ByteArrayInputStream("n\nn\n".getBytes(StandardCharsets.UTF_8)));
+            System.setOut(new PrintStream(prompts, true, StandardCharsets.UTF_8));
+
+            ZomboidConsoleApprovalFrontend frontend = new ZomboidConsoleApprovalFrontend();
+
+            // Simulate Main redirecting System.out before plugins (and approval) are processed.
+            System.setOut(new PrintStream(OutputStream.nullOutputStream(), true, StandardCharsets.UTF_8));
+
+            ZomboidApprovalResponse response = frontend.request(List.of(entry("a", "First")));
+
+            assertThat(response.decisions())
+                    .containsExactly(new ZomboidApprovalDecision("a".repeat(64), false));
+        } finally {
+            System.setIn(originalIn);
+            System.setOut(originalOut);
+        }
+
+        String output = prompts.toString(StandardCharsets.UTF_8);
+        assertThat(output).contains("Allow this plugin?");
+        assertThat(output).contains("Remember these decisions");
     }
 
     private static ZomboidConsoleApprovalFrontend frontend(String input, StringWriter output) {

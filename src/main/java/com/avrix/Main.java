@@ -73,7 +73,6 @@ public final class Main {
 
             try {
                 Runtime.getRuntime().addShutdownHook(new Thread(context::close, "avrix-shutdown"));
-                context.initialize();
 
                 if (!config.redirectSystemStreams()) {
                     logger.info(
@@ -81,8 +80,12 @@ public final class Main {
                             Constants.NO_REDIRECT_FLAG_NAME
                     );
                 } else {
+                    // LoaderFactory has already created the approval frontend, so its prompt writer still references
+                    // the original stream and console approval remains visible after this redirect.
                     context.redirectSystemStreams();
                 }
+
+                context.initialize();
 
                 long bootstrapDurationMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - bootstrapStartTime);
                 logger.info(

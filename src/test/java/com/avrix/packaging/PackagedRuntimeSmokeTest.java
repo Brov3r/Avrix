@@ -1,5 +1,6 @@
 package com.avrix.packaging;
 
+import com.avrix.api.GameProvider;
 import com.avrix.core.LoaderConfig;
 import com.avrix.loader.LoaderFactory;
 import com.avrix.provider.zomboid.approval.ApprovalMessage;
@@ -10,8 +11,13 @@ import com.avrix.provider.zomboid.approval.ZomboidSwingApprovalMain;
 import com.avrix.utils.Constants;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import test.loader.CaptureGameProvider;
+import test.loader.TestGameProvider;
+import test.plugin.CapturePlugin;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -82,6 +88,46 @@ public class PackagedRuntimeSmokeTest {
     }
 
     /**
+     * Verifies that Main redirects standard streams before plugin initialization.
+     *
+     * @throws Exception if fixtures or the child JVM cannot be created
+     */
+    @Test
+    public void shouldCaptureInitializeOutputWhenRedirectIsEnabled() throws Exception {
+        Path plugins = Files.createDirectories(directory.resolve("plugins"));
+        Path redirectOutput = directory.resolve("redirect-output.log");
+        Path pluginJar = plugins.resolve("capture-plugin.jar");
+        try (var jar = new JarOutputStream(Files.newOutputStream(pluginJar))) {
+            writeEntry(jar, "metadata.yml", ("schema: 1\nid: capture-plugin\nname: Capture Plugin\n"
+                    + "version: 1.0.0\nentrypoint: " + CapturePlugin.class.getName() + "\n")
+                    .getBytes(StandardCharsets.UTF_8));
+            writeEntry(jar, CapturePlugin.class.getName().replace('.', '/') + ".class",
+                    readClass(CapturePlugin.class));
+        }
+
+        Path probeRoot = directory.resolve("probe");
+        copyClass(probeRoot, TestGameProvider.class);
+        copyClass(probeRoot, CaptureGameProvider.class);
+        Path services = directory.resolve("services");
+        Path serviceFile = services.resolve("META-INF/services/" + GameProvider.class.getName());
+        Files.createDirectories(serviceFile.getParent());
+        Files.writeString(serviceFile, CaptureGameProvider.class.getName());
+
+        String classpath = loaderJar() + File.pathSeparator + services + File.pathSeparator + probeRoot;
+        Result result = run(List.of(
+                "-Davrix.provider=" + CaptureGameProvider.ID,
+                "-D" + CaptureGameProvider.REDIRECT_FILE_PROPERTY + "=" + redirectOutput,
+                "-Davrix.approval.frontend=none",
+                "-cp", classpath,
+                "com.avrix.Main"
+        ), "");
+
+        assertThat(result.exitCode()).withFailMessage(result.stdout() + result.stderr()).isZero();
+        assertThat(redirectOutput).exists();
+        assertThat(Files.readString(redirectOutput)).contains(CapturePlugin.MARKER);
+    }
+
+    /**
      * Verifies the real approval subprocess entrypoint using only the shaded JAR in headless mode.
      *
      * @throws Exception if the protocol or child JVM cannot be used
@@ -103,6 +149,28 @@ public class PackagedRuntimeSmokeTest {
 
     private Path loaderJar() {
         return Path.of(System.getProperty("avrix.test.loader.jar")).toAbsolutePath();
+    }
+
+    private static byte[] readClass(Class<?> type) throws IOException {
+        String resource = type.getName().replace('.', '/') + ".class";
+        InputStream input = type.getResourceAsStream("/" + resource);
+        assertThat(input).as("Missing class resource: %s", resource).isNotNull();
+        try (input) {
+            return input.readAllBytes();
+        }
+    }
+
+    private static void copyClass(Path root, Class<?> type) throws IOException {
+        String resource = type.getName().replace('.', '/') + ".class";
+        Path target = root.resolve(resource);
+        Files.createDirectories(target.getParent());
+        Files.write(target, readClass(type));
+    }
+
+    private static void writeEntry(JarOutputStream jar, String name, byte[] bytes) throws IOException {
+        jar.putNextEntry(new JarEntry(name));
+        jar.write(bytes);
+        jar.closeEntry();
     }
 
     private Result run(List<String> arguments, String input) throws Exception {
