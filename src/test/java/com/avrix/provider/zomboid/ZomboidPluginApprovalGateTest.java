@@ -301,6 +301,48 @@ class ZomboidPluginApprovalGateTest {
     }
 
     @Test
+    @DisplayName("Should retry an unsaved decision after a temporary store failure even with nothing pending")
+    void shouldRetryUnsavedDecisionWhenPendingIsEmpty() throws IOException {
+        Path otherJar = tempDir.resolve("other.jar");
+        Files.writeString(otherJar, "other-content");
+        Metadata otherMetadata = metadata("other-plugin");
+
+        AtomicReference<List<ZomboidApprovalEntry>> seedBatch = new AtomicReference<>();
+        ZomboidPluginApprovalGate seed = service(Environment.CLIENT, "prompt", allowFrontend(true, seedBatch));
+        assertThat(seed.evaluate(archive(otherJar, "test-mod"), otherMetadata))
+                .isEqualTo(PluginApprovalGate.Status.PENDING);
+        seed.flushPending();
+        String otherHash = seedBatch.get().get(0).sha256();
+        assertThat(approvalsFile).isRegularFile();
+
+        // Make the store temporarily unwritable while keeping the approvals already on disk.
+        Path backup = tempDir.resolve("plugin-approvals.backup");
+        Files.move(approvalsFile, backup);
+        Files.createDirectory(approvalsFile);
+
+        AtomicReference<List<ZomboidApprovalEntry>> batch = new AtomicReference<>();
+        ZomboidPluginApprovalGate gate = service(Environment.CLIENT, "prompt", allowFrontend(true, batch));
+        assertThat(gate.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.PENDING);
+        gate.flushPending();
+        String hash = batch.get().get(0).sha256();
+        assertThat(gate.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.APPROVED);
+        assertThat(approvalsFile).isDirectory();
+
+        // The store recovers; this flush has no pending archives and must still persist the queued decision.
+        Files.delete(approvalsFile);
+        Files.move(backup, approvalsFile);
+        gate.flushPending();
+
+        assertThat(approvalsFile).isRegularFile();
+        assertThat(Files.readString(approvalsFile)).contains(otherHash, hash);
+
+        ZomboidPluginApprovalGate reloaded = service(Environment.CLIENT, "deny-new", null);
+        assertThat(reloaded.evaluate(archive(), metadata())).isEqualTo(PluginApprovalGate.Status.APPROVED);
+        assertThat(reloaded.evaluate(archive(otherJar, "test-mod"), otherMetadata))
+                .isEqualTo(PluginApprovalGate.Status.APPROVED);
+    }
+
+    @Test
     @DisplayName("Should reject decisions for hashes outside the pending batch")
     void shouldRejectUnknownDecision() {
         ZomboidPluginApprovalGate service = service(

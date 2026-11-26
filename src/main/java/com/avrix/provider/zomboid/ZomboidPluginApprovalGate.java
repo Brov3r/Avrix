@@ -129,10 +129,14 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
 
     /**
      * Resolves all pending archives through the configured frontend and persists decisions when requested.
+     * <p>
+     * Previously unsaved decisions are retried even when no archives are pending, so a temporary store failure does
+     * not strand them until the next approval batch.
      */
     @Override
     public void flushPending() {
         if (pending.isEmpty()) {
+            saveUnsavedDecisions();
             return;
         }
 
@@ -153,6 +157,10 @@ public final class ZomboidPluginApprovalGate implements PluginApprovalGate {
             resolvedThisSession.add(entry.sha256());
         }
 
+        saveUnsavedDecisions();
+    }
+
+    private void saveUnsavedDecisions() {
         if (!unsavedDecisions.isEmpty()) {
             saveApprovals();
         }
