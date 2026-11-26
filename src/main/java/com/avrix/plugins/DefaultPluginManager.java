@@ -679,7 +679,8 @@ public class DefaultPluginManager implements PluginManager {
      *
      * @param container plugin metadata and file container
      * @throws IllegalStateException if the plugin manager is closed or not initialized
-     * @throws RuntimeException      if attachment, mixin parsing, or entrypoint execution fails
+     * @throws RuntimeException      if required dependencies are missing, or attachment, mixin parsing, or entrypoint
+     *                               execution fails
      */
     @Override
     public void loadPlugin(PluginData container) {
@@ -716,6 +717,13 @@ public class DefaultPluginManager implements PluginManager {
             }
 
             try {
+                List<String> unavailable = unavailableDependencies(meta, plugins.keySet());
+                if (!unavailable.isEmpty()) {
+                    // Reject before attaching the archive or registering mixins: both are irreversible.
+                    throw new IllegalStateException(
+                            "Required dependencies are not loaded: " + String.join(", ", unavailable)
+                    );
+                }
                 if (!preparePlugin(container) || !startPlugin(container)) {
                     return;
                 }
