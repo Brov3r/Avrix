@@ -6,6 +6,7 @@ import com.avrix.core.MixinRegistrar;
 import com.avrix.utils.FatalErrors;
 import com.llamalad7.mixinextras.MixinExtrasBootstrap;
 import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.mixin.FabricUtil;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.Mixins;
 import org.spongepowered.asm.mixin.transformer.Config;
@@ -145,6 +146,27 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
      */
     @Override
     public synchronized void addMixin(String mixinClass) {
+        addMixin(mixinClass, null);
+    }
+
+    /**
+     * Registers a single mixin class owned by a plugin.
+     *
+     * <p>Package restrictions are validated before any Mixin configuration is created. The mixin must be declared in
+     * a named package, its targets must not belong to its own package, and its targets must not belong to the package
+     * of an already registered mixin in either direction. Registering an already registered mixin is a no-op.
+     *
+     * <p>A non-blank owner is attached to the generated Mixin configuration as the
+     * {@link FabricUtil#KEY_MOD_ID fabric-modId} decoration, so Mixin messages report the real owning plugin.
+     *
+     * @param mixinClass the fully qualified class name of the mixin (e.g., {@code com.example.PlayerMixin})
+     * @param ownerId    canonical plugin identifier that owns the mixin, or {@code null} when unknown
+     * @throws NullPointerException     if {@code mixinClass} is null
+     * @throws IllegalArgumentException if {@code mixinClass} is blank, cannot be found, is not a valid mixin, or
+     *                                  conflicts with a registered mixin package
+     */
+    @Override
+    public synchronized void addMixin(String mixinClass, String ownerId) {
         Objects.requireNonNull(mixinClass, "mixinClass cannot be null");
 
         if (mixinClass.isBlank()) {
@@ -154,7 +176,7 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
             return;
         }
 
-        MixinDeclaration declaration = inspectDeclaration(mixinClass);
+        MixinDeclaration declaration = inspectDeclaration(mixinClass, normalizeOwnerId(ownerId));
         validatePackageCompatibility(List.of(declaration));
         registerDeclaration(declaration);
     }
@@ -242,6 +264,10 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
     }
 
     private MixinDeclaration inspectDeclaration(String mixinClass) {
+        return inspectDeclaration(mixinClass, null);
+    }
+
+    private MixinDeclaration inspectDeclaration(String mixinClass, String ownerId) {
         List<String> targets = inspectMixin(mixinClass);
 
         int separator = mixinClass.lastIndexOf('.');
@@ -253,7 +279,15 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
 
         String packageName = mixinClass.substring(0, separator);
         String simpleName = mixinClass.substring(separator + 1);
-        return new MixinDeclaration(mixinClass, packageName, simpleName, List.copyOf(targets));
+        return new MixinDeclaration(mixinClass, packageName, simpleName, List.copyOf(targets), ownerId);
+    }
+
+    private static String normalizeOwnerId(String ownerId) {
+        if (ownerId == null) {
+            return null;
+        }
+        String normalized = ownerId.strip();
+        return normalized.isEmpty() ? null : normalized;
     }
 
     /**
@@ -360,6 +394,9 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
                 .orElseThrow(() -> new IllegalStateException(
                         "Mixin configuration [" + configName + "] was rejected for " + declaration.mixinClass()
                 ));
+        if (declaration.ownerId() != null) {
+            registered.getConfig().decorate(FabricUtil.KEY_MOD_ID, declaration.ownerId());
+        }
         LOGGER.trace("Registered Mixin configuration [{}] for {}", registered.getName(), declaration.mixinClass());
     }
 
@@ -393,7 +430,8 @@ public final class MixinTransformer implements ClassTransformer, MixinRegistrar 
             String mixinClass,
             String packageName,
             String simpleName,
-            List<String> targets
+            List<String> targets,
+            String ownerId
     ) {
     }
 

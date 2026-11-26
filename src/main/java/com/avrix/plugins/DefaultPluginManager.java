@@ -848,6 +848,9 @@ public class DefaultPluginManager implements PluginManager {
     /**
      * Registers all declared mixins for an attached plugin.
      *
+     * <p>The plugin's canonical manifest ID is passed as the mixin owner so Mixin diagnostics identify the plugin
+     * instead of reporting an unknown owner.
+     *
      * @param container plugin metadata and file container
      */
     private void registerMixins(PluginData container) {
@@ -862,7 +865,7 @@ public class DefaultPluginManager implements PluginManager {
             mixinRegistrar.validateMixins(meta.mixins());
             try {
                 for (String mixin : meta.mixins()) {
-                    mixinRegistrar.addMixin(mixin);
+                    mixinRegistrar.addMixin(mixin, id);
                 }
             } catch (Throwable failure) {
                 FatalErrors.rethrowIfFatal(failure);
