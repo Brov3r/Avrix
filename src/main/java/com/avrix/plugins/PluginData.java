@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -211,6 +212,9 @@ public record PluginData(
 
     /**
      * Opens an {@link InputStream} to the plugin's icon graphic from its resolved URI or JAR entry.
+     * <p>
+     * Streams opened from {@code jar:} URIs bypass the JVM URL cache, so the archive is released when the
+     * returned stream is closed instead of remaining cached for the lifetime of the process.
      *
      * @return optional containing an input stream for the icon, or empty if no icon is configured
      * @throws IOException if an I/O error occurs opening the stream
@@ -220,8 +224,12 @@ public record PluginData(
             return Optional.empty();
         }
         String scheme = iconURI.getScheme();
-        if ("jar".equalsIgnoreCase(scheme)
-                || "file".equalsIgnoreCase(scheme)
+        if ("jar".equalsIgnoreCase(scheme)) {
+            URLConnection connection = iconURI.toURL().openConnection();
+            connection.setUseCaches(false);
+            return Optional.of(connection.getInputStream());
+        }
+        if ("file".equalsIgnoreCase(scheme)
                 || "http".equalsIgnoreCase(scheme)
                 || "https".equalsIgnoreCase(scheme)) {
             return Optional.of(iconURI.toURL().openStream());

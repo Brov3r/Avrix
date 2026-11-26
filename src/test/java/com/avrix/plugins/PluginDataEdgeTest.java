@@ -3,7 +3,6 @@ package com.avrix.plugins;
 import com.avrix.core.Environment;
 import com.avrix.core.Metadata;
 import com.avrix.utils.Constants;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.io.TempDir;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,14 +34,9 @@ class PluginDataEdgeTest {
 
     private Path jarPath;
     private Metadata metadata;
-    private boolean originalJarUseCaches;
 
     @BeforeEach
     void setUp() throws IOException {
-        // The jar URL handler caches open JarFiles by default, which keeps archive locks on Windows.
-        originalJarUseCaches = URLConnection.getDefaultUseCaches("jar");
-        URLConnection.setDefaultUseCaches("jar", false);
-
         metadata = new Metadata.Builder()
                 .schema(SCHEMA)
                 .id("edge-plugin")
@@ -66,11 +59,6 @@ class PluginDataEdgeTest {
             jos.putNextEntry(new JarEntry("assets/empty/"));
             jos.closeEntry();
         }
-    }
-
-    @AfterEach
-    void tearDown() {
-        URLConnection.setDefaultUseCaches("jar", originalJarUseCaches);
     }
 
     @Test
@@ -109,6 +97,22 @@ class PluginDataEdgeTest {
 
         var noIcon = new PluginData(jarPath, null, null, metadata);
         assertThat(noIcon.openIconStream()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should release the icon archive from the URL cache when the stream is closed")
+    void shouldReleaseJarArchiveAfterClosingIconStream() throws IOException {
+        String jarBase = "jar:" + jarPath.toUri().toASCIIString() + "!/";
+        var pluginData = new PluginData(jarPath, URI.create(jarBase + "icon.png"), null, metadata);
+
+        try (InputStream in = pluginData.openIconStream().orElseThrow()) {
+            assertThat(new String(in.readAllBytes(), StandardCharsets.UTF_8)).isEqualTo("PNG_ICON");
+        }
+
+        // Windows keeps an archive locked while a JarFile is open, so deleting the temp fixture proves
+        // that the stream close released the archive instead of leaving it in the global URL cache.
+        Files.delete(jarPath);
+        assertThat(jarPath).doesNotExist();
     }
 
     @Test
