@@ -70,15 +70,43 @@ public final class LoaderContext implements AutoCloseable {
 
     /**
      * Launches the game with the provided arguments.
+     * <p>
+     * The post-launch hook runs even when the launch fails. If both the launch sequence and the hook fail, the
+     * original launch failure is rethrown and the hook failure is attached as suppressed. Fatal hook failures are
+     * rethrown unchanged, and a failure is never attached to itself.
      *
      * @param args command-line arguments passed to the game
      */
     public void launch(String[] args) {
+        Throwable launchFailure = null;
         try {
             gameProvider.beforeLaunch();
             gameProvider.launch(args);
+        } catch (Throwable throwable) {
+            launchFailure = throwable;
+            throw throwable;
         } finally {
+            if (launchFailure == null) {
+                gameProvider.afterLaunch();
+            } else {
+                runAfterLaunchSuppressingFailure(launchFailure);
+            }
+        }
+    }
+
+    /**
+     * Invokes the post-launch hook without replacing the original launch failure.
+     *
+     * @param launchFailure failure raised by the launch sequence
+     */
+    private void runAfterLaunchSuppressingFailure(Throwable launchFailure) {
+        try {
             gameProvider.afterLaunch();
+        } catch (Throwable afterLaunchFailure) {
+            FatalErrors.rethrowIfFatal(afterLaunchFailure);
+            if (afterLaunchFailure != launchFailure) {
+                launchFailure.addSuppressed(afterLaunchFailure);
+            }
         }
     }
 

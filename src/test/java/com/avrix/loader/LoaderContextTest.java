@@ -60,6 +60,51 @@ class LoaderContextTest {
     }
 
     @Test
+    @DisplayName("Should preserve the launch failure when the post-launch hook also fails")
+    void shouldPreserveLaunchFailureWhenAfterLaunchFails() throws Exception {
+        RecordingGameProvider gameProvider = new RecordingGameProvider();
+        gameProvider.failLaunch = true;
+        IllegalArgumentException afterLaunchFailure = new IllegalArgumentException("simulated after launch failure");
+        gameProvider.afterLaunchFailure = afterLaunchFailure;
+        try (KnotClassLoader classLoader = newClassLoader();
+                LoaderContext context = new LoaderContext(classLoader, gameProvider, null, new RecordingPluginManager())) {
+            assertThatThrownBy(() -> context.launch(new String[]{"-test"}))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining("simulated launch failure")
+                    .satisfies(throwable -> assertThat(throwable.getSuppressed()).containsExactly(afterLaunchFailure));
+            assertThat(gameProvider.afterLaunchCalled).isTrue();
+        }
+    }
+
+    @Test
+    @DisplayName("Should not attach a launch failure to itself")
+    void shouldNotSelfSuppressLaunchFailure() throws Exception {
+        RecordingGameProvider gameProvider = new RecordingGameProvider();
+        IllegalStateException failure = new IllegalStateException("shared launch failure");
+        gameProvider.launchFailure = failure;
+        gameProvider.afterLaunchFailure = failure;
+        try (KnotClassLoader classLoader = newClassLoader();
+                LoaderContext context = new LoaderContext(classLoader, gameProvider, null, new RecordingPluginManager())) {
+            assertThatThrownBy(() -> context.launch(new String[]{"-test"}))
+                    .isSameAs(failure)
+                    .satisfies(throwable -> assertThat(throwable.getSuppressed()).isEmpty());
+        }
+    }
+
+    @Test
+    @DisplayName("Should rethrow a fatal post-launch failure instead of suppressing it")
+    void shouldRethrowFatalAfterLaunchFailure() throws Exception {
+        RecordingGameProvider gameProvider = new RecordingGameProvider();
+        gameProvider.failLaunch = true;
+        SimulatedVmFailure fatal = new SimulatedVmFailure();
+        gameProvider.afterLaunchFailure = fatal;
+        try (KnotClassLoader classLoader = newClassLoader();
+                LoaderContext context = new LoaderContext(classLoader, gameProvider, null, new RecordingPluginManager())) {
+            assertThatThrownBy(() -> context.launch(new String[]{"-test"})).isSameAs(fatal);
+        }
+    }
+
+    @Test
     @DisplayName("Should close plugins and classloader idempotently")
     void shouldCloseResourcesIdempotently() throws Exception {
         try (KnotClassLoader classLoader = newClassLoader()) {
@@ -107,6 +152,8 @@ class LoaderContextTest {
         private boolean beforeLaunchCalled;
         private boolean afterLaunchCalled;
         private boolean failLaunch;
+        private RuntimeException launchFailure;
+        private Throwable afterLaunchFailure;
         private String[] launchArgs = new String[0];
 
         /** {@inheritDoc} */
@@ -117,6 +164,9 @@ class LoaderContextTest {
         /** {@inheritDoc} */
         @Override
         public void launch(String[] args) {
+            if (launchFailure != null) {
+                throw launchFailure;
+            }
             if (failLaunch) {
                 throw new IllegalStateException("simulated launch failure");
             }
@@ -131,6 +181,12 @@ class LoaderContextTest {
         @Override
         public void afterLaunch() {
             afterLaunchCalled = true;
+            if (afterLaunchFailure instanceof RuntimeException runtimeFailure) {
+                throw runtimeFailure;
+            }
+            if (afterLaunchFailure instanceof Error errorFailure) {
+                throw errorFailure;
+            }
         }
 
         /** {@inheritDoc} */
@@ -247,6 +303,15 @@ class LoaderContextTest {
         @Override
         public List<Metadata> resolvePluginLoadOrder(List<Metadata> candidates) {
             return candidates;
+        }
+    }
+
+    /**
+     * Simulated virtual machine failure used to verify fatal error propagation.
+     */
+    private static final class SimulatedVmFailure extends VirtualMachineError {
+        private SimulatedVmFailure() {
+            super("simulated fatal launch failure");
         }
     }
 }
