@@ -114,6 +114,28 @@ class PluginDataTest {
         }
 
         @Test
+        @DisplayName("Should support the legacy five-argument constructor with multiple handlers")
+        void shouldSupportLegacyHandlersConstructor() {
+            Plugin first = data -> {
+            };
+            Plugin second = data -> {
+            };
+
+            var pluginData = new PluginData(
+                    sampleJarPath,
+                    null,
+                    first,
+                    List.of(first, second),
+                    standardMetadata
+            );
+
+            assertThat(pluginData.getPluginPath()).contains(sampleJarPath.toAbsolutePath().normalize());
+            assertThat(pluginData.instance()).isSameAs(first);
+            assertThat(pluginData.instances()).containsExactly(first, second);
+            assertThat(pluginData.getDataDirectory()).isEmpty();
+        }
+
+        @Test
         @DisplayName("Should initialize synthetic PluginData with only metadata")
         void shouldInitializeSyntheticContainer() {
             var synthetic = new PluginData(standardMetadata);

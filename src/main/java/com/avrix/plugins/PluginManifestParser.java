@@ -223,11 +223,14 @@ public final class PluginManifestParser {
 
     /**
      * Collects class entries from an open plugin archive.
+     * <p>
+     * Package-private so the plugin manager can reuse the scan for classpath conflict reporting when entries were not
+     * collected during manifest parsing.
      *
      * @param jar open plugin archive
      * @return immutable list of class resource paths
      */
-    private static List<String> collectClassEntries(JarFile jar) {
+    static List<String> collectClassEntries(JarFile jar) {
         List<String> classEntries = new ArrayList<>();
         Enumeration<JarEntry> entries = jar.entries();
         while (entries.hasMoreElements()) {

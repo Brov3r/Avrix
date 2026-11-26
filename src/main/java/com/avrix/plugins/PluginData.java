@@ -8,6 +8,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLConnection;
@@ -37,13 +38,16 @@ import java.util.jar.JarFile;
  * @param instance   first initialized {@link Plugin} handler; {@code null} for library/mixin-only plugins
  * @param instances  initialized {@link Plugin} handlers in startup order; empty for library/mixin-only plugins
  * @param metadata   declarative manifest descriptor; cannot be {@code null}
+ * @param dataDirectory writable directory owned by this plugin for persistent runtime files; {@code null} when the
+ *                      runtime layout is not applicable (synthetic or core descriptors)
  */
 public record PluginData(
         Path pluginPath,
         URI iconURI,
         Plugin instance,
         List<Plugin> instances,
-        Metadata metadata
+        Metadata metadata,
+        Path dataDirectory
 ) {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginData.class);
 
@@ -58,12 +62,26 @@ public record PluginData(
     public PluginData {
         Objects.requireNonNull(metadata, "Plugin metadata cannot be null");
         pluginPath = (pluginPath != null) ? pluginPath.toAbsolutePath().normalize() : null;
+        dataDirectory = (dataDirectory != null) ? dataDirectory.toAbsolutePath().normalize() : null;
         if (instances == null || instances.isEmpty()) {
             instances = instance != null ? List.of(instance) : List.of();
         } else {
             instances = List.copyOf(instances);
         }
         instance = instances.isEmpty() ? null : instances.getFirst();
+    }
+
+    /**
+     * Secondary constructor for descriptors without a plugin data directory.
+     *
+     * @param pluginPath physical JAR path on disk; can be {@code null}
+     * @param iconURI    URI pointing to the plugin icon; can be {@code null}
+     * @param instance   first plugin handler; can be {@code null}
+     * @param instances  plugin handlers in startup order; can be {@code null}
+     * @param metadata   plugin metadata descriptor; cannot be {@code null}
+     */
+    public PluginData(Path pluginPath, URI iconURI, Plugin instance, List<Plugin> instances, Metadata metadata) {
+        this(pluginPath, iconURI, instance, instances, metadata, null);
     }
 
     /**
@@ -133,6 +151,31 @@ public record PluginData(
      */
     public Optional<URI> getPluginIconURI() {
         return Optional.ofNullable(iconURI);
+    }
+
+    /**
+     * Returns the writable directory owned by this plugin, creating it on first access.
+     * <p>
+     * The directory is created lazily so attaching an archive or merely describing a core component never touches the
+     * filesystem. Every handler of the same plugin shares one descriptor and therefore one directory.
+     *
+     * @return optional containing the absolute normalized directory path, or empty for synthetic and core descriptors
+     * @throws UncheckedIOException if the directory cannot be created
+     */
+    public Optional<Path> getDataDirectory() {
+        if (dataDirectory == null || isSynthetic()) {
+            return Optional.empty();
+        }
+
+        try {
+            Files.createDirectories(dataDirectory);
+        } catch (IOException e) {
+            throw new UncheckedIOException(
+                    "Failed to create data directory [%s] for plugin [%s]".formatted(dataDirectory, id()),
+                    e
+            );
+        }
+        return Optional.of(dataDirectory);
     }
 
     /**

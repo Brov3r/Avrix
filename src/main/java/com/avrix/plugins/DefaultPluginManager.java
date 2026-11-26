@@ -28,7 +28,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -43,6 +45,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.JarFile;
 
 /**
  * Production-ready default implementation of the {@link PluginManager} subsystem.
@@ -54,6 +57,8 @@ import java.util.concurrent.TimeUnit;
 public class DefaultPluginManager implements PluginManager {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPluginManager.class);
+
+    private static final int MAX_CLASSPATH_CONFLICT_WARNINGS = 10;
 
     private final LoaderConfig config;
     private final KnotClassLoader classLoader;
@@ -73,6 +78,8 @@ public class DefaultPluginManager implements PluginManager {
     private final Set<String> preparedPlugins = ConcurrentHashMap.newKeySet();
     private final Map<String, Object> pluginLocks = new ConcurrentHashMap<>();
     private final List<String> loadedPluginOrder = new CopyOnWriteArrayList<>();
+    private final Map<String, ClasspathResourceUsage> classpathResourceUsage = new ConcurrentHashMap<>();
+    private final AtomicBoolean classpathConflictLogPending = new AtomicBoolean();
     private final AtomicBoolean loadAllInProgress = new AtomicBoolean();
     private final Object stateLock = new Object();
     private volatile Map<String, PluginData> cachedPlugins = Map.of();
@@ -200,6 +207,7 @@ public class DefaultPluginManager implements PluginManager {
             loadPluginsInternal();
         } finally {
             loadAllInProgress.set(false);
+            logClasspathConflictSummary();
         }
     }
 
@@ -211,6 +219,7 @@ public class DefaultPluginManager implements PluginManager {
             throw new IllegalStateException("PluginManager is not initialized. Call init() first.");
         }
 
+        resetClasspathConflicts();
         loadResults.clear();
         approvedHashes.clear();
         Environment activeEnvironment = config.environment();
@@ -707,33 +716,37 @@ public class DefaultPluginManager implements PluginManager {
                         "Cannot load user plugin '" + id + "' without a physical JAR file"
                 ));
 
-        synchronized (pluginLock(id)) {
-            if (closed) {
-                throw new IllegalStateException("PluginManager is closed");
-            }
-            if (plugins.containsKey(id)) {
-                LOGGER.debug("Plugin [{}] is already loaded. Skipping duplicate load request.", id);
-                return;
-            }
-
-            try {
-                List<String> unavailable = unavailableDependencies(meta, plugins.keySet());
-                if (!unavailable.isEmpty()) {
-                    // Reject before attaching the archive or registering mixins: both are irreversible.
-                    throw new IllegalStateException(
-                            "Required dependencies are not loaded: " + String.join(", ", unavailable)
-                    );
+        try {
+            synchronized (pluginLock(id)) {
+                if (closed) {
+                    throw new IllegalStateException("PluginManager is closed");
                 }
-                if (!preparePlugin(container) || !startPlugin(container)) {
+                if (plugins.containsKey(id)) {
+                    LOGGER.debug("Plugin [{}] is already loaded. Skipping duplicate load request.", id);
                     return;
                 }
-                loadResults.add(PluginLoadResult.loaded(id));
-            } catch (Throwable throwable) {
-                FatalErrors.rethrowIfFatal(throwable);
-                loadResults.add(PluginLoadResult.failed(id, throwable));
-                LOGGER.error("Failed to load plugin [{}]: {}", id, throwable.getMessage(), throwable);
-                throw new RuntimeException("Failed to load plugin: " + id, throwable);
+
+                try {
+                    List<String> unavailable = unavailableDependencies(meta, plugins.keySet());
+                    if (!unavailable.isEmpty()) {
+                        // Reject before attaching the archive or registering mixins: both are irreversible.
+                        throw new IllegalStateException(
+                                "Required dependencies are not loaded: " + String.join(", ", unavailable)
+                        );
+                    }
+                    if (!preparePlugin(container) || !startPlugin(container)) {
+                        return;
+                    }
+                    loadResults.add(PluginLoadResult.loaded(id));
+                } catch (Throwable throwable) {
+                    FatalErrors.rethrowIfFatal(throwable);
+                    loadResults.add(PluginLoadResult.failed(id, throwable));
+                    LOGGER.error("Failed to load plugin [{}]: {}", id, throwable.getMessage(), throwable);
+                    throw new RuntimeException("Failed to load plugin: " + id, throwable);
+                }
             }
+        } finally {
+            logClasspathConflictSummary();
         }
     }
 
@@ -841,8 +854,181 @@ public class DefaultPluginManager implements PluginManager {
             throw e;
         }
 
+        List<String> effectiveClassEntries = (classEntries != null)
+                ? classEntries
+                : readClassEntries(jarFile.toPath());
+        recordClasspathUsage(id, effectiveClassEntries);
+
         LOGGER.debug("Attached plugin archive [{}] ({})", meta.name(), id);
         return true;
+    }
+
+    /**
+     * Reads class entries from a plugin archive when they were not collected during manifest parsing.
+     * <p>
+     * A scan failure never aborts attachment: conflict reporting is diagnostic and must not break plugin loading.
+     *
+     * @param jarPath physical plugin archive
+     * @return discovered class resource paths, or an empty list when the archive cannot be read
+     */
+    private static List<String> readClassEntries(Path jarPath) {
+        try (JarFile jar = new JarFile(jarPath.toFile(), false)) {
+            return PluginManifestParser.collectClassEntries(jar);
+        } catch (IOException e) {
+            LOGGER.warn("Failed to scan class entries in plugin archive [{}]: {}", jarPath, e.getMessage());
+            return List.of();
+        }
+    }
+
+    /**
+     * Records which plugins provide each attachable class resource and flags cross-plugin overlaps.
+     *
+     * @param pluginId     identifier of the plugin whose archive was attached
+     * @param classEntries class resource paths provided by the archive
+     */
+    private void recordClasspathUsage(String pluginId, List<String> classEntries) {
+        for (String classEntry : classEntries) {
+            String binaryName = conflictCandidateClassName(classEntry);
+            if (binaryName == null || classLoader.delegatesToParent(binaryName)) {
+                continue;
+            }
+
+            ClasspathResourceUsage usage = classpathResourceUsage.computeIfAbsent(
+                    classEntry,
+                    path -> new ClasspathResourceUsage(path, pluginId)
+            );
+            if (usage.register(pluginId) && usage.isConflict()) {
+                classpathConflictLogPending.set(true);
+            }
+        }
+    }
+
+    /**
+     * Converts a class resource path into a binary class name eligible for conflict detection.
+     *
+     * @param classEntry archive entry name
+     * @return binary class name, or {@code null} when the entry is not an attachable application class
+     */
+    private static String conflictCandidateClassName(String classEntry) {
+        if (classEntry == null || !classEntry.endsWith(".class")) {
+            return null;
+        }
+        if ("module-info.class".equals(classEntry) || classEntry.startsWith("META-INF/")) {
+            return null;
+        }
+
+        String binaryName = classEntry.substring(0, classEntry.length() - ".class".length()).replace('/', '.');
+        return binaryName.isEmpty() ? null : binaryName;
+    }
+
+    /**
+     * Clears recorded classpath conflicts before a new discovery run or manager shutdown.
+     */
+    private void resetClasspathConflicts() {
+        classpathResourceUsage.clear();
+        classpathConflictLogPending.set(false);
+    }
+
+    /**
+     * Logs a bounded warning summary when new classpath conflicts were recorded since the last report.
+     */
+    private void logClasspathConflictSummary() {
+        if (!classpathConflictLogPending.compareAndSet(true, false)) {
+            return;
+        }
+
+        List<ClasspathConflict> conflicts = getClasspathConflicts();
+        if (conflicts.isEmpty()) {
+            return;
+        }
+
+        int shown = Math.min(conflicts.size(), MAX_CLASSPATH_CONFLICT_WARNINGS);
+        StringBuilder message = new StringBuilder(
+                "Classpath conflicts detected in %d resource(s); first-wins order keeps the earliest archive:"
+                        .formatted(conflicts.size())
+        );
+        for (int index = 0; index < shown; index++) {
+            ClasspathConflict conflict = conflicts.get(index);
+            message.append(System.lineSeparator())
+                    .append("  ")
+                    .append(conflict.resourcePath())
+                    .append(" -> winner [")
+                    .append(conflict.winnerPluginId())
+                    .append("], also provided by ")
+                    .append(conflict.pluginIds().stream()
+                            .filter(id -> !id.equals(conflict.winnerPluginId()))
+                            .toList());
+        }
+        if (conflicts.size() > shown) {
+            message.append(System.lineSeparator())
+                    .append("  ... and ")
+                    .append(conflicts.size() - shown)
+                    .append(" more conflict(s)");
+        }
+        LOGGER.warn(message.toString());
+    }
+
+    /**
+     * Returns an immutable snapshot of cross-plugin classpath conflicts sorted by resource path.
+     *
+     * @return immutable conflict list
+     */
+    @Override
+    public List<ClasspathConflict> getClasspathConflicts() {
+        return classpathResourceUsage.values().stream()
+                .map(ClasspathResourceUsage::toConflict)
+                .filter(Objects::nonNull)
+                .sorted(Comparator.comparing(ClasspathConflict::resourcePath))
+                .toList();
+    }
+
+    /**
+     * Tracks plugins that provide one class resource while preserving discovery order.
+     */
+    private static final class ClasspathResourceUsage {
+
+        private final String resourcePath;
+        private final String winnerPluginId;
+        private final Set<String> pluginIds = Collections.synchronizedSet(new LinkedHashSet<>());
+
+        private ClasspathResourceUsage(String resourcePath, String winnerPluginId) {
+            this.resourcePath = resourcePath;
+            this.winnerPluginId = winnerPluginId;
+            pluginIds.add(winnerPluginId);
+        }
+
+        /**
+         * Registers a providing plugin.
+         *
+         * @param pluginId plugin identifier
+         * @return {@code true} when this plugin was not recorded before
+         */
+        private boolean register(String pluginId) {
+            return pluginIds.add(pluginId);
+        }
+
+        /**
+         * Checks whether the resource is provided by more than one plugin.
+         *
+         * @return {@code true} when at least two distinct plugins provide the resource
+         */
+        private boolean isConflict() {
+            return pluginIds.size() > 1;
+        }
+
+        /**
+         * Builds an immutable conflict snapshot.
+         *
+         * @return conflict record, or {@code null} when only one plugin provides the resource
+         */
+        private ClasspathConflict toConflict() {
+            synchronized (pluginIds) {
+                if (pluginIds.size() <= 1) {
+                    return null;
+                }
+                return new ClasspathConflict(resourcePath, List.copyOf(pluginIds), winnerPluginId);
+            }
+        }
     }
 
     /**
@@ -926,6 +1112,7 @@ public class DefaultPluginManager implements PluginManager {
 
         List<String> entrypoints = activeEntrypoints(meta);
         List<Plugin> instances = new ArrayList<>(entrypoints.size());
+        Path dataDirectory = pluginDataDirectory(id);
         PluginData callbackContainer = null;
         try {
             for (String entrypoint : entrypoints) {
@@ -947,7 +1134,8 @@ public class DefaultPluginManager implements PluginManager {
                         iconUri,
                         instances.getFirst(),
                         instances,
-                        meta
+                        meta,
+                        dataDirectory
                 );
                 instance.onInitialize(callbackContainer);
                 LOGGER.debug("Initialized entrypoint [{}] for plugin [{}]", entrypoint, id);
@@ -960,7 +1148,7 @@ public class DefaultPluginManager implements PluginManager {
 
         PluginData finalizedContainer = (callbackContainer != null)
                 ? callbackContainer
-                : new PluginData(jarFile.toPath(), iconUri, null, List.of(), meta);
+                : new PluginData(jarFile.toPath(), iconUri, null, List.of(), meta, dataDirectory);
         boolean closedDuringStart;
         synchronized (stateLock) {
             closedDuringStart = closed;
@@ -1084,6 +1272,7 @@ public class DefaultPluginManager implements PluginManager {
             preparedPlugins.clear();
             pluginLocks.clear();
             loadedPluginOrder.clear();
+            resetClasspathConflicts();
             cachedPlugins = Map.of();
         }
 
@@ -1219,6 +1408,18 @@ public class DefaultPluginManager implements PluginManager {
      */
     private static Path archiveHashKey(Path file) {
         return file.toAbsolutePath().normalize();
+    }
+
+    /**
+     * Returns the per-plugin data directory inside the configured plugins directory.
+     * <p>
+     * The path is derived only: it is not created here, so attaching or failing a plugin never touches the filesystem.
+     *
+     * @param pluginId canonical plugin identifier
+     * @return absolute normalized directory path reserved for the plugin
+     */
+    private Path pluginDataDirectory(String pluginId) {
+        return config.pluginsDirectory().toAbsolutePath().normalize().resolve(pluginId);
     }
 
     /**
