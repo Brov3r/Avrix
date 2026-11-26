@@ -46,6 +46,7 @@ public final class ZomboidModPluginSource implements PluginSource {
     private static final String JAR_SEPARATOR_PATTERN = "[;,]";
     private static final Pattern WORKSHOP_ITEM_PATTERN =
             Pattern.compile("/content/" + ZomboidConstants.WORKSHOP_APP_ID + "/(\\d+)/");
+    private static final Pattern WINDOWS_DRIVE_PATH_PATTERN = Pattern.compile("^[A-Za-z]:");
 
     private final Path gameRoot;
     private final Path cacheRoot;
@@ -713,15 +714,18 @@ public final class ZomboidModPluginSource implements PluginSource {
             String modId,
             Set<String> errors
     ) {
+        // mod.info is authored on any platform, so treat backslashes as path separators everywhere.
+        String normalizedValue = entry.value().replace('\\', '/');
         Path relative;
         try {
-            relative = Path.of(entry.value());
+            relative = Path.of(normalizedValue);
         } catch (RuntimeException e) {
             errors.add("Invalid jarPlugins path [" + entry.value() + "] in mod [" + modId + "]");
             return null;
         }
 
-        if (relative.isAbsolute() || relative.getRoot() != null) {
+        if (WINDOWS_DRIVE_PATH_PATTERN.matcher(normalizedValue).find()
+                || relative.isAbsolute() || relative.getRoot() != null) {
             errors.add(
                     "Absolute or rooted jarPlugins path [" + entry.value() + "] is not allowed in mod [" + modId + "]"
             );

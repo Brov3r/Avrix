@@ -198,6 +198,99 @@ class ZomboidModPluginSourceTest {
     }
 
     @Test
+    @DisplayName("Should resolve relative jarPlugins that use Windows separators")
+    void shouldResolveRelativeJarPluginsWithWindowsSeparators() throws Exception {
+        Path home = createUserHome();
+        Path gameRoot = createGameRoot();
+        writeClientActiveMods(home, "windows-mod");
+
+        Path version = home.resolve("Zomboid/mods/WindowsMod/42");
+        Files.createDirectories(version);
+        Files.writeString(version.resolve("mod.info"), """
+                id=windows-mod
+                jarPlugins=media\\java\\windows.jar
+                """);
+
+        Path jar = version.resolve("media/java/windows.jar");
+        Files.createDirectories(jar.getParent());
+        Files.createFile(jar);
+
+        List<Path> result = new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan();
+
+        assertThat(result).containsExactly(jar.toRealPath());
+    }
+
+    @Test
+    @DisplayName("Should reject Windows drive paths in jarPlugins on every platform")
+    void shouldRejectWindowsDrivePaths() throws Exception {
+        Path home = createUserHome();
+        Path gameRoot = createGameRoot();
+        writeClientActiveMods(home, "active-mod");
+
+        Path version = home.resolve("Zomboid/mods/ActiveMod/42");
+        Files.createDirectories(version);
+        Files.writeString(version.resolve("mod.info"), """
+                id=active-mod
+                jarPlugins=C:\\Users\\outside.jar
+                """);
+
+        assertThat(new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
+
+        assertThatThrownBy(() -> new ZomboidModPluginSource(
+                gameRoot, home, Environment.CLIENT, null, "42.21.0", true
+        ).scan())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Absolute or rooted");
+    }
+
+    @Test
+    @DisplayName("Should reject root-relative and UNC jarPlugins paths with Windows separators")
+    void shouldRejectRootedWindowsPaths() throws Exception {
+        Path home = createUserHome();
+        Path gameRoot = createGameRoot();
+        writeClientActiveMods(home, "active-mod");
+
+        Path version = home.resolve("Zomboid/mods/ActiveMod/42");
+        Files.createDirectories(version);
+        Files.writeString(version.resolve("mod.info"), """
+                id=active-mod
+                jarPlugins=\\media\\java\\rooted.jar;\\\\server\\share\\unc.jar
+                """);
+
+        assertThat(new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
+
+        assertThatThrownBy(() -> new ZomboidModPluginSource(
+                gameRoot, home, Environment.CLIENT, null, "42.21.0", true
+        ).scan())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Absolute or rooted");
+    }
+
+    @Test
+    @DisplayName("Should reject parent traversal written with Windows separators")
+    void shouldRejectParentTraversalWithWindowsSeparators() throws Exception {
+        Path home = createUserHome();
+        Path gameRoot = createGameRoot();
+        writeClientActiveMods(home, "active-mod");
+
+        Path version = home.resolve("Zomboid/mods/ActiveMod/42");
+        Files.createDirectories(version);
+        Files.writeString(version.resolve("mod.info"), """
+                id=active-mod
+                jarPlugins=..\\outside.jar
+                """);
+        Files.createFile(version.getParent().resolve("outside.jar"));
+
+        assertThat(new ZomboidModPluginSource(gameRoot, home, Environment.CLIENT, null).scan()).isEmpty();
+
+        assertThatThrownBy(() -> new ZomboidModPluginSource(
+                gameRoot, home, Environment.CLIENT, null, "42.21.0", true
+        ).scan())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("must not contain '..'");
+    }
+
+    @Test
     @DisplayName("Should read active mods from the dedicated-server Mods line")
     void shouldReadServerActiveMods() throws Exception {
         Path home = createUserHome();
