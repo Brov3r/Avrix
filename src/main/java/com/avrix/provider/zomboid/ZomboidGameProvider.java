@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.GraphicsEnvironment;
+import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -646,8 +647,8 @@ public class ZomboidGameProvider implements GameProvider {
     /**
      * Selects the approval frontend from {@code avrix.approval.frontend}.
      * <p>
-     * {@code auto} uses the Swing window on a client. On a dedicated server it prefers a console prompt, falls back
-     * to the Swing window when AWT is available, and otherwise denies unknown archives. Explicit {@code swing},
+     * {@code auto} uses the Swing window on a client. On a dedicated server it prefers an interactive console, falls
+     * back to the Swing window when AWT is available, and otherwise denies unknown archives. Explicit {@code swing},
      * {@code console}, and {@code none} values are honored on any environment.
      *
      * @param environment active runtime environment
@@ -655,11 +656,33 @@ public class ZomboidGameProvider implements GameProvider {
      */
     private static ZomboidApprovalFrontend createApprovalFrontend(Environment environment) {
         String configured = System.getProperty(ZomboidConstants.APPROVAL_FRONTEND_PROPERTY, "auto");
-        String mode = configured == null ? "auto" : configured.trim().toLowerCase(Locale.ROOT);
-        if (mode.isEmpty()) {
-            mode = "auto";
+        if ("auto".equals(normalizeFrontendMode(configured)) && environment == Environment.SERVER) {
+            Console console = System.console();
+            if (console != null && console.isTerminal()) {
+                return selectApprovalFrontend(environment, configured, true, true);
+            }
+            // Keep GraphicsEnvironment untouched while a terminal is available, as the previous selection did.
+            return selectApprovalFrontend(environment, configured, false, GraphicsEnvironment.isHeadless());
         }
+        return selectApprovalFrontend(environment, configured, false, true);
+    }
 
+    /**
+     * Selects the approval frontend from an already resolved configuration.
+     *
+     * @param environment        active runtime environment
+     * @param configured         configured frontend value
+     * @param interactiveConsole whether standard input and output are attached to a terminal
+     * @param headless           whether AWT is unavailable
+     * @return approval frontend
+     */
+    static ZomboidApprovalFrontend selectApprovalFrontend(
+            Environment environment,
+            String configured,
+            boolean interactiveConsole,
+            boolean headless
+    ) {
+        String mode = normalizeFrontendMode(configured);
         if ("none".equals(mode)) {
             LOGGER.info("Plugin approval frontend: none");
             return ZomboidApprovalFrontend.denyAll();
@@ -674,11 +697,11 @@ public class ZomboidGameProvider implements GameProvider {
         }
         if ("auto".equals(mode)) {
             if (environment == Environment.SERVER) {
-                if (System.console() != null) {
+                if (interactiveConsole) {
                     LOGGER.info("Plugin approval frontend: console (dedicated server)");
                     return new ZomboidConsoleApprovalFrontend();
                 }
-                if (!GraphicsEnvironment.isHeadless()) {
+                if (!headless) {
                     LOGGER.info("Plugin approval frontend: swing (dedicated server)");
                     return new ZomboidSwingApprovalFrontend();
                 }
@@ -691,6 +714,11 @@ public class ZomboidGameProvider implements GameProvider {
 
         LOGGER.warn("Unknown approval frontend [{}]; pending plugins will be skipped", configured);
         return ZomboidApprovalFrontend.denyAll();
+    }
+
+    private static String normalizeFrontendMode(String configured) {
+        String mode = configured == null ? "auto" : configured.trim().toLowerCase(Locale.ROOT);
+        return mode.isEmpty() ? "auto" : mode;
     }
 
     /**
