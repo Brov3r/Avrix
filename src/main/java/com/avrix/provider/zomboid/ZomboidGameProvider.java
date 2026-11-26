@@ -240,7 +240,9 @@ public class ZomboidGameProvider implements GameProvider {
             entrypointClassName = getEntrypoint();
 
             try {
-                Class<?> entryClass = Class.forName(entrypointClassName, true, classLoader);
+                // Initialization must happen on invokeExact outside this monitor: a static initializer may call back
+                // into the provider (or System.exit, whose shutdown hook closes the provider) and deadlock here.
+                Class<?> entryClass = Class.forName(entrypointClassName, false, classLoader);
                 MethodHandles.Lookup lookup = MethodHandles.lookup();
                 mainMethodHandle = lookup.findStatic(
                         entryClass,
