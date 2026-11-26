@@ -2,6 +2,7 @@ package com.avrix.loader;
 
 import com.avrix.api.GameProvider;
 import com.avrix.utils.Constants;
+import com.avrix.utils.FatalErrors;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,8 @@ public final class GameProviderFactory {
      * @throws NullPointerException     if {@code providerId} is null
      * @throws IllegalArgumentException if {@code providerId} is blank
      * @throws IllegalStateException    if no provider is registered or multiple providers share the requested ID
+     * @throws VirtualMachineError      if service discovery fails with a virtual machine error
+     * @throws ThreadDeath              if service discovery terminates the current thread
      */
     public static GameProvider load(String providerId) {
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
@@ -53,6 +56,8 @@ public final class GameProviderFactory {
      * @throws IllegalArgumentException if {@code providerId} is blank
      * @throws IllegalStateException    if service discovery fails, no provider is registered, multiple providers
      *                                  share the requested ID, or auto-selection is ambiguous
+     * @throws VirtualMachineError      if service discovery fails with a virtual machine error
+     * @throws ThreadDeath              if service discovery terminates the current thread
      */
     public static GameProvider load(String providerId, ClassLoader classLoader) {
         Objects.requireNonNull(providerId, "Game provider ID cannot be null");
@@ -71,6 +76,7 @@ public final class GameProviderFactory {
                 availableProviders.add(provider.getId());
             }
         } catch (ServiceConfigurationError e) {
+            FatalErrors.rethrowIfFatal(e);
             throw new IllegalStateException("Failed to discover GameProvider implementations from " + SERVICE_FILE, e);
         }
 
