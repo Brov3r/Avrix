@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -29,10 +28,9 @@ public final class CompositeClassProvider implements IClassBytecodeProvider {
     private static final ClassLoader PLATFORM_CLASS_LOADER = ClassLoader.getPlatformClassLoader();
 
     private final Supplier<KnotClassLoader> classLoaderSupplier;
-    private final Map<String, byte[]> classCache = new ConcurrentHashMap<>();
 
-    private volatile KnotClassLoader cachedClassLoader;
-    private volatile long cachedClasspathVersion = -1L;
+    private volatile CacheSnapshot currentSnapshot =
+            new CacheSnapshot(null, -1L, new ConcurrentHashMap<>());
 
     /**
      * Creates a provider bound to a fixed class loader.
@@ -74,9 +72,9 @@ public final class CompositeClassProvider implements IClassBytecodeProvider {
         if (classLoader == null) {
             throw new ClassNotFoundException("No active class loader for: " + name);
         }
-        refreshCache(classLoader);
+        CacheSnapshot snapshot = snapshotFor(classLoader);
 
-        byte[] cached = classCache.get(name);
+        byte[] cached = snapshot.classes().get(name);
         if (cached != null) {
             return cached;
         }
@@ -97,20 +95,20 @@ public final class CompositeClassProvider implements IClassBytecodeProvider {
             bytes = readResourceBytes(parent, resourcePath);
         }
         if (bytes != null) {
-            classCache.put(name, bytes);
+            snapshot.classes().put(name, bytes);
             return bytes;
         }
 
         bytes = readResourceBytes(PLATFORM_CLASS_LOADER, resourcePath);
         if (bytes != null) {
-            classCache.put(name, bytes);
+            snapshot.classes().put(name, bytes);
             return bytes;
         }
 
         try (InputStream is = ClassLoader.getSystemResourceAsStream(resourcePath)) {
             if (is != null) {
                 byte[] systemBytes = is.readAllBytes();
-                classCache.put(name, systemBytes);
+                snapshot.classes().put(name, systemBytes);
                 return systemBytes;
             }
         } catch (IOException e) {
@@ -169,18 +167,31 @@ public final class CompositeClassProvider implements IClassBytecodeProvider {
         return classNode;
     }
 
-    private void refreshCache(KnotClassLoader classLoader) {
+    /**
+     * Returns the cache snapshot for the supplied loader and classpath generation.
+     *
+     * <p>A snapshot owns a private map, so a lookup can neither observe nor pollute the cache of another
+     * generation. An in-flight read that finishes after a loader or classpath change only writes to its own
+     * retired snapshot.
+     *
+     * @param classLoader loader used for the upcoming lookup
+     * @return snapshot binding the loader, its classpath version, and the cache map for that generation
+     */
+    private CacheSnapshot snapshotFor(KnotClassLoader classLoader) {
         long classpathVersion = classLoader.getClasspathVersion();
-        if (classLoader == cachedClassLoader && classpathVersion == cachedClasspathVersion) {
-            return;
+        CacheSnapshot snapshot = currentSnapshot;
+        if (snapshot.classLoader() == classLoader && snapshot.classpathVersion() == classpathVersion) {
+            return snapshot;
         }
         synchronized (this) {
-            if (classLoader == cachedClassLoader && classpathVersion == cachedClasspathVersion) {
-                return;
+            classpathVersion = classLoader.getClasspathVersion();
+            snapshot = currentSnapshot;
+            if (snapshot.classLoader() == classLoader && snapshot.classpathVersion() == classpathVersion) {
+                return snapshot;
             }
-            classCache.clear();
-            cachedClassLoader = classLoader;
-            cachedClasspathVersion = classpathVersion;
+            CacheSnapshot refreshed = new CacheSnapshot(classLoader, classpathVersion, new ConcurrentHashMap<>());
+            currentSnapshot = refreshed;
+            return refreshed;
         }
     }
 
@@ -225,5 +236,19 @@ public final class CompositeClassProvider implements IClassBytecodeProvider {
             LOGGER.trace("Unable to read class resource [{}]", resource, e);
             return null;
         }
+    }
+
+    /**
+     * Immutable cache generation owned by a single loader and classpath version.
+     *
+     * @param classLoader      loader the cache belongs to
+     * @param classpathVersion classpath version the cache is valid for
+     * @param classes          bytecode cache used exclusively by this generation
+     */
+    private record CacheSnapshot(
+            KnotClassLoader classLoader,
+            long classpathVersion,
+            ConcurrentHashMap<String, byte[]> classes
+    ) {
     }
 }
