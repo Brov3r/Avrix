@@ -29,6 +29,16 @@ class GeneratedMixinConfigTest {
         assertThat(generatedConfigJson()).contains("\"minVersion\":\"0.8.7\"");
     }
 
+    /**
+     * Verifies that generated configurations explicitly declare Java 25 compatibility and that Mixin accepts the
+     * configuration during normal registration.
+     *
+     * @throws Exception if the test class loader cannot be closed
+     */
+    @Test
+    void shouldDeclareJava25CompatibilityLevel() throws Exception {
+        assertThat(generatedConfigJson()).contains("\"compatibilityLevel\":\"JAVA_25\"");
+    }
 
     private static String generatedConfigJson() throws Exception {
         try (KnotClassLoader loader = new KnotClassLoader(
