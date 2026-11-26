@@ -15,7 +15,7 @@ import java.util.List;
  * <p>
  * Logback rotates files inside one launch, but a unique active file name per launch means its rolling policy cannot
  * see files created by earlier launches. This utility enforces the same limits across launches and deliberately avoids
- * SLF4J because it runs before the logger subsystem is used.
+ * SLF4J so the bootstrap entrypoint can run it before the logger subsystem is initialized.
  */
 public final class LogRetention {
 
@@ -40,7 +40,8 @@ public final class LogRetention {
      * Deletes expired per-launch log files and enforces the total size cap.
      * <p>
      * Missing or unreadable log directories are ignored, and individual deletion failures do not stop cleanup. The
-     * newest log file is always preserved, even when it alone exceeds the size cap.
+     * newest log file is always preserved, even when it alone exceeds the size cap. Callers that need retention before
+     * logging should invoke this method before creating the first SLF4J logger.
      */
     public static void cleanup() {
         try {

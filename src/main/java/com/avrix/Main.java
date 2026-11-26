@@ -26,8 +26,6 @@ import java.util.concurrent.TimeUnit;
  */
 public final class Main {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-
     /**
      * Prevents instantiation of the static bootstrap entrypoint.
      */
@@ -37,15 +35,19 @@ public final class Main {
 
     /**
      * Bootstrap entrypoint invoked by the JVM.
+     * <p>
+     * Log retention runs before the first SLF4J logger is created. The logger is intentionally local to this method:
+     * loading {@link Main} by itself must not initialize Logback or touch log files.
      *
      * @param args command-line arguments passed to the JVM process
      */
     public static void main(String[] args) {
         LogRetention.cleanup();
+        Logger logger = LoggerFactory.getLogger(Main.class);
         long bootstrapStartTime = System.nanoTime();
 
         try {
-            LOGGER.info("Starting Avrix Launcher (v{})...", Constants.LOADER_VERSION);
+            logger.info("Starting Avrix Launcher (v{})...", Constants.LOADER_VERSION);
 
             String[] rawArgs = (args == null) ? new String[0] : args;
             Set<String> argumentsSet = new HashSet<>(Arrays.asList(rawArgs));
@@ -74,7 +76,7 @@ public final class Main {
                 context.initialize();
 
                 if (!config.redirectSystemStreams()) {
-                    LOGGER.info(
+                    logger.info(
                             "System log stream redirection is disabled via CLI argument: [{}]",
                             Constants.NO_REDIRECT_FLAG_NAME
                     );
@@ -83,7 +85,7 @@ public final class Main {
                 }
 
                 long bootstrapDurationMillis = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - bootstrapStartTime);
-                LOGGER.info(
+                logger.info(
                         "Avrix loader bootstrap completed in {}ms. Delegating control to {}...",
                         bootstrapDurationMillis,
                         context.getGameName()
@@ -96,7 +98,7 @@ public final class Main {
 
         } catch (Throwable throwable) {
             FatalErrors.rethrowIfFatal(throwable);
-            LOGGER.error("A fatal error occurred during the application launch phase!", throwable);
+            logger.error("A fatal error occurred during the application launch phase!", throwable);
             System.exit(1);
         }
     }
