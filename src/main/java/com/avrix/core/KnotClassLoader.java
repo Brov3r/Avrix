@@ -21,6 +21,7 @@ import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipFile;
 
 /**
  * Unified Flat ClassLoader for the Avrix environment, implementing the Knot architecture.
@@ -55,6 +57,8 @@ public class KnotClassLoader extends URLClassLoader {
     private final Set<String> registeredUrls = ConcurrentHashMap.newKeySet();
     private final Set<String> diagnosedResources = ConcurrentHashMap.newKeySet();
     private final Map<String, IndexedClassResource> classResourceIndex = new ConcurrentHashMap<>();
+    private final Map<Path, JarFile> cachedJarFiles = new HashMap<>(); // guarded by jarCacheLock
+    private final Object jarCacheLock = new Object();
     private final AtomicLong classpathVersion = new AtomicLong();
     private final ClassLoadingPolicy loadingPolicy;
     private int nextUrlPosition;
@@ -608,7 +612,11 @@ public class KnotClassLoader extends URLClassLoader {
     }
 
     /**
-     * Reads all raw bytes of a class resource without creating persistent file descriptor locks.
+     * Reads all raw bytes of a class resource from a cached local JAR handle or a regular URL stream.
+     * <p>
+     * Cached handles avoid reopening the archive for every class. This is especially important for
+     * multi-release JARs, which cannot use the class index and are resolved through the standard
+     * URL lookup. Non-local JARs keep the original stream behavior. Handles are released by {@link #close()}.
      *
      * @param resource the target resource URL
      * @return raw byte array
@@ -616,12 +624,93 @@ public class KnotClassLoader extends URLClassLoader {
      */
     private byte[] readResourceBytes(URL resource) throws IOException {
         URLConnection connection = resource.openConnection();
+        if (connection instanceof JarURLConnection jarConnection) {
+            Path jarPath = localJarPath(jarConnection.getJarFileURL());
+            if (jarPath != null && jarConnection.getEntryName() != null) {
+                return readJarEntryBytes(jarConnection, jarPath);
+            }
+        }
         connection.setUseCaches(false);
-
         try (InputStream inputStream = connection.getInputStream();
                 ByteArrayOutputStream buffer = new ByteArrayOutputStream(Math.max(4096, inputStream.available()))) {
             inputStream.transferTo(buffer);
             return buffer.toByteArray();
+        }
+    }
+
+    /**
+     * Reads a class entry through a JAR handle owned by this class loader.
+     *
+     * @param connection JAR connection that identifies the archive and entry
+     * @param jarPath    absolute path of the local archive
+     * @return raw entry bytes
+     * @throws IOException if the entry or archive cannot be read
+     */
+    private byte[] readJarEntryBytes(JarURLConnection connection, Path jarPath) throws IOException {
+        String entryName = connection.getEntryName();
+        if (entryName == null) {
+            throw new IOException("Missing JAR entry name: " + connection.getURL());
+        }
+
+        JarFile jarFile = cachedJarFile(jarPath);
+        JarEntry entry = jarFile.getJarEntry(entryName);
+        if (entry == null) {
+            throw new IOException("Missing JAR entry [" + entryName + "] in " + connection.getJarFileURL());
+        }
+
+        try (InputStream inputStream = jarFile.getInputStream(entry);
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream(Math.max(4096, inputStream.available()))) {
+            inputStream.transferTo(buffer);
+            return buffer.toByteArray();
+        }
+    }
+
+    /**
+     * Converts a JAR file URL to an absolute local path.
+     *
+     * <p>The path is neither lexically normalized nor resolved through the file system, so the OS applies
+     * the same symbolic link and {@code ..} handling as the standard URL lookup. Distinct aliases of the
+     * same archive may therefore get separate cached handles; each one is closed by {@link #close()}.
+     *
+     * @param jarFileUrl URL of the archive
+     * @return absolute local path, or {@code null} when the archive is not a local file
+     */
+    private static Path localJarPath(URL jarFileUrl) {
+        if (!"file".equalsIgnoreCase(jarFileUrl.getProtocol())) {
+            return null;
+        }
+        try {
+            return Paths.get(jarFileUrl.toURI()).toAbsolutePath();
+        } catch (URISyntaxException | IllegalArgumentException _) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns a cached, signature-verifying handle for a local JAR.
+     *
+     * <p>The handle is configured like the JAR handle used by the standard URL lookup, so entry
+     * signatures are verified during reads and multi-release entries are resolved for the runtime.
+     *
+     * @param path absolute path of the local archive
+     * @return shared JAR handle
+     * @throws IOException if the archive cannot be opened or the loader is closed
+     */
+    private JarFile cachedJarFile(Path path) throws IOException {
+        synchronized (jarCacheLock) {
+            if (closed) {
+                throw new IOException("Class loader is closed, cannot read JAR: " + path);
+            }
+
+            JarFile existing = cachedJarFiles.get(path);
+            if (existing != null) {
+                return existing;
+            }
+
+            JarFile created = new JarFile(
+                    path.toFile(), true, ZipFile.OPEN_READ, JarFile.runtimeVersion());
+            cachedJarFiles.put(path, created);
+            return created;
         }
     }
 
@@ -694,16 +783,48 @@ public class KnotClassLoader extends URLClassLoader {
     }
 
     /**
-     * Closes the classpath and invalidates the class resource index.
+     * Closes the classpath, invalidates the class resource index, and releases every cached JAR handle.
+     * <p>
+     * Once closed, the loader permanently refuses to open new cached JAR handles, so a concurrent read cannot
+     * reintroduce a handle that this method would never release.
      *
-     * @throws IOException if closing the classpath fails
+     * @throws IOException if closing the classpath or a cached archive fails
      */
     @Override
     public synchronized void close() throws IOException {
         closed = true;
+
+        List<JarFile> jarFiles;
+        synchronized (jarCacheLock) {
+            jarFiles = List.copyOf(cachedJarFiles.values());
+            cachedJarFiles.clear();
+        }
+
         classResourceIndex.clear();
         firstNonIndexedUrlPosition = Integer.MAX_VALUE;
-        super.close();
+
+        IOException failure = null;
+        try {
+            super.close();
+        } catch (IOException exception) {
+            failure = exception;
+        }
+
+        for (JarFile jarFile : jarFiles) {
+            try {
+                jarFile.close();
+            } catch (IOException exception) {
+                if (failure == null) {
+                    failure = exception;
+                } else {
+                    failure.addSuppressed(exception);
+                }
+            }
+        }
+
+        if (failure != null) {
+            throw failure;
+        }
     }
 
     /**
