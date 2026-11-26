@@ -124,6 +124,8 @@ public final class LoaderContext implements AutoCloseable {
      * <p>
      * This method is idempotent and safe to call from both a try-with-resources block and a JVM shutdown hook.
      * Game main methods usually block until exit, so closing after {@link #launch(String[])} returns is safe.
+     * Non-fatal failures are logged and do not prevent loader-owned services from being unregistered. Fatal failures
+     * are rethrown immediately.
      */
     @Override
     public void close() {
@@ -147,8 +149,13 @@ public final class LoaderContext implements AutoCloseable {
 
         try {
             classLoader.close();
-        } catch (IOException e) {
-            LOGGER.warn("Failed to close KnotClassLoader", e);
+        } catch (Throwable throwable) {
+            FatalErrors.rethrowIfFatal(throwable);
+            if (throwable instanceof IOException e) {
+                LOGGER.warn("Failed to close KnotClassLoader", e);
+            } else {
+                LOGGER.error("Failed to close KnotClassLoader", throwable);
+            }
         }
 
         unregisterIfSame(PluginManager.class, pluginManager);

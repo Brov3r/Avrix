@@ -3,6 +3,7 @@ package com.avrix.loader;
 import com.avrix.core.Environment;
 import com.avrix.core.KnotClassLoader;
 import com.avrix.core.Metadata;
+import com.avrix.core.ServiceManager;
 import com.avrix.plugins.PluginData;
 import com.avrix.plugins.PluginManager;
 import com.avrix.api.GameProvider;
@@ -17,6 +18,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Edge-case tests for {@link LoaderContext} shutdown failure handling and idempotency.
@@ -36,6 +38,42 @@ class LoaderContextEdgeTest {
 
         assertThat(pluginManager.closeCalls).isEqualTo(1);
         assertThat(classLoader.closeCalls).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("Should unregister loader services when the classloader close fails with an unchecked error")
+    void shouldUnregisterServicesWhenClassLoaderCloseFailsWithUncheckedError() {
+        CountingClassLoader classLoader = new CountingClassLoader();
+        classLoader.uncheckedFailure = new IllegalStateException("classloader unchecked shutdown failure");
+        RecordingPluginManager pluginManager = new RecordingPluginManager();
+        StubGameProvider gameProvider = new StubGameProvider();
+        LoaderContext context = new LoaderContext(classLoader, gameProvider, null, pluginManager);
+        ServiceManager.clear();
+        ServiceManager.register(KnotClassLoader.class, classLoader);
+        ServiceManager.register(PluginManager.class, pluginManager);
+        ServiceManager.register(GameProvider.class, gameProvider);
+
+        try {
+            assertThatCode(context::close).doesNotThrowAnyException();
+
+            assertThat(ServiceManager.contains(KnotClassLoader.class)).isFalse();
+            assertThat(ServiceManager.contains(PluginManager.class)).isFalse();
+            assertThat(ServiceManager.contains(GameProvider.class)).isFalse();
+            assertThat(classLoader.closeCalls).isEqualTo(1);
+        } finally {
+            ServiceManager.clear();
+        }
+    }
+
+    @Test
+    @DisplayName("Should rethrow a fatal classloader close failure")
+    void shouldRethrowFatalClassLoaderCloseFailure() {
+        CountingClassLoader classLoader = new CountingClassLoader();
+        SimulatedVmFailure fatal = new SimulatedVmFailure();
+        classLoader.uncheckedFailure = fatal;
+        LoaderContext context = new LoaderContext(classLoader, new StubGameProvider(), null, new RecordingPluginManager());
+
+        assertThatThrownBy(context::close).isSameAs(fatal);
     }
 
     @Test
@@ -83,6 +121,7 @@ class LoaderContextEdgeTest {
 
         private int closeCalls;
         private IOException failure;
+        private Throwable uncheckedFailure;
 
         private CountingClassLoader() {
             super(new URL[0], LoaderContextEdgeTest.class.getClassLoader());
@@ -93,6 +132,12 @@ class LoaderContextEdgeTest {
             closeCalls++;
             if (failure != null) {
                 throw failure;
+            }
+            if (uncheckedFailure instanceof RuntimeException runtimeFailure) {
+                throw runtimeFailure;
+            }
+            if (uncheckedFailure instanceof Error errorFailure) {
+                throw errorFailure;
             }
             super.close();
         }
@@ -203,6 +248,15 @@ class LoaderContextEdgeTest {
         @Override
         public Environment getEnvironment() {
             return Environment.BOTH;
+        }
+    }
+
+    /**
+     * Simulated virtual machine failure used to verify fatal error propagation.
+     */
+    private static final class SimulatedVmFailure extends VirtualMachineError {
+        private SimulatedVmFailure() {
+            super("simulated fatal classloader shutdown failure");
         }
     }
 }
